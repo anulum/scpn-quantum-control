@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import ctypes
 from collections.abc import Callable, Sequence
-from typing import Any, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -339,12 +339,10 @@ def _as_native_symmetric_2x2_cholesky_values(
 def _call_native_symmetric_2x2_cholesky_unary(
     function: Callable[[Any, Any], None],
     values: FloatArray,
-    output_size: int,
 ) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_cholesky_values("values", values)
-    if output_size != 3:
-        raise ValueError("native symmetric 2x2 Cholesky LLVM/JIT output_size must be three")
-    output = np.zeros(output_size, dtype=np.float64)
+    # Every Cholesky symbol writes the three upper-triangle entries.
+    output = np.zeros(3, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
         checked_values.ctypes.data_as(double_pointer),
@@ -358,7 +356,6 @@ def _call_native_symmetric_2x2_cholesky_binary(
     values: FloatArray,
     tangent_or_cotangent: FloatArray,
     label: str,
-    output_size: int,
 ) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_cholesky_values("values", values)
     checked_vector = np.ascontiguousarray(
@@ -368,9 +365,7 @@ def _call_native_symmetric_2x2_cholesky_binary(
         raise ValueError(
             f"native symmetric 2x2 Cholesky LLVM/JIT kernel requires three {label} values"
         )
-    if output_size != 3:
-        raise ValueError("native symmetric 2x2 Cholesky LLVM/JIT output_size must be three")
-    output = np.zeros(output_size, dtype=np.float64)
+    output = np.zeros(3, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
         checked_values.ctypes.data_as(double_pointer),
@@ -401,13 +396,9 @@ def _as_native_symmetric_2x2_eigenvalues_values(
 def _call_native_symmetric_2x2_eigenvalues_unary(
     function: Callable[[Any, Any], None],
     values: FloatArray,
-    output_size: int,
+    output_size: Literal[2, 3],
 ) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_eigenvalues_values("values", values)
-    if output_size not in {2, 3}:
-        raise ValueError(
-            "native symmetric 2x2 eigenvalue LLVM/JIT output_size must be two or three"
-        )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -422,7 +413,7 @@ def _call_native_symmetric_2x2_eigenvalues_binary(
     values: FloatArray,
     tangent_or_cotangent: FloatArray,
     label: str,
-    output_size: int,
+    output_size: Literal[2, 3],
 ) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_eigenvalues_values("values", values)
     checked_vector = np.ascontiguousarray(
@@ -433,10 +424,6 @@ def _call_native_symmetric_2x2_eigenvalues_binary(
         raise ValueError(
             "native symmetric 2x2 eigenvalue LLVM/JIT kernel requires "
             f"{expected_vector_size} {label} value(s)"
-        )
-    if output_size not in {2, 3}:
-        raise ValueError(
-            "native symmetric 2x2 eigenvalue LLVM/JIT output_size must be two or three"
         )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
@@ -477,11 +464,7 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
     )
 
     def value_kernel(raw_values: FloatArray) -> FloatArray:
-        return _call_native_symmetric_2x2_cholesky_unary(
-            native_functions["value"],
-            raw_values,
-            3,
-        )
+        return _call_native_symmetric_2x2_cholesky_unary(native_functions["value"], raw_values)
 
     def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_cholesky_binary(
@@ -489,7 +472,6 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
             raw_values,
             raw_tangent,
             "tangent",
-            3,
         )
 
     def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
@@ -498,7 +480,6 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
             raw_values,
             raw_cotangent,
             "cotangent",
-            3,
         )
 
     verification = _verify_executable_ad_kernel(
@@ -515,7 +496,6 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
         native_sum_gradient = _call_native_symmetric_2x2_cholesky_unary(
             native_functions["gradient"],
             values,
-            3,
         )
         reference_sum_gradient = vjp_kernel(values, np.ones(3, dtype=np.float64))
         if not np.allclose(

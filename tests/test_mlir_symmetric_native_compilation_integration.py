@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any, cast
+
 import numpy as np
 import pytest
 from _mlir_native_compilation_test_helpers import FloatArray, _eager_batching_rule
@@ -29,45 +33,92 @@ from scpn_quantum_control.differentiable import (
 )
 
 
+def cholesky(values: FloatArray) -> FloatArray:
+    """Return the upper-triangle Cholesky factor (l00, l10, l11) of an SPD 2x2 matrix."""
+    a00, a01, a11 = values
+    l00 = np.sqrt(a00)
+    l10 = a01 / l00
+    l11 = np.sqrt(a11 - l10 * l10)
+    return np.array([l00, l10, l11], dtype=np.float64)
+
+
+def cholesky_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
+    """Return the forward derivative of the Cholesky factor along a tangent."""
+    a00, a01, a11 = values
+    t00, t01, t11 = tangent
+    l00 = np.sqrt(a00)
+    l10 = a01 / l00
+    l11 = np.sqrt(a11 - l10 * l10)
+    tangent_l00 = t00 / (2.0 * l00)
+    tangent_l10 = t01 / l00 - l10 * tangent_l00 / l00
+    tangent_l11 = (t11 - 2.0 * l10 * tangent_l10) / (2.0 * l11)
+    return np.array([tangent_l00, tangent_l10, tangent_l11], dtype=np.float64)
+
+
+def cholesky_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
+    """Return the reverse derivative of the Cholesky factor for a cotangent."""
+    a00, a01, a11 = values
+    cotangent_l00, cotangent_l10, cotangent_l11 = cotangent
+    l00 = np.sqrt(a00)
+    l10 = a01 / l00
+    l11 = np.sqrt(a11 - l10 * l10)
+    adjoint_schur = cotangent_l11 / (2.0 * l11)
+    adjoint_l10 = cotangent_l10 - 2.0 * l10 * adjoint_schur
+    adjoint_l00 = cotangent_l00 - adjoint_l10 * a01 / (l00 * l00)
+    return np.array(
+        [
+            adjoint_l00 / (2.0 * l00),
+            adjoint_l10 / l00,
+            adjoint_schur,
+        ],
+        dtype=np.float64,
+    )
+
+
+def eigenvalues(values: FloatArray) -> FloatArray:
+    """Return the ascending eigenvalues of a symmetric 2x2 matrix."""
+    a00, a01, a11 = values
+    centre = 0.5 * (a00 + a11)
+    half_delta = 0.5 * (a00 - a11)
+    radius = np.sqrt(half_delta * half_delta + a01 * a01)
+    return np.array([centre - radius, centre + radius], dtype=np.float64)
+
+
+def eigenvalues_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
+    """Return the forward derivative of the eigenvalues along a tangent."""
+    a00, a01, a11 = values
+    t00, t01, t11 = tangent
+    half_delta = 0.5 * (a00 - a11)
+    tangent_half_delta = 0.5 * (t00 - t11)
+    tangent_centre = 0.5 * (t00 + t11)
+    radius = np.sqrt(half_delta * half_delta + a01 * a01)
+    tangent_radius = (half_delta * tangent_half_delta + a01 * t01) / radius
+    return np.array(
+        [tangent_centre - tangent_radius, tangent_centre + tangent_radius],
+        dtype=np.float64,
+    )
+
+
+def eigenvalues_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
+    """Return the reverse derivative of the eigenvalues for a cotangent."""
+    a00, a01, a11 = values
+    lower_cotangent, upper_cotangent = cotangent
+    half_delta = 0.5 * (a00 - a11)
+    radius = np.sqrt(half_delta * half_delta + a01 * a01)
+    half_term = half_delta / (2.0 * radius)
+    offdiag_term = a01 / radius
+    return np.array(
+        [
+            lower_cotangent * (0.5 - half_term) + upper_cotangent * (0.5 + half_term),
+            (upper_cotangent - lower_cotangent) * offdiag_term,
+            lower_cotangent * (0.5 + half_term) + upper_cotangent * (0.5 - half_term),
+        ],
+        dtype=np.float64,
+    )
+
+
 def test_native_llvm_jit_symmetric_2x2_cholesky_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT Cholesky AD kernels should execute exact SPD factorisation AD."""
-
-    def cholesky(values: FloatArray) -> FloatArray:
-        a00, a01, a11 = values
-        l00 = np.sqrt(a00)
-        l10 = a01 / l00
-        l11 = np.sqrt(a11 - l10 * l10)
-        return np.array([l00, l10, l11], dtype=np.float64)
-
-    def cholesky_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
-        a00, a01, a11 = values
-        t00, t01, t11 = tangent
-        l00 = np.sqrt(a00)
-        l10 = a01 / l00
-        l11 = np.sqrt(a11 - l10 * l10)
-        tangent_l00 = t00 / (2.0 * l00)
-        tangent_l10 = t01 / l00 - l10 * tangent_l00 / l00
-        tangent_l11 = (t11 - 2.0 * l10 * tangent_l10) / (2.0 * l11)
-        return np.array([tangent_l00, tangent_l10, tangent_l11], dtype=np.float64)
-
-    def cholesky_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
-        a00, a01, a11 = values
-        cotangent_l00, cotangent_l10, cotangent_l11 = cotangent
-        l00 = np.sqrt(a00)
-        l10 = a01 / l00
-        l11 = np.sqrt(a11 - l10 * l10)
-        adjoint_schur = cotangent_l11 / (2.0 * l11)
-        adjoint_l10 = cotangent_l10 - 2.0 * l10 * adjoint_schur
-        adjoint_l00 = cotangent_l00 - adjoint_l10 * a01 / (l00 * l00)
-        return np.array(
-            [
-                adjoint_l00 / (2.0 * l00),
-                adjoint_l10 / l00,
-                adjoint_schur,
-            ],
-            dtype=np.float64,
-        )
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "symmetric_2x2_cholesky", "1")
     rule = CustomDerivativeRule(
         name="native_symmetric_2x2_cholesky_rule",
@@ -227,43 +278,6 @@ def test_native_llvm_jit_symmetric_2x2_cholesky_kernel_executes_and_marks_plan_n
 
 def test_native_llvm_jit_symmetric_2x2_eigenvalues_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT eigenspectrum AD kernels should execute distinct symmetric 2x2 AD."""
-
-    def eigenvalues(values: FloatArray) -> FloatArray:
-        a00, a01, a11 = values
-        centre = 0.5 * (a00 + a11)
-        half_delta = 0.5 * (a00 - a11)
-        radius = np.sqrt(half_delta * half_delta + a01 * a01)
-        return np.array([centre - radius, centre + radius], dtype=np.float64)
-
-    def eigenvalues_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
-        a00, a01, a11 = values
-        t00, t01, t11 = tangent
-        half_delta = 0.5 * (a00 - a11)
-        tangent_half_delta = 0.5 * (t00 - t11)
-        tangent_centre = 0.5 * (t00 + t11)
-        radius = np.sqrt(half_delta * half_delta + a01 * a01)
-        tangent_radius = (half_delta * tangent_half_delta + a01 * t01) / radius
-        return np.array(
-            [tangent_centre - tangent_radius, tangent_centre + tangent_radius],
-            dtype=np.float64,
-        )
-
-    def eigenvalues_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
-        a00, a01, a11 = values
-        lower_cotangent, upper_cotangent = cotangent
-        half_delta = 0.5 * (a00 - a11)
-        radius = np.sqrt(half_delta * half_delta + a01 * a01)
-        half_term = half_delta / (2.0 * radius)
-        offdiag_term = a01 / radius
-        return np.array(
-            [
-                lower_cotangent * (0.5 - half_term) + upper_cotangent * (0.5 + half_term),
-                (upper_cotangent - lower_cotangent) * offdiag_term,
-                lower_cotangent * (0.5 + half_term) + upper_cotangent * (0.5 - half_term),
-            ],
-            dtype=np.float64,
-        )
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "symmetric_2x2_eigenvalues", "1")
     rule = CustomDerivativeRule(
         name="native_symmetric_2x2_eigenvalues_rule",
@@ -417,3 +431,157 @@ def test_native_llvm_jit_symmetric_2x2_eigenvalues_kernel_executes_and_marks_pla
             "value/JVP/VJP/sum-gradient parity"
         )
     }
+
+
+@dataclass(frozen=True)
+class _SymmetricCase:
+    """One symmetric 2x2 native primitive: reference rules, public factories, sample data."""
+
+    name: str
+    value: Callable[[FloatArray], FloatArray]
+    jvp: Callable[[FloatArray, FloatArray], FloatArray]
+    vjp: Callable[[FloatArray, FloatArray], FloatArray]
+    compiler: Callable[..., Any]
+    lowering: Callable[..., Callable[..., Any]]
+    transform: Callable[..., PrimitiveTransformRule]
+    values: tuple[float, float, float]
+    cotangent_width: int
+    tangent_message: str
+    cotangent_message: str
+
+
+_CASES = (
+    _SymmetricCase(
+        "cholesky",
+        cholesky,
+        cholesky_jvp,
+        cholesky_vjp,
+        compiler_mlir.compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit,
+        compiler_mlir.make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule,
+        compiler_mlir.make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform,
+        (4.0, 1.0, 3.0),
+        3,
+        "kernel requires three tangent values$",
+        "kernel requires three cotangent values$",
+    ),
+    _SymmetricCase(
+        "eigenvalues",
+        eigenvalues,
+        eigenvalues_jvp,
+        eigenvalues_vjp,
+        compiler_mlir.compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
+        compiler_mlir.make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule,
+        compiler_mlir.make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform,
+        (2.0, 0.5, 3.0),
+        2,
+        r"kernel requires 3 tangent value\(s\)$",
+        r"kernel requires 2 cotangent value\(s\)$",
+    ),
+)
+
+
+def _rule(case: _SymmetricCase, *, with_vjp: bool = True) -> CustomDerivativeRule:
+    """Build the case's reference rule, optionally without its VJP."""
+    return CustomDerivativeRule(
+        name=f"native_symmetric_2x2_{case.name}_guard_rule",
+        value_fn=case.value,
+        jvp_rule=case.jvp,
+        vjp_rule=case.vjp if with_vjp else None,
+        parameter_names=("a00", "a01", "a11"),
+        trainable=(True, True, True),
+    )
+
+
+@pytest.mark.parametrize("case", _CASES, ids=lambda case: case.name)
+def test_native_symmetric_2x2_factories_refuse_foreign_rules_other_backends_and_short_samples(
+    case: _SymmetricCase,
+) -> None:
+    """Compilers and transforms need a rule, the native backend and three upper-triangle values."""
+    values = np.asarray(case.values, dtype=np.float64)
+    identity = PrimitiveIdentity("scpn.compiler_ad.native", f"symmetric_2x2_{case.name}", "1")
+    not_a_rule = cast(Any, "not a rule")
+    runtime = CompilerADExecutableConfig(backend="mlir_runtime")
+
+    # A foreign rule is refused before the backend is looked at.
+    with pytest.raises(ValueError, match="^rule must be a CustomDerivativeRule$"):
+        case.compiler(not_a_rule, sample_values=values, config=runtime)
+    with pytest.raises(ValueError, match="^rule must be a CustomDerivativeRule$"):
+        case.transform(identity, not_a_rule, sample_values=values, config=runtime)
+    with pytest.raises(ValueError, match=" AD requires backend='native_llvm_jit'$"):
+        case.compiler(_rule(case), sample_values=values, config=runtime)
+    with pytest.raises(
+        ValueError, match="primitive transform requires backend='native_llvm_jit'$"
+    ):
+        case.transform(identity, _rule(case), sample_values=values, config=runtime)
+    with pytest.raises(ValueError, match="kernel requires upper-triangle values$"):
+        case.compiler(_rule(case), sample_values=values[:2])
+
+
+@pytest.mark.parametrize("case", _CASES, ids=lambda case: case.name)
+def test_native_symmetric_2x2_kernels_refuse_tangents_and_cotangents_of_the_wrong_width(
+    case: _SymmetricCase,
+) -> None:
+    """A compiled kernel checks each tangent and cotangent width before the native call."""
+    values = np.asarray(case.values, dtype=np.float64)
+    kernel = case.compiler(_rule(case), sample_values=values)
+
+    with pytest.raises(ValueError, match=case.tangent_message):
+        kernel.jvp(values, np.ones(2, dtype=np.float64))
+    with pytest.raises(ValueError, match=case.cotangent_message):
+        kernel.vjp(values, np.ones(5 - case.cotangent_width, dtype=np.float64))
+    cotangent = np.linspace(0.5, -0.25, case.cotangent_width)
+    np.testing.assert_allclose(
+        kernel.vjp(values, cotangent), case.vjp(values, cotangent), rtol=1e-12, atol=1e-12
+    )
+
+
+@pytest.mark.parametrize("case", _CASES, ids=lambda case: case.name)
+def test_native_symmetric_2x2_kernels_without_a_vjp_rule_compile_value_and_jvp_only(
+    case: _SymmetricCase,
+) -> None:
+    """A rule with no VJP yields a verified value/JVP kernel and no reverse path."""
+    values = np.asarray(case.values, dtype=np.float64)
+    tangent = np.array([0.1, -0.2, 0.4], dtype=np.float64)
+
+    kernel = case.compiler(_rule(case, with_vjp=False), sample_values=values)
+
+    assert kernel.vjp_kernel is None
+    assert kernel.verification.passed is True
+    np.testing.assert_allclose(
+        kernel.jvp(values, tangent), case.jvp(values, tangent), rtol=1e-12, atol=1e-12
+    )
+    with pytest.raises(ValueError, match="has no VJP rule$"):
+        kernel.vjp(values, np.ones(case.cotangent_width, dtype=np.float64))
+
+
+@pytest.mark.parametrize("case", _CASES, ids=lambda case: case.name)
+def test_native_symmetric_2x2_lowering_rules_take_runtime_or_captured_sample_values(
+    case: _SymmetricCase,
+) -> None:
+    """A lowering rule uses runtime samples, else the captured ones, and refuses neither."""
+    values = np.asarray(case.values, dtype=np.float64)
+    rule = _rule(case)
+    bare = case.lowering()
+
+    with pytest.raises(ValueError, match="lowering requires sample_values$"):
+        bare(rule)
+    for kernel in (bare(rule, values), case.lowering(sample_values=values)(rule)):
+        assert kernel.backend == "native_llvm_jit"
+        np.testing.assert_allclose(
+            kernel.value(values), case.value(values), rtol=1e-12, atol=1e-12
+        )
+
+
+@pytest.mark.parametrize("case", _CASES, ids=lambda case: case.name)
+def test_native_symmetric_2x2_compilers_refuse_a_sum_gradient_that_disagrees_with_the_vjp(
+    case: _SymmetricCase,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fail closed when the native sum-gradient disagrees with the native VJP of ones."""
+    monkeypatch.setattr(np, "allclose", lambda *_args, **_kwargs: False)
+    with pytest.raises(ValueError, match="sum-gradient provenance verification failed$"):
+        case.compiler(
+            _rule(case),
+            sample_values=np.asarray(case.values, dtype=np.float64),
+            config=CompilerADExecutableConfig(backend="native_llvm_jit", verify=False),
+        )

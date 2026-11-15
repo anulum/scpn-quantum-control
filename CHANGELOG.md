@@ -456,6 +456,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   rises from 84.19% to 100%. Three older docstrings are fixed, so the test
   documentation ceiling falls to 6988 findings in 549 files.
 
+- The symmetric 2x2 native LLVM/JIT compilers
+  (`compiler/mlir_symmetric_native_compilation.py`, Cholesky and eigenvalues)
+  now have tests for every refusal, driven through the public compilers,
+  kernels, lowering rules and primitive transforms:
+  - a foreign rule (refused before the backend is checked), the MLIR-runtime
+    backend, and a two-value sample;
+  - a tangent or cotangent of the wrong width on a compiled kernel;
+  - a rule without a VJP, which compiles a verified value/JVP kernel;
+  - a lowering rule with no runtime or captured sample values;
+  - a native sum-gradient that disagrees with the native VJP, following the
+    2x2 matrix compilers' test.
+
+  The internal native-call helpers no longer take a runtime output width that
+  every caller fixed. The Cholesky helpers always allocate their three
+  outputs, and the eigenvalue helpers type the width as `Literal[2, 3]`. So
+  the four width refusals that no caller could reach are gone, and mypy now
+  checks the same constraint. The test file's reference rules move to module
+  level and are shared by the new tests. Coverage rises from 80.17% to 100%.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
