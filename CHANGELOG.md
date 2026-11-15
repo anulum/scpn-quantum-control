@@ -497,6 +497,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The TensorFlow bridge (`phase/tensorflow_bridge.py`) now tests its import
+  probe in both directions. An absent TensorFlow and a broken install that
+  raises a plain `ImportError` each make `is_phase_tensorflow_available()`
+  false and make a bridge route raise the `[tensorflow]` install hint,
+  chained to the original error; any importable `tensorflow` module makes the
+  probe true. Before, the bridge tests used only the fake loader, so the real
+  loader never ran without TensorFlow and its refusal never ran with it.
+  Coverage of the bridge rises from 92.86% to 100% both with TensorFlow and
+  with its import blocked. No production change.
+
 - **Fixed: the QNN loss landscape could lose its center point.**
   `run_parameter_shift_qnn_loss_landscape_suite` built each axis as the
   center plus `numpy.linspace(-grid_radius, grid_radius, points_per_axis)`.
