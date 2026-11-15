@@ -216,6 +216,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+### Benchmark databank
+
+- Evidence shows the canonical Kuramoto tier benchmarks of the CI and local
+  environments (`#/evidence/benchmarks`): provenance of both runs and the
+  median latency of the Rust, Julia and Python tiers for 35 operations at four
+  sizes, with the tiers a run did not measure and why.
+- The browser verifies both artefacts against a committed pin before showing
+  them: each file's SHA-256 and the owner's payload digest, recomputed with
+  the owner's serialisation. It also recomputes every fastest backend from the
+  medians and refuses data that disagrees.
+- The timings are single-host measurements, not a competitive or production
+  claim; the CI baseline predates the move of the CI job to Python 3.15.
+
 ### Attestation verification in the browser
 
 - Evidence verifies attested result-pack envelopes in the browser

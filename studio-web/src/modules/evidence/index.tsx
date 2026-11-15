@@ -13,7 +13,7 @@ import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/w
 type Services = NoServices;
 
 const EvidenceView = lazy(() => import("./EvidenceView"));
-/** Committed capability, support, gradient-plan and scorecard surfaces, and attestation checks. */
+/** Committed capability, support, gradient-plan and scorecard surfaces, attestation checks and benchmarks. */
 export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evidence"> = {
   id: "evidence",
   apiVersion: "2.0",
@@ -23,9 +23,12 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
       id: "evidence" as const,
       label: "Evidence",
       group: "primary",
-      instruments: ["attestation"],
+      instruments: ["attestation", "benchmarks"],
       render: (_services: Services, instrument: string | null) => (
-        <EvidenceView focusAttestation={instrument === "attestation"} />
+        <EvidenceView
+          focusAttestation={instrument === "attestation"}
+          focusBenchmarks={instrument === "benchmarks"}
+        />
       ),
     },
   ],
@@ -39,6 +42,11 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
       id: "open-attestation",
       label: "Verify attested result packs",
       action: { kind: "navigate", stage: "evidence", instrument: "attestation" },
+    },
+    {
+      id: "open-benchmarks",
+      label: "Open the benchmark databank",
+      action: { kind: "navigate", stage: "evidence", instrument: "benchmarks" },
     },
   ],
 };

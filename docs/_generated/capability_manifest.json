@@ -13,7 +13,7 @@
     "python_model_source_modules": 866,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1637
+    "test_files": 1638
   },
   "documentation": {
     "examples": [
@@ -10861,6 +10861,7 @@
       "tests/test_structured_log_fallback.py",
       "tests/test_studio_accessibility_browser_journey.py",
       "tests/test_studio_attestation_instrument.py",
+      "tests/test_studio_benchmark_databank.py",
       "tests/test_studio_benchmark_databank_bundle.py",
       "tests/test_studio_browser_journey.py",
       "tests/test_studio_claim_frontier_quality_gate.py",

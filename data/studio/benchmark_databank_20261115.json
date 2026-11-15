@@ -1,0 +1,48 @@
+{
+  "artifact_id": "studio-benchmark-databank-20261115",
+  "ascii_oracle": [
+    {
+      "content": {
+        "value": [
+          "é€",
+          "  ",
+          "𝔸",
+          "﻿",
+          "quote \" \\",
+          "\u0000"
+        ]
+      },
+      "label": "strings",
+      "python_text": "{\"value\":[\"\\u00e9\\u20ac\",\"\\u2028\\u2029\",\"\\ud835\\udd38\",\"\\ufeff\",\"quote \\\" \\\\\",\"\\u0000\\u007f\"]}"
+    },
+    {
+      "content": {
+        "Z": 0.5,
+        "a": 4,
+        "é": 3,
+        "￿": 1,
+        "𝔸": 2
+      },
+      "label": "key order",
+      "python_text": "{\"Z\":0.5,\"a\":4,\"\\u00e9\":3,\"\\uffff\":1,\"\\ud835\\udd38\":2}"
+    }
+  ],
+  "benchmark_schema": "scpn-quantum-control.tier-benchmark.v1",
+  "boundary": "each environment is one host's measurement: medians of a few repeats after warm-up, not a competitive or production claim (production_claim_allowed is false in both artefacts); the CI baseline was measured on Python 3.12 before the CI job moved to Python 3.15, and its re-baseline is pending",
+  "generated_by": "python tools/studio_benchmark_databank.py --write",
+  "schema": "scpn_qc_studio_benchmark_databank_v1",
+  "sources": {
+    "ci": {
+      "generated_utc": "2026-06-26T15:47:00Z",
+      "path": "docs/benchmarks/tiers/kuramoto_tiers.ci.json",
+      "payload_sha256": "59a6117ed00377004b17d6d35aaa8bce1f3ee87f4692678764a9d65f289d9500",
+      "sha256": "5c2791599f56283a49aae7cfda6f8bf12cb31edb0bfb917da12f528716679281"
+    },
+    "local": {
+      "generated_utc": "2026-06-24T23:56:12Z",
+      "path": "docs/benchmarks/tiers/kuramoto_tiers.local.json",
+      "payload_sha256": "cf4c980a9c7287c78d44363549c815bf7548a519c4e9328ec29b5c0837738488",
+      "sha256": "3018ae0c72be6eaaa77e93f365f928cffeb2dbebad83fe17150c55142f817b17"
+    }
+  }
+}

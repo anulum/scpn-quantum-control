@@ -49,37 +49,60 @@ function codePointOrder(left: string, right: string): number {
   return a.length - b.length;
 }
 
-function encode(value: unknown, path: string, depth: number): string {
+/** Escape DEL and every non-ASCII UTF-16 unit as Python's `ensure_ascii=True` does, surrogates included. */
+function asciiEscaped(text: string): string {
+  let escaped = "";
+  for (let at = 0; at < text.length; at++) {
+    const unit = text.charCodeAt(at);
+    // Python keeps only space to tilde; DEL is escaped too. Earlier escapes are ASCII already.
+    escaped += unit < 0x7f ? text.charAt(at) : `\\u${unit.toString(16).padStart(4, "0")}`;
+  }
+  return escaped;
+}
+
+function quoted(text: string, path: string, ascii: boolean): string {
+  // Python escapes the same characters as JSON.stringify once no lone surrogate remains.
+  const json = JSON.stringify(scalarString(text, path));
+  return ascii ? asciiEscaped(json) : json;
+}
+
+function encode(value: unknown, path: string, depth: number, ascii: boolean): string {
   if (depth > 64) throw new Error(`${path}: depth exceeded`);
   if (value === null) return "null";
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "bigint") return value.toString();
   if (typeof value === "number") return pythonFloat(value);
-  // Python escapes the same characters as JSON.stringify once no lone surrogate remains.
-  if (typeof value === "string") return JSON.stringify(scalarString(value, path));
+  if (typeof value === "string") return quoted(value, path, ascii);
   if (Array.isArray(value)) {
-    return `[${value.map((item, at) => encode(item, `${path}[${at}]`, depth + 1)).join(",")}]`;
+    const items = value.map((item, at) => encode(item, `${path}[${at}]`, depth + 1, ascii));
+    return `[${items.join(",")}]`;
   }
   if (typeof value !== "object") throw new Error(`${path}: unsupported value type`);
   const members = dataEntries(value, path)
     .sort(([a], [b]) => codePointOrder(a, b))
-    .map(([key, item]) => `${JSON.stringify(key)}:${encode(item, `${path}.${key}`, depth + 1)}`);
+    .map(
+      ([key, item]) =>
+        `${quoted(key, path, ascii)}:${encode(item, `${path}.${key}`, depth + 1, ascii)}`,
+    );
   return `{${members.join(",")}}`;
 }
 
 /**
- * Write the canonical text the attestation owner hashes.
+ * Write the compact sorted JSON text a Python owner hashes.
  *
  * It matches `json.dumps(value, sort_keys=True, separators=(",", ":"),
- * ensure_ascii=False, allow_nan=False)` for values read by `readJson`:
- * a `bigint` is a Python `int` and a `number` is a Python `float`.
+ * ensure_ascii=..., allow_nan=False)` for values read by `readJson`: a
+ * `bigint` is a Python `int` and a `number` is a Python `float`. The
+ * attestation owner writes non-ASCII text as it is; the tier benchmark owner
+ * keeps Python's default and escapes it.
  *
- * @param value - Value read from an attested envelope.
+ * @param value - Value read with exact number tokens.
+ * @param asciiOnly - Escape non-ASCII text as `\uXXXX`, like `ensure_ascii=True`.
  * @returns Compact text with code-point ordered keys and Python float spelling.
  * @throws Error On a lone surrogate, a non-finite float or an unsupported object, where the owner refuses too.
  */
-export function pythonCanonicalText(value: unknown): string {
-  return encode(value, "$", 0);
+export function pythonCanonicalText(value: unknown, asciiOnly = false): string {
+  return encode(value, "$", 0, asciiOnly);
 }
 
 /**

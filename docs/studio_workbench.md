@@ -2236,3 +2236,32 @@ not a signature, provider provenance or scientific validation, and the sealed
 values are an aggregate summary that stays unpromoted pending raw-count review.
 Regenerate or check the data with
 `python tools/studio_attestation_instrument.py --write` or `--check`.
+
+## Benchmark databank
+
+Evidence → Benchmark databank (`#/evidence/benchmarks`, command "Open the
+benchmark databank") shows the canonical Kuramoto tier benchmarks of the CI and
+local environments (`docs/benchmarks/tiers/kuramoto_tiers.ci.json` and
+`kuramoto_tiers.local.json`, schema `scpn-quantum-control.tier-benchmark.v1`):
+35 operations at sizes 8, 32, 128 and 512 on the Rust, Julia and Python tiers.
+
+Before anything is shown, the browser checks both files against the committed
+pin (`data/studio/benchmark_databank_20261115.json`): the SHA-256 of each file,
+and the owner's payload digest, which it recomputes from the content with the
+owner's serialisation (sorted keys, compact separators, Python float spelling
+and ASCII escapes). A file or content that differs is refused as unverifiable.
+The browser also recomputes the fastest backend of every operation and size as
+the measured tier with the lowest median, and refuses data whose recorded
+fastest backend disagrees.
+
+The view lists the provenance of both runs (generation time, commit, CPU,
+platform and toolchain versions), the median latency per call of each tier for
+the chosen operation and the largest cross-tier deviation of the CI results.
+Tiers a run did not measure are named with the reason the artefact records.
+
+Each environment is one host's measurement, medians of a few repeats after
+warm-up; neither artefact allows a production claim, and the databank is not a
+competitive comparison. The CI baseline was measured on Python 3.12 before the
+CI job moved to Python 3.15, and its re-baseline is pending. Regenerate or
+check the pin with `python tools/studio_benchmark_databank.py --write` or
+`--check` after a benchmark artefact changes.
