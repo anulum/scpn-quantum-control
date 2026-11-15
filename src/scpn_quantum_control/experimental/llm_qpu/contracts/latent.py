@@ -77,8 +77,6 @@ class LatentBatch:
         for index, length in enumerate(self.lengths):
             if type(length) is not int or not 0 < length <= steps:
                 raise ValueError("latent length exceeds tensor steps")
-            if self.layout == "contextual" and length != 1:
-                raise ValueError("contextual latent length must be one")
             for step in range(steps):
                 selected = self.token_positions[index][step]
                 answer = self.answer_start_positions[index][step]

@@ -279,6 +279,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   content and a write that makes no progress. They also cover an index whose
   length disagrees with the object and an object that grows while it is read.
 
+- The latent batch contract (`experimental/llm_qpu/contracts/latent.py`) has
+  full line and branch coverage; the union had it at 80.65%. New tests cover
+  the refusals of each split, layout, tensor, row identity, mask, position,
+  tap, header and wire rule. They also cover validation against records that
+  do not bind: data origin, hidden width, tap, and the causal cutoff.
+  - The contextual-length check that the step bound already made unreachable
+    is removed from the contract and from the standalone worker.
+  - A contextual row of length two is still refused by both, with the same
+    reason.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

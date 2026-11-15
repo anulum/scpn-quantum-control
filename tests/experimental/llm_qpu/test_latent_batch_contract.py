@@ -15,6 +15,7 @@ import json
 import struct
 import subprocess
 import sys
+from dataclasses import fields as dataclass_fields
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -40,12 +41,14 @@ _REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 
 def _digest(value: object) -> str:
+    """Return the SHA-256 of a value's canonical wire bytes."""
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
 
 
 def _header(
     kind: str, content: dict[str, object], parents: tuple[str, ...], origin: str
 ) -> ArtifactHeader:
+    """Return a design-only header bound to the given content and parents."""
     return ArtifactHeader(
         object_kind=kind,
         content_digest=_digest(content),
@@ -59,6 +62,7 @@ def _header(
 
 
 def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor]:
+    """Return a frozen synthetic task, its split and a four-wide model descriptor."""
     task_fields: dict[str, Any] = {
         "task_id": "synthetic-prefix-task",
         "objective": "Predict a predeclared label from prefix tokens",
@@ -154,6 +158,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor]:
 def _batch(
     task: TaskSpec, split: SplitManifest, model: ModelDescriptor, *, payload: bytes | None = None
 ) -> tuple[LatentBatch, bytes]:
+    """Return a two-row, three-step sequence batch and its zero-padded payload."""
     if payload is None:
         payload = struct.pack(
             "<24f",
@@ -224,6 +229,7 @@ def _batch(
 
 
 def _worker(request: dict[str, object], tmp_path: Path) -> subprocess.CompletedProcess[bytes]:
+    """Run the standalone protocol worker on one request with poisoned provider tokens."""
     return subprocess.run(
         [sys.executable, "-S", str(_WORKER)],
         input=json.dumps(request).encode(),
@@ -242,6 +248,7 @@ def _request(
     batch: LatentBatch,
     payload: bytes,
 ) -> dict[str, object]:
+    """Return the worker request that round-trips one latent batch."""
     return {
         "op": "roundtrip_latent_batch",
         "task": task.to_wire(),
@@ -361,3 +368,179 @@ def test_latent_batch_refuses_leakage_and_bad_payload(tmp_path: Path) -> None:
     refused = _worker(_request(task, split, model, invalid, invalid_payload), tmp_path)
     assert refused.returncode == 2
     assert "nonfinite" in json.loads(refused.stdout)["reason"]
+
+
+def _wire_value(value: object) -> object:
+    """Return the wire form of one batch field value."""
+    if isinstance(value, ArrayDescriptor):
+        return value.to_wire()
+    if isinstance(value, tuple):
+        return [_wire_value(item) for item in value]
+    return value
+
+
+def _rebind(
+    batch: LatentBatch, *, origin: str = "synthetic_classical", **changes: Any
+) -> LatentBatch:
+    """Return the batch with changed fields and a header bound to the changed content."""
+    fields = {item.name: getattr(batch, item.name) for item in dataclass_fields(batch)}
+    fields.update(changes)
+    content = {name: value for name, value in batch.to_wire().items() if name != "header"} | {
+        name: _wire_value(value) for name, value in changes.items()
+    }
+    tensor: ArrayDescriptor = fields["tensor"]
+    parents = (
+        fields["task_digest"],
+        fields["split_digest"],
+        fields["model_digest"],
+        tensor.sha256,
+    )
+    fields["header"] = _header("latent_batch", content, parents, origin)
+    return LatentBatch(**fields)
+
+
+def _model_variant(model: ModelDescriptor, **changes: Any) -> ModelDescriptor:
+    """Return the model descriptor with changed fields and a header bound to them."""
+    content = {name: value for name, value in model.to_wire().items() if name != "header"}
+    content.update(changes)
+    fields = {item.name: getattr(model, item.name) for item in dataclass_fields(model)}
+    fields.update(changes)
+    fields["header"] = _header(
+        "model_descriptor", content, model.header.parents, "owner_checkpoint"
+    )
+    return ModelDescriptor(**fields)
+
+
+def _wide_tensor() -> ArrayDescriptor:
+    """Return an [N,d] float32 descriptor with the batch's row count."""
+    return ArrayDescriptor("<f4", (2, 4), 32, "0" * 64)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"split_name": "validation"}, "unknown latent split"),
+        ({"layout": "flat"}, "unknown latent layout"),
+        ({"tensor": ArrayDescriptor("<f8", (2, 3, 4), 192, "0" * 64)}, "latent tensor must be"),
+        ({"layout": "contextual"}, "contextual latent tensor must have"),
+        ({"tensor": "descriptor"}, "latent tensor must be little-endian float32"),
+        ({"tensor": _wide_tensor()}, "sequence latent tensor must have"),
+        ({"sample_ids": ("sample-1",)}, "sample_ids must match latent row count"),
+        ({"group_ids": ["group-a", "group-b"]}, "group_ids must match latent row count"),
+        ({"sample_ids": ("same", "same")}, "duplicate latent sample ID"),
+        ({"lengths": (2,)}, "latent lengths must match row count"),
+        ({"mask": ((True, True), (True, False))}, "latent mask must match tensor steps"),
+        ({"token_positions": [(0, 1, None), (0, None, None)]}, "latent token_positions must"),
+        ({"lengths": (4, 1)}, "latent length exceeds tensor steps"),
+        ({"lengths": (0, 1)}, "latent length exceeds tensor steps"),
+        ({"lengths": (True, 1)}, "latent length exceeds tensor steps"),
+        ({"mask": ((True, True, False), (True, False, 0))}, "latent mask and length disagree"),
+        ({"token_positions": ((0, 1, None), (0, 1, None))}, "latent padding carries token"),
+        ({"answer_start_positions": ((2, 2, None), (1, 2, None))}, "latent padding carries"),
+        ({"tap_block_index": 1024}, "invalid latent tap block index"),
+        ({"tap_block_index": -1}, "invalid latent tap block index"),
+        ({"tap_boundary": "inside_norm"}, "latent tap boundary missing"),
+    ],
+)
+def test_latent_batch_refuses_malformed_rows_and_taps(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A batch refuses bad splits, layouts, tensors, row identities, masks, positions and taps."""
+    task, split, model = _records()
+    batch, _ = _batch(task, split, model)
+    with pytest.raises(ValueError, match=f"^{message}"):
+        replace(batch, **changes)
+
+
+def test_contextual_latent_lengths_are_bounded_by_one_step_in_both_validators(
+    tmp_path: Path,
+) -> None:
+    """A contextual row of length two is refused by the step bound in Python and in the worker."""
+    task, split, model = _records()
+    batch, _ = _batch(task, split, model)
+    payload = struct.pack("<8f", 1.0, 2.0, 3.0, 4.0, 9.0, 10.0, 11.0, 12.0)
+    tensor = ArrayDescriptor("<f4", (2, 4), len(payload), hashlib.sha256(payload).hexdigest())
+    contextual = _rebind(
+        batch,
+        layout="contextual",
+        lengths=(1, 1),
+        mask=((True,), (True,)),
+        token_positions=((0,), (0,)),
+        answer_start_positions=((2,), (1,)),
+        tensor=tensor,
+    )
+    with pytest.raises(ValueError, match="^latent length exceeds tensor steps$"):
+        replace(contextual, lengths=(2, 1))
+    content = {name: value for name, value in contextual.to_wire().items() if name != "header"}
+    content["lengths"] = [2, 1]
+    parents = (
+        contextual.task_digest,
+        contextual.split_digest,
+        contextual.model_digest,
+        tensor.sha256,
+    )
+    header = _header("latent_batch", content, parents, "synthetic_classical")
+    request = _request(task, split, model, contextual, payload)
+    refused = _worker({**request, "latent": {**content, "header": header.to_wire()}}, tmp_path)
+    assert refused.returncode == 2
+    assert json.loads(refused.stdout)["reason"] == "latent length exceeds tensor steps"
+
+
+def test_latent_batch_wire_refusals_through_the_decoder() -> None:
+    """The decoder refuses an edited latent wire field by field."""
+    task, split, model = _records()
+    batch, _ = _batch(task, split, model)
+    encoded = batch.to_wire()
+    cases: list[tuple[dict[str, object], str]] = [
+        ({**encoded, "extra": 1}, "LatentBatch fields mismatch"),
+        ({**encoded, "object_kind": "compressed_latent_batch"}, "unknown LatentBatch schema"),
+        ({**encoded, "lengths": 2}, "latent rows must be lists on wire"),
+        ({**encoded, "sample_ids": "sample-1"}, "latent rows must be lists on wire"),
+        (
+            {**encoded, "mask": [{"step": True}, [True, False, False]]},
+            "latent steps must be lists",
+        ),
+    ]
+    for value, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}"):
+            decode_contract(canonical_bytes(value))
+
+
+def test_latent_validation_refuses_records_that_do_not_bind() -> None:
+    """Validation needs frozen records, one data origin, the model's width and tap, and the cutoff."""
+    task, split, model = _records()
+    batch, payload = _batch(task, split, model)
+    loose_task: Any = task.to_wire()
+    with pytest.raises(ValueError, match="^latent validation requires frozen contracts$"):
+        validate_latent_batch(loose_task, split, model, batch, payload)
+    owner = _rebind(batch, origin="owner_dataset")
+    with pytest.raises(ValueError, match="^latent data origin mismatch$"):
+        validate_latent_batch(task, split, model, owner, payload)
+    for changes, message in (
+        ({"hidden_width": 8}, "^latent dtype or hidden width mismatch$"),
+        ({"tap_block_index": 1}, "^latent tap differs from model descriptor$"),
+        ({"tap_boundary": "after_norm"}, "^latent tap differs from model descriptor$"),
+    ):
+        variant = _model_variant(model, **changes)
+        bound = _rebind(batch, model_digest=_digest(variant.to_wire()))
+        with pytest.raises(ValueError, match=message):
+            validate_latent_batch(task, split, variant, bound, payload)
+    beyond = _rebind(
+        batch,
+        lengths=(3, 1),
+        mask=((True, True, True), (True, False, False)),
+        token_positions=((0, 1, 3), (0, None, None)),
+        answer_start_positions=((2, 2, 4), (1, None, None)),
+    )
+    with pytest.raises(ValueError, match="^latent token position exceeds causal cutoff$"):
+        validate_latent_batch(task, split, model, beyond, payload)
+
+
+def test_latent_batch_refuses_a_header_of_another_kind() -> None:
+    """A batch accepts only its own latent-batch header, not another record's."""
+    task, split, model = _records()
+    batch, _ = _batch(task, split, model)
+    header_wire: Any = batch.header.to_wire()
+    for header in (task.header, header_wire):
+        with pytest.raises(ValueError, match="^LatentBatch requires its exact artifact header$"):
+            replace(batch, header=header)

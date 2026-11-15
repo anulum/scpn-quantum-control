@@ -520,8 +520,6 @@ def _roundtrip_latent_batch(request: dict[str, object]) -> dict[str, object]:
     for index, length in enumerate(latent["lengths"]):
         if type(length) is not int or not 0 < length <= steps:
             raise ValueError("latent length exceeds tensor steps")
-        if layout == "contextual" and length != 1:
-            raise ValueError("contextual latent length must be one")
         for step in range(steps):
             active = latent["mask"][index][step]
             selected = latent["token_positions"][index][step]
