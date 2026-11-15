@@ -269,7 +269,10 @@ print(agreement.passed, agreement.framework_count)
 ```
 
 This is reviewer-facing agreement evidence for named, caller-supplied
-framework-style gradients. Each agreement record carries a machine-readable
+framework-style gradients. Framework names are lower-cased and must be
+unique: `scpn` is reserved for the parameter-shift reference row, and names
+that collide after lower-casing, such as `JAX` and `jax`, are refused. Each
+agreement record carries a machine-readable
 `source_class`, a per-source `native_framework_autodiff` flag, and the same
 claim-boundary text as the suite result, so downstream reports can distinguish
 deterministic manual references from native framework autodiff-through-simulator

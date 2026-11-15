@@ -9,7 +9,8 @@
 
 from __future__ import annotations
 
-from typing import cast
+from dataclasses import replace
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -188,3 +189,85 @@ def test_qnn_framework_agreement_suite_rejects_unknown_case() -> None:
     """Unknown case names should fail closed instead of creating partial reports."""
     with pytest.raises(ValueError, match="unknown QNN framework agreement case"):
         run_parameter_shift_qnn_framework_agreement_suite(case_names=("missing",))
+
+
+_FEATURES = np.array([[0.0], [np.pi]], dtype=float)
+_LABELS = np.array([0.0, 1.0], dtype=float)
+_PARAMS = np.array([0.45], dtype=float)
+
+
+@pytest.mark.parametrize(
+    ("settings", "message"),
+    [
+        ({"tolerance": float("nan")}, "^tolerance must be finite and non-negative$"),
+        ({"source_class": " "}, "^source_class must be non-empty$"),
+        (
+            {"framework_gradients": {" ": lambda _values: _PARAMS}},
+            "^framework gradient name must be non-empty$",
+        ),
+        (
+            {"framework_gradients": {"py torch": lambda _values: _PARAMS}},
+            "^framework gradient name must not contain whitespace$",
+        ),
+        (
+            {"framework_gradients": {"jax": lambda _values: np.array([np.inf])}},
+            "^framework gradient 'jax' must contain only finite values$",
+        ),
+    ],
+)
+def test_qnn_framework_agreement_refuses_bad_settings_names_and_values(
+    settings: dict[str, Any], message: str
+) -> None:
+    """Tolerance, provenance class, framework names and gradient values are each checked."""
+    arguments: dict[str, Any] = {"framework_gradients": {"jax": lambda _values: _PARAMS}}
+    arguments.update(settings)
+    with pytest.raises(ValueError, match=message):
+        verify_parameter_shift_qnn_framework_agreement(_FEATURES, _LABELS, _PARAMS, **arguments)
+
+
+@pytest.mark.parametrize(
+    "names",
+    [pytest.param(("scpn",), id="reserved"), pytest.param(("JAX", "jax"), id="repeated")],
+)
+def test_qnn_framework_agreement_refuses_the_reference_name_and_repeats(
+    names: tuple[str, ...],
+) -> None:
+    """The reference name and names that collide after lower-casing would duplicate rows.
+
+    Regression: a gradient named ``scpn`` added a second ``scpn`` exact-state row next to
+    the reference, and ``JAX`` with ``jax`` gave two ``jax`` agreements.
+    """
+    expected = parameter_shift_qnn_classifier_gradient(_FEATURES, _LABELS, _PARAMS)
+    gradients = {name: lambda _values: expected.copy() for name in names}
+
+    with pytest.raises(ValueError, match="is reserved or repeated$"):
+        verify_parameter_shift_qnn_framework_agreement(
+            _FEATURES, _LABELS, _PARAMS, framework_gradients=gradients
+        )
+
+
+def test_qnn_framework_agreement_table_lists_each_framework_once_per_route() -> None:
+    """A result assembled with a repeated agreement still lists each blocked route once."""
+    expected = parameter_shift_qnn_classifier_gradient(_FEATURES, _LABELS, _PARAMS)
+    result = verify_parameter_shift_qnn_framework_agreement(
+        _FEATURES, _LABELS, _PARAMS, framework_gradients={"jax": lambda _values: expected}
+    )
+    repeated = replace(result, agreements=result.agreements * 2)
+
+    rows = cast(list[dict[str, object]], repeated.to_dict()["conformance_table"])
+    blocked = [(row["framework"], row["route"]) for row in rows if row["route"] != "exact_state"]
+    assert len(blocked) == len(set(blocked))
+    assert {framework for framework, _route in blocked} == {"scpn", "jax"}
+
+
+def test_qnn_framework_agreement_suite_refuses_gradients_for_unknown_cases_and_names() -> None:
+    """External gradients for an unknown case are refused, and so is an unknown case lookup."""
+    with pytest.raises(ValueError, match="^unknown QNN framework agreement case: missing$"):
+        run_parameter_shift_qnn_framework_agreement_suite(
+            framework_gradients={"missing": {"jax": lambda _values: _PARAMS}}
+        )
+    suite = run_parameter_shift_qnn_framework_agreement_suite(
+        case_names=("phase_separable_single_feature",)
+    )
+    with pytest.raises(KeyError, match="unknown QNN framework agreement case: missing"):
+        suite.case_by_name("missing")

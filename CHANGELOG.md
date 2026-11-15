@@ -497,6 +497,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- **Fixed: QNN framework agreement accepted framework names that duplicate
+  conformance rows.** `verify_parameter_shift_qnn_framework_agreement`
+  lower-cases framework names, so `JAX` and `jax` became two `jax`
+  agreements. A gradient named `scpn` added a second `scpn` exact-state row
+  beside the parameter-shift reference, so a failing caller gradient could sit
+  under the reference's name. Names are now checked once, before any
+  gradient is evaluated: `scpn` is reserved and repeats are refused ("is
+  reserved or repeated"). The guide states the rule.
+  - The same unit tests the module's other refusals: a NaN tolerance, a blank
+    provenance class, blank or spaced names, non-finite gradients, gradients
+    for an unknown suite case and an unknown case lookup. A result assembled
+    with a repeated agreement still lists each blocked route once. Two
+    unreachable branches are removed: a parameter-rank check that the
+    reference gradient already makes, and a skip for cases outside the
+    selection while looping over that selection. Coverage rises from 92.22% to
+    100%.
+
 - The JAX bridge contracts (`phase/jax_bridge_contracts.py`) now test route
   lookups that find the named route among several and refuse unknown names,
   for both the nested-transform and Phase-QNode lowering results. They also

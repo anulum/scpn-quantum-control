@@ -294,6 +294,21 @@ def _as_framework_name(name: str) -> str:
     return normalized
 
 
+def _unique_framework_names(framework_gradients: FrameworkGradientMap) -> tuple[str, ...]:
+    """Normalise every framework name, refusing the reference name and repeats.
+
+    ``scpn`` names the parameter-shift reference row of the conformance table, and two
+    names that normalise alike (``JAX`` and ``jax``) would give two rows for one framework.
+    """
+    names: list[str] = []
+    for raw_name in framework_gradients:
+        name = _as_framework_name(raw_name)
+        if name == "scpn" or name in names:
+            raise ValueError(f"framework gradient name {name!r} is reserved or repeated")
+        names.append(name)
+    return tuple(names)
+
+
 def _as_source_class(source_class: str) -> str:
     normalized = str(source_class).strip().lower()
     if not normalized:
@@ -436,21 +451,22 @@ def verify_parameter_shift_qnn_framework_agreement(
     finite-difference reference, or a test fixture. This function records
     numerical agreement with the repository's bounded phase-QNN
     parameter-shift rule. It does not claim native framework autodiff through
-    simulator kernels.
+    simulator kernels. Framework names are lower-cased and must be unique, and
+    ``scpn`` is reserved for the parameter-shift reference row.
     """
     _require_framework_gradients(framework_gradients)
     checked_tolerance = _as_non_negative_tolerance(tolerance)
     checked_source_class = _as_source_class(source_class)
     parameter_shift_gradient = parameter_shift_qnn_classifier_gradient(features, labels, params)
     loss = parameter_shift_qnn_classifier_loss(features, labels, params)
+    # The parameter-shift gradient above has already refused non-vector parameters.
     params_vector = np.asarray(params, dtype=float).astype(np.float64, copy=True)
-    if params_vector.ndim != 1:
-        raise ValueError("params must be a one-dimensional array")
     width = int(parameter_shift_gradient.size)
 
     agreements: list[ParameterShiftQNNFrameworkGradientAgreement] = []
-    for framework_name, gradient_fn in framework_gradients.items():
-        framework = _as_framework_name(framework_name)
+    for framework, gradient_fn in zip(
+        _unique_framework_names(framework_gradients), framework_gradients.values(), strict=True
+    ):
         framework_gradient = _as_framework_gradient(
             framework,
             gradient_fn(params_vector.copy()),
@@ -494,7 +510,6 @@ def run_parameter_shift_qnn_framework_agreement_suite(
 ) -> ParameterShiftQNNFrameworkAgreementSuiteResult:
     """Run deterministic bounded QNN framework-gradient agreement cases."""
     cases = _selected_cases(case_names)
-    selected_case_names = {case.name for case in cases}
     external_gradients = dict(framework_gradients or {})
     for name in external_gradients:
         if name not in _case_map():
@@ -509,8 +524,6 @@ def run_parameter_shift_qnn_framework_agreement_suite(
             gradients = _default_framework_gradients(case)
             source = MANUAL_REFERENCE_SOURCE_CLASS
             source_class = MANUAL_REFERENCE_SOURCE_CLASS
-        if case.name not in selected_case_names:
-            continue
         results.append(
             verify_parameter_shift_qnn_framework_agreement(
                 case.features,
