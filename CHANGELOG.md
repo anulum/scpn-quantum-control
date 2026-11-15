@@ -497,6 +497,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The provider capability metadata normaliser
+  (`hardware/provider_capability_normalization.py`) now tests a scalar gate
+  declaration through the Azure Quantum adapter: a `basis_gates` count of 7
+  is read as no gate list, so the snapshot takes the de-duplicated
+  `native_gates` names instead. Coverage rises from 98.90% to 100% over the
+  provider capability tests. No production change.
+
 - The bounded QNN conformance suite (`phase/qnn_conformance.py`) now tests
   that external gradients for unknown cases are refused with every unknown
   name listed in sorted order, and that an unknown case lookup raises

@@ -164,6 +164,34 @@ def test_azure_quantum_snapshot_reads_target_metadata_without_submission() -> No
     assert decision.snapshot.metadata["provider_id"] == "quantinuum"
 
 
+def test_azure_snapshot_skips_a_scalar_gate_declaration_for_the_next_candidate() -> None:
+    """A scalar basis_gates value is no gate list, so the adapter reads native_gates."""
+
+    class Capability:
+        """Capability metadata whose first gate field holds a count, not names."""
+
+        num_qubits = 8
+        basis_gates = 7
+        native_gates = [" h ", "cx", "h"]
+
+    class Target:
+        """Azure target metadata without any submission surface."""
+
+        name = "quantinuum.qpu.h2-1"
+        current_availability = "Available"
+        input_formats = ("qasm.v3",)
+        capability = Capability()
+
+    route = resolve_aggregator_provider_route(
+        aggregator="azure_quantum", provider="quantinuum", ir_format="openqasm3"
+    )
+
+    snapshot = snapshot_from_azure_target(route, Target())
+
+    assert snapshot.basis_gates == ("h", "cx")
+    assert snapshot.n_qubits == 8
+
+
 def test_azure_quantum_snapshot_maps_qir_preview_target_to_route_ir() -> None:
     """Azure private-preview QCI targets should expose QIR support when declared."""
 
