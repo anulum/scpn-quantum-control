@@ -120,7 +120,8 @@ submission invention, and import/export on rows that do not allow it. It does
 not submit jobs or initialize provider SDKs.
 
 `materialise_compiler_boundary_probe(*, catalyst_runner_status="runtime_gap")`
-accepts `dependency_gap`, `runtime_gap`, `correctness_gap`, or `success`. It
+accepts `dependency_gap`, `runtime_gap`, `correctness_gap`, or `success`, and
+refuses any other status with `ValueError`. It
 composes the ambient comparison with the LLVM/JIT claim boundary and returns a
 finite local probe. `materialise_demo_compiler_boundary_probe()` fixes the
 status to `runtime_gap` for deterministic examples and tests.

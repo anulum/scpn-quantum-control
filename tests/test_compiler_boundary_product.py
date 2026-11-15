@@ -108,6 +108,9 @@ def test_boundary_probe() -> None:
 
     success = materialise_compiler_boundary_probe(catalyst_runner_status="success")
     assert success.catalyst_runner_status == "success"
+    unknown: Any = "bogus"
+    with pytest.raises(ValueError, match="^runner_status must be a known Catalyst runner status$"):
+        materialise_compiler_boundary_probe(catalyst_runner_status=unknown)
 
 
 def test_public_surfaces_and_registry() -> None:

@@ -135,9 +135,11 @@ def catalyst_compiler_workflow_comparison(
     runner_status: CatalystRunnerStatus,
 ) -> CatalystCompilerWorkflowComparison:
     """Build the standard Catalyst compiler-workflow comparison profile."""
+    # An unknown status gets no workflow text; the record then refuses the status
+    # itself with its ValueError instead of this lookup raising KeyError.
     return CatalystCompilerWorkflowComparison(
         runner_status=runner_status,
-        compiled_quantum_classical_workflows=_COMPILED_WORKFLOW_BY_STATUS[runner_status],
+        compiled_quantum_classical_workflows=_COMPILED_WORKFLOW_BY_STATUS.get(runner_status, ""),
         compiled_differentiation=_COMPILED_DIFFERENTIATION_SCOPE,
         control_flow=_CONTROL_FLOW_SCOPE,
         finite_shot_limitations=_FINITE_SHOT_SCOPE,

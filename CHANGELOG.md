@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- **Fixed: an unknown Catalyst runner status raised `KeyError`.**
+  `catalyst_compiler_workflow_comparison` looked the status up in its
+  workflow-text table before the comparison record could validate it, so an
+  unknown status (also through `materialise_compiler_boundary_probe`) raised
+  `KeyError: 'unknown'` instead of the record's `ValueError` ("runner_status
+  must be a known Catalyst runner status"). The lookup now leaves the refusal
+  to the record. The compiler-boundary guide states the rule.
+  - The same unit tests each blank scope text of the comparison record and an
+    unpromoted record without unsupported provider routes, beside all four
+    known statuses. Coverage of
+    `benchmarks/differentiable_catalyst_comparison.py` rises from 88.68% to
+    100%.
+
 - The MLIR compiler records (`compiler/mlir_records.py`) now test four
   refusals with exact messages: `MLIRModule` given a list of pairs for
   `resource_counts` or `metadata` (which `dict()` would otherwise accept),

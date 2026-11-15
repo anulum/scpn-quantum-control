@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import math
 from pathlib import Path
 from typing import Any, cast
@@ -19,6 +20,7 @@ import scpn_quantum_control.benchmarks.differentiable_external_comparison as com
 from scpn_quantum_control.benchmarks.differentiable_catalyst_comparison import (
     CATALYST_UNSUPPORTED_PROVIDER_ROUTES,
     CatalystCompilerWorkflowComparison,
+    CatalystRunnerStatus,
     catalyst_compiler_workflow_comparison,
 )
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
@@ -111,6 +113,39 @@ def test_catalyst_workflow_profile_rejects_incomplete_provider_boundaries() -> N
 
     assert promoted.to_dict()["unsupported_provider_routes"] == []
     assert promoted.to_dict()["promotion_ready"] is True
+
+
+def test_catalyst_workflow_profile_refuses_unknown_status_blank_scope_and_no_routes() -> None:
+    """An unknown status, a blank scope text and an unpromoted row without routes fail closed."""
+    unknown: Any = "unknown"
+    with pytest.raises(ValueError, match="^runner_status must be a known Catalyst runner status$"):
+        catalyst_compiler_workflow_comparison(runner_status=unknown)
+    base = catalyst_compiler_workflow_comparison(runner_status="runtime_gap")
+    for field_name in (
+        "compiled_quantum_classical_workflows",
+        "compiled_differentiation",
+        "control_flow",
+        "finite_shot_limitations",
+        "provider_route_support",
+        "claim_boundary",
+    ):
+        blank: dict[str, Any] = {field_name: " \t"}
+        with pytest.raises(ValueError, match=f"^{field_name} must be non-empty$"):
+            dataclasses.replace(base, **blank)
+    with pytest.raises(
+        ValueError, match="^unsupported_provider_routes must be non-empty unless promotion_ready$"
+    ):
+        dataclasses.replace(base, unsupported_provider_routes=())
+    statuses: tuple[CatalystRunnerStatus, ...] = (
+        "dependency_gap",
+        "runtime_gap",
+        "correctness_gap",
+        "success",
+    )
+    for status in statuses:
+        profile = catalyst_compiler_workflow_comparison(runner_status=status)
+        assert profile.runner_status == status
+        assert profile.compiled_quantum_classical_workflows.strip()
 
 
 def test_catalyst_external_rows_require_dedicated_workflow_profile() -> None:
