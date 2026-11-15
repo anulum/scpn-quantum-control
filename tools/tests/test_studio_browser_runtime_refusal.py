@@ -13,6 +13,7 @@ import json
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
+from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
@@ -23,6 +24,162 @@ from playwright.sync_api import Error, Page
 
 from tools.studio_browser_journey import loopback_url, run_catalogue_journey, run_evidence_journey
 from tools.studio_workspace_browser_journey import run_workspace_journey
+
+_CONTENT_TYPES = {
+    ".html": "text/html",
+    ".js": "application/javascript",
+    ".wasm": "application/wasm",
+    ".css": "text/css",
+}
+_TERMINATION_DELAY = """<script>
+const parent = Object.getPrototypeOf(Worker.prototype);
+const nativePrototype = typeof parent.terminate === 'function' ? parent : Worker.prototype;
+const terminate = nativePrototype.terminate;
+nativePrototype.terminate = function() {{
+  const worker = this;
+  const delay = {delay};
+  if (delay !== null) setTimeout(() => terminate.call(worker), delay);
+}};
+</script>"""
+
+
+@dataclass
+class _Faults:
+    """Declared transport faults of one owned host and its request counters."""
+
+    preview: Path
+    source: str | None
+    failing_import: int
+    page_error: bool
+    external_request: bool
+    corrupt_kernel: bool
+    worker_termination_delay_ms: int | None
+    imports: int = 0
+    kernels: int = 0
+
+    def built(self, request_path: str) -> tuple[bytes, str] | None:
+        """Read a built artifact, truncating the third program-AD kernel when declared.
+
+        Parameters
+        ----------
+        request_path
+            Requested path, possibly with a query.
+
+        Returns
+        -------
+        tuple[bytes, str] | None
+            Content and type, or None when the path is outside the preview or missing.
+
+        """
+        relative = request_path.split("?", 1)[0].lstrip("/") or "index.html"
+        path = (self.preview / relative).resolve()
+        if not path.is_relative_to(self.preview.resolve()) or not path.is_file():
+            return None
+        content = path.read_bytes()
+        content_type = _CONTENT_TYPES.get(Path(relative).suffix, "application/octet-stream")
+        name = Path(relative).name
+        if name.startswith("scpn_quantum_studio_program_ad_wasm") and relative.endswith(".wasm"):
+            self.kernels += 1
+            if self.corrupt_kernel and self.kernels == 3:
+                content = b"owned transport returned a truncated real kernel"
+        return content, content_type
+
+    def page_faults(self, content: bytes) -> bytes:
+        """Append the declared termination delay, page error and outside request to HTML.
+
+        Parameters
+        ----------
+        content
+            Original HTML bytes.
+
+        Returns
+        -------
+        bytes
+            HTML with the declared fault scripts appended.
+
+        """
+        if self.worker_termination_delay_ms != 0:
+            delay = json.dumps(self.worker_termination_delay_ms)
+            content += _TERMINATION_DELAY.format(delay=delay).encode()
+        if self.page_error:
+            content += (
+                b'<script>setTimeout(()=>{throw new Error("owned page failure")},0);</script>'
+            )
+        if self.external_request:
+            content += b'<script>fetch("http://127.0.0.2:54321/owned-refused-request").catch(()=>{});</script>'
+        return content
+
+
+class _FaultHandler(BaseHTTPRequestHandler):
+    """Serve original artifacts without modifying repository files."""
+
+    faults: _Faults
+
+    def do_GET(self) -> None:
+        """Return built bytes, source bytes or the declared HTTP fault."""
+        faults = self.faults
+        if faults.source is not None:
+            if self.path.startswith("/browser-tests/workspaceStore.native.ts"):
+                faults.imports += 1
+                if faults.imports == faults.failing_import:
+                    self.send_error(503, "Owned native import transport failure")
+                    return
+            with urlopen(faults.source.rstrip("/") + self.path, timeout=10) as response:
+                content = response.read()
+                content_type = response.headers.get("Content-Type", "application/octet-stream")
+        else:
+            served = faults.built(self.path)
+            if served is None:
+                self.send_error(404)
+                return
+            content, content_type = served
+        if content_type.startswith("text/html"):
+            content = faults.page_faults(content)
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(content)
+
+    def log_message(self, format: str, *args: object) -> None:
+        """Keep request logging out of test output.
+
+        Parameters
+        ----------
+        format
+            Original HTTP request log format.
+        args
+            Original request log arguments.
+
+        """
+
+
+@contextmanager
+def _serve(handler: type[BaseHTTPRequestHandler]) -> Iterator[str]:
+    """Serve a handler on a free loopback port in a daemon thread for one scope.
+
+    Parameters
+    ----------
+    handler
+        Request handler class.
+
+    Yields
+    ------
+    str
+        Bound loopback origin whose server and thread close at scope exit.
+
+    """
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}/"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=10)
+        assert not thread.is_alive()
 
 
 @contextmanager
@@ -62,94 +219,17 @@ def owned_fault_host(
         Bound loopback origin whose server and thread close at scope exit.
 
     """
-    imports = 0
-    kernels = 0
-
-    class Handler(BaseHTTPRequestHandler):
-        """Serve original artifacts without modifying repository files."""
-
-        def do_GET(self) -> None:
-            """Return built bytes, source bytes or the declared HTTP fault."""
-            nonlocal imports, kernels
-            if source is not None:
-                if self.path.startswith("/browser-tests/workspaceStore.native.ts"):
-                    imports += 1
-                    if imports == failing_import:
-                        self.send_error(503, "Owned native import transport failure")
-                        return
-                with urlopen(source.rstrip("/") + self.path, timeout=10) as response:
-                    content = response.read()
-                    content_type = response.headers.get("Content-Type", "application/octet-stream")
-            else:
-                relative = self.path.split("?", 1)[0].lstrip("/") or "index.html"
-                path = (preview / relative).resolve()
-                if not path.is_relative_to(preview.resolve()) or not path.is_file():
-                    self.send_error(404)
-                    return
-                content = path.read_bytes()
-                content_type = (
-                    "text/html"
-                    if relative.endswith(".html")
-                    else "application/javascript"
-                    if relative.endswith(".js")
-                    else "application/wasm"
-                    if relative.endswith(".wasm")
-                    else "text/css"
-                    if relative.endswith(".css")
-                    else "application/octet-stream"
-                )
-                if Path(relative).name.startswith(
-                    "scpn_quantum_studio_program_ad_wasm"
-                ) and relative.endswith(".wasm"):
-                    kernels += 1
-                    if corrupt_kernel and kernels == 3:
-                        content = b"owned transport returned a truncated real kernel"
-            if content_type.startswith("text/html"):
-                if worker_termination_delay_ms != 0:
-                    delay = json.dumps(worker_termination_delay_ms)
-                    content += f"""<script>
-const parent = Object.getPrototypeOf(Worker.prototype);
-const nativePrototype = typeof parent.terminate === 'function' ? parent : Worker.prototype;
-const terminate = nativePrototype.terminate;
-nativePrototype.terminate = function() {{
-  const worker = this;
-  const delay = {delay};
-  if (delay !== null) setTimeout(() => terminate.call(worker), delay);
-}};
-</script>""".encode()
-                if page_error:
-                    content += b'<script>setTimeout(()=>{throw new Error("owned page failure")},0);</script>'
-                if external_request:
-                    content += b'<script>fetch("http://127.0.0.2:54321/owned-refused-request").catch(()=>{});</script>'
-            self.send_response(200)
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(content)))
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            self.wfile.write(content)
-
-        def log_message(self, format: str, *args: object) -> None:
-            """Keep request logging out of test output.
-
-            Parameters
-            ----------
-            format
-                Original HTTP request log format.
-            args
-                Original request log arguments.
-
-            """
-
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    thread = Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        yield f"http://127.0.0.1:{server.server_port}/"
-    finally:
-        server.shutdown()
-        server.server_close()
-        thread.join(timeout=10)
-        assert not thread.is_alive()
+    faults = _Faults(
+        preview,
+        source,
+        failing_import,
+        page_error,
+        external_request,
+        corrupt_kernel,
+        worker_termination_delay_ms,
+    )
+    with _serve(type("Handler", (_FaultHandler,), {"faults": faults})) as origin:
+        yield origin
 
 
 @pytest.fixture

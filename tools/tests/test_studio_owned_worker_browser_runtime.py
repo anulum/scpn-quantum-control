@@ -92,31 +92,7 @@ def test_owned_resource_journey_refuses_observed_host_faults(fault: str) -> None
         run_resource_journey(origin)
 
 
-@contextmanager
-def refused_termination_host(preview: Path) -> Iterator[str]:
-    """Serve original artifacts with a genuine host disposal failure.
-
-    Parameters
-    ----------
-    preview
-        Original built directory, read without changing any saved bytes.
-
-    Yields
-    ------
-    str
-        Owned origin; the HTTP server and thread close after the browser fails.
-
-    """
-
-    class Handler(SimpleHTTPRequestHandler):
-        """Retain the real UI and worker while refusing native host termination."""
-
-        def do_GET(self) -> None:
-            """Inject a host exception only after a real worker result exists."""
-            if self.path == "/":
-                content = (
-                    (preview / "index.html").read_bytes()
-                    + b"""<script>
+_REFUSE_TERMINATION = b"""<script>
                   const dispose = Worker.prototype.terminate;
                   const send = Worker.prototype.postMessage;
                   Worker.prototype.postMessage = function(message, transfers) {
@@ -136,28 +112,55 @@ def refused_termination_host(preview: Path) -> Iterator[str]:
                     return dispose.call(this);
                   };
                 </script>"""
-                )
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html")
-                self.send_header("Content-Length", str(len(content)))
-                self.end_headers()
-                self.wfile.write(content)
-            else:
-                super().do_GET()
 
-        def log_message(self, format: str, *args: object) -> None:
-            """Keep original request logs out of the regression receipt.
 
-            Parameters
-            ----------
-            format
-                Native request format.
-            args
-                Native request arguments.
+class _RefusingHandler(SimpleHTTPRequestHandler):
+    """Retain the real UI and worker while refusing native host termination."""
 
-            """
+    preview: Path
 
-    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Handler, directory=str(preview)))
+    def do_GET(self) -> None:
+        """Inject a host exception only after a real worker result exists."""
+        if self.path == "/":
+            content = (self.preview / "index.html").read_bytes() + _REFUSE_TERMINATION
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+        else:
+            super().do_GET()
+
+    def log_message(self, format: str, *args: object) -> None:
+        """Keep original request logs out of the regression receipt.
+
+        Parameters
+        ----------
+        format
+            Native request format.
+        args
+            Native request arguments.
+
+        """
+
+
+@contextmanager
+def refused_termination_host(preview: Path) -> Iterator[str]:
+    """Serve original artifacts with a genuine host disposal failure.
+
+    Parameters
+    ----------
+    preview
+        Original built directory, read without changing any saved bytes.
+
+    Yields
+    ------
+    str
+        Owned origin; the HTTP server and thread close after the browser fails.
+
+    """
+    handler = type("Handler", (_RefusingHandler,), {"preview": preview})
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(handler, directory=str(preview)))
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:

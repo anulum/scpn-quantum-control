@@ -48,6 +48,60 @@ def test_actual_workflow_graph_grid_restart_parent_failure_and_cancellation() ->
     }
 
 
+_ORIGINAL_NEGATIVE = (
+    b'<script>fetch("http://127.0.0.2:54321/owned-refused-request").catch(()=>{});</script>'
+)
+_CANCELLATION_REQUESTS = b"""<script>
+document.addEventListener('click', event => {
+  if (event.target instanceof HTMLButtonElement &&
+      event.target.textContent === 'Run or resume workflow' &&
+      document.querySelector('[aria-label="Workflow JSON"]')?.value.includes('cancel-original-workflow')) {
+    fetch('http://127.0.0.2:54321/kernelWorker-refused-request').catch(()=>{});
+    fetch('/favicon.svg?kernelWorker-owned-asset').catch(()=>{});
+  }
+});
+</script>"""
+
+
+class _ForwardingHandler(BaseHTTPRequestHandler):
+    """Forward the original fault fixture over this owned authority."""
+
+    upstream: str
+    continued_assets: list[bytes]
+
+    def do_GET(self) -> None:
+        """Return real upstream bytes with the negative request at its UI boundary."""
+        with urlopen(self.upstream.rstrip("/") + self.path, timeout=10) as response:
+            content = response.read()
+            content_type = response.headers.get("Content-Type", "application/octet-stream")
+        if self.path == "/favicon.svg?kernelWorker-owned-asset":
+            self.continued_assets.append(content)
+        if content_type.startswith("text/html"):
+            if _ORIGINAL_NEGATIVE not in content:
+                raise RuntimeError("Original negative request fixture missing")
+            content = content.replace(
+                _ORIGINAL_NEGATIVE, _ORIGINAL_NEGATIVE + _CANCELLATION_REQUESTS
+            )
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(content)
+
+    def log_message(self, format: str, *args: object) -> None:
+        """Keep request logs out of runtime evidence.
+
+        Parameters
+        ----------
+        format : str
+            Native HTTP request log format.
+        args : object
+            Native HTTP log arguments.
+
+        """
+
+
 @contextmanager
 def workflow_source_fault_host(preview: Path, source: str) -> Iterator[str]:
     """Forward actual source bytes and emit original page and foreign-request faults.
@@ -69,52 +123,12 @@ def workflow_source_fault_host(preview: Path, source: str) -> Iterator[str]:
         preview, source=source, page_error=True, external_request=True
     ) as upstream:
         continued_assets: list[bytes] = []
-
-        class Handler(BaseHTTPRequestHandler):
-            """Forward the original fault fixture over this owned authority."""
-
-            def do_GET(self) -> None:
-                """Return real upstream bytes with the negative request at its UI boundary."""
-                with urlopen(upstream.rstrip("/") + self.path, timeout=10) as response:
-                    content = response.read()
-                    content_type = response.headers.get("Content-Type", "application/octet-stream")
-                if self.path == "/favicon.svg?kernelWorker-owned-asset":
-                    continued_assets.append(content)
-                if content_type.startswith("text/html"):
-                    original = b'<script>fetch("http://127.0.0.2:54321/owned-refused-request").catch(()=>{});</script>'
-                    replacement = b"""<script>
-document.addEventListener('click', event => {
-  if (event.target instanceof HTMLButtonElement &&
-      event.target.textContent === 'Run or resume workflow' &&
-      document.querySelector('[aria-label="Workflow JSON"]')?.value.includes('cancel-original-workflow')) {
-    fetch('http://127.0.0.2:54321/kernelWorker-refused-request').catch(()=>{});
-    fetch('/favicon.svg?kernelWorker-owned-asset').catch(()=>{});
-  }
-});
-</script>"""
-                    if original not in content:
-                        raise RuntimeError("Original negative request fixture missing")
-                    content = content.replace(original, original + replacement)
-                self.send_response(200)
-                self.send_header("Content-Type", content_type)
-                self.send_header("Content-Length", str(len(content)))
-                self.send_header("Cache-Control", "no-store")
-                self.end_headers()
-                self.wfile.write(content)
-
-            def log_message(self, format: str, *args: object) -> None:
-                """Keep request logs out of runtime evidence.
-
-                Parameters
-                ----------
-                format : str
-                    Native HTTP request log format.
-                args : object
-                    Native HTTP log arguments.
-
-                """
-
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        handler = type(
+            "Handler",
+            (_ForwardingHandler,),
+            {"upstream": upstream, "continued_assets": continued_assets},
+        )
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
         thread = Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
@@ -180,6 +194,64 @@ def test_actual_workflow_missing_source_retains_completed_production_cases(tmp_p
     assert "diagnostic_capture_error" in evidence
 
 
+def _declared_workflow_owners() -> set[str]:
+    """Read the declared workflow browser cohort.
+
+    Returns
+    -------
+    set[str]
+        Served paths of every declared workflow owner.
+
+    """
+    metadata = subprocess.run(
+        [
+            "node",
+            "--experimental-strip-types",
+            "--input-type=module",
+            "-e",
+            'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
+            "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
+        ],
+        cwd=Path(__file__).resolve().parents[2] / "studio-web",
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+        env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
+    )
+    cohorts = json.loads(metadata.stdout)
+    assert isinstance(cohorts, dict) and isinstance(cohorts.get("workflows"), list)
+    expected: set[str] = set()
+    for owner in cohorts["workflows"]:
+        assert isinstance(owner, str) and owner.startswith("/src/")
+        expected.add(owner)
+    return expected
+
+
+def _captured_owner_counts(counters: object) -> Counter[str]:
+    """Count the captured native records of each served script path.
+
+    Parameters
+    ----------
+    counters : object
+        Native coverage records from the evidence.
+
+    Returns
+    -------
+    Counter[str]
+        Records per served path.
+
+    """
+    assert isinstance(counters, list)
+    captured: Counter[str] = Counter()
+    for record in counters:
+        assert isinstance(record, dict) and isinstance(record.get("coverage"), dict)
+        target = record["coverage"].get("url")
+        assert isinstance(target, str)
+        captured[urlsplit(target).path] += 1
+    return captured
+
+
 def test_actual_workflow_source_faults_keep_real_counters_and_original_history() -> None:
     """Reject real page errors and foreign worker-style transport without discarding native counters."""
     configured = os.environ.get("STUDIO_PREVIEW_DIR")
@@ -202,38 +274,8 @@ def test_actual_workflow_source_faults_keep_real_counters_and_original_history()
         "http://127.0.0.2:54321/owned-refused-request",
         "http://127.0.0.2:54321/kernelWorker-refused-request",
     ]
-    web = Path(__file__).resolve().parents[2] / "studio-web"
-    metadata = subprocess.run(
-        [
-            "node",
-            "--experimental-strip-types",
-            "--input-type=module",
-            "-e",
-            'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
-            "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
-        ],
-        cwd=web,
-        capture_output=True,
-        text=True,
-        check=True,
-        timeout=30,
-        env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
-    )
-    cohorts = json.loads(metadata.stdout)
-    assert isinstance(cohorts, dict) and isinstance(cohorts.get("workflows"), list)
-    expected: set[str] = set()
-    for owner in cohorts["workflows"]:
-        assert isinstance(owner, str) and owner.startswith("/src/")
-        expected.add(owner)
-    counters = evidence["native_v8_coverage"]
-    assert isinstance(counters, list)
-    captured: Counter[str] = Counter()
-    for record in counters:
-        assert isinstance(record, dict) and isinstance(record.get("coverage"), dict)
-        target = record["coverage"].get("url")
-        assert isinstance(target, str)
-        captured[urlsplit(target).path] += 1
-    assert set(captured) == expected
+    captured = _captured_owner_counts(evidence["native_v8_coverage"])
+    assert set(captured) == _declared_workflow_owners()
     assert all(count >= 2 for count in captured.values())
     assert "native_coverage_error" not in evidence
     assert "diagnostic_capture_error" not in evidence
