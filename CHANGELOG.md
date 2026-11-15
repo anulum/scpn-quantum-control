@@ -400,6 +400,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     copies. Its unreachable "neither write nor copy" refusal is gone, and
     768 generated records (three seeds) are byte-identical before and after.
 
+- The compiler alias-activity evidence (`compiler/alias_activity_evidence.py`)
+  now tests every refusal of its cases and evidence bundle: completeness,
+  kind, blocker and count metadata, and identity drift and readiness. It also
+  covers case and test-node order and uniqueness, missing case families, and
+  the claim boundary. Coverage rises from 87.26% to 97.93%.
+  - Three lines stay uncovered by design: the two branches the
+    non-executed-branch cases exist not to execute, and a narrowing check for
+    an IR that the builder always receives.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

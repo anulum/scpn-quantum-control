@@ -11,8 +11,9 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import pytest
 
@@ -98,7 +99,7 @@ def test_compiler_alias_activity_case_rejects_inconsistent_status() -> None:
 
 def test_compiler_alias_activity_case_rejects_runtime_type_drift() -> None:
     """Case validation must fail closed on dynamic evidence type drift."""
-    valid_fields: dict[str, object] = {
+    valid_fields: dict[str, Any] = {
         "case_id": "complete_view_alias",
         "status": "complete_lattice",
         "complete": True,
@@ -118,7 +119,7 @@ def test_compiler_alias_activity_case_rejects_runtime_type_drift() -> None:
         fields = dict(valid_fields)
         fields.update(overrides)
         with pytest.raises(ValueError, match=match):
-            CompilerAliasActivityCase(**fields)  # type: ignore[arg-type]  # runtime drift
+            CompilerAliasActivityCase(**fields)
 
 
 def test_compiler_alias_activity_evidence_rejects_missing_case_families() -> None:
@@ -152,14 +153,14 @@ def test_compiler_alias_activity_evidence_rejects_public_container_drift() -> No
     )
 
     for overrides, match in invalid_cases:
-        fields: dict[str, object] = {
+        fields: dict[str, Any] = {
             "source_commit": "test-commit",
             "cases": evidence.cases,
             "test_ids": evidence.test_ids,
         }
         fields.update(overrides)
         with pytest.raises(ValueError, match=match):
-            CompilerAliasActivityEvidence(**fields)  # type: ignore[arg-type]  # runtime drift
+            CompilerAliasActivityEvidence(**fields)
 
 
 def test_committed_compiler_alias_activity_evidence_matches_builder() -> None:
@@ -171,3 +172,71 @@ def test_committed_compiler_alias_activity_evidence_matches_builder() -> None:
     )
 
     assert committed == build_compiler_alias_activity_evidence(source_commit="534010da").as_dict()
+
+
+def _complete_case() -> CompilerAliasActivityCase:
+    """Return a minimal complete lattice case."""
+    return CompilerAliasActivityCase(
+        case_id="complete_view_alias",
+        status="complete_lattice",
+        complete=True,
+        alias_edge_kinds=("view_alias",),
+        blocker_reasons=(),
+        component_count=1,
+        provenance_counts={"view_alias": 1},
+    )
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"complete": "yes"}, "complete must be boolean"),
+        ({"complete": False}, "status must match completeness"),
+        ({"alias_edge_kinds": ["view_alias"]}, "alias_edge_kinds must be a tuple"),
+        ({"alias_edge_kinds": ("",)}, "alias_edge_kinds must be non-empty"),
+        ({"alias_edge_kinds": ("view_alias", "list_alias")}, "must be sorted unique"),
+        ({"blocker_reasons": ["reason"]}, "blocker_reasons must be a tuple"),
+        ({"blocker_reasons": ("",)}, "blocker_reasons must be non-empty"),
+        ({"blocker_reasons": ("b", "a")}, "blocker_reasons must be sorted unique"),
+        ({"blocker_reasons": ("reason",)}, "complete compiler alias-activity cases cannot carry"),
+        ({"provenance_counts": {}}, "provenance_counts must be non-empty"),
+    ],
+)
+def test_alias_activity_case_refuses_inconsistent_metadata(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A case refuses non-boolean or mismatched completeness and malformed kinds, blockers and counts."""
+    with pytest.raises(ValueError, match=message):
+        replace(_complete_case(), **changes)
+
+
+def test_alias_activity_blocked_case_needs_blockers() -> None:
+    """A blocked lattice case must name at least one blocker."""
+    with pytest.raises(ValueError, match="blocked compiler alias-activity cases must carry"):
+        replace(_complete_case(), status="blocked_lattice", complete=False)
+
+
+def test_alias_activity_evidence_refuses_drift_order_and_boundary_gaps() -> None:
+    """Evidence refuses drifted identity, readiness, unordered or repeated cases and test nodes."""
+    evidence = build_compiler_alias_activity_evidence(source_commit="test-commit")
+    blocked = tuple(case for case in evidence.cases if not case.complete)
+    first_complete = next(case for case in evidence.cases if case.complete)
+    sparse = tuple(sorted((first_complete, blocked[0]), key=lambda case: case.case_id))
+    loose_case: Any = "case"
+    cases: list[tuple[dict[str, Any], str]] = [
+        ({"artifact_id": "other"}, "artifact_id drifted"),
+        ({"schema": "other"}, "schema drifted"),
+        ({"classification": "isolated"}, "classification drifted"),
+        ({"promotion_ready": True}, "cannot be promotion-ready"),
+        ({"cases": (evidence.cases[0], loose_case)}, "must contain CompilerAliasActivityCase"),
+        ({"cases": tuple(reversed(evidence.cases))}, "cases must be sorted by case_id"),
+        ({"cases": (evidence.cases[0], evidence.cases[0])}, "case_ids must be unique"),
+        ({"cases": blocked}, "requires a complete lattice case"),
+        ({"cases": sparse}, "missing alias kinds"),
+        ({"test_ids": ("tests/test_program_ad.py",)}, "test_ids must name pytest nodes"),
+        ({"test_ids": tuple(reversed(evidence.test_ids))}, "test_ids must be sorted unique"),
+        ({"claim_boundary": "bounded"}, "claim boundary is incomplete"),
+    ]
+    for changes, message in cases:
+        with pytest.raises(ValueError, match=message):
+            replace(evidence, **changes)
