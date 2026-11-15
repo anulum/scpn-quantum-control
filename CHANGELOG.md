@@ -382,6 +382,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     its paired histories, and a task other than the transfer task.
   - Every helper and test in both test files now has a docstring.
 
+- The memory split builder (`experimental/llm_qpu/data/splits.py`) has full
+  line and branch coverage; the union had it at 84.44%. New tests cover the
+  refusals of a non-synthetic or unfrozen task, bad seeds and counts, and
+  counts that do not cover the groups. They also cover pilots over a
+  non-synthetic split, a count outside the dev groups, and a dev group
+  without its primary prompt.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

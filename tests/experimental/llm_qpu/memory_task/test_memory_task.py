@@ -9,10 +9,13 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import replace
+from typing import Any
 
 import pytest
 
+from scpn_quantum_control.experimental.llm_qpu.contracts import SplitManifest, canonical_bytes
 from scpn_quantum_control.experimental.llm_qpu.data.dedup import validate_source_families
 from scpn_quantum_control.experimental.llm_qpu.data.splits import (
     build_memory_split,
@@ -119,3 +122,76 @@ def test_t04e_wrong_classical_label_fails_generator_binding() -> None:
             base_repo_commit=_BASE,
             implementation_revision=_REVISION,
         )
+
+
+def _memory_split(records: Any, **changes: Any) -> SplitManifest:
+    """Build the six-group memory split of the records, with changed arguments."""
+    arguments: dict[str, Any] = {
+        "task": build_memory_task(base_repo_commit=_BASE, implementation_revision=_REVISION),
+        "seed": 31,
+        "generation_seed": 73,
+        "train_count": 2,
+        "dev_count": 2,
+        "test_count": 2,
+        "base_repo_commit": _BASE,
+        "implementation_revision": _REVISION,
+    }
+    arguments.update(changes)
+    task = arguments.pop("task")
+    return build_memory_split(task, records, **arguments)
+
+
+def test_memory_split_refuses_unsynthetic_tasks_bad_seeds_and_counts() -> None:
+    """The builder needs a synthetic generator task, a bounded seed and counts covering every group."""
+    records = generate_memory_records(seed=73, source_count=6)
+    task = build_memory_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
+    content = {name: value for name, value in task.to_wire().items() if name != "header"} | {
+        "source_kind": "owner_dataset"
+    }
+    owner = replace(
+        task,
+        source_kind="owner_dataset",
+        header=replace(
+            task.header,
+            data_origin="owner_dataset",
+            content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest(),
+        ),
+    )
+    loose: Any = task.to_wire()
+    flag: Any = True
+    for changes, message in (
+        ({"task": owner}, "memory split requires a synthetic TaskSpec"),
+        ({"task": loose}, "memory split requires a synthetic TaskSpec"),
+        ({"seed": -1}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"seed": flag}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"dev_count": 0}, "every split needs a positive source count"),
+        ({"test_count": flag}, "every split needs a positive source count"),
+        ({"train_count": 3}, "split counts must cover every source group exactly"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            _memory_split(records, **changes)
+
+
+def test_memory_pilot_refuses_unsynthetic_splits_counts_and_missing_prompts() -> None:
+    """The pilot needs a synthetic split, a count within the dev groups and their primary prompts."""
+    records = generate_memory_records(seed=73, source_count=6)
+    split = _memory_split(records)
+    loose: Any = split.to_wire()
+    owner = replace(split, header=replace(split.header, data_origin="owner_dataset"))
+    for candidate in (loose, owner):
+        with pytest.raises(ValueError, match="^pilot requires a synthetic group split$"):
+            pilot_inputs(records, candidate, count=2)
+    flag: Any = True
+    for count in (0, 3, flag):
+        with pytest.raises(ValueError, match="^pilot count exceeds dev groups$"):
+            pilot_inputs(records, split, count=count)
+    foreign_dev = tuple(sorted(("aaa-foreign-group", *split.dev_groups[1:])))
+    content = {name: value for name, value in split.to_wire().items() if name != "header"} | {
+        "dev_groups": list(foreign_dev)
+    }
+    header = replace(
+        split.header, content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest()
+    )
+    foreign = replace(split, dev_groups=foreign_dev, header=header)
+    with pytest.raises(ValueError, match="^pilot source group is missing its primary prompt$"):
+        pilot_inputs(records, foreign, count=2)
