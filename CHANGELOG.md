@@ -308,6 +308,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     index: a non-manifest record, a missing shard row, or a relabelled
     shard.
 
+- The IQM job-recovery test works again with the pinned IQM SDK. It has been
+  skipped everywhere it ran, because no Python 3.15 environment installs the
+  SDK. With the locked SDK (iqm-client 35.0.3, Python 3.13) its fixture failed:
+  the run request now has two deprecated computed fields that the job
+  parameters do not accept.
+  - The fixture leaves out the computed fields, as the SDK's own
+    `CircuitJob.payload()` does.
+  - New tests cover the refusal of non-IQM parameter records and of
+    unknown or bool job ordinals, both before any provider lookup.
+  - With the locked SDK the recovery helper has full line and branch
+    coverage.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

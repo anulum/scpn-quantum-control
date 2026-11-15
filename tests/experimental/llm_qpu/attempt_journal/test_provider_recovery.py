@@ -36,10 +36,12 @@ class _ExistingJob:
     """Read-only job payload surface for an offline paid-provider boundary."""
 
     def __init__(self, circuits: list[object], parameters: object) -> None:
+        """Hold the circuits and parameters the provider returns for the job."""
         self.circuits = circuits
         self.parameters = parameters
 
     def payload(self) -> tuple[list[object], object]:
+        """Return the stored circuits and parameters, as the SDK job does."""
         return self.circuits, self.parameters
 
 
@@ -47,11 +49,13 @@ class _ExistingJobDirectory:
     """Lookup of an already-created job; no submit operation exists here."""
 
     def __init__(self, job_id: UUID, job: _ExistingJob) -> None:
+        """Know exactly one existing job and count lookups."""
         self.job_id = job_id
         self.job = job
         self.lookups = 0
 
     def get_job(self, job_id: UUID) -> _ExistingJob:
+        """Return the known job or refuse an unknown ID."""
         self.lookups += 1
         if job_id != self.job_id:
             raise LookupError("unknown provider job")
@@ -64,6 +68,7 @@ def _rows(journal: AttemptJournal, attempt: str) -> list[dict[str, Any]]:
 
 
 def _request() -> tuple[Any, list[Any], Any]:
+    """Return a real IQM run request and the circuits and parameters its job would report."""
     payload = {
         "circuits": [
             {
@@ -83,7 +88,10 @@ def _request() -> tuple[Any, list[Any], Any]:
         "shots": 1024,
     }
     request = iqm_models.RunRequest.model_validate(payload)
-    normalized = request.model_dump(mode="python")
+    # The SDK's own CircuitJob.payload() leaves out the request's computed fields
+    # before it builds CircuitJobParameters; this mirrors that conversion.
+    computed = set(iqm_models.RunRequest.model_computed_fields)
+    normalized = request.model_dump(mode="python", exclude=computed)
     circuits = normalized.pop("circuits")
     parameters = iqm_client.CircuitJobParameters(**normalized)
     assert dataclasses.is_dataclass(parameters)
@@ -118,6 +126,7 @@ def test_existing_provider_payload_binds_ambiguous_job(tmp_path: Path) -> None:
     assert request.model_dump(mode="json")["shots"] == 1024
     with pytest.raises(JournalStateError, match="recovery needs"):
         recover_existing_job(reopened, attempt_id, 0, str(provider_id), existing)
+    assert existing.lookups == 1
 
 
 def test_wrong_provider_payload_does_not_bind_or_retry(tmp_path: Path) -> None:
@@ -138,3 +147,40 @@ def test_wrong_provider_payload_does_not_bind_or_retry(tmp_path: Path) -> None:
     row = _rows(AttemptJournal(tmp_path / "private"), attempt_id)[0]
     assert row["state"] == "recovery_required"
     assert row["provider_job_id"] is None
+
+
+@dataclasses.dataclass(frozen=True)
+class _ParametersWithCircuits:
+    """A provider parameter record that wrongly carries the circuits as well."""
+
+    shots: int
+    circuits: list[object]
+
+
+def test_request_digest_refuses_parameters_that_are_not_an_iqm_record() -> None:
+    """Only dataclass parameter instances without circuits reconstruct a request."""
+    _, circuits, parameters = _request()
+    for bad in ({"shots": 1024}, type(parameters)):
+        with pytest.raises(ValueError, match="^provider job parameters are not an IQM dataclass$"):
+            canonical_request_sha256(circuits, bad)
+    with pytest.raises(ValueError, match="^provider parameters unexpectedly contain circuits$"):
+        canonical_request_sha256(circuits, _ParametersWithCircuits(1024, circuits))
+
+
+def test_recovery_refuses_an_unknown_job_ordinal_before_any_lookup(tmp_path: Path) -> None:
+    """An ordinal outside the attempt, or a bool, is refused without asking the provider."""
+    _, circuits, parameters = _request()
+    digest = canonical_request_sha256(circuits, parameters)
+    journal = AttemptJournal(tmp_path / "private")
+    attempt_id = str(uuid4())
+    plans = (JobPlan("sentinel_before", digest, 1, 1024), JobPlan("data_first", digest, 1, 1024))
+    journal.prepare(attempt_id, "f" * 64, plans)
+    journal.begin_submit(attempt_id, 0, digest)
+    provider_id = uuid4()
+    existing = _ExistingJobDirectory(provider_id, _ExistingJob(circuits, parameters))
+    flag: Any = True
+    for ordinal in (2, -1, flag):
+        with pytest.raises(ValueError, match="^unknown attempt job ordinal$"):
+            recover_existing_job(journal, attempt_id, ordinal, str(provider_id), existing)
+    assert existing.lookups == 0
+    assert _rows(journal, attempt_id)[0]["state"] == "submitting"
