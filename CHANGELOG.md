@@ -497,6 +497,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The PennyLane provider evidence bundle (`phase/pennylane_provider_plugin.py`)
+  now tests that hardware evidence citing the bundle's provider, circuit and
+  shots is kept, that a non-ISO capture time is refused, and that a validity
+  window ending at or before the capture time is refused while one second
+  later is accepted. Coverage rises from 98.46% to 100% over its test files.
+  No production change.
+
 - The classical Kuramoto reference (`hardware/classical.py`) now tests its
   order-parameter fallback: with the Rust engine hidden and the
   `oscillatools.accel` import blocked, the Python tier computes R with NumPy,

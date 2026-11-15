@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Callable
 from typing import cast
 
@@ -348,6 +349,32 @@ def test_pennylane_provider_evidence_bundle_rejects_mismatched_hardware_chain() 
 
     with pytest.raises(ValueError, match="hardware_execution_artifact.provider_name"):
         _provider_evidence_bundle(hardware_execution_artifact=hardware_artifact)
+
+
+def test_pennylane_provider_evidence_bundle_accepts_a_matching_hardware_chain() -> None:
+    """Hardware evidence that cites the bundle's provider, circuit and shots is kept."""
+    hardware_artifact = _hardware_plugin_execution_artifact()
+
+    bundle = _provider_evidence_bundle(hardware_execution_artifact=hardware_artifact)
+
+    assert bundle.hardware_execution_artifact is hardware_artifact
+    assert bundle.provider_execution_artifact.shots == hardware_artifact.shots == 4096
+
+
+def test_pennylane_provider_evidence_bundle_refuses_bad_or_inverted_timestamps() -> None:
+    """A non-ISO capture time and a validity window ending at capture are refused."""
+    bundle = _provider_evidence_bundle()
+
+    for text in ("yesterday", "2026-06-20 noon"):
+        with pytest.raises(
+            ValueError, match="^captured_at_utc must be an ISO-8601 UTC timestamp$"
+        ):
+            dataclasses.replace(bundle, captured_at_utc=text)
+    for valid_until in ("2026-06-20T12:00:00Z", "2026-06-20T11:59:59Z"):
+        with pytest.raises(ValueError, match="^valid_until_utc must be after captured_at_utc$"):
+            dataclasses.replace(bundle, valid_until_utc=valid_until)
+    later = dataclasses.replace(bundle, valid_until_utc="2026-06-20T12:00:01Z")
+    assert later.valid_until_utc == "2026-06-20T12:00:01Z"
 
 
 def test_pennylane_provider_plugin_matrix_rejects_stale_hardware_calibration() -> None:
