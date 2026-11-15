@@ -497,6 +497,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The Phase-QNode execution kernels (`phase/qnode_circuit_execution.py`) now
+  test a sparse Pauli Hamiltonian on a noisy density matrix, which equals the
+  weighted sum of its terms. The five other uncovered lines are the final
+  refusals of exhaustive dispatch chains (gate, noise channel and
+  observable kinds, and a gate matrix of the wrong shape). Support reports
+  refuse such inputs before execution, so those lines stay defensive.
+  Eight older tests gain docstrings, so the test documentation ceiling falls
+  to 6840 findings in 531 files.
+
 - The gradient support matrix (`phase/gradient_support_matrix.py`) now tests
   the method and evaluation mode of each adapter route: PennyLane, PyTorch,
   the provider callback, a native Hessian and a native gradient tape. It

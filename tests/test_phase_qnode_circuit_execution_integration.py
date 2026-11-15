@@ -29,6 +29,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
 
 
 def test_phase_qnode_registered_gate_family_executes_with_pauli_observables() -> None:
+    """A circuit using the registered gate family executes with Pauli observables."""
     params = np.linspace(0.11, 0.91, 10)
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
@@ -112,6 +113,7 @@ def test_phase_qnode_registered_gate_family_executes_with_pauli_observables() ->
 
 
 def test_phase_qnode_covariance_observable_matches_bell_reference() -> None:
+    """The covariance observable matches the Bell-state reference."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(("h", (0,)), ("cnot", (0, 1))),
@@ -128,6 +130,7 @@ def test_phase_qnode_covariance_observable_matches_bell_reference() -> None:
 
 
 def test_phase_qnode_dense_hermitian_observable_matches_matrix_reference() -> None:
+    """A dense Hermitian observable matches the matrix expectation."""
     observable = DenseHermitianObservable(
         np.array(
             [
@@ -153,6 +156,7 @@ def test_phase_qnode_dense_hermitian_observable_matches_matrix_reference() -> No
 
 
 def test_phase_qnode_dense_hermitian_observable_fails_closed_on_invalid_matrix() -> None:
+    """A non-Hermitian matrix, or one of the wrong dimension for the circuit, is refused."""
     with pytest.raises(ValueError, match="Hermitian"):
         DenseHermitianObservable(np.array([[0.0, 1.0], [0.0, 0.0]], dtype=np.complex128))
     with pytest.raises(ValueError, match="dimension"):
@@ -164,6 +168,7 @@ def test_phase_qnode_dense_hermitian_observable_fails_closed_on_invalid_matrix()
 
 
 def test_phase_qnode_controlled_single_qubit_gates_match_references() -> None:
+    """Controlled single-qubit gates match their reference matrices."""
     ch_circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(("x", (0,)), ("ch", (0, 1))),
@@ -198,6 +203,7 @@ def test_phase_qnode_controlled_single_qubit_gates_match_references() -> None:
 
 
 def test_phase_qnode_density_matrix_unitary_route_matches_statevector() -> None:
+    """A noiseless density route matches the pure statevector, with unit trace and purity."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(("ry", (0,), 0), ("cnot", (0, 1)), ("rz", (1,), 1)),
@@ -218,6 +224,7 @@ def test_phase_qnode_density_matrix_unitary_route_matches_statevector() -> None:
 
 
 def test_phase_qnode_density_matrix_noise_channels_match_references() -> None:
+    """Bit-flip, phase-flip, damping and depolarising channels match their references."""
     bit_flip = PhaseQNodeDensityCircuit(
         n_qubits=1,
         operations=(PhaseQNodeNoiseChannel("bit_flip", (0,), 1.0),),
@@ -260,6 +267,7 @@ def test_phase_qnode_density_matrix_noise_channels_match_references() -> None:
 
 
 def test_phase_qnode_density_matrix_covariance_and_dense_observables() -> None:
+    """Covariance and dense observables evaluate on density matrices."""
     bell_with_noise = PhaseQNodeDensityCircuit(
         n_qubits=2,
         operations=(
@@ -285,3 +293,26 @@ def test_phase_qnode_density_matrix_covariance_and_dense_observables() -> None:
 
     np.testing.assert_allclose(covariance.value, 1.0, atol=1e-12)
     np.testing.assert_allclose(dense_result.value, 0.4, atol=1e-12)
+
+
+def test_phase_qnode_density_matrix_sums_a_sparse_pauli_hamiltonian_term_by_term() -> None:
+    """A sparse Pauli Hamiltonian on a noisy state equals the weighted sum of its terms."""
+    operations = (
+        ("ry", (0,), 0),
+        ("cnot", (0, 1)),
+        PhaseQNodeNoiseChannel("depolarizing", (1,), 0.2),
+    )
+    terms = (PauliTerm(1.0, ((0, "z"),)), PauliTerm(-0.5, ((0, "x"), (1, "x"))))
+    params = np.array([0.6], dtype=float)
+
+    def value(observable: PauliTerm | SparsePauliHamiltonian) -> float:
+        """Execute the noisy circuit with the given observable."""
+        circuit = PhaseQNodeDensityCircuit(
+            n_qubits=2, operations=operations, observable=observable
+        )
+        return execute_phase_qnode_density_matrix(circuit, params).value
+
+    total = value(SparsePauliHamiltonian(terms))
+
+    assert total == pytest.approx(sum(value(term) for term in terms), abs=1e-12)
+    assert total != pytest.approx(value(terms[0]), abs=1e-6)
