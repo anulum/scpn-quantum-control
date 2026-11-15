@@ -226,6 +226,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The Codecov step sends only that file and runs no plugins, so Codecov gets
     the same measurement as the gate.
 
+- The Python 3.15 coverage union now receives two exact coverage runs it was
+  missing. Their owners were already held at 100% in the parity job but showed
+  as debt in the union.
+  - Phase-QNode framework parity (`phase/qnode_framework_parity.py`) is run
+    with real JAX, PyTorch and PennyLane there; the union recorded it at 66.67%.
+  - The public package initializers: the union missed one line in
+    `experimental/llm_qpu/contracts/__init__.py`.
+  - A workflow test requires every exact-gated run of the parity job to be
+    uploaded and combined into the union.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

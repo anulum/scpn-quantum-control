@@ -91,7 +91,7 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
         item for item in steps if item.get("name") == "Admit complete test coverage (3.15 only)"
     )
     assert "--shards 4 --coverage-output .coverage" in union["run"]
-    assert union["run"].count("coverage combine --append --keep") == 9
+    assert union["run"].count("coverage combine --append --keep") == 11
     assert "tools/audit_coverage_policy.py" in union["run"]
     authoritative = next(
         item for item in steps if item.get("name") == "Upload coverage policy evidence (3.15 only)"
@@ -104,6 +104,49 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
             if item.get("name") == "Smoke-test DLA-parity validation CLI (3.15 only)"
         )
     )
+
+
+def _exact_parity_coverage_files() -> dict[str, str]:
+    """Map each exact-gated parity coverage database to its uploaded artifact name."""
+    job = yaml.safe_load(inventory.workflow_path_for_job("differentiable-parity").read_text())
+    steps = job["jobs"]["differentiable-parity"]["steps"]
+    gated = {
+        token.removeprefix("--data-file=")
+        for step in steps
+        if "coverage report" in step.get("run", "") and "--fail-under=100" in step["run"]
+        for token in step["run"].split()
+        if token.startswith("--data-file=")
+    }
+    uploads = {
+        step["with"]["path"].strip(): step["with"]["name"]
+        for step in steps
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    }
+    assert gated <= set(uploads), sorted(gated - set(uploads))
+    return {path: uploads[path] for path in sorted(gated)}
+
+
+def test_every_exact_parity_coverage_database_joins_the_authoritative_union() -> None:
+    """An owner proved at 100% in the parity job must reach the 3.15 coverage union."""
+    exact = _exact_parity_coverage_files()
+    job = yaml.safe_load(inventory.workflow_path_for_job("test").read_text())["jobs"]["test"]
+    downloads = {
+        step["with"]["name"]: step["with"]["path"]
+        for step in job["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@") and "name" in step["with"]
+    }
+    union = next(
+        step["run"]
+        for step in job["steps"]
+        if step.get("name") == "Admit complete test coverage (3.15 only)"
+    )
+
+    assert len(exact) == 9
+    for data_file, artifact in exact.items():
+        assert artifact in downloads, artifact
+        target = downloads[artifact].replace("${{ runner.temp }}", "$RUNNER_TEMP")
+        combined = f'coverage combine --append --keep "{target}/{Path(data_file).name}"'
+        assert combined in union, (artifact, combined)
 
 
 def _policy() -> WorkflowPolicy:

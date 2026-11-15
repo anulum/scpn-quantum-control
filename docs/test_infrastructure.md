@@ -631,7 +631,13 @@ counts rather than the XML report's rounded rates. The `coverage-gap-audit-3.15`
 artifact is uploaded once the job's last required check has passed and before
 the Codecov step, so it holds the exact `coverage.xml` the gate read. The Codecov
 upload sends that file alone and runs none of the uploader's report plugins,
-which would otherwise rewrite it over tests and tools.
+which would otherwise rewrite it over tests and tools. Before the policy audit,
+the 3.15 lane appends the exact-commit coverage databases of the focused gates
+that run elsewhere: the native transform and NQS ansatz runs, and every run of
+the differentiable parity job that is held at 100% there, including
+Phase-QNode framework parity with the real JAX, PyTorch and PennyLane installs
+and the public package initializers. A workflow test refuses an exact-gated
+parity run that is not uploaded and combined.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 

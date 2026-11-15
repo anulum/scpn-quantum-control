@@ -137,6 +137,14 @@ jobs:
           --data-file=.coverage.public-package-imports
           --precision=2 --show-missing --fail-under=100
           --include='*/scpn_quantum_control/__init__.py,*/scpn_quantum_control/**/__init__.py'
+      - name: Upload exact-commit public package initializer coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: public-package-imports-coverage-${{ github.sha }}
+          include-hidden-files: true
+          if-no-files-found: error
+          path: .coverage.public-package-imports
+          retention-days: 7
       - name: Run Phase-QNode JAX focused coverage
         run: >-
           python -m coverage run
@@ -297,6 +305,13 @@ jobs:
           --precision=2 --show-missing
           --fail-under=100
           --include=*/qnode_framework_parity.py
+      - name: Upload exact-commit Phase-QNode framework parity coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: phase-qnode-framework-parity-coverage-${{ github.sha }}
+          if-no-files-found: error
+          path: /tmp/scpn-qc-phase-qnode-framework-parity.coverage
+          retention-days: 7
       - name: Run native QNode arithmetic coverage
         env:
           JAX_ENABLE_X64: "true"
