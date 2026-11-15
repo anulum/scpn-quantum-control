@@ -497,6 +497,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The TensorFlow bounded-QNN gradient (`phase/tensorflow_gradients.py`) now
+  tests every feature and label refusal through the facade and the existing
+  fake TensorFlow:
+  - one-dimensional features, or features without samples or columns;
+  - non-finite features;
+  - a label column, a short label vector or non-finite labels.
+
+  Coverage rises from 85.19% to 100%.
+
 - The Phase-QNode execution kernels (`phase/qnode_circuit_execution.py`) now
   test a sparse Pauli Hamiltonian on a noisy density matrix, which equals the
   weighted sum of its terms. The five other uncovered lines are the final

@@ -280,3 +280,46 @@ def test_tensorflow_facade_does_not_redefine_gradient_helpers() -> None:
             "_tensorflow_tensor",
         }
     )
+
+
+@pytest.mark.parametrize(
+    ("features", "labels", "message"),
+    [
+        pytest.param(
+            np.array([0.0, np.pi]), np.array([0.0, 1.0]), "two-dimensional array$", id="1d"
+        ),
+        pytest.param(
+            np.empty((2, 0)), np.array([0.0, 1.0]), "must not be empty$", id="no-columns"
+        ),
+        pytest.param(np.empty((0, 1)), np.array([]), "must not be empty$", id="no-samples"),
+        pytest.param(
+            np.array([[0.0], [np.nan]]),
+            np.array([0.0, 1.0]),
+            "features must contain only",
+            id="nan",
+        ),
+        pytest.param(
+            np.array([[0.0], [np.pi]]),
+            np.ones((2, 1)),
+            "one-dimensional array$",
+            id="label-column",
+        ),
+        pytest.param(
+            np.array([[0.0], [np.pi]]), np.array([0.0]), r"shape \(2,\), got \(1,\)$", id="short"
+        ),
+        pytest.param(
+            np.array([[0.0], [np.pi]]),
+            np.array([0.0, np.inf]),
+            "labels must contain only",
+            id="inf",
+        ),
+    ],
+)
+def test_tensorflow_bounded_qnn_gradient_refuses_malformed_features_and_labels(
+    monkeypatch: pytest.MonkeyPatch, features: np.ndarray, labels: np.ndarray, message: str
+) -> None:
+    """Features must be a finite non-empty matrix and labels a finite vector of matching length."""
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", _FakeTensorFlow)
+
+    with pytest.raises(ValueError, match=message):
+        tensorflow_bounded_qnn_value_and_grad(features, labels, np.array([0.45], dtype=float))
