@@ -10,10 +10,12 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 import numpy as np
 import pytest
 
+from scpn_quantum_control.applications import dataset_catalog
 from scpn_quantum_control.phase import (
     DifferentiableDomainBenchmarkDatasetSuite,
     DifferentiableDomainBenchmarkValidationSuite,
@@ -30,6 +32,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_differentiable_domain_benchmark_datasets_carry_exact_answers() -> None:
+    """The synthetic suite lists its three exact-answer datasets and claims no hardware."""
     suite = load_differentiable_domain_benchmark_datasets()
 
     assert isinstance(suite, DifferentiableDomainBenchmarkDatasetSuite)
@@ -69,6 +72,7 @@ def test_differentiable_domain_benchmark_datasets_carry_exact_answers() -> None:
 
 
 def test_differentiable_domain_benchmark_validation_passes_all_cases() -> None:
+    """Every exact-answer dataset validates against its analytic values."""
     validation = run_differentiable_domain_benchmark_dataset_validation()
 
     assert isinstance(validation, DifferentiableDomainBenchmarkValidationSuite)
@@ -84,6 +88,7 @@ def test_differentiable_domain_benchmark_validation_passes_all_cases() -> None:
 
 
 def test_differentiable_domain_benchmark_dataset_selection_is_fail_closed() -> None:
+    """Selection by ID works, and unknown or blank IDs and a negative tolerance are refused."""
     suite = load_differentiable_domain_benchmark_datasets(
         dataset_ids=("kuramoto_xy_two_oscillator_pi_over_3",)
     )
@@ -108,6 +113,7 @@ def test_differentiable_domain_benchmark_dataset_selection_is_fail_closed() -> N
 
 
 def test_differentiable_published_domain_benchmark_cases_are_artifact_backed() -> None:
+    """The four published cases are backed by catalog artefacts and claim no hardware."""
     suite = load_differentiable_published_domain_benchmark_cases()
 
     assert isinstance(suite, DifferentiablePublishedDomainBenchmarkSuite)
@@ -145,6 +151,7 @@ def test_differentiable_published_domain_benchmark_cases_are_artifact_backed() -
 
 
 def test_differentiable_published_domain_benchmark_validation_passes() -> None:
+    """Every published case validates its conversion and formulae."""
     validation = run_differentiable_published_domain_benchmark_validation()
 
     assert isinstance(validation, DifferentiablePublishedDomainBenchmarkValidationSuite)
@@ -163,6 +170,7 @@ def test_differentiable_published_domain_benchmark_validation_passes() -> None:
 
 
 def test_differentiable_published_domain_benchmark_selection_is_fail_closed() -> None:
+    """Published selection by ID works and unknown IDs are refused."""
     suite = load_differentiable_published_domain_benchmark_cases(dataset_ids=("iter_mhd_8mode",))
     assert suite.case_count == 1
     assert suite.cases[0].domain == "plasma"
@@ -179,3 +187,55 @@ def test_differentiable_published_domain_benchmark_selection_is_fail_closed() ->
 
     with pytest.raises(ValueError, match="dataset_ids"):
         load_differentiable_published_domain_benchmark_cases(dataset_ids=("",))
+
+
+def test_differentiable_domain_benchmark_records_serialise_and_count() -> None:
+    """Kuramoto cases count oscillators; the suites serialise; an empty suite has no error."""
+    datasets = load_differentiable_domain_benchmark_datasets()
+    kuramoto = datasets.kuramoto_cases[0]
+    validation = run_differentiable_domain_benchmark_dataset_validation()
+
+    assert kuramoto.n_oscillators == kuramoto.phases.size
+    assert kuramoto.to_dict()["dataset_id"] == kuramoto.dataset_id
+    assert datasets.to_dict()["dataset_ids"] == list(datasets.dataset_ids)
+    empty = replace(validation, results=())
+    assert (empty.case_count, empty.max_abs_error) == (0, 0.0)
+
+
+def test_differentiable_published_domain_benchmark_lookup_and_serialisation() -> None:
+    """Published cases are found by ID, unknown IDs are refused, and every record serialises."""
+    suite = load_differentiable_published_domain_benchmark_cases()
+    validation = run_differentiable_published_domain_benchmark_validation(
+        dataset_ids=(suite.dataset_ids[0],)
+    )
+
+    assert suite.case_by_id(suite.dataset_ids[0]) is suite.cases[0]
+    with pytest.raises(KeyError, match="unknown published differentiable domain dataset"):
+        suite.case_by_id("missing")
+    assert suite.to_dict()["dataset_ids"] == list(suite.dataset_ids)
+    payload = validation.to_dict()
+    assert payload["case_count"] == 1
+    assert payload["results"] == [validation.results[0].to_dict()]
+    assert validation.results[0].to_dict()["dataset_id"] == suite.dataset_ids[0]
+
+
+def test_differentiable_published_domain_benchmark_refuses_a_catalog_dataset_without_formulae(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A dataset added to the application catalog without source formulae fails loudly."""
+    descriptors = dataset_catalog.list_application_benchmark_descriptors()
+    added = replace(descriptors[0], dataset_id="newly_catalogued_dataset")
+    load_artifact = dataset_catalog.load_application_benchmark_artifact
+    monkeypatch.setattr(
+        dataset_catalog, "list_application_benchmark_descriptors", lambda: (*descriptors, added)
+    )
+    monkeypatch.setattr(
+        dataset_catalog,
+        "load_application_benchmark_artifact",
+        lambda dataset_id: load_artifact(
+            descriptors[0].dataset_id if dataset_id == added.dataset_id else dataset_id
+        ),
+    )
+
+    with pytest.raises(KeyError, match="missing source formulae for published dataset"):
+        load_differentiable_published_domain_benchmark_cases()

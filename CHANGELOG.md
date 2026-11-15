@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The differentiable domain benchmark datasets
+  (`phase/domain_benchmark_datasets.py`) now test:
+  - the Kuramoto oscillator count and serialisation, the suite payloads, and
+    an empty validation suite with zero error;
+  - published-case lookup by ID, with unknown IDs refused, and the published
+    validation payloads;
+  - that a dataset added to the application catalog without source
+    formulae fails loudly, simulated through the catalog's own listing and
+    artefact loader.
+
+  Coverage rises from 96.00% to 100%. Six older tests gain docstrings, so the
+  test documentation ceiling falls to 6924 findings in 540 files.
+
 - The TensorFlow maintenance ledger (`phase/tensorflow_maintenance.py`) now
   tests every refusal of a route record, edited from a shipped blocked
   route:
