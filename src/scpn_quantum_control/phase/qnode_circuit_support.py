@@ -541,20 +541,24 @@ def _as_optional_positive_int(name: str, value: int | None) -> int | None:
     return int(value)
 
 
+# Pauli generator of each registered parametric gate, on its target qubit(s).
+_PARAMETER_GENERATOR_KEYS: Mapping[str, str] = {
+    "rx": "x",
+    "crx": "x",
+    "ry": "y",
+    "cry": "y",
+    "rz": "z",
+    "crz": "z",
+    "phase": "z",
+    "rxx": "xx",
+    "ryy": "yy",
+    "rzz": "zz",
+}
+
+
 def _parameter_generator_key(operation: PhaseQNodeOperation) -> str:
-    if operation.gate in {"rx", "crx"}:
-        return "x"
-    if operation.gate in {"ry", "cry"}:
-        return "y"
-    if operation.gate in {"rz", "crz", "phase"}:
-        return "z"
-    if operation.gate == "rxx":
-        return "xx"
-    if operation.gate == "ryy":
-        return "yy"
-    if operation.gate == "rzz":
-        return "zz"
-    return operation.gate
+    # Only parametric operations reach here; an unknown gate is a programming error.
+    return _PARAMETER_GENERATOR_KEYS[operation.gate]
 
 
 def _operations_commute_for_shared_parameter(
@@ -648,8 +652,6 @@ def _parameter_generators_commute(
     left_paulis = _generator_pauli_map(left)
     right_paulis = _generator_pauli_map(right)
     shared = set(left_paulis).intersection(right_paulis)
-    if not shared:
-        return True
     anti_commuting_overlap = sum(
         1 for qubit in shared if left_paulis[qubit] != right_paulis[qubit]
     )
@@ -662,11 +664,9 @@ def _is_controlled_parametric_gate(gate: str) -> bool:
 
 def _generator_pauli_map(operation: PhaseQNodeOperation) -> Mapping[int, str]:
     key = _parameter_generator_key(operation)
-    if key in {"x", "y", "z"}:
+    if len(key) == 1:
         return {operation.qubits[-1]: key}
-    if key in {"xx", "yy", "zz"}:
-        return {qubit: key[0] for qubit in operation.qubits}
-    return {}
+    return {qubit: key[0] for qubit in operation.qubits}
 
 
 __all__ = [

@@ -497,6 +497,28 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The Phase-QNode support module (`phase/qnode_circuit_support.py`) now has
+  tests for every report refusal:
+  - a parametric gate without a parameter index;
+  - each part of the density report (gate, noise channel, observable,
+    parameter range, missing parameter, gate arity, noise arity);
+  - a blocked density route that carries the density refusal and no noise
+    note;
+  - parameters that are not a finite real vector;
+  - the Pauli generator planned for each of the ten parametric gates;
+  - commutation of overlapping two-qubit generators, with each gradient
+    checked against central differences.
+
+  The generator keys now come from one table, which fails loudly on an
+  unknown gate. Before, the code fell back silently, but no caller could
+  reach that path. An unreachable early return in the commutation check is
+  removed; it computed the same result. Coverage over the QNode circuit
+  tests rises from 89.89% to 98.81%. Two defensive guards stay uncovered
+  (an empty shared-parameter group and a single-gate collapse check), because
+  every caller passes at least one gate and handles a single gate first.
+  Seven older tests in the support test file gain docstrings, so the test
+  documentation ceiling falls to 6981 findings in 548 files.
+
 - The symmetric 2x2 native LLVM/JIT compilers
   (`compiler/mlir_symmetric_native_compilation.py`, Cholesky and eigenvalues)
   now have tests for every refusal, driven through the public compilers,
