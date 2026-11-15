@@ -497,6 +497,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The Cirq adapter (`hardware/cirq_adapter.py`) now tests the import path
+  with Cirq importable in every lane: the adapter file is executed under a
+  private module name with a stand-in `cirq` module, which marks Cirq
+  available and binds that module, while the imported adapter is left
+  untouched. A Trotter step with a zero coupling and a zero field emits XX
+  and YY gates for the single non-zero pair and RZ rotations only for the
+  non-zero fields, at twice the half-angle. Coverage rises from 96.30% to
+  100%. No production change.
+
 - **Fixed: the differentiable dashboard reported a failed conformance run as
   one that never ran.** With `include_conformance=True` and a failing
   benchmark report, the 32 conformance-dependent rows of

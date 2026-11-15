@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 from types import ModuleType
 from unittest.mock import MagicMock
 
@@ -336,6 +338,46 @@ def test_cirq_runner_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
     runner = cirq_mod.CirqRunner(K, omega)
     result = runner.run_trotter(t=0.5, reps=2)
     assert result.n_qubits == 2
+
+
+def test_cirq_adapter_records_an_importable_cirq_as_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Executing the adapter with cirq importable marks Cirq available and binds it."""
+    import scpn_quantum_control.hardware.cirq_adapter as cirq_mod
+
+    stand_in = ModuleType("cirq")
+    monkeypatch.setitem(sys.modules, "cirq", stand_in)
+    spec = importlib.util.spec_from_file_location("_cirq_adapter_probe", cirq_mod.__file__)
+    assert spec is not None and spec.loader is not None
+    probe = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, "_cirq_adapter_probe", probe)
+
+    spec.loader.exec_module(probe)
+
+    assert probe.is_cirq_available() is True
+    assert probe.cirq is stand_in
+    assert vars(cirq_mod)["cirq"] is not stand_in
+
+
+def test_cirq_trotter_step_skips_zero_couplings_and_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Only non-zero couplings get XX and YY gates and only non-zero fields get RZ."""
+    import scpn_quantum_control.hardware.cirq_adapter as cirq_mod
+
+    mock_cirq = MagicMock()
+    mock_cirq.LineQubit.range.return_value = [0, 1, 2]
+    monkeypatch.setattr(cirq_mod, "_CIRQ_AVAILABLE", True)
+    monkeypatch.setattr(cirq_mod, "cirq", mock_cirq)
+    K = np.array([[0.0, 0.5, 0.0], [0.5, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    omega = np.array([1.0, 0.0, -2.0])
+
+    cirq_mod.CirqRunner(K, omega)._build_trotter_step(0.1)
+
+    assert mock_cirq.XXPowGate.call_count == 1
+    assert mock_cirq.YYPowGate.call_count == 1
+    assert [call.args for call in mock_cirq.rz.call_args_list] == [(0.1,), (-0.2,)]
 
 
 def test_pennylane_availability() -> None:
