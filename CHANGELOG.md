@@ -330,6 +330,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The external-validation environment manifest, the dependency map and the
     artefact bundle record the new `pyproject.toml` digest.
 
+- The cell contract (`experimental/llm_qpu/contracts/cells.py`) has full line
+  and branch coverage; the union had it at 86.62%.
+  - New tests cover the refusals of cell identities, roles and metadata, and
+    of the content, request and attempt identities.
+  - They also cover raw completions that name unplanned or repeated cells,
+    break the one-to-one provider mapping, or have wrong widths or sums.
+  - The final inventory check, which the per-result checks already made
+    unreachable, is removed.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

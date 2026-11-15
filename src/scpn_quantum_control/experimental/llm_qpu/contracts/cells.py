@@ -283,5 +283,3 @@ def validate_completion(
             type(shape) is not list or shape != [cell.shots, cell.measurement_width]
         ):
             raise ValueError("joint shot shape mismatch")
-    if len(seen_keys) != len(expected):
-        raise ValueError("incomplete cell inventory")

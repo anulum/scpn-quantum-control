@@ -49,6 +49,7 @@ _REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 
 def _cell(*, shots: int = 8, metadata: dict[str, object] | None = None) -> PlannedCell:
+    """Return a two-bit data cell with the given shots and metadata."""
     return PlannedCell.create(
         key=CellKey("experiment", "sample", "sequence", "arm", "basis", "r1", "e1", "b1"),
         circuit_plan_digest=_DIGEST,
@@ -60,6 +61,7 @@ def _cell(*, shots: int = 8, metadata: dict[str, object] | None = None) -> Plann
 
 
 def _result(cell: PlannedCell) -> dict[str, object]:
+    """Return the exact raw result a provider would report for the cell."""
     return {
         "key": cell.key.to_wire(),
         "provider_job_id": "job-1",
@@ -72,10 +74,10 @@ def _result(cell: PlannedCell) -> dict[str, object]:
 
 
 @pytest.mark.parametrize("shots", [True, 1.5, "1024", 0, -1])
-def test_w02_01_refuses_noninteger_shots_before_sdk(shots: object) -> None:
+def test_w02_01_refuses_noninteger_shots_before_sdk(shots: Any) -> None:
     """Refuse a non-integer shot count before any SDK sees it."""
     with pytest.raises(ValueError, match="shots"):
-        _cell(shots=shots)  # type: ignore[arg-type]
+        _cell(shots=shots)
 
 
 def test_w02_01_refuses_nonfinite_or_untagged_metadata() -> None:
@@ -220,6 +222,7 @@ def test_w02_06_raw_completion_refuses_coercion_missing_and_shape() -> None:
 
 
 def _task() -> TaskSpec:
+    """Return a frozen owner-dataset classification task."""
     fields: dict[str, Any] = {
         "task_id": "causal-classification-v1",
         "objective": "Predict a predeclared label from prefix tokens",
@@ -239,6 +242,7 @@ def _task() -> TaskSpec:
 
 
 def _header(kind: str, content: dict[str, object], parents: tuple[str, ...]) -> ArtifactHeader:
+    """Return a design-only owner-dataset header bound to the content and parents."""
     return ArtifactHeader(
         object_kind=kind,
         content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest(),
@@ -252,6 +256,7 @@ def _header(kind: str, content: dict[str, object], parents: tuple[str, ...]) -> 
 
 
 def _split(task: TaskSpec) -> SplitManifest:
+    """Return the frozen group split of the task."""
     fields: dict[str, Any] = {
         "task_digest": hashlib.sha256(canonical_bytes(task.to_wire())).hexdigest(),
         "dataset_digest": "b" * 64,
@@ -380,3 +385,99 @@ def test_w02_task_split_refuses_leakage_and_bad_origin(tmp_path: Path) -> None:
     )
     assert refused.returncode == 2
     assert "content digest mismatch" in json.loads(refused.stdout)["reason"]
+
+
+def _key(sample: str) -> CellKey:
+    """Return a cell identity that differs from the default cell only by source sample."""
+    return CellKey("experiment", sample, "sequence", "arm", "basis", "r1", "e1", "b1")
+
+
+def test_cell_key_and_planned_cell_refuse_unbound_identity_and_metadata() -> None:
+    """Identity fields, role and metadata bytes are refused unless exact and bounded."""
+    key = _cell().key.to_wire()
+    refused: tuple[object, ...] = (
+        [],
+        {**key, "extra": "x"},
+        {name: key[name] for name in list(key)[:-1]},
+    )
+    for value in refused:
+        with pytest.raises(ValueError, match="^CellKey fields mismatch$"):
+            CellKey.from_wire(value)
+    cell = _cell()
+    loose_key: Any = cell.key.to_wire()
+    mutable: Any = bytearray(b"{}")
+    for changes, message in (
+        ({"key": loose_key}, "planned cell requires CellKey"),
+        ({"role": "pilot"}, "unknown cell role"),
+        ({"metadata_blob": mutable}, "metadata bytes exceed limit"),
+        ({"metadata_blob": b'{"n":"' + b"x" * 8192 + b'"}'}, "metadata bytes exceed limit"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            replace(cell, **changes)
+    listed: Any = [("n", 1)]
+    with pytest.raises(ValueError, match="^metadata must be a plain mapping$"):
+        PlannedCell.create(
+            key=cell.key,
+            circuit_plan_digest=_DIGEST,
+            shots=8,
+            measurement_width=2,
+            role="sentinel",
+            metadata=listed,
+        )
+
+
+def test_identity_digests_refuse_untyped_inputs_and_noncanonical_nonces() -> None:
+    """Content, request and attempt identities refuse inputs they cannot bind exactly."""
+    listed: Any = [("value", 1)]
+    with pytest.raises(ValueError, match="^scientific fields must be a plain mapping$"):
+        content_id(
+            kernel_id=_KERNEL, map_version="v1", protocol_digest=_DIGEST, scientific_fields=listed
+        )
+    path: Any = Path("results")
+    with pytest.raises(ValueError, match="^output directory must be text$"):
+        content_id(
+            kernel_id=_KERNEL,
+            map_version="v1",
+            protocol_digest=_DIGEST,
+            scientific_fields={},
+            output_dir=path,
+        )
+    loose_cell: Any = _cell().to_wire()
+    for kernel, cell in (("xy_unknown_v1", _cell()), (_KERNEL, loose_cell)):
+        with pytest.raises(ValueError, match="^unknown kernel or planned cell$"):
+            request_id(_DIGEST, cell, kernel_id=kernel)
+    run = run_id(_DIGEST, repetition=1, calibration_epoch_id="epoch-1")
+    number: Any = 4
+    for nonce, message in (
+        (number, "attempt nonce must be UUID text"),
+        ("not-a-uuid", "attempt nonce must be UUID text"),
+        (str(uuid.uuid1()), "attempt nonce must be canonical UUIDv4"),
+        (str(uuid.uuid4()).upper(), "attempt nonce must be canonical UUIDv4"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            attempt_id(run, nonce=nonce)
+    nonce = str(uuid.uuid4())
+    assert attempt_id(run, nonce=nonce) == attempt_id(run, nonce=nonce)
+
+
+def test_raw_completion_refuses_unmapped_or_inconsistent_results() -> None:
+    """Results must name planned cells once, map providers one to one and sum exactly."""
+    first = _cell()
+    second = replace(first, key=_key("sample-2"))
+    good = [_result(first), {**_result(second), "binding_index": 1}]
+    validate_completion([first, second], good)
+    cases: list[tuple[list[dict[str, object]], str]] = [
+        ([{**good[0], "extra": 1}, good[1]], "raw result fields mismatch"),
+        ([{**good[0], "key": _key("unplanned").to_wire()}, good[1]], "unknown or duplicate"),
+        ([good[0], {**good[1], "key": first.key.to_wire()}], "unknown or duplicate result cell"),
+        ([{**good[0], "pub_index": -1}, good[1]], "provider indices must be nonnegative"),
+        ([{**good[0], "binding_index": 1_000_001}, good[1]], "provider indices must be"),
+        ([{**good[0], "pub_index": True}, good[1]], "provider indices must be nonnegative"),
+        ([good[0], {**good[1], "binding_index": 0}], "provider mapping is not bijective"),
+        ([{**good[0], "counts": {"000": 8}}, good[1]], "raw bitstring width mismatch"),
+        ([{**good[0], "counts": {"0x": 8}}, good[1]], "raw bitstring width mismatch"),
+        ([{**good[0], "counts": {"00": 3, "11": 4}}, good[1]], "raw counts shot sum mismatch"),
+    ]
+    for received, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}"):
+            validate_completion([first, second], received)
