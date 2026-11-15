@@ -809,12 +809,14 @@ def test_live_policy_records_latest_remote_debt_baseline() -> None:
     policy = audit.load_policy(repo_root / "tools" / "coverage_debt_policy.json")
     register = json.loads((repo_root / policy.register_path).read_text(encoding="utf-8"))
 
-    assert policy.baseline.origin_commit == "9854a09d837a48746f49be2251373f636068fe38"
-    assert policy.baseline.remote_ci_run == 33479377146
+    assert policy.baseline.artifact_name == "coverage-gap-audit-3.15"
+    assert policy.baseline.python_version == "3.15"
+    assert policy.baseline.origin_commit == "7422e04fd4e17d1f2cb9e12e6f2e819106d75dd5"
+    assert policy.baseline.remote_ci_run == 43648887791
     assert policy.baseline.artifact_sha256 == (
-        "53eb8316ed0d2bc6f39385c79ba22022f4a7a5f671860c29ad312cff3828d1bf"
+        "c26f85b58fd8e2ee10f11efb002b2fdab57ecf41f27d04cea98962645aa89477"
     )
     assert policy.baseline_invalidated_paths == ()
-    assert register["summary"]["debt_file_count"] == 109
-    assert register["summary"]["known_missing_line_count"] == 2355
-    assert register["summary"]["unmeasured_debt_file_count"] == 23
+    assert register["summary"]["debt_file_count"] == 79
+    assert register["summary"]["known_missing_line_count"] == 923
+    assert register["summary"]["unmeasured_debt_file_count"] == 4
