@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The optional `[topology]` extra now has a CI lane. No job installed ripser,
+  so the real-ripser tests skipped everywhere and the persistent-homology
+  paths ran only against stand-ins. The new `topology-extra-coverage` job
+  (Python 3.13; ripser 0.6.15 publishes no 3.15 wheel) installs the 3.13 lock
+  and the new hash lock `requirements-ci-topology-py313-linux.txt`, which uv
+  resolved against that lock, audits the lock with pip-audit, runs the twelve
+  ripser test files under coverage and holds `topology_control/complexes.py`,
+  `analysis/sync_witness.py`, `analysis/persistent_homology.py` and
+  `analysis/quantum_persistent_homology.py` at 100%. The 3.15 lane appends the
+  database to the coverage union (13 combines). The union handoff test now
+  covers the quimb and ripser runs, and the supply-chain test pins the new
+  lock. The test infrastructure page states what the union appends.
+
 - The Cirq adapter (`hardware/cirq_adapter.py`) now tests the import path
   with Cirq importable in every lane: the adapter file is executed under a
   private module name with a stand-in `cirq` module, which marks Cirq

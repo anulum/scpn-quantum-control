@@ -636,11 +636,14 @@ the 3.15 lane appends the exact-commit coverage databases of the focused gates
 that run elsewhere: the native transform and NQS ansatz runs, every run of
 the differentiable parity job that is held at 100% there, including
 Phase-QNode framework parity with the real JAX, PyTorch and PennyLane installs
-and the public package initialisers, and the classical baseline run of the
+and the public package initialisers, the classical baseline run of the
 tensor-network job, which executes the quimb TEBD route with the pinned quimb
-install and holds `benchmarks/classical_baselines.py` at 100%. Workflow tests
-refuse an exact-gated parity run or the quimb baseline run that is not
-uploaded and combined.
+install and holds `benchmarks/classical_baselines.py` at 100%, and the
+`topology-extra-coverage` run on Python 3.13, which installs the `[topology]`
+extra from `requirements-ci-topology-py313-linux.txt` (ripser 0.6.15, resolved
+against the 3.13 lock and audited in the job) and holds the four ripser
+modules at 100%. Workflow tests refuse an exact-gated parity run, the quimb
+baseline run or the ripser topology run that is not uploaded and combined.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 

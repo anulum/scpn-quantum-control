@@ -248,8 +248,9 @@ class TestRipserPHBackend:
     ) -> None:
         """The backend counts finite H1 bars strictly above the threshold and calls ripser as documented.
 
-        ripser is an optional extra with no CI lane yet, so this stands in for it with the
-        documented ``{"dgms": [H0, H1]}`` result, as the analysis topology tests do.
+        ripser is an optional extra that only the Python 3.13 topology lane installs, so this
+        stands in for it in every other lane with the documented ``{"dgms": [H0, H1]}``
+        result, as the analysis topology tests do.
         """
         calls: list[tuple[tuple[int, ...], int, bool]] = []
 

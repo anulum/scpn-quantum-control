@@ -57,13 +57,18 @@ def test_ci_lock_inputs_cover_the_new_security_and_typing_surfaces() -> None:
         encoding="utf-8"
     )
     quimb_input = Path("requirements-ci-quimb-py315-linux.in").read_text(encoding="utf-8")
+    topology_input = Path("requirements-ci-topology-py313-linux.in").read_text(encoding="utf-8")
     assert "pytest==9.1.1" in minimal_input
     assert "hypothesis==6.165.10" in minimal_input
     assert "quimb==1.13.0" in quimb_input
+    assert "ripser==0.6.15" in topology_input
+    topology_lock = Path("requirements-ci-topology-py313-linux.txt").read_text(encoding="utf-8")
+    assert "--constraint requirements-ci-py313-linux.txt" in topology_lock
 
     for path in (
         "requirements-ci-minimal-install-py312-linux.txt",
         "requirements-ci-quimb-py315-linux.txt",
+        "requirements-ci-topology-py313-linux.txt",
     ):
         lock = Path(path).read_text(encoding="utf-8")
         assert "--hash=sha256:" in lock

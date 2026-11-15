@@ -395,7 +395,8 @@
         "python-test-timings",
         "python-test-shards",
         "program-ad-replay",
-        "python-sharding-quality"
+        "python-sharding-quality",
+        "topology-extra-coverage"
       ]
     },
     {
@@ -628,6 +629,7 @@
     "python-test-shards",
     "program-ad-replay",
     "python-sharding-quality",
+    "topology-extra-coverage",
     "test",
     "test-extra-platforms",
     "type-check",

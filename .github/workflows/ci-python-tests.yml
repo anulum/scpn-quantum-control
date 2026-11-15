@@ -222,3 +222,60 @@ jobs:
             --data-file="$CI_SHARD_TOOL_COVERAGE_DIR/.coverage" \
             --include='*/tools/ci_test_shards.py,*/tools/pytest_ci_shard.py' \
             --precision=2 --show-missing --fail-under=100
+
+  topology-extra-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install the 3.13 lock and the pinned topology extra
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py313-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-topology-py313-linux.txt
+          python -m pip check
+          python -c "import ripser; assert ripser.__version__ == '0.6.15', ripser.__version__"
+      - name: Audit the committed topology extra lock
+        run: >-
+          python -m pip_audit -r requirements-ci-topology-py313-linux.txt
+          --no-deps --disable-pip --strict --desc on
+      - name: Run real-ripser topology coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null --branch
+          --data-file=${{ runner.temp }}/scpn-qc-topology-extra.coverage
+          --include=*/topology_control/complexes.py,*/analysis/sync_witness.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py
+          -m pytest -q
+          tests/test_analysis_entanglement_sync_contracts.py
+          tests/test_analysis_topology_contracts.py
+          tests/test_graph_topology_scan.py
+          tests/test_hardware_topological_optimizer.py
+          tests/test_persistent_homology.py
+          tests/test_persistent_homology_branches.py
+          tests/test_quantum_persistent_homology.py
+          tests/test_sync_witness.py
+          tests/test_tcbo_reproduction_audit.py
+          tests/test_topological_coupling_guard.py
+          tests/test_topological_optimizer.py
+          tests/test_topology_complexes.py
+      - name: Enforce real-ripser topology exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=${{ runner.temp }}/scpn-qc-topology-extra.coverage
+          --precision=2 --show-missing --fail-under=100
+          --include=*/topology_control/complexes.py,*/analysis/sync_witness.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py
+      - name: Export exact-commit real-ripser topology coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: topology-extra-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/scpn-qc-topology-extra.coverage
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
