@@ -60,6 +60,13 @@ controlled rotation whenever the observable couples the control-on and
 control-off sectors — for example a Pauli `X` or `Y` on the control qubit — and
 the planner no longer applies it there.
 
+A logical parameter shared by `n` distinct gates gets gaps `1..n`, because each
+single-Pauli gate adds an eigenvalue difference in `{0, ±1}`. Once any of those
+gates is a controlled rotation, each contributes a difference in
+`{0, ±1/2, ±1}`, and the planner uses every multiple of `1/2` up to `n`. For
+example, `crx` and `rx` on one angle get the gaps `{1/2, 1, 3/2, 2}` and eight
+shifted evaluations.
+
 ### U3 and arbitrary single-qubit unitaries
 
 A U3 gate, and any `2x2` unitary, is supported through an exact Euler ZYZ

@@ -19,6 +19,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PhaseQNodeGradientEvaluationPlan,
     PhaseQNodeNoiseChannel,
     PhaseQNodeSupportError,
+    SparsePauliHamiltonian,
     execute_phase_qnode_circuit,
     execute_phase_qnode_density_matrix,
     parameter_shift_phase_qnode_gradient,
@@ -202,3 +203,66 @@ def test_phase_qnode_density_support_reports_fail_closed() -> None:
         execute_phase_qnode_density_matrix(circuit, np.array([], dtype=float))
     with pytest.raises(ValueError, match="between 0 and 1"):
         PhaseQNodeNoiseChannel("bit_flip", (0,), 1.01)
+
+
+_MIXED_OBSERVABLE = SparsePauliHamiltonian(
+    (
+        PauliTerm(1.0, ((1, "y"),)),
+        PauliTerm(0.6, ((0, "x"), (1, "x"))),
+        PauliTerm(0.5, ((2, "y"),)),
+        PauliTerm(0.7, ((2, "x"),)),
+    )
+)
+
+
+@pytest.mark.parametrize(
+    "shared",
+    [
+        pytest.param((("crx", (0, 1), 0), ("rx", (2,), 0)), id="crx-and-rx"),
+        pytest.param((("crx", (0, 1), 0), ("crx", (2, 1), 0)), id="crx-on-two-pairs"),
+        pytest.param((("crz", (0, 1), 0), ("rz", (2,), 0)), id="crz-and-rz"),
+    ],
+)
+def test_shared_parameter_with_a_controlled_rotation_uses_half_integer_gaps(
+    shared: tuple[tuple[str, tuple[int, ...], int], ...],
+) -> None:
+    """A shared angle on distinct gates, one of them controlled, needs every half-integer gap.
+
+    Regression: the planner used gaps ``1..n`` for every non-identical group, so a
+    controlled rotation's ``1/2`` components were missed and the gradient was wrong.
+    """
+    preparation = (("ry", (0,), 1), ("ry", (1,), 2), ("ry", (2,), 3), ("h", (0,)))
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3, operations=(*preparation, *shared), observable=_MIXED_OBSERVABLE
+    )
+    params = np.array([0.53, 0.8, -0.4, 1.1], dtype=float)
+
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, params)
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+
+    shared_group = next(group for group in plan.groups if group.parameter_index == 0)
+    assert shared_group.frequency_gaps == (0.5, 1.0, 1.5, 2.0)
+    assert shared_group.shifted_evaluations == 8
+    step = 1e-6
+    plus = params.copy()
+    minus = params.copy()
+    plus[0] += step
+    minus[0] -= step
+    finite_difference = (
+        execute_phase_qnode_circuit(circuit, plus).value
+        - execute_phase_qnode_circuit(circuit, minus).value
+    ) / (2.0 * step)
+    np.testing.assert_allclose(gradient.gradient[0], finite_difference, atol=1e-6)
+
+
+def test_identical_controlled_rotations_keep_their_collapsed_gaps() -> None:
+    """Tied copies of one controlled rotation still collapse to the scaled pair of gaps."""
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(("h", (0,)), ("crx", (0, 1), 0), ("crx", (0, 1), 0)),
+        observable=_MIXED_OBSERVABLE,
+    )
+
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, [0.53])
+
+    assert plan.groups[0].frequency_gaps == (1.0, 2.0)

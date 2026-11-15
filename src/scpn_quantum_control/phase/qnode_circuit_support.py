@@ -587,14 +587,26 @@ def _base_generator_frequencies(operation: PhaseQNodeOperation) -> tuple[float, 
 def _group_generator_frequencies(
     operations: tuple[PhaseQNodeOperation, ...],
 ) -> tuple[float, ...]:
-    """Positive spectral gaps of the shared-parameter generator group."""
+    """Positive spectral gaps of the shared-parameter generator group.
+
+    The expectation is a trigonometric polynomial in the shared angle whose
+    frequencies are sums of one eigenvalue difference per gate. A single-Pauli
+    generator contributes a difference in ``{0, ±1}``, a controlled rotation one
+    in ``{0, ±1/2, ±1}``. A group of ``n`` distinct gates therefore has gaps
+    ``1..n``, or every multiple of ``1/2`` up to ``n`` once any gate is a
+    controlled rotation. That holds whether or not the generators commute.
+    """
     if len(operations) == 1 or _collapsible_shared_parameter_group(operations):
         multiplicity = float(len(operations))
         return tuple(
             frequency * multiplicity for frequency in _base_generator_frequencies(operations[0])
         )
-    # Distinct commuting single-Pauli generators: eigenvalue gaps 1..n.
-    return tuple(float(index) for index in range(1, len(operations) + 1))
+    steps_per_unit = (
+        2 if any(_is_controlled_parametric_gate(operation.gate) for operation in operations) else 1
+    )
+    return tuple(
+        index / steps_per_unit for index in range(1, steps_per_unit * len(operations) + 1)
+    )
 
 
 def _parameter_shift_terms_for_group(

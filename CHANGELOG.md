@@ -456,6 +456,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   rises from 84.19% to 100%. Three older docstrings are fixed, so the test
   documentation ceiling falls to 6988 findings in 549 files.
 
+- **Fixed: parameter-shift gradients for a parameter shared by distinct gates
+  that include a controlled rotation.** The gate-aware planner gave every
+  group of `n` distinct gates the gaps `1..n`. A controlled rotation's
+  generator also has the gap `1/2`, so for groups such as `crx` with `rx`, or
+  `crx` on two qubit pairs, the multi-frequency rule missed half-integer
+  components and `parameter_shift_phase_qnode_gradient` returned a wrong
+  value (off by 8e-3 to 4.5e-2 against central differences on the test
+  circuits). The planner now uses every multiple of `1/2` up to `n` once the
+  group holds a controlled rotation; identical tied copies keep their
+  collapsed gaps, and groups without controlled rotations are unchanged.
+  This has been the case since the controlled-rotation rule was introduced
+  (2026-06-15). A regression test compares the gradient with central
+  differences for three such groups and fails on the old rule.
+
 - **Fixed: the Phase-QNode metric and Fisher routes differentiated
   controlled rotations wrongly.** `phase_qnode_quantum_fisher_information`,
   `phase_qnode_natural_gradient_metric` and
