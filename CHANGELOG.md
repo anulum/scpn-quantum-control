@@ -497,6 +497,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The analog/digital model comparison (`analog_mapping/compare.py`) now tests
+  every refusal of its record:
+  - more than six nodes or no Trotter steps;
+  - a negative or infinite metric;
+  - a fidelity above one;
+  - a hardware-equivalence or analog-advantage claim.
+
+  Coverage rises from 90.16% to 100%.
+
 - The ripser persistent-H1 backend (`topology_control/complexes.py`) now has
   a test of its summary contract: only finite H1 bars count, a bar counts
   only when it lasts strictly longer than the threshold, the H1 fraction uses

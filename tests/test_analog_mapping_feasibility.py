@@ -593,3 +593,32 @@ def test_diagnostics_and_reports_refuse_blank_prose_unknown_severity_and_stray_r
             source_url="https://example.test",
             verified_at_source_utc="2026-07-25T00:00:00Z",
         )
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"n_nodes": 7}, "bounded to 2 <= N <= 6"),
+        ({"trotter_steps": 0}, "trotter_steps must be positive"),
+        ({"parameter_rmse": -1e-3}, "metrics must be finite and non-negative"),
+        ({"digital_trotter_infidelity": float("inf")}, "metrics must be finite and non-negative"),
+        (
+            {"compiler_model_state_fidelity": 1.01},
+            "compiler_model_state_fidelity cannot exceed one",
+        ),
+        (
+            {"digital_trotter_state_fidelity": 1.01},
+            "digital_trotter_state_fidelity cannot exceed one",
+        ),
+        ({"hardware_equivalence_claim_allowed": True}, "cannot promote hardware claims"),
+        ({"analog_advantage_claim_allowed": True}, "cannot promote hardware claims"),
+    ],
+)
+def test_bounded_model_comparison_record_refuses_out_of_range_metrics(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A record keeps N <= 6, positive steps, fidelities in [0, 1] and no promoted claims."""
+    comparison = compare_analog_model_to_trotter(_ring_request(), trotter_steps=8)
+
+    with pytest.raises(ValueError, match=message):
+        replace(comparison, **changes)
