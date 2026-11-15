@@ -33,6 +33,13 @@ _COMPRESSOR_SCHEMA = "scpn.experimental.llm_qpu.compressor_artifact.v1"
 _COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
 _EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 _TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
+_COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
+_BUNDLE_CELL_FIELDS = (
+    "planned_cell_digest",
+    "logical_plan_digest",
+    "compiled_payload_digest",
+    "binding_digest",
+)
 _TARGET_ORIGINS = {
     "provider_target_query": "provider_metadata",
     "synthetic_fixture": "synthetic_classical",
@@ -1067,6 +1074,206 @@ def _roundtrip_target_snapshot(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _worker_digest(value: object, name: str) -> str:
+    if type(value) is not str or _DIGEST.fullmatch(value) is None:
+        raise ValueError(f"invalid {name}")
+    return value
+
+
+def _sorted_unique_names(values: object, name: str, *, allow_empty: bool = False) -> list[str]:
+    if type(values) is not list or (not values and not allow_empty):
+        raise ValueError(f"{name} must be a nonempty list")
+    names = [_target_text(value, name) for value in values]
+    if names != sorted(set(names)):
+        raise ValueError(f"{name} must be sorted and unique")
+    return names
+
+
+def _wire_pairs(values: object, name: str) -> list[list[object]]:
+    if type(values) is not list or any(
+        type(item) is not list or len(item) != 2 for item in values
+    ):
+        raise ValueError(f"{name} must be a list of pairs")
+    return [list(item) for item in values]
+
+
+def _validate_bundle_cells(bundle: dict[str, object]) -> list[int]:
+    cells = bundle["cells"]
+    if type(cells) is not list or not cells or len(cells) > 4096:
+        raise ValueError("compiled cells must be a bounded nonempty list")
+    shots: list[int] = []
+    planned: list[str] = []
+    for cell in cells:
+        if type(cell) is not dict or set(cell) != {*_BUNDLE_CELL_FIELDS, "shots"}:
+            raise ValueError("CompiledCell fields mismatch")
+        for name in _BUNDLE_CELL_FIELDS:
+            _worker_digest(cell[name], name)
+        count = cell["shots"]
+        if type(count) is not int or not 0 < count <= 10_000_000:
+            raise ValueError("compiled cell shots must be bounded")
+        planned.append(str(cell["planned_cell_digest"]))
+        shots.append(count)
+    if len(set(planned)) != len(planned):
+        raise ValueError("a planned cell appears twice in the bundle")
+    layout = bundle["layout"]
+    if type(layout) is not list or not layout:
+        raise ValueError("layout must be a nonempty list")
+    if any(type(qubit) is not int or qubit < 0 for qubit in layout) or len(set(layout)) != len(
+        layout
+    ):
+        raise ValueError("layout must map logical qubits to distinct physical qubits")
+    return shots
+
+
+def _validate_bundle_gates(bundle: dict[str, object]) -> set[str]:
+    logical = _sorted_unique_names(bundle["logical_gates"], "logical gates")
+    counts = _wire_pairs(bundle["compiled_gate_counts"], "compiled gate counts")
+    if not counts:
+        raise ValueError("compiled gate counts must be nonempty")
+    names = _sorted_unique_names([pair[0] for pair in counts], "compiled gates")
+    for _, count in counts:
+        if type(count) is not int or not 0 < count <= 10**9:
+            raise ValueError("compiled gate count must be bounded")
+    substitutions = _wire_pairs(bundle["substitutions"], "substitutions")
+    replaced = _sorted_unique_names(
+        [pair[0] for pair in substitutions], "substituted gates", allow_empty=True
+    )
+    introduced: set[str] = set()
+    for source, targets in substitutions:
+        if source not in logical:
+            raise ValueError("a substitution must replace a logical gate")
+        introduced.update(_sorted_unique_names(targets, "substitution targets"))
+    if set(names) - set(logical) - introduced:
+        raise ValueError("unreported gate substitution")
+    if set(logical) - set(names) - set(replaced):
+        raise ValueError("logical gate vanished without substitution")
+    options = _wire_pairs(bundle["provider_options"], "provider options")
+    keys = _sorted_unique_names(
+        [pair[0] for pair in options], "provider option names", allow_empty=True
+    )
+    if "shots" in keys or len(options) > 64:
+        raise ValueError("provider options are bounded and never carry shots")
+    for _, option in options:
+        if type(option) not in (int, str, bool):
+            raise ValueError("provider option values must be scalars")
+        if type(option) is str:
+            _target_text(option, "provider option value")
+    return set(names)
+
+
+def _bundle_payload_digest(bundle: dict[str, object]) -> str:
+    payload = {
+        name: bundle[name]
+        for name in (
+            "cells",
+            "layout",
+            "logical_gates",
+            "compiled_gate_counts",
+            "substitutions",
+            "compiled_depth",
+            "provider_options",
+        )
+    }
+    return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
+
+
+def _cross_check_bundle(
+    bundle: dict[str, object], target: dict[str, object], shots: list[int], gates: set[str]
+) -> None:
+    if bundle["target_snapshot_digest"] != hashlib.sha256(_canonical_bytes(target)).hexdigest():
+        raise ValueError("bundle was compiled against a different target snapshot")
+    if (bundle["provider"], bundle["device_name"]) != (target["provider"], target["device_name"]):
+        raise ValueError("bundle provider or device differs from its target")
+    layout = bundle["layout"]
+    if type(layout) is not list or max(layout) >= int(str(target["num_qubits"])):
+        raise ValueError("layout uses a qubit the target does not have")
+    basis = target["basis_gates"]
+    if type(basis) is not list or gates - set(basis):
+        raise ValueError("compiled gates outside the target basis")
+    header, target_header = bundle["header"], target["header"]
+    if type(header) is not dict or type(target_header) is not dict:
+        raise ValueError("artifact headers must be objects")
+    if header["data_origin"] != target_header["data_origin"]:
+        raise ValueError("bundle and target data origins differ")
+    limit = target["max_shots"]
+    if type(limit) is dict and limit["state"] == "known" and max(shots) > int(str(limit["value"])):
+        raise ValueError("a compiled cell requests more shots than the target allows")
+
+
+_BUNDLE_FIELDS = {
+    "schema",
+    "object_kind",
+    "target_snapshot_digest",
+    "provider",
+    "device_name",
+    "sdk_lock_digest",
+    "cells",
+    "layout",
+    "logical_gates",
+    "compiled_gate_counts",
+    "substitutions",
+    "compiled_depth",
+    "compile_log_digest",
+    "provider_options",
+    "payload_digest",
+    "header",
+}
+
+
+def _validate_bundle_fields(bundle: object) -> dict[str, object]:
+    if type(bundle) is not dict or set(bundle) != _BUNDLE_FIELDS:
+        raise ValueError("CompiledBundle fields mismatch")
+    if bundle["schema"] != _COMPILED_BUNDLE_SCHEMA or bundle["object_kind"] != "compiled_bundle":
+        raise ValueError("unknown CompiledBundle schema")
+    for name in (
+        "target_snapshot_digest",
+        "sdk_lock_digest",
+        "compile_log_digest",
+        "payload_digest",
+    ):
+        _worker_digest(bundle[name], name)
+    for name in ("provider", "device_name"):
+        _target_text(bundle[name], name)
+    depth = bundle["compiled_depth"]
+    if type(depth) is not int or not 0 < depth <= 10_000_000:
+        raise ValueError("compiled depth must be bounded")
+    header = bundle["header"]
+    origin = header.get("data_origin") if type(header) is dict else None
+    if origin not in ("provider_metadata", "synthetic_classical"):
+        raise ValueError("a compiled bundle derives from provider metadata or a fixture")
+    return bundle
+
+
+def _roundtrip_compiled_bundle(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "target", "bundle"}:
+        raise ValueError("bundle request fields mismatch")
+    _roundtrip_target_snapshot({"op": "roundtrip_target_snapshot", "target": request["target"]})
+    target = request["target"]
+    bundle = _validate_bundle_fields(request["bundle"])
+    if type(target) is not dict:
+        raise ValueError("TargetSnapshot fields mismatch")
+    shots = _validate_bundle_cells(bundle)
+    gates = _validate_bundle_gates(bundle)
+    if bundle["payload_digest"] != _bundle_payload_digest(bundle):
+        raise ValueError("compiled payload digest does not match the bundle")
+    parents = tuple(
+        str(bundle[name])
+        for name in ("target_snapshot_digest", "sdk_lock_digest", "compile_log_digest")
+    )
+    header = bundle["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    _validate_artifact_header(bundle, parents, origin)
+    _cross_check_bundle(bundle, target, shots, gates)
+    wire = _canonical_bytes(bundle)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "bundle": json.loads(wire),
+        "bundle_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -1136,6 +1343,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_compiled_bundle":
+        try:
+            _emit(_roundtrip_compiled_bundle(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is dict and request.get("op") == "roundtrip_target_snapshot":
         try:
             _emit(_roundtrip_target_snapshot(request))
@@ -1159,6 +1373,7 @@ def main() -> int:
                 "roundtrip_compression",
                 "roundtrip_experiment_protocol",
                 "roundtrip_target_snapshot",
+                "roundtrip_compiled_bundle",
             ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,

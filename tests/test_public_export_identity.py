@@ -285,6 +285,21 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_target_snapshot",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.target",
             ),
+            ("COMPILED_BUNDLE_SCHEMA", "scpn_quantum_control.experimental.llm_qpu.contracts.wire"),
+            ("CompiledCell", "scpn_quantum_control.experimental.llm_qpu.contracts.compiled"),
+            ("CompiledBundle", "scpn_quantum_control.experimental.llm_qpu.contracts.compiled"),
+            (
+                "compiled_payload_digest",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+            ),
+            (
+                "validate_compiled_bundle",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+            ),
+            (
+                "decode_compiled_bundle",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+            ),
         ),
     ),
 }

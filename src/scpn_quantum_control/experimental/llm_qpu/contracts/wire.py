@@ -34,6 +34,7 @@ STATIC_PLAN_SCHEMA = "scpn.experimental.llm_qpu.static_circuit_plan.v1"
 MEASUREMENT_PLAN_SCHEMA = "scpn.experimental.llm_qpu.measurement_plan.v1"
 EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
+COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -267,6 +268,7 @@ class ArtifactHeader:
             "compressed_latent_batch",
             "experiment_protocol",
             "target_snapshot",
+            "compiled_bundle",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")

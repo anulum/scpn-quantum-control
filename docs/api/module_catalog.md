@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **867 modules** across **41 package families**
-- **4681 documented public module-level symbols**
+- **868 modules** across **41 package families**
+- **4686 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2416,6 +2416,16 @@ Scientific cell identity, plans, and raw-result completeness.
 **Classes:** `CellKey`, `PlannedCell`
 
 **Functions:** `content_id()`, `request_id()`, `run_id()`, `attempt_id()`, `validate_completion()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.compiled`
+
+Frozen compiled bundles bound to one target snapshot and one SDK lock.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/compiled.py) · Public symbols: **5**
+
+**Classes:** `CompiledCell`, `CompiledBundle`
+
+**Functions:** `compiled_payload_digest()`, `validate_compiled_bundle()`, `decode_compiled_bundle()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.compressed`
 

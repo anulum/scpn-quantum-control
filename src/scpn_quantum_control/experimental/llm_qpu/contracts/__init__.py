@@ -22,6 +22,13 @@ if TYPE_CHECKING:
         run_id,
         validate_completion,
     )
+    from .compiled import (
+        CompiledBundle,
+        CompiledCell,
+        compiled_payload_digest,
+        decode_compiled_bundle,
+        validate_compiled_bundle,
+    )
     from .compressed import CompressedLatentBatch, validate_compressed_latent_batch
     from .compressor import CompressorArtifact, validate_compressor_artifact
     from .latent import LatentBatch, validate_latent_batch
@@ -43,6 +50,7 @@ if TYPE_CHECKING:
     from .task import SplitManifest, TaskSpec, validate_task_split
     from .wire import (
         ARRAY_SCHEMA,
+        COMPILED_BUNDLE_SCHEMA,
         COMPRESSED_SCHEMA,
         COMPRESSOR_SCHEMA,
         EXPERIMENT_PROTOCOL_SCHEMA,
@@ -163,6 +171,26 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.model",
         "ModelDescriptor",
     ),
+    "CompiledCell": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+        "CompiledCell",
+    ),
+    "CompiledBundle": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+        "CompiledBundle",
+    ),
+    "compiled_payload_digest": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+        "compiled_payload_digest",
+    ),
+    "validate_compiled_bundle": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+        "validate_compiled_bundle",
+    ),
+    "decode_compiled_bundle": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
+        "decode_compiled_bundle",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -213,6 +241,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "COMPRESSOR_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "COMPRESSOR_SCHEMA",
+    ),
+    "COMPILED_BUNDLE_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "COMPILED_BUNDLE_SCHEMA",
     ),
     "TARGET_SNAPSHOT_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -404,4 +436,10 @@ __all__ = (
     "TargetSnapshot",
     "ReportedValue",
     "decode_target_snapshot",
+    "COMPILED_BUNDLE_SCHEMA",
+    "CompiledCell",
+    "CompiledBundle",
+    "compiled_payload_digest",
+    "validate_compiled_bundle",
+    "decode_compiled_bundle",
 )

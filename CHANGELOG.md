@@ -497,6 +497,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `CompiledBundle`
+  contract (`experimental/llm_qpu/contracts/compiled.py`, schema
+  `compiled_bundle.v1`) for one target snapshot and one SDK lock: ordered
+  compiled cells with planned-cell, logical-plan, compiled-payload and
+  binding digests and their shots, an injective layout, logical gates,
+  compiled gate counts, declared substitutions, depth and scalar provider
+  options. A compiled gate that is neither logical nor a declared
+  substitution is refused, as is a logical gate that vanishes without one,
+  and a payload digest over the ordered payload makes any later edit
+  visible. `validate_compiled_bundle` refuses a bundle for another target,
+  device or data origin, a layout qubit or gate the target lacks, and shots
+  above a reported maximum. The standalone worker validates the bundle and
+  its target cross-checks independently; the bundle decodes through its own
+  `decode_compiled_bundle`.
+
 - The experimental LLM-QPU lane gains a design-only `TargetSnapshot`
   contract (`experimental/llm_qpu/contracts/target.py`, schema
   `target_snapshot.v1`). It records one concrete provider device as its SDK
