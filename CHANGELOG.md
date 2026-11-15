@@ -346,6 +346,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   edited wire or delta tag, and a protocol bound to another task, metric or
   data origin.
 
+- The compressor artifact contract (`experimental/llm_qpu/contracts/compressor.py`)
+  has full line and branch coverage; the union had it at 79.31%. New tests
+  cover the refusals of fit seeds, methods, maps, scale policies, output
+  widths, epsilon hex (including an overflowing exponent) and fitted-array
+  shapes. They also cover a header of another kind, an edited wire, and a
+  compressor bound to another split, model, input width or data origin.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

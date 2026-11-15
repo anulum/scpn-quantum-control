@@ -755,3 +755,107 @@ def test_compressed_validation_refuses_batches_that_do_not_bind() -> None:
     for candidate, angle_payload, message in cases:
         with pytest.raises(ValueError, match=message):
             validate_compressed_latent_batch(*records, candidate, *payloads[:4], angle_payload)
+
+
+def _rebind_compressor(
+    compressor: CompressorArtifact, *, origin: str = "synthetic_classical", **changes: Any
+) -> CompressorArtifact:
+    """Return the compressor with changed fields and a header bound to the changed content."""
+    fields = {item.name: getattr(compressor, item.name) for item in dataclass_fields(compressor)}
+    fields.update(changes)
+    content = {name: value for name, value in compressor.to_wire().items() if name != "header"} | {
+        name: _wire_value(value) for name, value in changes.items()
+    }
+    parents = (
+        fields["model_digest"],
+        fields["split_digest"],
+        fields["train_group_digest"],
+        fields["software_digest"],
+        fields["centering"].sha256,
+        fields["projection"].sha256,
+        fields["scales"].sha256,
+    )
+    fields["header"] = _header("compressor_artifact", content, parents, origin)
+    return CompressorArtifact(**fields)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"fit_seed": -1}, "invalid compressor fit seed"),
+        ({"fit_seed": 2**63}, "invalid compressor fit seed"),
+        ({"fit_seed": True}, "invalid compressor fit seed"),
+        ({"fit_method": "pca_full_svd_v1"}, "unknown compressor fit method"),
+        ({"map_id": "rms_project_tanh_v1"}, "unknown compressor map"),
+        ({"scale_policy": "unit_variance"}, "unknown compressor scale policy"),
+        ({"output_width": 6}, "compressor output width must be four or eight"),
+        ({"output_width": 8}, "compressor output width must be four or eight"),
+        ({"epsilon_hex": 1e-6}, "compressor epsilon must be canonical finite hex"),
+        ({"epsilon_hex": "zz"}, "compressor epsilon must be canonical finite hex"),
+        ({"epsilon_hex": "0x1p99999"}, "compressor epsilon must be canonical finite hex"),
+        ({"epsilon_hex": (2.0).hex()}, "compressor epsilon must be canonical bounded positive"),
+        ({"epsilon_hex": "0x1p-20"}, "compressor epsilon must be canonical bounded positive"),
+        ({"centering": ArrayDescriptor("<f4", (3,), 12, "0" * 64)}, "compressor centering must"),
+        ({"projection": ArrayDescriptor("<f8", (4, 4), 128, "0" * 64)}, "compressor projection"),
+        ({"scales": "descriptor"}, "compressor scales must be exact float32 shape"),
+    ],
+)
+def test_compressor_refuses_unfrozen_fit_metadata_and_shapes(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A compressor refuses bad seeds, methods, maps, policies, widths, epsilons and arrays."""
+    _, split, model, _, _ = _records()
+    compressor, _, _, _ = _compressor(split, model)
+    with pytest.raises(ValueError, match=f"^{message}"):
+        replace(compressor, **changes)
+
+
+def test_compressor_refuses_another_header_and_an_edited_wire() -> None:
+    """A compressor takes only its own header, and the decoder refuses an edited field set."""
+    _, split, model, _, _ = _records()
+    compressor, _, _, _ = _compressor(split, model)
+    header_wire: Any = compressor.header.to_wire()
+    for header in (split.header, header_wire):
+        with pytest.raises(ValueError, match="^CompressorArtifact requires exact header$"):
+            replace(compressor, header=header)
+    encoded = compressor.to_wire()
+    for value, message in (
+        ({**encoded, "extra": 1}, "CompressorArtifact fields mismatch"),
+        ({**encoded, "object_kind": "latent_batch"}, "unknown CompressorArtifact schema"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            decode_contract(canonical_bytes(value))
+
+
+def test_compressor_validation_refuses_a_compressor_that_does_not_bind() -> None:
+    """Validation needs the frozen compressor bound to the split, model, width and origin."""
+    _, split, model, _, _ = _records()
+    compressor, center, projection, scales = _compressor(split, model)
+    loose: Any = compressor.to_wire()
+    with pytest.raises(ValueError, match="^compressor validation requires frozen contracts$"):
+        validate_compressor_artifact(split, model, loose, center, projection, scales)
+    wider_center = ArrayDescriptor("<f4", (8,), 32, "5" * 64)
+    wider_projection = ArrayDescriptor("<f4", (8, 4), 128, "6" * 64)
+    cases: list[tuple[CompressorArtifact, str]] = [
+        (
+            _rebind_compressor(compressor, split_digest="9" * 64),
+            "compressor split digest mismatch",
+        ),
+        (
+            _rebind_compressor(compressor, model_digest="9" * 64),
+            "compressor model digest mismatch",
+        ),
+        (
+            _rebind_compressor(
+                compressor, input_width=8, centering=wider_center, projection=wider_projection
+            ),
+            "compressor input differs from model hidden state",
+        ),
+        (
+            _rebind_compressor(compressor, origin="owner_dataset"),
+            "compressor data origin mismatch",
+        ),
+    ]
+    for candidate, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            validate_compressor_artifact(split, model, candidate, center, projection, scales)
