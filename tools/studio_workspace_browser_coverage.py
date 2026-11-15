@@ -27,6 +27,9 @@ _native_script_sources: WeakKeyDictionary[CDPSession, dict[str, str]] = WeakKeyD
 _native_script_listeners: WeakKeyDictionary[CDPSession, Callable[[dict[str, object]], None]] = (
     WeakKeyDictionary()
 )
+_COHORTS = ("panel", "workbench", "parameters", "experiments", "results", "workflows")
+# Cohorts whose own shell replaces the standalone workspace panel owner.
+_PANEL_REPLACING = ("panel", "workbench", "experiments", "results", "workflows")
 
 
 def _source_cohorts(root: Path) -> dict[str, set[str]]:
@@ -168,6 +171,38 @@ def verify_native_coverage(artifact: Path, cohort_snapshot: Path, root: Path) ->
             raise ValueError("Archived original source digest differs")
 
 
+def _source_retainer(
+    session: CDPSession, sources: dict[str, str]
+) -> Callable[[dict[str, object]], None]:
+    """Build the listener that keeps debugger text while each parsed script is readable.
+
+    Parameters
+    ----------
+    session : CDPSession
+        Page-scoped native profiler session.
+    sources : dict[str, str]
+        Destination of the retained script text by script identity.
+
+    Returns
+    -------
+    Callable[[dict[str, object]], None]
+        Listener for ``Debugger.scriptParsed`` notifications; it raises ``ValueError``
+        when the debugger returns a source value other than text.
+
+    """
+
+    def retain_source(event: dict[str, object]) -> None:
+        _retain_source(
+            event,
+            sources,
+            lambda identifier: session.send("Debugger.getScriptSource", {"scriptId": identifier})[
+                "scriptSource"
+            ],
+        )
+
+    return retain_source
+
+
 def start_native_coverage(page: Page, *, session: CDPSession | None = None) -> CDPSession:
     """Collect actual native V8 counters without replacing storage behavior.
 
@@ -191,35 +226,163 @@ def start_native_coverage(page: Page, *, session: CDPSession | None = None) -> C
         session.send("Debugger.disable")
     sources: dict[str, str] = {}
     _native_script_sources[session] = sources
-
-    def retain_source(event: dict[str, object]) -> None:
-        """Keep actual debugger text while its parsed source script remains readable.
-
-        Parameters
-        ----------
-        event : dict[str, object]
-            Native debugger notification containing the script identity and URL.
-
-        Raises
-        ------
-        ValueError
-            The debugger returns a source value other than text.
-
-        """
-        _retain_source(
-            event,
-            sources,
-            lambda identifier: session.send("Debugger.getScriptSource", {"scriptId": identifier})[
-                "scriptSource"
-            ],
-        )
-
+    retain_source = _source_retainer(session, sources)
     session.on("Debugger.scriptParsed", retain_source)
     _native_script_listeners[session] = retain_source
     session.send("Debugger.enable")
     session.send("Profiler.enable")
     session.send("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True})
     return session
+
+
+def _required_owners(root: Path, cohorts_enabled: dict[str, bool]) -> set[str]:
+    """Return the source owners the current page must have executed.
+
+    Parameters
+    ----------
+    root : Path
+        The studio-web directory.
+    cohorts_enabled : dict[str, bool]
+        Whether each optional cohort (panel, workbench, parameters, experiments,
+        results, workflows) is required.
+
+    Returns
+    -------
+    set[str]
+        Served paths of the required owners.
+
+    """
+    cohorts = _source_cohorts(root)
+    owners = set(cohorts["workspace"])
+    if any(cohorts_enabled[name] for name in _PANEL_REPLACING):
+        owners.discard("/src/WorkspacePanel.tsx")
+    for name, enabled in cohorts_enabled.items():
+        if enabled:
+            owners.update(cohorts[name])
+    return owners
+
+
+def _record_scripts(
+    session: CDPSession, root: Path, owners: set[str], records: list[dict[str, object]]
+) -> set[str]:
+    """Take the precise coverage and keep each owner script with its digests.
+
+    Parameters
+    ----------
+    session : CDPSession
+        Running page-scoped native profiler.
+    root : Path
+        The studio-web directory.
+    owners : set[str]
+        Served paths of the required owners.
+    records : list[dict[str, object]]
+        Caller-owned destination of the kept scripts.
+
+    Returns
+    -------
+    set[str]
+        Served paths of the owners captured.
+
+    """
+    captured: set[str] = set()
+    result = session.send("Profiler.takePreciseCoverage")
+    for entry in result["result"]:
+        path = urlsplit(entry["url"]).path
+        if path not in owners:
+            continue
+        # Reload may discard a context after its real native counters were recorded.
+        # The cache contains only text obtained from this exact debugger session.
+        code = _native_script_sources.get(session, {}).get(entry["scriptId"])
+        if code is None:
+            code = session.send("Debugger.getScriptSource", {"scriptId": entry["scriptId"]})[
+                "scriptSource"
+            ]
+        records.append(
+            {
+                "coverage": entry,
+                "code": code,
+                "code_sha256": hashlib.sha256(code.encode("utf-8")).hexdigest(),
+                "source_sha256": hashlib.sha256(
+                    (root / path.lstrip("/")).read_bytes()
+                ).hexdigest(),
+            }
+        )
+        captured.add(path)
+    return captured
+
+
+def _stop_profiler(session: CDPSession, capture_error: Exception | None) -> None:
+    """Stop the profiler and drop the session's source cache and listener.
+
+    Parameters
+    ----------
+    session : CDPSession
+        Page-scoped native profiler session.
+    capture_error : Exception | None
+        The capture failure, if the capture failed.
+
+    Raises
+    ------
+    RuntimeError
+        Capture and profiler stop both fail; the original capture is retained as cause.
+    Exception
+        The profiler-stop exception when only the stop fails.
+
+    """
+    try:
+        session.send("Profiler.stopPreciseCoverage")
+    except Exception as stop_error:
+        if capture_error is None:
+            raise
+        raise RuntimeError(
+            f"Native coverage capture failed ({type(capture_error).__name__}: {capture_error}); "
+            f"profiler stop also failed ({type(stop_error).__name__}: {stop_error})"
+        ) from capture_error
+    finally:
+        _native_script_sources.pop(session, None)
+        listener = _native_script_listeners.pop(session, None)
+        if listener is not None:
+            session.remove_listener("Debugger.scriptParsed", listener)
+
+
+def _capture(
+    session: CDPSession, enabled: dict[str, bool], records: list[dict[str, object]] | None
+) -> list[dict[str, object]]:
+    """Record the required owner scripts, always stop the profiler, then require every owner.
+
+    Parameters
+    ----------
+    session : CDPSession
+        Running page-scoped native profiler.
+    enabled : dict[str, bool]
+        Whether each optional cohort is required.
+    records : list[dict[str, object]] | None
+        Caller-owned destination of the kept scripts, or None for a fresh one.
+
+    Returns
+    -------
+    list[dict[str, object]]
+        The kept scripts.
+
+    Raises
+    ------
+    AssertionError
+        The current page omits a required original production owner.
+
+    """
+    root = Path(__file__).resolve().parents[1] / "studio-web"
+    kept = [] if records is None else records
+    capture_error: Exception | None = None
+    try:
+        owners = _required_owners(root, enabled)
+        captured = _record_scripts(session, root, owners, kept)
+    except Exception as error:
+        capture_error = error
+        raise
+    finally:
+        _stop_profiler(session, capture_error)
+    assert captured == owners, f"Missing current-page native owners: {sorted(owners - captured)}"
+    return kept
 
 
 def take_native_coverage(
@@ -264,75 +427,10 @@ def take_native_coverage(
     AssertionError
         The current page omits a required original production owner.
     RuntimeError
-        Capture and profiler stop both fail; the original capture is retained as cause.
-    Exception
-        The original capture or profiler-stop exception when only one operation fails.
+        Capture and profiler stop both fail, with the capture as cause; when only one
+        of them fails, its own exception propagates unchanged.
 
     """
-    root = Path(__file__).resolve().parents[1] / "studio-web"
-    owners: set[str] = set()
-    records = [] if records is None else records
-    captured: set[str] = set()
-    capture_error: Exception | None = None
-    try:
-        cohorts = _source_cohorts(root)
-        owners.update(cohorts["workspace"])
-        if (
-            include_panel
-            or include_workbench
-            or include_experiments
-            or include_results
-            or include_workflows
-        ):
-            owners.discard("/src/WorkspacePanel.tsx")
-        for enabled, name in [
-            (include_panel, "panel"),
-            (include_workbench, "workbench"),
-            (include_parameters, "parameters"),
-            (include_experiments, "experiments"),
-            (include_results, "results"),
-            (include_workflows, "workflows"),
-        ]:
-            if enabled:
-                owners.update(cohorts[name])
-        result = session.send("Profiler.takePreciseCoverage")
-        for entry in result["result"]:
-            if urlsplit(entry["url"]).path not in owners:
-                continue
-            # Reload may discard a context after its real native counters were recorded.
-            # The cache contains only text obtained from this exact debugger session.
-            code = _native_script_sources.get(session, {}).get(entry["scriptId"])
-            if code is None:
-                code = session.send("Debugger.getScriptSource", {"scriptId": entry["scriptId"]})[
-                    "scriptSource"
-                ]
-            source = root / urlsplit(entry["url"]).path.lstrip("/")
-            records.append(
-                {
-                    "coverage": entry,
-                    "code": code,
-                    "code_sha256": hashlib.sha256(code.encode("utf-8")).hexdigest(),
-                    "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                }
-            )
-            captured.add(urlsplit(entry["url"]).path)
-    except Exception as error:
-        capture_error = error
-        raise
-    finally:
-        try:
-            session.send("Profiler.stopPreciseCoverage")
-        except Exception as stop_error:
-            if capture_error is None:
-                raise
-            raise RuntimeError(
-                f"Native coverage capture failed ({type(capture_error).__name__}: {capture_error}); "
-                f"profiler stop also failed ({type(stop_error).__name__}: {stop_error})"
-            ) from capture_error
-        finally:
-            _native_script_sources.pop(session, None)
-            listener = _native_script_listeners.pop(session, None)
-            if listener is not None:
-                session.remove_listener("Debugger.scriptParsed", listener)
-    assert captured == owners, f"Missing current-page native owners: {sorted(owners - captured)}"
-    return records
+    flags: tuple[bool, ...] = (include_panel, include_workbench, include_parameters)
+    flags += (include_experiments, include_results, include_workflows)
+    return _capture(session, dict(zip(_COHORTS, flags, strict=True)), records)

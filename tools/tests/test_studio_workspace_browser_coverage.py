@@ -201,6 +201,84 @@ def test_archive_refuses_corrupted_original_native_metadata(
     assert json.loads(artifact.read_text()) == value
 
 
+_SHELL_OWNERS = {
+    "/src/app/moduleRegistry.tsx",
+    "/src/shared/contracts/module.ts",
+    "/src/app/moduleViews/ModuleDocumentViews.tsx",
+    "/src/shared/browser/ScrollRegion.tsx",
+}
+
+
+_WORKBENCH_VIEWS = (
+    ("Model", "Model"),
+    ("Analyse", "Analyse"),
+    ("Compare", "Method comparison and uncertainty"),
+    ("Atlas", "Atlas unavailable"),
+)
+_FACADE_OWNERS = {
+    "/src/shared/storage/workspaceStore.ts",
+    "/src/shared/storage/workspaceArchive.ts",
+    "/src/shared/workspace/WorkspaceEditor.tsx",
+    "/src/shared/workspace/useWorkspace.ts",
+    "/src/QuantumStudioPanel.tsx",
+}
+_NAVIGATION_OWNERS = {
+    "/src/modules/catalogue/CapabilityCatalogue.tsx",
+    "/src/app/Workbench.tsx",
+    "/src/app/WorkbenchInspector.tsx",
+    "/src/app/RouteBoundary.tsx",
+    "/src/app/routing.ts",
+    "/src/app/useWorkbenchRoute.ts",
+    "/src/modules/build/BuildView.tsx",
+    "/src/modules/results/ResultsView.tsx",
+    "/src/modules/atlas/UnavailableView.tsx",
+}
+
+
+def _owned_source() -> str:
+    """Return the owned source host the runner supplies.
+
+    Returns
+    -------
+    str
+        Validated literal-loopback source host.
+
+    Raises
+    ------
+    RuntimeError
+        No source host was supplied.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Start the owned source host and supply STUDIO_WORKSPACE_SOURCE_URL")
+    return loopback_url(supplied)
+
+
+def _captured_paths(records: list[dict[str, object]]) -> set[str]:
+    """Return the served path of every captured script.
+
+    Parameters
+    ----------
+    records : list[dict[str, object]]
+        Native coverage records.
+
+    Returns
+    -------
+    set[str]
+        Served script paths.
+
+    """
+    actual: set[str] = set()
+    for record in records:
+        native = record["coverage"]
+        assert isinstance(native, dict)
+        url = native.get("url")
+        assert isinstance(url, str)
+        actual.add(urlsplit(url).path)
+    return actual
+
+
 @pytest.fixture
 def native_browser() -> Iterator[Browser]:
     """Own and close a genuine Chromium process for collector behavior.
@@ -231,10 +309,7 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
         Real Chromium process whose test context is isolated from other cases.
 
     """
-    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
-    if supplied is None:
-        raise RuntimeError("Start the owned source host and supply STUDIO_WORKSPACE_SOURCE_URL")
-    source = loopback_url(supplied)
+    source = _owned_source()
     authority = urlsplit(source).netloc
     context = native_browser.new_context(service_workers="block")
     try:
@@ -252,13 +327,7 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
         session = start_native_coverage(page)
         page.goto(source + "browser-tests/workspace.html", wait_until="networkidle")
         records = take_native_coverage(session)
-        actual: set[str] = set()
-        for record in records:
-            native = record["coverage"]
-            assert isinstance(native, dict)
-            url = native.get("url")
-            assert isinstance(url, str)
-            actual.add(urlsplit(url).path)
+        actual = _captured_paths(records)
         assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
@@ -266,12 +335,7 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
             "/src/WorkspacePanel.tsx",
             "/src/shared/workspace/useWorkspace.ts",
         } <= actual
-        assert {
-            "/src/app/moduleRegistry.tsx",
-            "/src/shared/contracts/module.ts",
-            "/src/app/moduleViews/ModuleDocumentViews.tsx",
-            "/src/shared/browser/ScrollRegion.tsx",
-        } <= actual
+        assert actual >= _SHELL_OWNERS
     finally:
         context.close()
 
@@ -410,28 +474,17 @@ def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
         Real Chromium process whose page imports the production experiment controls.
 
     """
-    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
-    if supplied is None:
-        raise RuntimeError("Supply the owned source host")
     context = native_browser.new_context(service_workers="block")
     try:
         page = context.new_page()
         session = start_native_coverage(page)
-        page.goto(
-            loopback_url(supplied) + "browser-tests/workbench.html", wait_until="networkidle"
-        )
+        page.goto(_owned_source() + "browser-tests/workbench.html", wait_until="networkidle")
         page.get_by_role("navigation", name="Workbench views").get_by_role(
             "link", name="Run", exact=True
         ).click()
         expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
         records = take_native_coverage(session, include_experiments=True)
-        actual: set[str] = set()
-        for record in records:
-            native = record["coverage"]
-            assert isinstance(native, dict)
-            url = native.get("url")
-            assert isinstance(url, str)
-            actual.add(urlsplit(url).path)
+        actual = _captured_paths(records)
         assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
@@ -444,12 +497,7 @@ def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
             "/src/shared/experiments/useExperimentRun.ts",
             "/src/modules/experiments/ExperimentRunner.tsx",
         } <= actual
-        assert {
-            "/src/app/moduleRegistry.tsx",
-            "/src/shared/contracts/module.ts",
-            "/src/app/moduleViews/ModuleDocumentViews.tsx",
-            "/src/shared/browser/ScrollRegion.tsx",
-        } <= actual
+        assert actual >= _SHELL_OWNERS
     finally:
         context.close()
 
@@ -519,55 +567,21 @@ def test_capture_actual_workbench_navigation_owners(
         Request the original navigation and complete compiled shell cohort.
 
     """
-    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
-    if supplied is None:
-        raise RuntimeError("Start the owned source host and supply STUDIO_WORKSPACE_SOURCE_URL")
-    source = loopback_url(supplied)
+    source = _owned_source()
     context = native_browser.new_context(service_workers="block")
     try:
         page = context.new_page()
         session = start_native_coverage(page)
         page.goto(source + "browser-tests/workbench.html", wait_until="networkidle")
         # Compare loads the lazy method-comparison owners the workbench cohort requires.
-        for view, heading in (
-            ("Model", "Model"),
-            ("Analyse", "Analyse"),
-            ("Compare", "Method comparison and uncertainty"),
-            ("Atlas", "Atlas unavailable"),
-        ):
+        for view, heading in _WORKBENCH_VIEWS:
             page.get_by_role("link", name=view, exact=True).click()
             expect(page.get_by_role("heading", name=heading, exact=True)).to_be_visible()
         records = take_native_coverage(
             session, include_panel=include_panel, include_workbench=include_workbench
         )
-        actual: set[str] = set()
-        for record in records:
-            native = record["coverage"]
-            assert isinstance(native, dict)
-            url = native.get("url")
-            assert isinstance(url, str)
-            actual.add(urlsplit(url).path)
-        expected = {
-            "/src/shared/storage/workspaceStore.ts",
-            "/src/shared/storage/workspaceArchive.ts",
-            "/src/shared/workspace/WorkspaceEditor.tsx",
-            "/src/shared/workspace/useWorkspace.ts",
-            "/src/QuantumStudioPanel.tsx",
-        }
-        if include_workbench:
-            expected.update(
-                {
-                    "/src/modules/catalogue/CapabilityCatalogue.tsx",
-                    "/src/app/Workbench.tsx",
-                    "/src/app/WorkbenchInspector.tsx",
-                    "/src/app/RouteBoundary.tsx",
-                    "/src/app/routing.ts",
-                    "/src/app/useWorkbenchRoute.ts",
-                    "/src/modules/build/BuildView.tsx",
-                    "/src/modules/results/ResultsView.tsx",
-                    "/src/modules/atlas/UnavailableView.tsx",
-                }
-            )
+        actual = _captured_paths(records)
+        expected = _FACADE_OWNERS | (_NAVIGATION_OWNERS if include_workbench else set())
         assert expected <= actual
         assert "/src/app/moduleRegistry.tsx" in actual
         assert "/src/app/moduleViews/ModuleJobDock.tsx" in actual
@@ -679,10 +693,7 @@ def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None
         Real Chromium process importing a fully admitted signed matrix archive.
 
     """
-    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
-    if supplied is None:
-        raise RuntimeError("Supply the owned source host")
-    source = loopback_url(supplied)
+    source = _owned_source()
     context = native_browser.new_context(service_workers="block")
     try:
         page = context.new_page()
@@ -699,13 +710,7 @@ def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None
         page.get_by_role("button", name="Preview archive", exact=True).click()
         expect(page.get_by_role("region", name="Linked parameter editor")).to_be_visible()
         records = take_native_coverage(session, include_parameters=True)
-        actual: set[str] = set()
-        for record in records:
-            native = record["coverage"]
-            assert isinstance(native, dict)
-            url = native.get("url")
-            assert isinstance(url, str)
-            actual.add(urlsplit(url).path)
+        actual = _captured_paths(records)
         assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
@@ -717,12 +722,7 @@ def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None
             "/src/modules/parameters/ParameterEditor.tsx",
             "/src/modules/parameters/ParameterWorkspace.tsx",
         } <= actual
-        assert {
-            "/src/app/moduleRegistry.tsx",
-            "/src/shared/contracts/module.ts",
-            "/src/app/moduleViews/ModuleDocumentViews.tsx",
-            "/src/shared/browser/ScrollRegion.tsx",
-        } <= actual
+        assert actual >= _SHELL_OWNERS
     finally:
         context.close()
 
@@ -838,10 +838,7 @@ def test_disposal_after_capture_preserves_records_and_stop_error(native_browser:
         Real Chromium process used for an independently disposed page.
 
     """
-    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
-    if supplied is None:
-        raise RuntimeError("Start the owned source host and supply STUDIO_WORKSPACE_SOURCE_URL")
-    source = loopback_url(supplied)
+    source = _owned_source()
     context = native_browser.new_context(service_workers="block")
     try:
         reference_page = context.new_page()
