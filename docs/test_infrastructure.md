@@ -627,7 +627,11 @@ branch threshold. The recorded remote baseline is 117,560 / 118,676 executable
 lines (99.0596%) and 39,259 / 40,146 branches (97.7906%) at origin `a3759aa3`
 (successful CI run `40837529560`). The 99.05% gate leaves eleven covered lines
 of margin at this measured inventory size. Threshold comparisons use the exact
-counts rather than the XML report's rounded rates.
+counts rather than the XML report's rounded rates. The `coverage-gap-audit-3.15`
+artifact is uploaded once the job's last required check has passed and before
+the Codecov step, so it holds the exact `coverage.xml` the gate read. The Codecov
+upload sends that file alone and runs none of the uploader's report plugins,
+which would otherwise rewrite it over tests and tools.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 

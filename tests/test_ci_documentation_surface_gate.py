@@ -16,6 +16,7 @@ import tomllib
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scpn_quantum_control import TraceADArray, TraceADScalar
 from scpn_quantum_control.control import realtime_runtime
@@ -306,6 +307,34 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "mypy --strict tools/audit_coverage_debt.py" in workflow
     assert "--coverage-audit coverage-gap-audit.json" in workflow
     assert "--check-current" in workflow
+
+
+def test_ci_coverage_evidence_is_the_xml_the_line_gate_audited() -> None:
+    """Capture the evidence before any uploader can rewrite the gated XML."""
+    owner = workflow_path_for_job("test")
+    steps = yaml.safe_load(owner.read_text(encoding="utf-8"))["jobs"]["test"]["steps"]
+    names = [step.get("name", "") for step in steps]
+    gate = next(
+        i for i, step in enumerate(steps) if "--coverage-xml coverage.xml" in step.get("run", "")
+    )
+    evidence = names.index("Upload coverage policy evidence (3.15 only)")
+    uploader = names.index("Upload coverage")
+
+    assert names[gate + 1 : evidence] == [
+        "Audit coverage gaps (3.15 only)",
+        "Smoke-test DLA-parity validation CLI (3.15 only)",
+    ]
+    assert uploader > evidence
+    assert set(steps[evidence]["with"]["path"].split()) == {
+        ".coverage",
+        "coverage.xml",
+        "coverage-gap-audit.json",
+    }
+    codecov = steps[uploader]
+    assert codecov["uses"].startswith("codecov/codecov-action@")
+    assert codecov["with"]["files"] == "coverage.xml"
+    assert codecov["with"]["disable_search"] is True
+    assert codecov["with"]["plugins"] == "noop"
 
 
 def test_ci_mlir_leaf_job_enforces_exact_branch_coverage() -> None:

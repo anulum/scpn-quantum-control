@@ -787,19 +787,6 @@ jobs:
       - name: Smoke-test DLA-parity validation CLI (3.15 only)
         if: matrix.python-version == '3.15'
         run: python scripts/run_dla_parity_suite.py --json > /tmp/dla_parity_result.json
-      - name: Upload coverage
-        if: matrix.python-version == '3.15'
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
-        with:
-          files: coverage.xml
-          fail_ci_if_error: false
-
-      - name: Save observed durations after mandatory profile success
-        if: github.ref == 'refs/heads/main'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
-        with:
-          path: ${{ runner.temp }}/ci-test-timings-cache/${{ matrix.python-version }}.json
-          key: ${{ runner.os }}-ci-test-timings-v1-${{ matrix.python-version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Upload coverage policy evidence (3.15 only)
         if: matrix.python-version == '3.15'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
@@ -812,6 +799,24 @@ jobs:
             coverage-gap-audit.json
           if-no-files-found: error
           retention-days: 30
+      - name: Upload coverage
+        if: matrix.python-version == '3.15'
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
+        with:
+          # Send the XML the line gate audited and nothing else: without these
+          # two inputs the uploader's report plugin rewrites coverage.xml over
+          # every measured root, including tests and tools.
+          files: coverage.xml
+          disable_search: true
+          plugins: noop
+          fail_ci_if_error: false
+
+      - name: Save observed durations after mandatory profile success
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ci-test-timings-cache/${{ matrix.python-version }}.json
+          key: ${{ runner.os }}-ci-test-timings-v1-${{ matrix.python-version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
   # Cross-platform package smoke. The full scientific artefact and
   # documentation corpus is validated on Linux with the pinned Linux
   # lock above; this job verifies that the install/import/core-QEC

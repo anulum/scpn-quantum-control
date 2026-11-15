@@ -216,6 +216,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+- The `coverage-gap-audit-3.15` CI artifact now holds the `coverage.xml` that
+  the line gate audited. Until now the Codecov uploader's report plugin
+  rewrote that file after the gate, over every measured root including tests,
+  tools and oscillatools. The artifact from run 43648887791 therefore read
+  94.40% where the gate had passed at 99.2515%.
+  - The evidence is uploaded once the job's last required check has passed,
+    before the Codecov step.
+  - The Codecov step sends only that file and runs no plugins, so Codecov gets
+    the same measurement as the gate.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
