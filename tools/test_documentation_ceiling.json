@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "cf26b98125295e5a22623f081fce17bebdbd45a4",
+ "measured_commit": "1cc7962af8c6420cbba100aff53ef2257c1cf15a",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7035,
- "total_files": 558,
+ "total_findings": 7010,
+ "total_files": 553,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -109,11 +109,6 @@
   "tests/_differentiable_programming_benchmark_edge_helpers.py": 6,
   "tests/experimental/llm_qpu/memory_task/test_temporal_memory_task.py": 8,
   "tests/experimental/llm_qpu/memory_task/test_temporal_transfer_task.py": 3,
-  "tests/experimental/llm_qpu/test_cell_contract_acceptance.py": 9,
-  "tests/experimental/llm_qpu/test_compressor_artifact_contract.py": 4,
-  "tests/experimental/llm_qpu/test_experiment_protocol_contract.py": 6,
-  "tests/experimental/llm_qpu/test_latent_batch_contract.py": 3,
-  "tests/experimental/llm_qpu/test_model_descriptor_contract.py": 3,
   "tests/test_accelerator_detection_boundaries.py": 4,
   "tests/test_adapt_vqe.py": 24,
   "tests/test_adaptive_fim_evidence.py": 16,

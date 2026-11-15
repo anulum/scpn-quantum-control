@@ -15,6 +15,7 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -53,7 +54,7 @@ def _header(kind: str, content: dict[str, object], parents: tuple[str, ...]) -> 
 
 
 def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
-    task_fields = {
+    task_fields: dict[str, Any] = {
         "task_id": "fixture-label",
         "objective": "Predict held-out generated labels",
         "source_kind": "synthetic_classical",
@@ -75,7 +76,7 @@ def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
             ("a" * 64,),
         ),
     )
-    split_fields = {
+    split_fields: dict[str, Any] = {
         "task_digest": _sha(task.to_wire()),
         "dataset_digest": "b" * 64,
         "train_groups": ("train",),
@@ -101,7 +102,7 @@ def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
             (split_fields["task_digest"], split_fields["dataset_digest"]),
         ),
     )
-    fields = {
+    fields: dict[str, Any] = {
         "experiment_id": "fixture-protocol",
         "evaluation_id": "heldout-v1",
         "task_digest": _sha(task.to_wire()),
@@ -156,7 +157,7 @@ def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
     return task, split, protocol
 
 
-def _worker(protocol: dict[str, object]) -> tuple[int, dict[str, object]]:
+def _worker(protocol: dict[str, object]) -> tuple[int, dict[str, Any]]:
     result = subprocess.run(
         [sys.executable, str(_WORKER)],
         input=json.dumps({"op": "roundtrip_experiment_protocol", "protocol": protocol}).encode(),
@@ -168,6 +169,7 @@ def _worker(protocol: dict[str, object]) -> tuple[int, dict[str, object]]:
 
 
 def test_protocol_roundtrip_and_task_binding() -> None:
+    """Round-trip a protocol and check its binding to the task and split."""
     task, split, protocol = _fixture()
     validate_experiment_protocol(protocol, task, split)
     raw = canonical_bytes(protocol.to_wire())
@@ -193,8 +195,9 @@ def test_protocol_roundtrip_and_task_binding() -> None:
     ],
 )
 def test_tampered_protocol_refused_on_both_surfaces(field: str, value: object) -> None:
+    """Refuse a tampered protocol in the decoder and in the worker."""
     _, _, protocol = _fixture()
-    wire = protocol.to_wire()
+    wire: dict[str, Any] = protocol.to_wire()
     wire[field] = value
     wire["header"]["content_digest"] = _sha(
         {key: item for key, item in wire.items() if key != "header"}
@@ -207,6 +210,7 @@ def test_tampered_protocol_refused_on_both_surfaces(field: str, value: object) -
 
 
 def test_protocol_cannot_rebind_task_or_split() -> None:
+    """Refuse a protocol rebound to a changed task or split."""
     task, split, protocol = _fixture()
     changed_task = task._scientific_wire()
     changed_task["primary_metric"] = "accuracy"
@@ -230,8 +234,9 @@ def test_protocol_cannot_rebind_task_or_split() -> None:
 
 @pytest.mark.parametrize("origin", ["owner_checkpoint", "hardware"])
 def test_protocol_refuses_non_task_data_origin(origin: str) -> None:
+    """Refuse a protocol whose data origin is not a task source."""
     _, _, protocol = _fixture()
-    wire = protocol.to_wire()
+    wire: dict[str, Any] = protocol.to_wire()
     wire["header"]["data_origin"] = origin
     with pytest.raises(ValueError):
         decode_contract(canonical_bytes(wire))
@@ -241,8 +246,9 @@ def test_protocol_refuses_non_task_data_origin(origin: str) -> None:
 
 
 def test_protocol_refuses_impossible_classification_effect() -> None:
+    """Refuse a classification effect larger than one."""
     _, _, protocol = _fixture()
-    wire = protocol.to_wire()
+    wire: dict[str, Any] = protocol.to_wire()
     wire["primary_metric"] = "accuracy"
     wire["contrast_direction"] = "quantum_minus_classical"
     wire["minimum_relevant_delta"] = f64(1.1)
@@ -257,8 +263,9 @@ def test_protocol_refuses_impossible_classification_effect() -> None:
 
 
 def test_v1_wire_does_not_silently_upgrade() -> None:
+    """Refuse a v1 wire instead of upgrading it silently."""
     _, _, protocol = _fixture()
-    wire = protocol.to_wire()
+    wire: dict[str, Any] = protocol.to_wire()
     wire["schema"] = "scpn.experimental.llm_qpu.experiment_protocol.v1"
     wire.pop("contrast_direction")
     wire.pop("minimum_relevant_delta")

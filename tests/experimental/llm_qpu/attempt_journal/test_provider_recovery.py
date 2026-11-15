@@ -13,6 +13,7 @@ import dataclasses
 import hashlib
 import json
 from pathlib import Path
+from typing import Any, cast
 from uuid import UUID, uuid4
 
 import pytest
@@ -57,7 +58,12 @@ class _ExistingJobDirectory:
         return self.job
 
 
-def _request() -> tuple[object, list[object], object]:
+def _rows(journal: AttemptJournal, attempt: str) -> list[dict[str, Any]]:
+    """Return the journal's job rows of one attempt."""
+    return cast("list[dict[str, Any]]", journal.snapshot(attempt)["jobs"])
+
+
+def _request() -> tuple[Any, list[Any], Any]:
     payload = {
         "circuits": [
             {
@@ -105,7 +111,7 @@ def test_existing_provider_payload_binds_ambiguous_job(tmp_path: Path) -> None:
     existing = _ExistingJobDirectory(provider_id, _ExistingJob(circuits, parameters))
 
     assert recover_existing_job(reopened, attempt_id, 0, str(provider_id), existing) == digest
-    row = reopened.snapshot(attempt_id)["jobs"][0]
+    row = _rows(reopened, attempt_id)[0]
     assert row["state"] == "submitted"
     assert row["provider_job_id"] == str(provider_id)
     assert existing.lookups == 1
@@ -129,6 +135,6 @@ def test_wrong_provider_payload_does_not_bind_or_retry(tmp_path: Path) -> None:
 
     with pytest.raises(JournalStateError, match="payload differs"):
         recover_existing_job(journal, attempt_id, 0, str(provider_id), existing)
-    row = AttemptJournal(tmp_path / "private").snapshot(attempt_id)["jobs"][0]
+    row = _rows(AttemptJournal(tmp_path / "private"), attempt_id)[0]
     assert row["state"] == "recovery_required"
     assert row["provider_job_id"] is None

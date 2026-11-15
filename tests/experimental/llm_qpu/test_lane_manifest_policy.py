@@ -17,6 +17,7 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -200,13 +201,15 @@ def test_manifest_refuses_unreviewed_execution_or_scope(
     field: str, value: object, message: str
 ) -> None:
     """Malformed scope and execution authority fail before any provider path."""
+    # The values are deliberately invalid; the manifest must refuse them at run time.
+    changes: dict[str, Any] = {field: value}
     with pytest.raises(ValueError, match=message):
-        replace(LANE_MANIFEST, **{field: value})
+        replace(LANE_MANIFEST, **changes)
 
 
 def test_manifest_wire_is_detached_from_approved_scope() -> None:
     """Editing a serialized description cannot change the frozen manifest."""
-    wire = LANE_MANIFEST.to_wire()
+    wire: dict[str, Any] = LANE_MANIFEST.to_wire()
     assert wire["schema"] == LANE_MANIFEST.schema
     assert wire["status"] == "experimental"
     assert wire["hardware_submission_enabled"] is False

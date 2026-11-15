@@ -15,6 +15,7 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -34,7 +35,7 @@ _REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 def _model(*, quantization: str = "gguf_q6_k") -> ModelDescriptor:
     """Build a design-only schema fixture, never a claim about a loaded model."""
-    fields = {
+    fields: dict[str, Any] = {
         "model_id": "contract-fixture",
         "checkpoint_digest": "a" * 64,
         "tokenizer_digest": "b" * 64,
@@ -88,8 +89,9 @@ def _worker(request: dict[str, object], tmp_path: Path) -> subprocess.CompletedP
 
 
 def test_model_descriptor_standalone_roundtrip(tmp_path: Path) -> None:
+    """Round-trip a model descriptor through the standalone worker."""
     model = _model()
-    request = {"op": "roundtrip_model_descriptor", "model": model.to_wire()}
+    request: dict[str, Any] = {"op": "roundtrip_model_descriptor", "model": model.to_wire()}
     response = _worker(request, tmp_path)
     assert response.returncode == 0, response.stdout.decode()
     payload = json.loads(response.stdout)
@@ -100,6 +102,7 @@ def test_model_descriptor_standalone_roundtrip(tmp_path: Path) -> None:
 
 
 def test_q8_checkpoint_descriptor_roundtrips_without_inferred_probe(tmp_path: Path) -> None:
+    """Round-trip a Q8 checkpoint descriptor without an inferred probe."""
     model = _model(quantization="gguf_q8_0")
     response = _worker({"op": "roundtrip_model_descriptor", "model": model.to_wire()}, tmp_path)
     assert response.returncode == 0, response.stdout.decode()
@@ -111,6 +114,7 @@ def test_q8_checkpoint_descriptor_roundtrips_without_inferred_probe(tmp_path: Pa
 
 
 def test_model_descriptor_refuses_inferred_width_and_fallback(tmp_path: Path) -> None:
+    """Refuse an inferred hidden width and a fallback tap."""
     model = _model()
     for field, value, reason in (
         ("hidden_width", True, "observed hidden width"),
@@ -119,17 +123,19 @@ def test_model_descriptor_refuses_inferred_width_and_fallback(tmp_path: Path) ->
         ("tap_stream", "pooled_embedding", "fallback"),
         ("tap_boundary", "unknown", "boundary"),
     ):
+        # The values are deliberately invalid; the descriptor must refuse them at run time.
+        changes: dict[str, Any] = {field: value}
         with pytest.raises(ValueError, match=reason):
-            replace(model, **{field: value})
+            replace(model, **changes)
     with pytest.raises(ValueError, match="digest mismatch"):
         replace(model, model_id="changed-after-freeze")
     with pytest.raises(ValueError, match="confirmation"):
         replace(model.header, claim_scope="confirmation")
-    wire = model.to_wire()
+    wire: dict[str, Any] = model.to_wire()
     wire["unexpected"] = True
     with pytest.raises(ValueError, match="fields"):
         decode_contract(canonical_bytes(wire))
-    forged = model.to_wire()
+    forged: dict[str, Any] = model.to_wire()
     forged["header"]["content_digest"] = "f" * 64
     response = _worker({"op": "roundtrip_model_descriptor", "model": forged}, tmp_path)
     assert response.returncode == 2

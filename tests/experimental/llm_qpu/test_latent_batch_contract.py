@@ -17,6 +17,7 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -58,7 +59,7 @@ def _header(
 
 
 def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor]:
-    task_fields = {
+    task_fields: dict[str, Any] = {
         "task_id": "synthetic-prefix-task",
         "objective": "Predict a predeclared label from prefix tokens",
         "source_kind": "synthetic_classical",
@@ -81,7 +82,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor]:
             "synthetic_classical",
         ),
     )
-    split_fields = {
+    split_fields: dict[str, Any] = {
         "task_digest": _digest(task.to_wire()),
         "dataset_digest": "b" * 64,
         "train_groups": ("group-a", "group-b"),
@@ -109,7 +110,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor]:
             "synthetic_classical",
         ),
     )
-    model_fields = {
+    model_fields: dict[str, Any] = {
         "model_id": "synthetic-contract-source",
         "checkpoint_digest": "c" * 64,
         "tokenizer_digest": "d" * 64,
@@ -182,7 +183,7 @@ def _batch(
             0.0,
         )
     tensor = ArrayDescriptor("<f4", (2, 3, 4), len(payload), hashlib.sha256(payload).hexdigest())
-    fields = {
+    fields: dict[str, Any] = {
         "task_digest": _digest(task.to_wire()),
         "split_digest": _digest(split.to_wire()),
         "model_digest": _digest(model.to_wire()),
@@ -199,7 +200,7 @@ def _batch(
         "tap_boundary": "before_norm",
         "tensor": tensor,
     }
-    content = {
+    content: dict[str, Any] = {
         "schema": "scpn.experimental.llm_qpu.latent_batch.v1",
         "object_kind": "latent_batch",
         **{
@@ -252,6 +253,7 @@ def _request(
 
 
 def test_latent_batch_standalone_roundtrip(tmp_path: Path) -> None:
+    """Round-trip a latent batch through the standalone worker."""
     task, split, model = _records()
     batch, payload = _batch(task, split, model)
     validate_latent_batch(task, split, model, batch, payload)
@@ -265,11 +267,12 @@ def test_latent_batch_standalone_roundtrip(tmp_path: Path) -> None:
 
 
 def test_contextual_latent_rows_do_not_flatten_sequences(tmp_path: Path) -> None:
+    """Check that contextual latent rows keep their sequences instead of flattening them."""
     task, split, model = _records()
     sequence, _ = _batch(task, split, model)
     payload = struct.pack("<8f", 1.0, 2.0, 3.0, 4.0, 9.0, 10.0, 11.0, 12.0)
     tensor = ArrayDescriptor("<f4", (2, 4), len(payload), hashlib.sha256(payload).hexdigest())
-    content = {
+    content: dict[str, Any] = {
         **sequence._scientific_wire(),
         "layout": "contextual",
         "lengths": [1, 1],
@@ -292,6 +295,7 @@ def test_contextual_latent_rows_do_not_flatten_sequences(tmp_path: Path) -> None
 
 
 def test_latent_batch_refuses_leakage_and_bad_payload(tmp_path: Path) -> None:
+    """Refuse latent batches with split leakage or a malformed payload."""
     task, split, model = _records()
     batch, payload = _batch(task, split, model)
     with pytest.raises(ValueError, match="mask and length"):

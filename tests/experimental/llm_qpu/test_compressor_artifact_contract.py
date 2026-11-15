@@ -18,6 +18,7 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -70,7 +71,7 @@ def _array(values: tuple[float, ...], shape: tuple[int, ...]) -> tuple[ArrayDesc
 
 
 def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, bytes]:
-    task_fields = {
+    task_fields: dict[str, Any] = {
         "task_id": "synthetic-compression-task",
         "objective": "Predict a label from a prefix",
         "source_kind": "synthetic_classical",
@@ -93,7 +94,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, b
             "synthetic_classical",
         ),
     )
-    split_fields = {
+    split_fields: dict[str, Any] = {
         "task_digest": _digest(task.to_wire()),
         "dataset_digest": "b" * 64,
         "train_groups": ("group-a", "group-b"),
@@ -121,7 +122,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, b
             "synthetic_classical",
         ),
     )
-    model_fields = {
+    model_fields: dict[str, Any] = {
         "model_id": "synthetic-hidden-source",
         "checkpoint_digest": "c" * 64,
         "tokenizer_digest": "d" * 64,
@@ -160,7 +161,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, b
         ),
     )
     tensor, payload = _array((0.1, 0.2, 0.3, 0.4, -0.2, 0.1, 0.0, 0.2), (2, 4))
-    latent_fields = {
+    latent_fields: dict[str, Any] = {
         "task_digest": _digest(task.to_wire()),
         "split_digest": _digest(split.to_wire()),
         "model_digest": _digest(model.to_wire()),
@@ -217,7 +218,7 @@ def _compressor(
         (4, 4),
     )
     scale, scales_payload = _array(scales, (4,))
-    fields = {
+    fields: dict[str, Any] = {
         "model_digest": _digest(model.to_wire()),
         "split_digest": _digest(split.to_wire()),
         "train_group_digest": _digest(list(split.train_groups)),
@@ -286,7 +287,7 @@ def _compressed(
                 for value in source
             )
     tensor, payload = _array(tuple(angles), (*latent.tensor.shape[:-1], 4))
-    fields = {
+    fields: dict[str, Any] = {
         "latent_digest": _digest(latent.to_wire()),
         "compressor_digest": _digest(compressor.to_wire()),
         "split_name": latent.split_name,
@@ -367,6 +368,7 @@ def _worker(request: dict[str, object], tmp_path: Path) -> subprocess.CompletedP
 
 
 def test_compressor_train_lineage_and_worker_roundtrip(tmp_path: Path) -> None:
+    """Check the train-only lineage of a compressor and its worker round trip."""
     task, split, model, latent, latent_payload = _records()
     compressor, center, projection, scales = _compressor(split, model)
     compressed, angles = _compressed(latent, compressor, latent_payload)
@@ -404,6 +406,7 @@ def test_compressor_train_lineage_and_worker_roundtrip(tmp_path: Path) -> None:
 
 
 def test_compressor_refuses_dev_fit_and_zero_scale() -> None:
+    """Refuse a compressor fitted on dev groups and a zero scale."""
     _, split, model, _, _ = _records()
     compressor, center, projection, scales = _compressor(split, model)
     forged_group_digest = _digest(list(split.dev_groups))
@@ -434,6 +437,7 @@ def test_compressor_refuses_dev_fit_and_zero_scale() -> None:
 
 
 def test_compressed_batch_refuses_extra_pi_and_row_drift(tmp_path: Path) -> None:
+    """Refuse a compressed batch with an extra pi or rows that drift from the latent batch."""
     task, split, model, latent, latent_payload = _records()
     compressor, center, projection, scales = _compressor(split, model)
     wrong, wrong_payload = _compressed(latent, compressor, latent_payload, extra_pi=True)
@@ -493,6 +497,7 @@ def test_compressed_batch_refuses_extra_pi_and_row_drift(tmp_path: Path) -> None
 
 
 def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
+    """Check that a compressed sequence keeps its zero padding."""
     task, split, model, original, _ = _records()
     tensor, latent_payload = _array(
         (
@@ -515,7 +520,7 @@ def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
         ),
         (2, 2, 4),
     )
-    fields = {
+    fields: dict[str, Any] = {
         **original._scientific_wire(),
         "layout": "chunk_isolated",
         "lengths": [2, 1],

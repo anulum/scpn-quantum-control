@@ -12,6 +12,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any, cast
 from uuid import uuid4
 
 import pytest
@@ -21,6 +22,11 @@ from scpn_quantum_control.experimental.llm_qpu.runtime import (
     JobPlan,
     JournalStateError,
 )
+
+
+def _rows(journal: AttemptJournal, attempt: str) -> list[dict[str, Any]]:
+    """Return the journal's job rows of one attempt."""
+    return cast("list[dict[str, Any]]", journal.snapshot(attempt)["jobs"])
 
 
 def _jobs() -> tuple[JobPlan, ...]:
@@ -54,14 +60,14 @@ def test_real_process_death_keeps_submit_ambiguous(tmp_path: Path) -> None:
     )
 
     reopened = AttemptJournal(root)
-    assert reopened.snapshot(attempt)["jobs"][0]["state"] == "submitting"
+    assert _rows(reopened, attempt)[0]["state"] == "submitting"
     with pytest.raises(JournalStateError, match="never retry"):
         reopened.begin_submit(attempt, 0, "a" * 64)
     reopened.mark_recovery_required(attempt, 0)
-    assert reopened.snapshot(attempt)["jobs"][0]["state"] == "recovery_required"
+    assert _rows(reopened, attempt)[0]["state"] == "recovery_required"
     with pytest.raises(JournalStateError, match="never retry"):
         reopened.begin_submit(attempt, 0, "a" * 64)
-    assert reopened.snapshot(attempt)["jobs"][0]["provider_job_id"] is None
+    assert _rows(reopened, attempt)[0]["provider_job_id"] is None
 
 
 def test_ordered_jobs_need_verified_prior_result(tmp_path: Path) -> None:
@@ -82,7 +88,7 @@ def test_ordered_jobs_need_verified_prior_result(tmp_path: Path) -> None:
     journal.record_verified(attempt, 0, "c" * 64)
     journal.begin_submit(attempt, 1, "b" * 64)
     journal.record_submitted(attempt, 1, str(uuid4()))
-    rows = journal.snapshot(attempt)["jobs"]
+    rows = _rows(journal, attempt)
     assert [(row["state"], row["payload_sha256"]) for row in rows] == [
         ("verified", "a" * 64),
         ("submitted", "b" * 64),

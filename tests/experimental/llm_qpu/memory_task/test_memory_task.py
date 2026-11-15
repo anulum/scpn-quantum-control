@@ -83,7 +83,10 @@ def test_t04c_deterministic_group_split_and_answer_free_pilot() -> None:
     pilot = pilot_inputs(records, split)
     assert len(pilot) == 16
     assert all(
-        "target_text" not in row and row["prefix_text"].endswith("Answer:") for row in pilot
+        "target_text" not in row
+        and isinstance(row["prefix_text"], str)
+        and row["prefix_text"].endswith("Answer:")
+        for row in pilot
     )
     replacement = "blue" if records[0].target_text != "blue" else "amber"
     with pytest.raises(ValueError, match="frozen split"):
