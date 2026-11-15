@@ -486,7 +486,10 @@ alias/effect rows are not executable compiler lowering;
 higher-order
 transform algebra is `diagnostic` in the default cheap status call and becomes
 `conformance_backed` only when `include_conformance=True` runs the local
-benchmark report, conformance rows are local non-performance evidence, and
+benchmark report and it passes; when that run fails, the rows stay
+`diagnostic` and their first blocked reason says the conformance suite failed
+rather than that it was not run. Conformance rows are local non-performance
+evidence, and
 Rust/LLVM/provider/hardware rows stay blocked until executable artefacts exist.
 
 The façade delegates to existing implemented surfaces rather than weakening

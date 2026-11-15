@@ -497,6 +497,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- **Fixed: the differentiable dashboard reported a failed conformance run as
+  one that never ran.** With `include_conformance=True` and a failing
+  benchmark report, the 32 conformance-dependent rows of
+  `differentiable_dashboard_status` stayed `diagnostic` with the blocked
+  reason "conformance suite not run in this status call", so a run that
+  failed read the same as no run. They now give "conformance suite failed in
+  this status call"; the skipped case keeps its wording. The state and the
+  reason are computed once instead of 32 times. The API guide states the
+  rule; its pinned digest in the dependency environment map and the
+  external-validation bundle is refreshed.
+  - A new test uses a stand-in benchmark report, as the API dispatch tests
+    do, to compare passed, failed and skipped runs row by row; it runs in
+    every lane, where the real report needs PyTorch. Two older tests gain
+    docstrings.
+
 - The TensorFlow bridge contract records
   (`phase/tensorflow_bridge_contracts.py`) now test that the Phase-QNode
   lowering matrix returns a named route's status and raises `KeyError` for

@@ -12,8 +12,10 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+import pytest
 from _differentiable_api_test_helpers import _require_torch_backend
 
+import scpn_quantum_control.differentiable_dashboard as dashboard_module
 from scpn_quantum_control.differentiable_dashboard import (
     DifferentiableDashboardStatus,
     differentiable_dashboard_status,
@@ -21,6 +23,7 @@ from scpn_quantum_control.differentiable_dashboard import (
 
 
 def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() -> None:
+    """The default status lists every surface with its state and claim boundary."""
     status = differentiable_dashboard_status()
 
     assert isinstance(status, DifferentiableDashboardStatus)
@@ -629,6 +632,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
 
 
 def test_differentiable_dashboard_status_can_include_conformance_backing() -> None:
+    """A passing conformance run backs the conformance rows on real PyTorch."""
     _require_torch_backend()
 
     status = differentiable_dashboard_status(include_conformance=True)
@@ -724,3 +728,45 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert rows["higher_order_transform_algebra"].blocked_reasons == ()
     assert "Hessian transforms" in rows["higher_order_transform_algebra"].claim_boundary
     assert "no compiler" in rows["higher_order_transform_algebra"].claim_boundary
+
+
+class _BenchmarkReportStandIn:
+    """Benchmark report stand-in exposing only the conformance outcome."""
+
+    def __init__(self, supported: bool) -> None:
+        """Record whether the stand-in conformance suite passed."""
+        self.supported = supported
+
+
+def _status_rows(monkeypatch: pytest.MonkeyPatch, supported: bool | None) -> dict[str, Any]:
+    """Return status rows by surface for a passed, failed or skipped conformance run."""
+    if supported is None:
+        return {row.surface: row for row in differentiable_dashboard_status().rows}
+    monkeypatch.setattr(
+        dashboard_module,
+        "build_differentiable_benchmark_report",
+        lambda: _BenchmarkReportStandIn(supported),
+    )
+    status = differentiable_dashboard_status(include_conformance=True)
+    return {row.surface: row for row in status.rows}
+
+
+def test_dashboard_reports_a_failed_conformance_run_as_failed_not_unrun(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A conformance suite that ran and failed is reported as failed, never as not run."""
+    passed = _status_rows(monkeypatch, True)
+    failed = _status_rows(monkeypatch, False)
+    unrun = _status_rows(monkeypatch, None)
+    backed = [name for name, row in passed.items() if row.state == "conformance_backed"]
+
+    assert len(backed) == 32
+    for name in backed:
+        assert passed[name].blocked_reasons == ()
+        assert failed[name].state == unrun[name].state == "diagnostic"
+        assert failed[name].blocked_reasons[0] == "conformance suite failed in this status call"
+        assert unrun[name].blocked_reasons[0] == "conformance suite not run in this status call"
+        assert failed[name].blocked_reasons[1:] == unrun[name].blocked_reasons[1:]
+    assert {name: row for name, row in failed.items() if name not in backed} == {
+        name: row for name, row in unrun.items() if name not in backed
+    }

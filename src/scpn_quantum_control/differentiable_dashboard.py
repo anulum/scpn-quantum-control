@@ -13,6 +13,7 @@ from __future__ import annotations
 from .differentiable_api_contracts import (
     CLAIM_BOUNDARY,
     DifferentiableDashboardCapabilityRow,
+    DifferentiableDashboardCapabilityState,
     DifferentiableDashboardStatus,
 )
 from .differentiable_benchmark_report import build_differentiable_benchmark_report
@@ -27,6 +28,19 @@ def differentiable_dashboard_status(
     conformance_passed: bool | None = None
     if include_conformance:
         conformance_passed = build_differentiable_benchmark_report().supported
+    # A suite that ran and failed must not read as one that was never run.
+    conformance_state: DifferentiableDashboardCapabilityState = (
+        "conformance_backed" if conformance_passed else "diagnostic"
+    )
+    conformance_blocked: tuple[str, ...] = (
+        ()
+        if conformance_passed
+        else (
+            ("conformance suite failed in this status call",)
+            if conformance_passed is False
+            else ("conformance suite not run in this status call",)
+        )
+    )
 
     rows = [
         DifferentiableDashboardCapabilityRow(
@@ -98,16 +112,14 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_ir_roundtrip_conformance",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "parse_program_ad_effect_ir",
                 "program_ad_effect_ir.v1",
                 "program_ad_ir_roundtrip_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded program_ad_effect_ir.v1 parser and stable serialization "
                 "round-trip conformance only; not executable compiler lowering, "
@@ -117,16 +129,14 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_control_phi_metadata",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "ProgramADControlRegion",
                 "ProgramADPhiNode",
                 "program_ad_control_phi_metadata_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded ProgramADPhiNode control-join provenance for supported "
                 "executed runtime and source control regions only; not "
@@ -136,16 +146,14 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_rust_scalar_interpreter",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "program_ad_effect_ir_interpret_forward",
                 "interpret_program_ad_effect_ir_with_rust",
                 "program_ad_rust_scalar_interpreter_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Rust scalar forward interpreter for opcode-bearing "
                 "program_ad_effect_ir.v1 rows only; not reverse-mode Rust AD, "
@@ -155,7 +163,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_mlir_interchange",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="compile_whole_program_ad_trace_to_mlir",
             evidence=(
                 "program_ad_effect_ir.v1",
@@ -164,9 +172,7 @@ def differentiable_dashboard_status(
                 "scpn_diff.program_ad_phi",
                 "program_ad_mlir_interchange_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD IR MLIR dialect interchange lowering for "
                 "captured SSA/effect/control/phi metadata only; no executable "
@@ -233,21 +239,19 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_registry_dispatch_coverage",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="program_ad_registry_dispatch_coverage_report",
             evidence=(
                 "ProgramADRegistryDispatchCoverageReport",
                 "ProgramADRegistryDispatchCoverageRow",
                 "program_ad_registry_dispatch_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=program_ad_registry_dispatch_coverage_report().claim_boundary,
         ),
         DifferentiableDashboardCapabilityRow(
             surface="jax_phase_qnode_aot_export_lowering",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="jax_phase_qnode_aot_export_audit",
             evidence=(
                 "PhaseJAXPhaseQNodeAOTExportResult",
@@ -257,7 +261,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "exported VJP and persistent cross-platform execution remain blocked",
                 "provider, hardware, dynamic-circuit, and isolated benchmark promotion remain blocked",
             ),
@@ -271,7 +275,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_phase_qnode_statevector_lowering",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="torch_phase_qnode_value_and_grad",
             evidence=(
                 "PhaseTorchPhaseQNodeStatevectorResult",
@@ -281,7 +285,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "finite-shot Torch lowering remains blocked",
                 "provider, hardware, dynamic-circuit, and isolated benchmark promotion remain blocked",
             ),
@@ -293,7 +297,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_phase_qnode_compile_boundary_diagnostic",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="torch_phase_qnode_compile_boundary_audit",
             evidence=(
                 "PhaseTorchCompileBoundaryAuditResult",
@@ -303,7 +307,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "dynamic-shape compile promotion remains blocked",
                 "fullgraph compile promotion remains blocked",
                 "AOTAutograd/export persistent artifact remains blocked",
@@ -320,7 +324,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_autograd_function_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_autograd_function_audit",
             evidence=(
                 "PhaseTorchAutogradFunctionResult",
@@ -331,7 +335,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "higher-order autograd graph transformation remains blocked",
                 "CUDA custom-autograd execution remains blocked",
                 "provider, hardware, arbitrary-simulator, isolated benchmark, and performance promotion remain blocked",
@@ -347,7 +351,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_state_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_module_state_audit",
             evidence=(
                 "PhaseTorchModuleStateAuditResult",
@@ -358,7 +362,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "CUDA device transfer and cross-runtime checkpoint portability remain blocked",
                 "provider, hardware, CUDA, isolated benchmark, and performance promotion remain blocked",
             ),
@@ -372,7 +376,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_device_state_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_module_device_state_audit",
             evidence=(
                 "PhaseTorchDeviceStateAuditResult",
@@ -382,7 +386,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "CUDA transfer remains blocked when the local PyTorch runtime cannot execute a CUDA smoke",
                 "cross-runtime checkpoint portability, provider, hardware, isolated benchmark, and performance promotion remain blocked",
             ),
@@ -396,7 +400,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_checkpoint_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_module_checkpoint_audit",
             evidence=(
                 "PhaseTorchCheckpointAuditResult",
@@ -407,7 +411,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "cross-runtime checkpoint portability remains blocked",
                 "CUDA, provider, hardware, isolated benchmark, and performance promotion remain blocked",
             ),
@@ -422,7 +426,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_long_lived_checkpoint_matrix",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_long_lived_checkpoint_matrix",
             evidence=(
                 "PhaseTorchCheckpointMatrixResult",
@@ -433,7 +437,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "cross-runtime checkpoint replay remains blocked",
                 "CUDA checkpoint replay remains blocked",
                 "long-lived external checkpoint artifact remains blocked",
@@ -450,7 +454,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_training_loop_matrix",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_training_loop_matrix",
             evidence=(
                 "PhaseTorchTrainingLoopMatrixResult",
@@ -461,7 +465,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "CUDA training-loop execution remains blocked",
                 "provider and hardware training-loop execution remain blocked",
                 "isolated benchmark and performance promotion remain blocked",
@@ -478,7 +482,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_export_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_module_export_audit",
             evidence=(
                 "PhaseTorchExportAuditResult",
@@ -489,7 +493,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "AOTAutograd gradient-export persistence remains blocked",
                 "dynamic-shape export remains blocked",
                 "CUDA, provider, hardware, isolated benchmark, and performance promotion remain blocked",
@@ -505,7 +509,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_export_shape_matrix",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_export_shape_matrix",
             evidence=(
                 "PhaseTorchExportShapeMatrixResult",
@@ -516,7 +520,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "dynamic-shape export constraints remain blocked",
                 "dynamic-shape export replay remains blocked",
                 "AOTAutograd gradient-export persistence remains blocked",
@@ -533,7 +537,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_dynamic_shape_export_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_dynamic_shape_export_audit",
             evidence=(
                 "PhaseTorchDynamicShapeExportResult",
@@ -544,7 +548,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "AOTAutograd gradient-export persistence remains blocked",
                 "CUDA dynamic-shape export replay remains blocked",
                 "cross-runtime dynamic-shape export replay remains blocked",
@@ -563,7 +567,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_aot_autograd_export_audit",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_torch_aot_autograd_export_audit",
             evidence=(
                 "PhaseTorchAOTAutogradExportResult",
@@ -574,7 +578,7 @@ def differentiable_dashboard_status(
             blocked_reasons=()
             if conformance_passed
             else (
-                "conformance suite not run in this status call",
+                *conformance_blocked,
                 "cross-runtime AOTAutograd execution remains blocked",
                 "CUDA AOTAutograd execution remains blocked",
                 "dynamic-shape AOTAutograd export remains blocked",
@@ -591,15 +595,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_python_semantics",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="whole_program_value_and_grad",
             evidence=(
                 "WholeProgramSemanticsReport",
                 "python_semantics_list_comprehension",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded plain list-comprehension whole-program AD semantics only; "
                 "filtered, set, and dict comprehensions remain fail-closed; no "
@@ -608,7 +610,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_reverse_adjoint_replay",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "ProgramADAdjointResult",
@@ -618,9 +620,7 @@ def differentiable_dashboard_status(
                 "program_adjoint_gradient",
                 "program_adjoint_replay_provenance_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD reverse adjoint generation over stabilized "
                 "program_ad_effect_ir.v1 for supported executed scalar IR only, "
@@ -636,15 +636,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_elementwise_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.elementwise:{abs,absolute,log,sqrt,reciprocal,log1p,arcsin,arccos}",
                 "elementwise_boundary_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD elementwise primitive conformance for "
                 "zero-cusp absolute-value, positive-domain, nonzero-denominator, "
@@ -655,15 +653,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_array_indexing",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.array:{getitem,take,take_along_axis,delete,pad,insert}",
                 "indexing_static_gather_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded static array indexing, gather, delete, constant-pad, and "
                 "constant-insert Program AD semantics only; dynamic indices, "
@@ -673,15 +669,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_linalg_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.linalg:{trace,diag,diagflat,det,inv,solve,matrix_power,multi_dot}",
                 "linalg_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded local Program AD linalg primitive conformance only; "
                 "spectral multiplicity, rank-threshold crossings, wider native "
@@ -691,7 +685,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_structured_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.product:{inner,outer,matmul,tensordot,einsum}",
@@ -700,9 +694,7 @@ def differentiable_dashboard_status(
                 "scpn.program_ad.stencil:gradient",
                 "structured_numeric_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "structured numeric Program AD primitive conformance only; "
                 "bounded static-grid interp, static rank-1 signal, and static stencil "
@@ -713,15 +705,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_cumulative_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.cumulative:{cumsum,cumprod,diff}",
                 "cumulative_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded cumsum, cumprod, and diff Program AD primitive "
                 "conformance only; dynamic axis promotion, Rust/LLVM executable "
@@ -730,15 +720,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_assembly_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.assembly:{zeros_like,ones_like,full_like,hstack,vstack,column_stack,dstack}",
                 "assembly_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded like-constructor and stack assembly Program AD "
                 "primitive conformance only; dynamic shape assembly, "
@@ -748,15 +736,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_reduction_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.reduction:{sum,prod,mean,var,std,trapezoid,max,min,median,quantile,percentile}",
                 "reduction_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD reduction primitive conformance only; dynamic "
                 "axes, dynamic q, strict-order selectors, zero-variance standard "
@@ -767,15 +753,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_shape_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.shape:{reshape,ravel,transpose,expand_dims,squeeze,swapaxes,moveaxis,repeat,atleast_1d,atleast_2d,atleast_3d,tile,roll,rot90,flip,flipud,fliplr}",
                 "shape_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD shape primitive conformance only; dynamic "
                 "shape arguments, invalid axes, Rust/LLVM executable lowering, "
@@ -785,16 +769,14 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_broadcast_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.assembly:{broadcast_to,broadcast_arrays}",
                 "scpn.program_ad.elementwise:binary_rank_broadcasting",
                 "broadcast_primitive_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD broadcast primitive conformance only; "
                 "dynamic output shapes, incompatible shapes, subok propagation, "
@@ -805,15 +787,13 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_selection_primitives",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "scpn.program_ad.selection:{where,clip,sort,select,piecewise,choose,compress,extract,argmax,argmin,argsort}",
                 "selection_piecewise_contracts",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "bounded Program AD static selection folds, strict sort, where, "
                 "and clip conformance only; dynamic masks, dynamic selectors, "
@@ -831,7 +811,7 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="higher_order_transform_algebra",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "transform_nesting_vmap_program_grad",
@@ -841,9 +821,7 @@ def differentiable_dashboard_status(
                 "transform_nesting_program_ad_hessian",
                 "transform_nesting_program_ad_hessian_jvp_vjp",
             ),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "local transform-algebra conformance for vmap, exact custom JVP/VJP "
                 "rules, whole-program grad, JVP/VJP, jacfwd, jacrev, and local "
@@ -865,12 +843,10 @@ def differentiable_dashboard_status(
         ),
         DifferentiableDashboardCapabilityRow(
             surface="benchmark_conformance",
-            state="conformance_backed" if conformance_passed else "diagnostic",
+            state=conformance_state,
             backing_api="differentiable_benchmark_report",
             evidence=("run_differentiable_programming_benchmark_suite",),
-            blocked_reasons=()
-            if conformance_passed
-            else ("conformance suite not run in this status call",),
+            blocked_reasons=conformance_blocked,
             claim_boundary=(
                 "local deterministic conformance evidence; not isolated performance, "
                 "hardware, or provider execution evidence"
