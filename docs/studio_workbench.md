@@ -2200,3 +2200,39 @@ Building the data leaves the caller's global NumPy random state unchanged.
 Regenerate or check it with
 `python -m scpn_quantum_control.studio.topology_instrument_artifact --write`
 or `--check`.
+
+## Attestation verification
+
+Evidence → Attestation verification (`#/evidence/attestation`, command "Verify
+attested result packs") checks attested result-pack envelopes
+(`attested_result_pack.v1`) in the browser. Unlike the Analyse instruments, this
+one computes: the browser rebuilds the owner's canonical text of the claim axes
+and content, hashes it with SHA-256 and decides each envelope in the owner's
+fail-closed order. Missing claim axes give STRIPPED; a missing digest gives
+UNGRADED; a digest mismatch gives FORGED; a required but absent signature, or
+any signature without a configured keyring, gives UNGRADED; only an intact
+unsigned envelope is VERIFIED.
+
+The committed cases seal the IBM Fez V2 aggregate summary
+(`results/ibm_hardware_v2_2026-03-29/full_results.json`, pinned by SHA-256) and
+derive every refusal from that one envelope: a value changed after sealing,
+claim axes replaced, honesty axes removed, the digest removed, a signature
+without a keyring and a required signature. Each row shows the browser verdict
+beside the verdict the Python owner recorded, and the two must agree in
+status, reason and both digests. A canonicalisation oracle checks the browser's
+text against the owner's for edge floats (`0.0`, `-0.0`, `1e-05`, `1e+16`,
+subnormal and maximal values and 64 seeded doubles), large integers, escaped
+and astral strings and code-point key order. Field trimming uses the code
+points Python's `str.strip()` removes, recorded by the producer.
+
+"Check an envelope file" verifies a local envelope (at most 1 MiB) in the page;
+nothing is uploaded. The browser reads integers and floats as distinct tokens,
+so a file must keep the owner's spelling: `0.0` written as `0` is a different
+canonical text and gives FORGED. Fields must already be text where the owner
+would convert a value with `str()`; such an envelope is refused, not coerced.
+
+VERIFIED states structure and digest integrity of an unsigned envelope. It is
+not a signature, provider provenance or scientific validation, and the sealed
+values are an aggregate summary that stays unpromoted pending raw-count review.
+Regenerate or check the data with
+`python tools/studio_attestation_instrument.py --write` or `--check`.

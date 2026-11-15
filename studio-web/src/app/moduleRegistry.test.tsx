@@ -54,6 +54,7 @@ describe("workbenchRegistry", () => {
       ["/results/topology", "results", "topology"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
+      ["/evidence/attestation", "evidence", "attestation"],
       ["/atlas", "atlas", null],
       ["/operations", "operations", null],
     ]);

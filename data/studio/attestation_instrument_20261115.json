@@ -1,0 +1,1563 @@
+{
+  "artifact_id": "studio-attestation-instrument-20261115",
+  "boundary": "VERIFIED means that an unsigned envelope is complete and that its digest matches its claim axes and content; it is not a signature, provider provenance or scientific validation, and these values are an aggregate summary pending raw-count review",
+  "canonical_oracle": [
+    {
+      "content": {
+        "value": [
+          0.0,
+          -0.0,
+          1.0,
+          -7.25,
+          0.1,
+          0.0001,
+          1e-05,
+          1.5e-07,
+          1000000000000000.0,
+          1e+16,
+          2.5e+22,
+          123456789.125,
+          0.30000000000000004,
+          3.8812132998900355e-12,
+          5e-324,
+          1.7976931348623157e+308
+        ]
+      },
+      "digest": "2b3b327b4c721b6f3dbc9ebd26673f115d2f8aabab1c8bc29d8d2ae2361692eb",
+      "label": "edge floats",
+      "python_text": "{\"claim_axes\":{},\"content\":{\"value\":[0.0,-0.0,1.0,-7.25,0.1,0.0001,1e-05,1.5e-07,1000000000000000.0,1e+16,2.5e+22,123456789.125,0.30000000000000004,3.8812132998900355e-12,5e-324,1.7976931348623157e+308]}}"
+    },
+    {
+      "content": {
+        "value": [
+          4.2647500795891214e-293,
+          -6.644947821795494e+134,
+          -2.865028422191661e-209,
+          -3.8072889490685107e+124,
+          5.687481245306454e+79,
+          -5.600333939761951e+148,
+          -3.3412705135254294e-280,
+          -1.1822780174551077e-193,
+          -2.784259335114606e+257,
+          -477487059.2370241,
+          -5.945655152859639e+130,
+          -2.937044194181665e+266,
+          3.217123655662276e-24,
+          -1.3634842923556532e-200,
+          -2.977800264096669e-47,
+          -1.8393494331748855e+34,
+          -2.7160410255730792e-108,
+          8.429709909214638e-75,
+          -5.921342633767143e-108,
+          5.120251421837442e+195,
+          1.3950561658045312e-57,
+          2.8148315148164332e+84,
+          -1.8430394412834175e-94,
+          -3.031935250520254e-232,
+          3.6828345178187723e-239,
+          -7.688290160228893e-153,
+          8.525703757173355e+93,
+          1.599184513714095e-226,
+          -5.905418843003599e-130,
+          -9.60570111688062e-216,
+          -1.7140656279459125e-213,
+          -3.051672322238036e+174,
+          -671.690206,
+          -754.15977085,
+          -261.19577,
+          92.25,
+          332.2975171,
+          205.9,
+          -175.113,
+          -707.2001,
+          124.66471,
+          523.3,
+          950.24,
+          -440.7715,
+          514.9,
+          429.82,
+          117.26,
+          861.8482,
+          208.3903,
+          -725.12143201,
+          620.0623864,
+          844.836,
+          -194.05931266,
+          -955.058,
+          -762.0,
+          45.51,
+          -8.8072,
+          73.795433,
+          369.6,
+          494.9449,
+          -184.9,
+          -13.99,
+          -105.3653,
+          -897.0203
+        ]
+      },
+      "digest": "5d9058439c31d00f439332ae6c5ca7d4e37a41a84a812ab4749f6c16bafafeef",
+      "label": "seeded random floats",
+      "python_text": "{\"claim_axes\":{},\"content\":{\"value\":[4.2647500795891214e-293,-6.644947821795494e+134,-2.865028422191661e-209,-3.8072889490685107e+124,5.687481245306454e+79,-5.600333939761951e+148,-3.3412705135254294e-280,-1.1822780174551077e-193,-2.784259335114606e+257,-477487059.2370241,-5.945655152859639e+130,-2.937044194181665e+266,3.217123655662276e-24,-1.3634842923556532e-200,-2.977800264096669e-47,-1.8393494331748855e+34,-2.7160410255730792e-108,8.429709909214638e-75,-5.921342633767143e-108,5.120251421837442e+195,1.3950561658045312e-57,2.8148315148164332e+84,-1.8430394412834175e-94,-3.031935250520254e-232,3.6828345178187723e-239,-7.688290160228893e-153,8.525703757173355e+93,1.599184513714095e-226,-5.905418843003599e-130,-9.60570111688062e-216,-1.7140656279459125e-213,-3.051672322238036e+174,-671.690206,-754.15977085,-261.19577,92.25,332.2975171,205.9,-175.113,-707.2001,124.66471,523.3,950.24,-440.7715,514.9,429.82,117.26,861.8482,208.3903,-725.12143201,620.0623864,844.836,-194.05931266,-955.058,-762.0,45.51,-8.8072,73.795433,369.6,494.9449,-184.9,-13.99,-105.3653,-897.0203]}}"
+    },
+    {
+      "content": {
+        "value": [
+          0,
+          -1,
+          9007199254740992,
+          9007199254740993,
+          1000000000000000000000000000000,
+          -10000000000000000000000000
+        ]
+      },
+      "digest": "04ddc6c33adc4cbc64746d500744cb7ab6c6150da349e9f42f0cd5d8ac26d3b5",
+      "label": "integers",
+      "python_text": "{\"claim_axes\":{},\"content\":{\"value\":[0,-1,9007199254740992,9007199254740993,1000000000000000000000000000000,-10000000000000000000000000]}}"
+    },
+    {
+      "content": {
+        "value": [
+          "",
+          "quote \" backslash \\",
+          "tab\tnewline\nreturn\rbell\u0007",
+          "\u0000\u001f",
+          "é€",
+          "  ",
+          "𝔸",
+          "﻿"
+        ]
+      },
+      "digest": "3c82e3bf42b0f37bf678dc0b78813728bf9ab756aa5ae8ad5be91a37f6711ee1",
+      "label": "strings",
+      "python_text": "{\"claim_axes\":{},\"content\":{\"value\":[\"\",\"quote \\\" backslash \\\\\",\"tab\\tnewline\\nreturn\\rbell\\u0007\",\"\\u0000\\u001f\",\"é€\",\"  \",\"𝔸\",\"﻿\"]}}"
+    },
+    {
+      "content": {
+        "": 6,
+        "B": 4,
+        "a": 3,
+        "é": 5,
+        "￿": 1,
+        "𝔸": 2
+      },
+      "digest": "ce0d6bf593c1fe78504e41349ad752a7ca3cf83b6264d2da923f2911e4d5d8d2",
+      "label": "key order",
+      "python_text": "{\"claim_axes\":{},\"content\":{\"\":6,\"B\":4,\"a\":3,\"é\":5,\"￿\":1,\"𝔸\":2}}"
+    },
+    {
+      "content": {
+        "list": [
+          [],
+          {},
+          [
+            1,
+            2.0,
+            null,
+            true,
+            false
+          ]
+        ]
+      },
+      "digest": "afa9f9817694597d8a51d818826e9a3f203357802ad01978cb9842b8611bd54b",
+      "label": "nesting and literals",
+      "python_text": "{\"claim_axes\":{},\"content\":{\"list\":[[],{},[1,2.0,null,true,false]]}}"
+    }
+  ],
+  "cases": [
+    {
+      "change": "none",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_reported_summary",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": [
+            "content_digest_only",
+            "aggregate_summary_not_raw_counts",
+            "no_provider_provenance",
+            "unsigned",
+            "unpromoted_pending_raw_count_review"
+          ]
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9185,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "schema": "attested_result_pack.v1",
+        "signature": ""
+      },
+      "id": "intact",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "observed_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "reason": "unsigned envelope intact: claim axes present and content digest matches",
+        "status": "VERIFIED"
+      },
+      "require_signature": false,
+      "title": "Sealed summary"
+    },
+    {
+      "change": "content.A_even.mean 0.9185 -> 0.9285, digest kept",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_reported_summary",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": [
+            "content_digest_only",
+            "aggregate_summary_not_raw_counts",
+            "no_provider_provenance",
+            "unsigned",
+            "unpromoted_pending_raw_count_review"
+          ]
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9285,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "schema": "attested_result_pack.v1",
+        "signature": ""
+      },
+      "id": "changed-value",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "514eb54cb8fdb37a5670ab30f08e71ecc70d40ca24a96885024007775a730261",
+        "observed_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "reason": "content_digest does not match recomputed bound digest",
+        "status": "FORGED"
+      },
+      "require_signature": false,
+      "title": "Value changed after sealing"
+    },
+    {
+      "change": "claim_axes.backend_class -> hardware_verified, digest kept",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_verified",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": [
+            "content_digest_only",
+            "aggregate_summary_not_raw_counts",
+            "no_provider_provenance",
+            "unsigned",
+            "unpromoted_pending_raw_count_review"
+          ]
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9185,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "schema": "attested_result_pack.v1",
+        "signature": ""
+      },
+      "id": "rebound-axes",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "b24377a25abe4dbed750dcf4129e07900ee7a11a9231bba120281d86da64c4f6",
+        "observed_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "reason": "content_digest does not match recomputed bound digest",
+        "status": "FORGED"
+      },
+      "require_signature": false,
+      "title": "Claim axes replaced"
+    },
+    {
+      "change": "claim_axes.honesty_axes emptied",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_reported_summary",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": []
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9185,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "schema": "attested_result_pack.v1",
+        "signature": ""
+      },
+      "id": "stripped-axes",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "",
+        "observed_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "reason": "required claim axes missing or empty: honesty_axes; refuse silent-validated badge",
+        "status": "STRIPPED"
+      },
+      "require_signature": false,
+      "title": "Honesty axes removed"
+    },
+    {
+      "change": "content_digest emptied",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_reported_summary",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": [
+            "content_digest_only",
+            "aggregate_summary_not_raw_counts",
+            "no_provider_provenance",
+            "unsigned",
+            "unpromoted_pending_raw_count_review"
+          ]
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9185,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "",
+        "schema": "attested_result_pack.v1",
+        "signature": ""
+      },
+      "id": "missing-digest",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "",
+        "observed_digest": "",
+        "reason": "content_digest absent; refuse invent-green attestation without digest",
+        "status": "UNGRADED"
+      },
+      "require_signature": false,
+      "title": "Digest removed"
+    },
+    {
+      "change": "signature field set to an opaque token",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_reported_summary",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": [
+            "content_digest_only",
+            "aggregate_summary_not_raw_counts",
+            "no_provider_provenance",
+            "unsigned",
+            "unpromoted_pending_raw_count_review"
+          ]
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9185,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "schema": "attested_result_pack.v1",
+        "signature": "opaque-token-without-keyring"
+      },
+      "id": "unverified-signature",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "observed_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "reason": "signature field present but pure local verifier does not validate cryptographic signatures without a configured keyring; UNGRADED",
+        "status": "UNGRADED"
+      },
+      "require_signature": false,
+      "title": "Signature without a keyring"
+    },
+    {
+      "change": "verified with require_signature",
+      "envelope": {
+        "claim_axes": {
+          "backend_class": "hardware_reported_summary",
+          "claim_unit": "ibm_fez V2 equal-depth fidelity and survival summary, 2026-03-29",
+          "honesty_axes": [
+            "content_digest_only",
+            "aggregate_summary_not_raw_counts",
+            "no_provider_provenance",
+            "unsigned",
+            "unpromoted_pending_raw_count_review"
+          ]
+        },
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "content": {
+          "A_even": {
+            "fidelities": [
+              0.9203,
+              0.9177,
+              0.9187,
+              0.9193,
+              0.9197,
+              0.9142,
+              0.9182,
+              0.9148,
+              0.9202,
+              0.922
+            ],
+            "mean": 0.9185,
+            "std": 0.0023
+          },
+          "A_odd": {
+            "fidelities": [
+              0.8527,
+              0.8568,
+              0.8515,
+              0.8491,
+              0.8494,
+              0.8517,
+              0.8475,
+              0.8531,
+              0.8531,
+              0.8609
+            ],
+            "mean": 0.8526,
+            "std": 0.0037
+          },
+          "B_M+2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M+4": {
+            "mean": 0.9936,
+            "survivals": [
+              0.9946,
+              0.9938,
+              0.9938,
+              0.9928,
+              0.994,
+              0.9924,
+              0.994,
+              0.994,
+              0.9922,
+              0.9948
+            ]
+          },
+          "B_M-2": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "B_M-4": {
+            "mean": 0.9595,
+            "survivals": [
+              0.9591,
+              0.9611,
+              0.9626,
+              0.9592,
+              0.9587,
+              0.9567,
+              0.9614,
+              0.9604,
+              0.9603,
+              0.9552
+            ]
+          },
+          "B_M0": {
+            "mean": 0.0,
+            "survivals": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "C_fim": {
+            "fidelities": [
+              0.9119,
+              0.9167,
+              0.9128,
+              0.9175,
+              0.9149,
+              0.9148,
+              0.9154,
+              0.9198,
+              0.9158,
+              0.9187
+            ],
+            "mean": 0.9158,
+            "std": 0.0023
+          },
+          "C_xy": {
+            "fidelities": [
+              0.8499,
+              0.8546,
+              0.8499,
+              0.848,
+              0.8416,
+              0.8483,
+              0.8495,
+              0.85,
+              0.8467,
+              0.8462
+            ],
+            "mean": 0.8484,
+            "std": 0.0032
+          },
+          "backend": "ibm_fez",
+          "exp_A": {
+            "p_value": 1.7770263219313476e-12,
+            "t_stat": 52.0967
+          },
+          "exp_C": {
+            "p_value": 1.9968290921840108e-12,
+            "t_stat": -51.424
+          },
+          "experiment": "IBM Hardware v2 — 3 fair experiments",
+          "job_ids": {
+            "A_even": "ibm-run-f303eb8f4cae6b90",
+            "A_odd": "ibm-run-1db7222826cba2cc",
+            "B_M+2": "ibm-run-25507365c5e83e6f",
+            "B_M+4": "ibm-run-e25ce044a9384cf8",
+            "B_M-2": "ibm-run-1e872de0fb7926a1",
+            "B_M-4": "ibm-run-cff643fd2ec8df51",
+            "B_M0": "ibm-run-0fff063bb180f5ea",
+            "C_fim": "ibm-run-721a50394119e791",
+            "C_xy": "ibm-run-e161b54f52c388c6"
+          }
+        },
+        "content_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "schema": "attested_result_pack.v1",
+        "signature": ""
+      },
+      "id": "signature-required",
+      "python_verdict": {
+        "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+        "claim_id": "claim.ibm_fez.v2_equal_depth.2026-03-29",
+        "expected_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "observed_digest": "8630dd5c9bf4f1d075aca533f5df1e01f66ede843134d8470a8123b475f0aea8",
+        "reason": "signature required but missing; absent keys yield UNGRADED, never silent-validated",
+        "status": "UNGRADED"
+      },
+      "require_signature": true,
+      "title": "Signature required"
+    }
+  ],
+  "claim_boundary": "attested result-pack digest contract only; digests bind inputs and claim axes, never a self-asserted validated badge; absent keys yield UNGRADED, never silent-validated hardware or marketing attestation claims",
+  "envelope_schema": "attested_result_pack.v1",
+  "generated_by": "python tools/studio_attestation_instrument.py --write",
+  "python_whitespace": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    28,
+    29,
+    30,
+    31,
+    32,
+    133,
+    160,
+    5760,
+    8192,
+    8193,
+    8194,
+    8195,
+    8196,
+    8197,
+    8198,
+    8199,
+    8200,
+    8201,
+    8202,
+    8232,
+    8233,
+    8239,
+    8287,
+    12288
+  ],
+  "schema": "scpn_qc_studio_attestation_instrument_v1",
+  "source": {
+    "backend": "ibm_fez",
+    "path": "results/ibm_hardware_v2_2026-03-29/full_results.json",
+    "sha256": "197510d92490ac3e6879f580ef5e75a4c7d6a1db6f326dfb3e48e2c5b227165c",
+    "status": "aggregate summary, unpromoted pending raw-count review (results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md)"
+  },
+  "verifier": "scpn_quantum_control.attested_result_pack.verify_attested_envelope"
+}

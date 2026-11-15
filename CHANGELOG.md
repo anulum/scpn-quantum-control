@@ -213,6 +213,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+### Attestation verification in the browser
+
+- Evidence verifies attested result-pack envelopes in the browser
+  (`#/evidence/attestation`): the canonical text of the claim axes and
+  content is rebuilt and hashed with SHA-256 in the page, and each envelope
+  is decided in the owner's order (STRIPPED, UNGRADED, FORGED, VERIFIED).
+- The committed cases seal the IBM Fez V2 aggregate summary and derive a
+  changed value, replaced claim axes, removed honesty axes, a removed digest
+  and two signature cases from it; every browser verdict equals the Python
+  owner's recorded verdict, and a canonicalisation oracle covers edge floats,
+  large integers, escaped strings and key order.
+- A local envelope file can be checked without uploading it. VERIFIED states
+  digest integrity of an unsigned envelope only, not a signature, provider
+  provenance or scientific validation.
+
 ### Symmetry, chimera and topology lenses
 
 - Analyse shows source-owned symmetry and topology evidence on small finite

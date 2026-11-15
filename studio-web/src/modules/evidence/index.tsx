@@ -12,8 +12,8 @@ import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/w
 /** Shell services this module uses; the compiler refuses any other. */
 type Services = NoServices;
 
-const EvidenceCatalogueView = lazy(() => import("./EvidenceCatalogueView"));
-/** Committed capability, support, gradient-plan and scorecard surfaces on their own destination. */
+const EvidenceView = lazy(() => import("./EvidenceView"));
+/** Committed capability, support, gradient-plan and scorecard surfaces, and attestation checks. */
 export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evidence"> = {
   id: "evidence",
   apiVersion: "2.0",
@@ -23,8 +23,10 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
       id: "evidence" as const,
       label: "Evidence",
       group: "primary",
-      instruments: [],
-      render: () => <EvidenceCatalogueView />,
+      instruments: ["attestation"],
+      render: (_services: Services, instrument: string | null) => (
+        <EvidenceView focusAttestation={instrument === "attestation"} />
+      ),
     },
   ],
   commands: [
@@ -32,6 +34,11 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
       id: "open-evidence",
       label: "Open Evidence",
       action: { kind: "navigate", stage: "evidence", instrument: null },
+    },
+    {
+      id: "open-attestation",
+      label: "Verify attested result packs",
+      action: { kind: "navigate", stage: "evidence", instrument: "attestation" },
     },
   ],
 };

@@ -176,6 +176,7 @@ _SOURCE_SCENARIOS = {
         "control_proposal_instrument",
         "learning_domain_instrument",
         "topology_symmetry_instrument",
+        "attestation_verification",
         "operator_backend_profiles",
         "operator_policy_decisions",
         "operator_review_dossiers",

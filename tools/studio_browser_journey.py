@@ -664,6 +664,7 @@ _WITH_EVIDENCE: dict[str, tuple[str, str]] = {
     "control_proposal_instrument": ("tools.studio_control_browser", "run_control_journey"),
     "learning_domain_instrument": ("tools.studio_learning_browser", "run_learning_journey"),
     "topology_symmetry_instrument": ("tools.studio_topology_browser", "run_topology_journey"),
+    "attestation_verification": ("tools.studio_attestation_browser", "run_attestation_journey"),
     "pulse_feasibility": ("tools.studio_pulse_browser", "run_pulse_journey"),
     "compiler_trace_inspector": (
         "tools.studio_compiler_trace_browser",
@@ -696,6 +697,7 @@ _SCENARIOS = (
     "control_proposal_instrument",
     "learning_domain_instrument",
     "topology_symmetry_instrument",
+    "attestation_verification",
     "operator_backend_profiles",
     "operator_policy_decisions",
     "operator_review_dossiers",

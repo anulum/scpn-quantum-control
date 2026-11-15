@@ -123,4 +123,8 @@ verification · strip-resistance test battery.
 Open: optional signed path/keyring · challenge-oracle wiring · hermetic-kit
 verification step.
 
+Studio: Evidence → Attestation verification rebuilds the canonical text and
+digest in the browser and decides envelopes in the same order; its committed
+cases carry this module's verdicts as the reference (see the workbench guide).
+
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
