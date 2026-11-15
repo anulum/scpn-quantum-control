@@ -9,7 +9,8 @@
 
 from __future__ import annotations
 
-from typing import cast
+from dataclasses import replace
+from typing import Any, cast
 
 import pytest
 
@@ -25,6 +26,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_gradient_support_matrix_routes_core_local_gradients() -> None:
+    """A native statevector gradient is supported with the parameter-shift method."""
     plan = plan_gradient_support(
         gate="ry",
         observable="pauli_expectation",
@@ -44,6 +46,7 @@ def test_gradient_support_matrix_routes_core_local_gradients() -> None:
 
 
 def test_gradient_support_matrix_routes_finite_shot_and_host_bridge_paths() -> None:
+    """Sampling backends and host bridges are routed with their own methods."""
     finite_shot = plan_gradient_support(
         gate="rz",
         observable="kuramoto_xy_energy",
@@ -103,6 +106,7 @@ def test_gradient_support_matrix_routes_finite_shot_and_host_bridge_paths() -> N
 
 
 def test_gradient_support_matrix_fails_closed_for_unsupported_components() -> None:
+    """An unknown gate, observable or transform fails closed and lists alternatives."""
     unsupported_gate = plan_gradient_support(
         gate="arbitrary_unitary",
         observable="pauli_expectation",
@@ -152,6 +156,7 @@ def test_gradient_support_matrix_fails_closed_for_unsupported_components() -> No
 
 
 def test_gradient_support_matrix_blocks_hardware_and_finite_shot_hessian() -> None:
+    """Hardware without permission and a finite-shot Hessian are blocked."""
     hardware = plan_gradient_support(
         gate="ry",
         observable="pauli_expectation",
@@ -187,6 +192,7 @@ def test_gradient_support_matrix_blocks_hardware_and_finite_shot_hessian() -> No
 
 
 def test_gradient_support_capability_registry_and_payloads_are_explicit() -> None:
+    """Capabilities are listed explicitly and an unknown adapter is unsupported."""
     gate = gradient_support_capability("gate", "y_rotation")
     unknown_adapter = gradient_support_capability("adapter", "new_ml_stack")
     backends = list_gradient_support_capabilities("backend")
@@ -210,6 +216,7 @@ def test_gradient_support_capability_registry_and_payloads_are_explicit() -> Non
 
 
 def test_gradient_support_matrix_audit_records_expected_supported_and_blocked_routes() -> None:
+    """The audit holds five supported and five blocked routes and no failures."""
     audit = run_gradient_support_matrix_audit()
     payload = audit.to_dict()
     plans = cast(list[dict[str, object]], payload["plans"])
@@ -227,6 +234,7 @@ def test_gradient_support_matrix_audit_records_expected_supported_and_blocked_ro
 
 
 def test_gradient_support_matrix_rejects_invalid_inputs() -> None:
+    """Non-positive counts and blank names are refused."""
     with pytest.raises(ValueError, match="n_params"):
         plan_gradient_support(gate="ry", observable="pauli_expectation", n_params=0)
     with pytest.raises(ValueError, match="shift_terms"):
@@ -238,3 +246,97 @@ def test_gradient_support_matrix_rejects_invalid_inputs() -> None:
         )
     with pytest.raises(ValueError, match="gate name"):
         plan_gradient_support(gate=" ", observable="pauli_expectation")
+
+
+@pytest.mark.parametrize(
+    ("adapter", "transform", "method", "mode", "blocked"),
+    [
+        ("pennylane", "grad", "pennylane_gradient_agreement", "host_bridge", None),
+        ("pytorch", "grad", "pytorch_tensor_bridge_parameter_shift", "host_bridge", None),
+        (
+            "provider_callback",
+            "grad",
+            "provider_callback_parameter_shift",
+            "provider_callback",
+            None,
+        ),
+        ("native", "hessian", "parameter_shift_hessian", "local_curvature_diagnostic", None),
+        ("native", "gradient_tape", "recorded_parameter_shift_tape", "deterministic_local", None),
+        (
+            "pennylane",
+            "hessian",
+            "unsupported",
+            "fail_closed",
+            "agreement surface for first-order",
+        ),
+        ("qiskit", "jvp", "unsupported", "fail_closed", "shifted-circuit first-order gradients"),
+        ("provider_callback", "hessian", "unsupported", "fail_closed", "scalar first-order QNode"),
+    ],
+)
+def test_gradient_support_matrix_routes_each_adapter_by_transform(
+    adapter: str, transform: str, method: str, mode: str, blocked: str | None
+) -> None:
+    """Each adapter gets its method and mode, or a blocker for transforms it cannot carry."""
+    plan = plan_gradient_support(
+        gate="ry", observable="pauli_expectation", adapter=adapter, transform=transform
+    )
+
+    assert plan.recommended_method == method
+    assert plan.evaluation_mode == mode
+    if blocked is None:
+        assert plan.supported
+    else:
+        assert not plan.supported
+        assert any(blocked in reason for reason in plan.blocked_reasons)
+
+
+def test_gradient_support_capability_plans_backends_and_refuses_unknown_categories() -> None:
+    """A backend capability comes from the backend planner; an unknown category is refused."""
+    backend = gradient_support_capability("backend", "statevector")
+
+    assert backend.category == "backend"
+    assert backend.supported
+    with pytest.raises(ValueError, match="^unknown support category$"):
+        gradient_support_capability(cast(Any, "noise_model"), "depolarising")
+
+
+def test_gradient_support_audit_flags_a_supported_route_it_did_not_expect() -> None:
+    """A supported plan outside the expected set, or an expected plan now blocked, is a failure."""
+    audit = run_gradient_support_matrix_audit()
+    supported = next(plan for plan in audit.plans if plan.supported)
+    unexpected = replace(supported, adapter="unlisted_adapter")
+
+    withdrawn = replace(supported, supported=False, blocked_reasons=("withdrawn",))
+
+    drifted = replace(audit, plans=(*audit.plans, unexpected))
+    regressed = replace(audit, plans=(withdrawn,))
+
+    assert drifted.failing_plans == (unexpected,)
+    assert regressed.failing_plans == (withdrawn,)
+
+
+def test_gradient_support_matrix_blocks_directional_transforms_on_finite_shot_backends() -> None:
+    """A JVP on a sampling backend is refused for every adapter except the provider callback."""
+    plan = plan_gradient_support(
+        gate="ry",
+        observable="pauli_expectation",
+        backend="qasm_simulator",
+        transform="jvp",
+        adapter="native",
+        shots=1024,
+    )
+
+    assert not plan.supported
+    assert plan.blocked_reasons == (
+        "directional and scalar-Jacobian transforms require deterministic local expectations",
+    )
+    callback = plan_gradient_support(
+        gate="ry",
+        observable="pauli_expectation",
+        backend="qasm_simulator",
+        transform="jvp",
+        adapter="provider_callback",
+        shots=1024,
+    )
+    assert callback.supported
+    assert callback.recommended_method == "provider_callback_stochastic_parameter_shift"

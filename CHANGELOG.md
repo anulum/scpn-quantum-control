@@ -497,6 +497,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The gradient support matrix (`phase/gradient_support_matrix.py`) now tests
+  the method and evaluation mode of each adapter route: PennyLane, PyTorch,
+  the provider callback, a native Hessian and a native gradient tape. It
+  also tests the blockers for transforms an adapter cannot carry, directional
+  transforms on a sampling backend (allowed only through the provider
+  callback), backend capabilities and an unknown category, and that the
+  audit counts both an unexpected supported route and an expected route that
+  became blocked as failures. Coverage rises from 92.63% to 100%. Seven older
+  tests gain docstrings, so the test documentation ceiling falls to 6848
+  findings in 532 files.
+
 - The hardware result-pack evidence runner (`hardware_result_pack_evidence.py`)
   now tests that its JSON command runner refuses an empty command, a missing
   absolute path, names with a null byte, a directory and a non-executable
