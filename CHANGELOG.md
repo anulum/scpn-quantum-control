@@ -429,6 +429,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   ID, and evidence already marked promotion-ready. Coverage rises from 76.85%
   to 100%.
 
+- The compiler isolated benchmark evidence
+  (`benchmarks/compiler_isolated_benchmark_evidence.py`) now tests every
+  refusal of its record. These cover the schema and artifact ID, the source
+  list (empty, misaligned, repeated), and the benchmark ID list. They also cover
+  promotion, readiness and status, and each figure restated from the native
+  evidence, plus an empty build stamp. Two blockers are now exercised: native
+  evidence without fail-closed cases, and an aggregate gradient error above
+  the tolerance. The native record admits an aggregate up to 1e-18 above its
+  worst case, so the blocker is reachable; an error exactly at the tolerance
+  stays attachable. The writer is also checked for an artifact ID without the
+  evidence prefix. Coverage rises from 76.00% to 100%.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
