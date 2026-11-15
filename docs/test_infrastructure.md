@@ -636,7 +636,7 @@ the 3.15 lane appends the exact-commit coverage databases of the focused gates
 that run elsewhere: the native transform and NQS ansatz runs, and every run of
 the differentiable parity job that is held at 100% there, including
 Phase-QNode framework parity with the real JAX, PyTorch and PennyLane installs
-and the public package initializers. A workflow test refuses an exact-gated
+and the public package initialisers. A workflow test refuses an exact-gated
 parity run that is not uploaded and combined.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.

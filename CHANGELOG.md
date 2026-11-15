@@ -231,7 +231,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   as debt in the union.
   - Phase-QNode framework parity (`phase/qnode_framework_parity.py`) is run
     with real JAX, PyTorch and PennyLane there; the union recorded it at 66.67%.
-  - The public package initializers: the union missed one line in
+  - The public package initialisers: the union missed one line in
     `experimental/llm_qpu/contracts/__init__.py`.
   - A workflow test requires every exact-gated run of the parity job to be
     uploaded and combined into the union.

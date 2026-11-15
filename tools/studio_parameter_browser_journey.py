@@ -553,7 +553,7 @@ def run_parameter_journey(
     -------
     dict[str, object]
         Actual browser observations, document identities and native counters.
-        The explicit metadata corpus proves storage and UI behavior only.
+        The explicit metadata corpus proves storage and UI behaviour only.
 
     Raises
     ------

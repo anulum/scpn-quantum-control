@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — real workbench accessibility acceptance
-"""Audit actual routes and native keyboard behavior with the exact locked auditor."""
+"""Audit actual routes and native keyboard behaviour with the exact locked auditor."""
 
 from __future__ import annotations
 
@@ -491,7 +491,7 @@ def run_accessibility_journey(
     Returns
     -------
     dict[str, object]
-        Full audits, original source conformance and observed keyboard behavior.
+        Full audits, original source conformance and observed keyboard behaviour.
 
     Raises
     ------
