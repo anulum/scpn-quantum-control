@@ -36,6 +36,7 @@ from scpn_quantum_control.phase import (
 def test_phase_jax_jit_compatibility_audit_separates_native_and_callback_routes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """JIT compiles the native and custom-VJP routes; parameter shift stays a host callback."""
     fake_jax = _FakeJAX()
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
 
@@ -65,6 +66,8 @@ def test_phase_jax_jit_compatibility_audit_separates_native_and_callback_routes(
 def test_phase_jax_jit_compatibility_audit_fails_closed_without_jit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A JAX without jit is refused by the JIT audit."""
+
     class _NoJITJAX(_FakeJAX):
         jit: Any = None
 
@@ -81,6 +84,7 @@ def test_phase_jax_jit_compatibility_audit_fails_closed_without_jit(
 def test_phase_jax_vmap_compatibility_audit_batches_native_and_custom_vjp(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """VMAP batches the native and custom-VJP gradients and matches parameter shift."""
     fake_jax = _FakeJAX()
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -117,6 +121,8 @@ def test_phase_jax_vmap_compatibility_audit_batches_native_and_custom_vjp(
 def test_phase_jax_vmap_compatibility_audit_fails_closed_without_vmap(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A JAX without vmap is refused by the VMAP audit."""
+
     class _NoVMAPJAX(_FakeJAX):
         vmap: Any = None
 
@@ -133,6 +139,7 @@ def test_phase_jax_vmap_compatibility_audit_fails_closed_without_vmap(
 def test_phase_jax_sharding_compatibility_audit_batches_native_and_custom_vjp(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """PMAP over two local devices batches both routes and matches parameter shift."""
     fake_jax = _FakeJAX()
     fake_jax.local_device_count_value = 2
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
@@ -172,6 +179,8 @@ def test_phase_jax_sharding_compatibility_audit_batches_native_and_custom_vjp(
 def test_phase_jax_sharding_compatibility_audit_fails_closed_without_pmap(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A JAX without pmap is refused by the sharding audit."""
+
     class _NoPMAPJAX(_FakeJAX):
         pmap: Any = None
 
@@ -188,6 +197,7 @@ def test_phase_jax_sharding_compatibility_audit_fails_closed_without_pmap(
 def test_phase_jax_pytree_compatibility_audit_round_trips_gradient_structure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A nested parameter tree gets gradients with the same structure."""
     fake_jax = _FakeJAX()
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
     features = np.array([[0.0, 0.2, 0.4], [np.pi, np.pi + 0.2, np.pi + 0.4]], dtype=float)
@@ -239,6 +249,8 @@ def test_phase_jax_pytree_compatibility_audit_round_trips_gradient_structure(
 def test_phase_jax_pytree_compatibility_audit_fails_closed_without_tree_util(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A JAX without tree_util is refused by the PyTree audit."""
+
     class _NoTreeUtilJAX(_FakeJAX):
         tree_util: ClassVar[Any] = None
 
@@ -255,6 +267,7 @@ def test_phase_jax_pytree_compatibility_audit_fails_closed_without_tree_util(
 def test_phase_jax_nested_transform_algebra_audit_verifies_bounded_routes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The bounded nested transforms pass and the arbitrary-QNode route stays blocked."""
     fake_jax = _FakeJAX()
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
     features = np.array([[0.0, 0.2], [np.pi, np.pi + 0.2]], dtype=float)
@@ -294,3 +307,114 @@ def test_phase_jax_nested_transform_algebra_audit_verifies_bounded_routes(
     )
     payload = result.to_dict()
     assert cast(Any, payload["routes"])["arbitrary_phase_qnode_hessian"]["status"] == "blocked"
+
+
+_FEATURES = np.array([[0.0], [np.pi]], dtype=float)
+_LABELS = np.array([0.0, 1.0], dtype=float)
+_BATCH = np.array([[0.25], [0.45]], dtype=float)
+
+
+class _CorruptBatchJAX(_FakeJAX):
+    """Fake JAX whose chosen vmap/pmap call drops one loss or one gradient row."""
+
+    def __init__(self, transform: str, call: int, part: int) -> None:
+        """Record which transform, which of its calls and which output to corrupt."""
+        super().__init__()
+        self.corrupt = (transform, call, part)
+
+    def _corrupting(self, transform: str, call: int, wrapped: Any) -> Any:
+        """Wrap a batched function so the selected output loses its last row."""
+
+        def corrupted(values: Any) -> Any:
+            outputs = list(wrapped(values))
+            if self.corrupt[:2] == (transform, call):
+                outputs[self.corrupt[2]] = outputs[self.corrupt[2]][:-1]
+            return tuple(outputs)
+
+        return corrupted
+
+    def vmap(self, fn: Any) -> Any:
+        """Batch through the fake vmap, corrupting the selected call."""
+        wrapped = super().vmap(fn)
+        return self._corrupting("vmap", self.vmap_calls, wrapped)
+
+    def pmap(self, fn: Any) -> Any:
+        """Batch through the fake pmap, corrupting the selected call."""
+        wrapped = super().pmap(fn)
+        return self._corrupting("pmap", self.pmap_calls, wrapped)
+
+
+@pytest.mark.parametrize(
+    ("transform", "call", "part", "message"),
+    [
+        ("vmap", 1, 0, "JAX native VMAP loss batch"),
+        ("vmap", 2, 0, "JAX custom-VJP VMAP loss batch"),
+        ("vmap", 1, 1, "JAX native VMAP gradient batch"),
+        ("vmap", 2, 1, "JAX custom-VJP VMAP gradient batch"),
+        ("pmap", 1, 0, "JAX native PMAP loss batch"),
+        ("pmap", 2, 0, "JAX custom-VJP PMAP loss batch"),
+        ("pmap", 1, 1, "JAX native PMAP gradient batch"),
+        ("pmap", 2, 1, "JAX custom-VJP PMAP gradient batch"),
+    ],
+)
+def test_phase_jax_batch_audits_refuse_batches_of_the_wrong_shape(
+    monkeypatch: pytest.MonkeyPatch, transform: str, call: int, part: int, message: str
+) -> None:
+    """A batched loss or gradient that lost a row is refused before any comparison."""
+    fake_jax = _CorruptBatchJAX(transform, call, part)
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    audit = (
+        run_jax_vmap_compatibility_audit
+        if transform == "vmap"
+        else run_jax_sharding_compatibility_audit
+    )
+
+    with pytest.raises(RuntimeError, match=f"^{message} has an unexpected shape$"):
+        audit(features=_FEATURES, labels=_LABELS, params_batch=_BATCH)
+
+
+def test_phase_jax_sharding_audit_needs_a_device_and_one_row_per_device(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No local device, or a batch whose rows differ from the device count, is refused."""
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    fake_jax.local_device_count_value = 0
+    with pytest.raises(RuntimeError, match="^JAX pmap requires at least one local device$"):
+        run_jax_sharding_compatibility_audit(
+            features=_FEATURES, labels=_LABELS, params_batch=_BATCH
+        )
+    fake_jax.local_device_count_value = 2
+    with pytest.raises(ValueError, match=r"local_device_count \(2\), got 3$"):
+        run_jax_sharding_compatibility_audit(
+            features=_FEATURES, labels=_LABELS, params_batch=np.vstack([_BATCH, _BATCH[:1]])
+        )
+
+
+def test_phase_jax_batch_and_nested_audits_name_each_missing_transform(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A fake JAX without value_and_grad or jit is refused by the audits that need them."""
+
+    class _NoValueAndGradJAX(_FakeJAX):
+        """Fake JAX that batches but cannot differentiate."""
+
+        value_and_grad: Any = None
+
+    class _NoJITJAX(_FakeJAX):
+        """Fake JAX that batches and differentiates but cannot compile."""
+
+        jit: Any = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoValueAndGradJAX(), np))
+    with pytest.raises(RuntimeError, match="^JAX value_and_grad is required for bounded-QNN"):
+        run_jax_vmap_compatibility_audit(features=_FEATURES, labels=_LABELS, params_batch=_BATCH)
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoJITJAX(), np))
+    with pytest.raises(RuntimeError, match="^JAX JIT is required for bounded nested-transform"):
+        run_jax_nested_transform_algebra_audit(
+            features=_FEATURES,
+            labels=_LABELS,
+            params_batch=_BATCH,
+            params_pytree={"phase": np.array([0.25], dtype=float)},
+        )

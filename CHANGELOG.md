@@ -497,6 +497,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The JAX compatibility leaf (`phase/jax_compatibility.py`) now has tests for
+  its fail-closed paths, using the existing fake JAX module through the
+  facade's loader. The VMAP and PMAP audits refuse a batched loss or gradient
+  that lost a row, for both the native and custom-VJP routes. The sharding
+  audit refuses zero local devices and a batch whose rows differ from the
+  device count. A JAX without `value_and_grad` or `jit` is refused by the
+  audits that need it. The three batch audits no longer define a second loss
+  function as the custom-VJP primal: it had the native loss's body, and JAX
+  never ran it under differentiation. The native loss is now the primal.
+  Coverage of lines rises from 87.55% to 100% over the JAX facade tests. One
+  branch stays partial: the JIT audit always compiles the parameter-shift
+  reference, so its host-callback flag is always set. Nine older tests gain
+  docstrings, so the test documentation ceiling falls to 6966 findings in
+  546 files.
+
 - The finite-shot QNN evidence (`phase/qnn_finite_shot.py`) now has tests for
   every data refusal:
   - one-dimensional, empty or non-finite features;

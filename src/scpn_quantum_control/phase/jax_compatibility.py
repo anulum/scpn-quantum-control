@@ -190,10 +190,8 @@ def run_jax_vmap_compatibility_audit(
     def native_loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
 
-    def custom_loss_fn(raw_params: object) -> object:
-        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
-
-    custom_loss: Any = _custom_vjp_function(jax_module, custom_loss_fn)
+    # The custom-VJP primal is the native loss; under differentiation JAX runs fwd/bwd only.
+    custom_loss: Any = _custom_vjp_function(jax_module, native_loss_fn)
 
     def custom_loss_fwd(raw_params: object) -> tuple[object, object]:
         parameter_tensor = jnp.asarray(raw_params)
@@ -317,10 +315,8 @@ def run_jax_sharding_compatibility_audit(
     def native_loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
 
-    def custom_loss_fn(raw_params: object) -> object:
-        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
-
-    custom_loss: Any = _custom_vjp_function(jax_module, custom_loss_fn)
+    # The custom-VJP primal is the native loss; under differentiation JAX runs fwd/bwd only.
+    custom_loss: Any = _custom_vjp_function(jax_module, native_loss_fn)
 
     def custom_loss_fwd(raw_params: object) -> tuple[object, object]:
         parameter_tensor = jnp.asarray(raw_params)
@@ -445,11 +441,8 @@ def run_jax_pytree_compatibility_audit(
         parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
 
-    def custom_loss_fn(raw_tree: object) -> object:
-        parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
-        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
-
-    custom_loss: Any = _custom_vjp_function(jax_module, custom_loss_fn)
+    # The custom-VJP primal is the native loss; under differentiation JAX runs fwd/bwd only.
+    custom_loss: Any = _custom_vjp_function(jax_module, native_loss_fn)
 
     def custom_loss_fwd(raw_tree: object) -> tuple[object, object]:
         parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
