@@ -86,8 +86,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   0.28.20 supports; vitest and its V8 coverage 4.1.12 → 5.1.0; vite 8.3.5,
   @vitejs/plugin-react 6.2.1, jsdom 30.1.3, @module-federation/vite 1.23.9,
   @testing-library/react 16.3.3, axe-core 4.14.0 and @types/node 26.6.6. Every
-  chosen release is at least seven days old. React stays at 19.3.0 because the
-  module-federation contract shares it as a singleton with the Hub. Biome moves
+  chosen release is at least seven days old. React and React DOM move from
+  19.3.0 to 19.3.1 (published 14 October), the singleton the Hub now shares:
+  the module-federation contract requires the same pinned version on both
+  sides, and a remote without the host's React would load its own copy. The
+  React type packages stay at 19.3.0, their newest release. Biome moves
   from 2.5.15 to 2.6.6, the newest 2.6 release at least seven days old: its
   eight new findings are fixed without suppressions (seven test harness
   components move to module scope, and a BigInt byte-count minimum, where
