@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         build_static_circuit_plan,
         validate_static_circuit_plan,
     )
+    from .target import ReportedValue, TargetSnapshot, decode_target_snapshot
     from .task import SplitManifest, TaskSpec, validate_task_split
     from .wire import (
         ARRAY_SCHEMA,
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
         SCHEMA,
         SPLIT_SCHEMA,
         STATIC_PLAN_SCHEMA,
+        TARGET_SNAPSHOT_SCHEMA,
         TASK_SCHEMA,
         ArrayDescriptor,
         ArtifactHeader,
@@ -161,6 +163,18 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.model",
         "ModelDescriptor",
     ),
+    "ReportedValue": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.target",
+        "ReportedValue",
+    ),
+    "TargetSnapshot": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.target",
+        "TargetSnapshot",
+    ),
+    "decode_target_snapshot": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.target",
+        "decode_target_snapshot",
+    ),
     "ExperimentProtocol": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.protocol",
         "ExperimentProtocol",
@@ -199,6 +213,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "COMPRESSOR_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "COMPRESSOR_SCHEMA",
+    ),
+    "TARGET_SNAPSHOT_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "TARGET_SNAPSHOT_SCHEMA",
     ),
     "EXPERIMENT_PROTOCOL_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -382,4 +400,8 @@ __all__ = (
     "build_measurement_plan",
     "estimate_sampled_basis",
     "decode_contract",
+    "TARGET_SNAPSHOT_SCHEMA",
+    "TargetSnapshot",
+    "ReportedValue",
+    "decode_target_snapshot",
 )

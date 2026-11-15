@@ -497,6 +497,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `TargetSnapshot`
+  contract (`experimental/llm_qpu/contracts/target.py`, schema
+  `target_snapshot.v1`). It records one concrete provider device as its SDK
+  reported it: provider, account route, device, SDK name and version, the
+  digest of the SDK target object, qubit count, basis gates and coupling
+  pairs. Calibration ID and time, maximum shots and maximum circuits per job
+  are typed `ReportedValue` records, either known or unknown with the
+  blocker the gap causes, so an unknown never reads as false, true or zero. A
+  catalog profile is refused as a source of live capability, and the header's
+  data origin must match the capability provenance (the artifact header
+  gains the `target_snapshot` kind and the `provider_metadata` origin). The
+  standalone protocol worker validates the same wire independently. The
+  package-wide `decode_contract` keeps its frozen definition, so the
+  snapshot decodes through its own `decode_target_snapshot`, an approved
+  export addition. Hardware submission stays disabled.
+
 - The optional `[topology]` extra now has a CI lane. No job installed ripser,
   so the real-ripser tests skipped everywhere and the persistent-homology
   paths ran only against stand-ins. The new `topology-extra-coverage` job

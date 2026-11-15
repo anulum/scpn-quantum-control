@@ -32,6 +32,18 @@ _LATENT_SCHEMA = "scpn.experimental.llm_qpu.latent_batch.v1"
 _COMPRESSOR_SCHEMA = "scpn.experimental.llm_qpu.compressor_artifact.v1"
 _COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
 _EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
+_TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
+_TARGET_ORIGINS = {
+    "provider_target_query": "provider_metadata",
+    "synthetic_fixture": "synthetic_classical",
+}
+_TARGET_CAPABILITIES = (
+    "calibration_id",
+    "calibration_time_utc",
+    "max_shots",
+    "max_circuits_per_job",
+)
+_UTC_SECOND = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -951,6 +963,110 @@ def _roundtrip_experiment_protocol(request: dict[str, object]) -> dict[str, obje
     }
 
 
+def _target_text(value: object, name: str) -> str:
+    if type(value) is not str:
+        raise ValueError(f"{name} must be text")
+    normalized = unicodedata.normalize("NFC", value)
+    if normalized != value or not value or len(value) > 256 or any(ord(ch) < 32 for ch in value):
+        raise ValueError(f"{name} must be bounded normalized text")
+    return value
+
+
+def _validate_reported_capability(value: object, name: str) -> None:
+    if type(value) is not dict or set(value) != {"state", "value", "blocker"}:
+        raise ValueError("ReportedValue fields mismatch")
+    counted = name in ("max_shots", "max_circuits_per_job")
+    if value["state"] == "unknown":
+        if value["value"] is not None:
+            raise ValueError("an unknown capability cannot carry a value")
+        _target_text(value["blocker"], "capability blocker")
+        return
+    if value["state"] != "known" or value["blocker"] is not None:
+        raise ValueError("a known capability needs a value and no blocker")
+    reported = value["value"]
+    if counted:
+        if type(reported) is not int or not 0 < reported <= 10**9:
+            raise ValueError(f"{name} must be a bounded positive integer")
+        return
+    _target_text(reported, name)
+    if name == "calibration_time_utc" and _UTC_SECOND.fullmatch(str(reported)) is None:
+        raise ValueError("calibration time must be an ISO-8601 UTC second")
+
+
+def _validate_target_topology(target: dict[str, object]) -> None:
+    qubits = target["num_qubits"]
+    if type(qubits) is not int or not 0 < qubits <= 10_000:
+        raise ValueError("invalid target qubit count")
+    gates = target["basis_gates"]
+    if type(gates) is not list or not gates:
+        raise ValueError("basis gates must be a nonempty list")
+    names = [_target_text(gate, "basis gate") for gate in gates]
+    if names != sorted(set(names)):
+        raise ValueError("basis gates must be sorted and unique")
+    edges = target["coupling_edges"]
+    if type(edges) is not list or len(edges) > 100_000:
+        raise ValueError("coupling edges must be a bounded list")
+    pairs: list[tuple[int, int]] = []
+    for edge in edges:
+        if type(edge) is not list or len(edge) != 2:
+            raise ValueError("a coupling edge must be a qubit pair")
+        if any(type(qubit) is not int or not 0 <= qubit < qubits for qubit in edge):
+            raise ValueError("coupling edge qubit is outside the target")
+        if edge[0] == edge[1]:
+            raise ValueError("a coupling edge must join two different qubits")
+        pairs.append((edge[0], edge[1]))
+    if pairs != sorted(set(pairs)):
+        raise ValueError("coupling edges must be sorted and unique")
+
+
+def _roundtrip_target_snapshot(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "target"}:
+        raise ValueError("target request fields mismatch")
+    target = request["target"]
+    fields = {
+        "schema",
+        "object_kind",
+        "provider",
+        "account_route",
+        "device_name",
+        "sdk_name",
+        "sdk_version",
+        "sdk_target_digest",
+        "capability_provenance",
+        "num_qubits",
+        "basis_gates",
+        "coupling_edges",
+        *_TARGET_CAPABILITIES,
+        "header",
+    }
+    if type(target) is not dict or set(target) != fields:
+        raise ValueError("TargetSnapshot fields mismatch")
+    if target["schema"] != _TARGET_SNAPSHOT_SCHEMA or target["object_kind"] != "target_snapshot":
+        raise ValueError("unknown TargetSnapshot schema")
+    if target["provider"] not in ("ibm", "iqm"):
+        raise ValueError("unsupported target provider")
+    for name in ("account_route", "device_name", "sdk_name", "sdk_version"):
+        _target_text(target[name], name)
+    digest = target["sdk_target_digest"]
+    if type(digest) is not str or _DIGEST.fullmatch(digest) is None:
+        raise ValueError("invalid SDK target digest")
+    provenance = target["capability_provenance"]
+    if provenance not in _TARGET_ORIGINS:
+        raise ValueError("catalog or unknown capability provenance")
+    _validate_target_topology(target)
+    for name in _TARGET_CAPABILITIES:
+        _validate_reported_capability(target[name], name)
+    _validate_artifact_header(target, (digest,), _TARGET_ORIGINS[str(provenance)])
+    wire = _canonical_bytes(target)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "target": json.loads(wire),
+        "target_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -1020,6 +1136,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_target_snapshot":
+        try:
+            _emit(_roundtrip_target_snapshot(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is not dict or set(request) != {"op"} or request["op"] != "describe":
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "unsupported operation"})
         return 2
@@ -1035,6 +1158,7 @@ def main() -> int:
                 "roundtrip_latent_batch",
                 "roundtrip_compression",
                 "roundtrip_experiment_protocol",
+                "roundtrip_target_snapshot",
             ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,

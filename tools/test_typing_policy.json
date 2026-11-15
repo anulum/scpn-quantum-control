@@ -935,6 +935,7 @@
         "tests/experimental/llm_qpu/test_measurement_plan_contract.py",
         "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
         "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
+        "tests/experimental/llm_qpu/test_target_snapshot_contract.py",
         "tests/ml_convergence_qnn_absence.py",
         "tests/neural_operator_rng_custody.py",
         "tests/test_active_queue_status_assertions.py",

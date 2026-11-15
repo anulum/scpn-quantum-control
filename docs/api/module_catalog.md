@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **866 modules** across **41 package families**
-- **4678 documented public module-level symbols**
+- **867 modules** across **41 package families**
+- **4681 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2484,6 +2484,16 @@ Static open-chain XY recipe and elementary digital gate list.
 **Classes:** `ReservoirSpec`, `StaticCircuitPlan`
 
 **Functions:** `build_static_circuit_plan()`, `validate_static_circuit_plan()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.target`
+
+Frozen provider target metadata whose unknowns stay unknown.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/target.py) · Public symbols: **3**
+
+**Classes:** `ReportedValue`, `TargetSnapshot`
+
+**Functions:** `decode_target_snapshot()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.task`
 

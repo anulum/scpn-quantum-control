@@ -275,6 +275,18 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("evaluate_control_under_disturbances", "oscillatools.accel.kuramoto_network_control"),
         ),
     ),
+    "scpn_quantum_control.experimental.llm_qpu.contracts": (
+        45,
+        (
+            ("TARGET_SNAPSHOT_SCHEMA", "scpn_quantum_control.experimental.llm_qpu.contracts.wire"),
+            ("TargetSnapshot", "scpn_quantum_control.experimental.llm_qpu.contracts.target"),
+            ("ReportedValue", "scpn_quantum_control.experimental.llm_qpu.contracts.target"),
+            (
+                "decode_target_snapshot",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.target",
+            ),
+        ),
+    ),
 }
 
 

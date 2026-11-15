@@ -32,6 +32,7 @@ _INVENTORY = (
     "llm_qpu/contracts/model.py",
     "llm_qpu/contracts/protocol.py",
     "llm_qpu/contracts/static.py",
+    "llm_qpu/contracts/target.py",
     "llm_qpu/contracts/task.py",
     "llm_qpu/contracts/wire.py",
     "llm_qpu/data/artifact_store.py",
