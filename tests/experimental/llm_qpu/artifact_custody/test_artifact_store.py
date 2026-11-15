@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import hashlib
 import os
+import sqlite3
 import struct
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -152,3 +154,155 @@ def test_concurrent_identical_publish_is_admitted_once(
     assert store.get(record.sha256) == (record, payload)
     assert not list(store.quarantine.iterdir())
     assert not list(store.objects.rglob("*.tmp"))
+
+
+@pytest.mark.parametrize(
+    ("total", "per_object", "message"),
+    [
+        (0, 1, "invalid total-byte capacity"),
+        (2**42 + 1, 1, "invalid total-byte capacity"),
+        (True, 1, "invalid total-byte capacity"),
+        (16, 0, "invalid object-byte capacity"),
+        (16, 17, "invalid object-byte capacity"),
+        (16, 8.0, "invalid object-byte capacity"),
+    ],
+)
+def test_store_refuses_invalid_capacities(
+    tmp_path: Path, total: Any, per_object: Any, message: str
+) -> None:
+    """Capacities must be bounded positive integers with the object limit inside the total."""
+    with pytest.raises(ValueError, match=f"^{message}$"):
+        ArtifactStore(tmp_path / "private", max_total_bytes=total, max_object_bytes=per_object)
+    assert not (tmp_path / "private").exists()
+
+
+def test_store_refuses_text_roots_shared_indexes_and_missing_repositories(tmp_path: Path) -> None:
+    """The root must be a Path, the index private, and a repository root an existing directory."""
+    text_root: Any = str(tmp_path / "private")
+    with pytest.raises(ValueError, match="^artifact root must be a Path$"):
+        ArtifactStore(text_root)
+    for mode in (0o640, 0o604):
+        root = tmp_path / f"shared-index-{mode:o}"
+        root.mkdir(mode=0o700)
+        index = root / "index.sqlite3"
+        index.touch(mode=0o600)
+        index.chmod(mode)
+        with pytest.raises(
+            ValueError, match=r"^artifact index must be owned and private \(0600\)$"
+        ):
+            ArtifactStore(root)
+    text_repository: Any = str(tmp_path)
+    for repository in (tmp_path / "missing", text_repository):
+        with pytest.raises(ValueError, match="^repository root must be an existing directory$"):
+            open_repository_store(repository)
+
+
+def test_put_refuses_unbounded_payloads_unknown_labels_and_overflow(tmp_path: Path) -> None:
+    """Payloads are bounded bytes with known labels, and the store never passes its capacity."""
+    store = ArtifactStore(tmp_path / "private", max_total_bytes=16, max_object_bytes=10)
+    mutable: Any = bytearray(b"abc")
+    for payload in (b"", mutable, b"x" * 11):
+        with pytest.raises(ValueError, match="^artifact payload must be bounded nonempty bytes$"):
+            store.put(payload, kind="evidence", retention="pinned", egress="value_free")
+    labels: list[dict[str, Any]] = [
+        {"kind": "archive", "retention": "pinned", "egress": "value_free"},
+        {"kind": "evidence", "retention": "forever", "egress": "value_free"},
+        {"kind": "evidence", "retention": "pinned", "egress": "public"},
+    ]
+    for label in labels:
+        with pytest.raises(ValueError, match="^unknown artifact custody label$"):
+            store.put(b"abc", **label)
+    first = store.put(b"0123456789", kind="evidence", retention="pinned", egress="value_free")
+    with pytest.raises(ValueError, match="^artifact store capacity exceeded$"):
+        store.put(b"abcdefghij", kind="evidence", retention="pinned", egress="value_free")
+    again = store.put(b"0123456789", kind="evidence", retention="pinned", egress="value_free")
+    assert again == first
+    assert store.has(first.sha256)
+    assert not store.has(hashlib.sha256(b"abcdefghij").hexdigest())
+
+
+def test_put_refuses_a_content_id_under_different_custody(tmp_path: Path) -> None:
+    """One content address keeps one custody record; a relabelled publish is refused."""
+    store = ArtifactStore(tmp_path / "private")
+    record = store.put(b"evidence", kind="evidence", retention="pinned", egress="value_free")
+    with pytest.raises(
+        CorruptArtifactError, match="^existing content ID has different custody metadata$"
+    ):
+        store.put(b"evidence", kind="manifest", retention="pinned", egress="value_free")
+    assert store.get(record.sha256) == (record, b"evidence")
+
+
+def test_put_refuses_a_zero_byte_write_and_leaves_no_partial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A write that makes no progress is a disk failure, not an empty success."""
+    store = ArtifactStore(tmp_path / "private")
+    payload = b"payload bytes"
+
+    def stalled_write(descriptor: int, chunk: bytes | memoryview) -> int:
+        return 0
+
+    with monkeypatch.context() as patch:
+        patch.setattr(os, "write", stalled_write)
+        with pytest.raises(OSError, match="^short artifact write$"):
+            store.put(payload, kind="evidence", retention="pinned", egress="value_free")
+    assert not store.has(hashlib.sha256(payload).hexdigest())
+    assert not list(store.objects.rglob("*.tmp"))
+
+
+def test_put_array_refuses_an_unreviewed_descriptor(tmp_path: Path) -> None:
+    """Array storage needs the frozen descriptor contract, not its wire mapping."""
+    store = ArtifactStore(tmp_path / "private")
+    descriptor, payload = _array((1.0, 2.0))
+    loose: Any = descriptor.to_wire()
+    with pytest.raises(ValueError, match="^array storage requires an ArrayDescriptor$"):
+        store.put_array(loose, payload)
+    assert store.put_array(descriptor, payload, retention="cache").retention == "cache"
+
+
+def _set_indexed_length(store: ArtifactStore, digest: str, length: int) -> None:
+    """Rewrite one index row's byte length, as a damaged index would hold it."""
+    with sqlite3.connect(store.database) as connection:
+        connection.execute("UPDATE objects SET byte_length=? WHERE sha256=?", (length, digest))
+    connection.close()
+
+
+def test_get_refuses_index_rows_that_disagree_with_the_object(tmp_path: Path) -> None:
+    """A damaged index length is refused before or after reading, never trusted."""
+    store = ArtifactStore(tmp_path / "private")
+    record = store.put(b"0123456789", kind="evidence", retention="pinned", egress="value_free")
+    for length, message in (
+        (0, "indexed artifact length is invalid"),
+        (store.max_object_bytes + 1, "indexed artifact length is invalid"),
+        (9, "stored artifact exceeds declared limit"),
+        (11, "indexed artifact length mismatch"),
+    ):
+        _set_indexed_length(store, record.sha256, length)
+        with pytest.raises(CorruptArtifactError, match=f"^{message}$"):
+            store.get(record.sha256)
+    _set_indexed_length(store, record.sha256, 10)
+    assert store.get(record.sha256) == (record, b"0123456789")
+
+
+def test_get_refuses_an_object_that_grows_while_it_is_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Bytes beyond the indexed length are refused even if the size check saw a smaller file."""
+    store = ArtifactStore(tmp_path / "private")
+    record = store.put(b"0123456789", kind="evidence", retention="pinned", egress="value_free")
+    _set_indexed_length(store, record.sha256, 9)
+    real_fstat = os.fstat
+
+    def stale_fstat(descriptor: int) -> os.stat_result:
+        info = real_fstat(descriptor)
+        fields = list(info[:10])
+        fields[6] = 0
+        return os.stat_result(fields)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(os, "fstat", stale_fstat)
+        with pytest.raises(CorruptArtifactError, match="^stored artifact exceeds declared limit$"):
+            store.get(record.sha256)
+    object_path = store.objects / record.sha256[:2] / record.sha256
+    object_path.unlink()
+    assert not store.has(record.sha256)

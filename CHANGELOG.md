@@ -272,6 +272,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   two byte comparisons after a verified digest, which only a SHA-256
   collision could reach, are removed.
 
+- The artifact store (`experimental/llm_qpu/data/artifact_store.py`) has full
+  line and branch coverage; the union had it at 87.56%. New tests cover the
+  refusals of invalid capacities, a text root, a shared index, a missing
+  repository root, unbounded payloads, unknown labels, overflow, relabelled
+  content and a write that makes no progress. They also cover an index whose
+  length disagrees with the object and an object that grows while it is read.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
