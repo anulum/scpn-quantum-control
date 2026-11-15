@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **869 modules** across **41 package families**
-- **4690 documented public module-level symbols**
+- **870 modules** across **41 package families**
+- **4695 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2406,6 +2406,16 @@ Quantum measurement entropy sources for the QRNG streaming harness.
 **Functions:** `von_neumann_debias()`
 
 ## `experimental`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.approval`
+
+Owner approvals scoped to one exact quote, with a detached signature checked by a trust store.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/approval.py) · Public symbols: **5**
+
+**Classes:** `SignatureVerifier`, `ApprovalSignature`, `OwnerApproval`
+
+**Functions:** `validate_owner_approval()`, `decode_owner_approval()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.cells`
 

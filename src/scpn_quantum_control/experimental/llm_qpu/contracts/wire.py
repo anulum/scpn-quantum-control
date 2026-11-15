@@ -36,6 +36,7 @@ EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
 COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
 COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
+OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -271,6 +272,7 @@ class ArtifactHeader:
             "target_snapshot",
             "compiled_bundle",
             "cost_quote",
+            "owner_approval",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")
@@ -294,6 +296,7 @@ class ArtifactHeader:
             "synthetic_classical",
             "owner_checkpoint",
             "provider_metadata",
+            "owner_decision",
         ):
             raise ValueError("unknown artifact data origin")
         if self.claim_scope != "design_only":

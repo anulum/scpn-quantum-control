@@ -13,6 +13,13 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from .approval import (
+        ApprovalSignature,
+        OwnerApproval,
+        SignatureVerifier,
+        decode_owner_approval,
+        validate_owner_approval,
+    )
     from .cells import (
         CellKey,
         PlannedCell,
@@ -60,6 +67,7 @@ if TYPE_CHECKING:
         LATENT_SCHEMA,
         MEASUREMENT_PLAN_SCHEMA,
         MODEL_SCHEMA,
+        OWNER_APPROVAL_SCHEMA,
         RESERVOIR_SCHEMA,
         SCHEMA,
         SPLIT_SCHEMA,
@@ -209,6 +217,26 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.cost",
         "decode_cost_quote",
     ),
+    "ApprovalSignature": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+        "ApprovalSignature",
+    ),
+    "OwnerApproval": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+        "OwnerApproval",
+    ),
+    "SignatureVerifier": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+        "SignatureVerifier",
+    ),
+    "validate_owner_approval": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+        "validate_owner_approval",
+    ),
+    "decode_owner_approval": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+        "decode_owner_approval",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -263,6 +291,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "COST_QUOTE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "COST_QUOTE_SCHEMA",
+    ),
+    "OWNER_APPROVAL_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "OWNER_APPROVAL_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -469,4 +501,10 @@ __all__ = (
     "CostQuote",
     "validate_cost_quote",
     "decode_cost_quote",
+    "OWNER_APPROVAL_SCHEMA",
+    "ApprovalSignature",
+    "OwnerApproval",
+    "SignatureVerifier",
+    "validate_owner_approval",
+    "decode_owner_approval",
 )

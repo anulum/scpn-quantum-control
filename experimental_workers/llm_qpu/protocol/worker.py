@@ -35,6 +35,9 @@ _EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 _TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
 _COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
 _COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
+_OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
+_APPROVAL_ORIGINS = {"live": "owner_decision", "test": "synthetic_classical"}
+_APPROVAL_EGRESS = ("private_derived", "reviewed_synthetic", "value_free")
 _QUOTE_COUNTS = ("job_count", "overhead_executions", "resource_units", "price_minor_units")
 _BUNDLE_CELL_FIELDS = (
     "planned_cell_digest",
@@ -1406,6 +1409,147 @@ def _roundtrip_cost_quote(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+_APPROVAL_FIELDS = {
+    "schema",
+    "object_kind",
+    "approval_id",
+    "compiled_bundle_digest",
+    "bundle_payload_digest",
+    "cost_quote_digest",
+    "provider",
+    "account_route",
+    "device_name",
+    "max_shots",
+    "max_jobs",
+    "max_resource_units",
+    "max_price_minor_units",
+    "currency",
+    "valid_from_utc",
+    "expires_at_utc",
+    "approved_egress",
+    "signature",
+    "header",
+}
+
+
+def _validate_approval_signature(signature: object) -> str:
+    fields = {"scheme", "key_id", "key_environment", "signature_sha256"}
+    if type(signature) is not dict or set(signature) != fields:
+        raise ValueError("ApprovalSignature fields mismatch")
+    if signature["scheme"] != "ml_dsa_65":
+        raise ValueError("unsupported approval signature scheme")
+    _worker_digest(signature["key_id"], "approval key id")
+    environment = signature["key_environment"]
+    if environment not in _APPROVAL_ORIGINS:
+        raise ValueError("approval key environment must be live or test")
+    _worker_digest(signature["signature_sha256"], "approval signature digest")
+    return _APPROVAL_ORIGINS[str(environment)]
+
+
+def _validate_approval_fields(approval: object) -> dict[str, object]:
+    if type(approval) is not dict or set(approval) != _APPROVAL_FIELDS:
+        raise ValueError("OwnerApproval fields mismatch")
+    if approval["schema"] != _OWNER_APPROVAL_SCHEMA or approval["object_kind"] != "owner_approval":
+        raise ValueError("unknown OwnerApproval schema")
+    for name in ("approval_id", "provider", "account_route", "device_name"):
+        _target_text(approval[name], name)
+    for name in ("compiled_bundle_digest", "bundle_payload_digest", "cost_quote_digest"):
+        _worker_digest(approval[name], name)
+    for name in ("max_shots", "max_jobs", "max_resource_units", "max_price_minor_units"):
+        cap = approval[name]
+        if type(cap) is not int or not 0 < cap <= 10**15:
+            raise ValueError(f"{name} must be a bounded positive integer")
+    currency = approval["currency"]
+    if type(currency) is not str or re.fullmatch(r"[A-Z]{3}", currency) is None:
+        raise ValueError("currency must be an ISO 4217 code")
+    start, end = approval["valid_from_utc"], approval["expires_at_utc"]
+    for value in (start, end):
+        if type(value) is not str or _UTC_SECOND.fullmatch(value) is None:
+            raise ValueError("approval validity bounds must be ISO-8601 UTC seconds")
+    if str(end) <= str(start):
+        raise ValueError("an approval must expire after it becomes valid")
+    if approval["approved_egress"] not in _APPROVAL_EGRESS:
+        raise ValueError("unknown approved data-egress scope")
+    return approval
+
+
+def _cross_check_approval(
+    approval: dict[str, object],
+    quote: dict[str, object],
+    bundle: dict[str, object],
+    target: dict[str, object],
+) -> None:
+    if approval["compiled_bundle_digest"] != hashlib.sha256(_canonical_bytes(bundle)).hexdigest():
+        raise ValueError("approval covers a different compiled bundle")
+    if approval["bundle_payload_digest"] != bundle["payload_digest"]:
+        raise ValueError("approval covers a different compiled payload")
+    if approval["cost_quote_digest"] != hashlib.sha256(_canonical_bytes(quote)).hexdigest():
+        raise ValueError("approval covers a different cost quote")
+    scope = [approval[name] for name in ("provider", "account_route", "device_name")]
+    if scope != [target[name] for name in ("provider", "account_route", "device_name")]:
+        raise ValueError("approval scope differs from the target route and device")
+    known: dict[str, int] = {}
+    for name in _QUOTE_COUNTS:
+        count = quote[name]
+        if type(count) is not dict or count["state"] != "known":
+            raise ValueError(f"an approval cannot cover an unknown {name}")
+        known[name] = int(str(count["value"]))
+    for label, value, cap in (
+        ("shots", quote["total_shots"], approval["max_shots"]),
+        ("job_count", known["job_count"], approval["max_jobs"]),
+        ("resource_units", known["resource_units"], approval["max_resource_units"]),
+        ("price_minor_units", known["price_minor_units"], approval["max_price_minor_units"]),
+    ):
+        if int(str(value)) > int(str(cap)):
+            raise ValueError(f"quoted {label} above the approved cap")
+    if quote["currency"] != approval["currency"]:
+        raise ValueError("quote and approval currencies differ")
+
+
+def _roundtrip_owner_approval(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "target", "bundle", "quote", "approval"}:
+        raise ValueError("approval request fields mismatch")
+    quote_request = {name: request[name] for name in ("target", "bundle", "quote")}
+    _roundtrip_cost_quote({"op": "roundtrip_cost_quote", **quote_request})
+    target, bundle, quote = request["target"], request["bundle"], request["quote"]
+    if type(target) is not dict or type(bundle) is not dict or type(quote) is not dict:
+        raise ValueError("target, bundle and quote must be objects")
+    approval = _validate_approval_fields(request["approval"])
+    origin = _validate_approval_signature(approval["signature"])
+    parents = (str(approval["compiled_bundle_digest"]), str(approval["cost_quote_digest"]))
+    _validate_artifact_header(approval, parents, origin)
+    _cross_check_approval(approval, quote, bundle, target)
+    wire = _canonical_bytes(approval)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "approval": json.loads(wire),
+        "approval_sha256": hashlib.sha256(wire).hexdigest(),
+        "signature_verified": False,
+        "hardware_submission_enabled": False,
+    }
+
+
+_ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
+    "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
+    "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
+    "roundtrip_model_descriptor": (_roundtrip_model_descriptor, (ValueError, TypeError, KeyError)),
+    "roundtrip_latent_batch": (_roundtrip_latent_batch, (ValueError, TypeError, KeyError)),
+    "roundtrip_compression": (
+        _roundtrip_compression,
+        (ValueError, TypeError, KeyError, OverflowError),
+    ),
+    "roundtrip_experiment_protocol": (
+        _roundtrip_experiment_protocol,
+        (ValueError, TypeError, KeyError),
+    ),
+    "roundtrip_target_snapshot": (_roundtrip_target_snapshot, (ValueError, TypeError, KeyError)),
+    "roundtrip_compiled_bundle": (_roundtrip_compiled_bundle, (ValueError, TypeError, KeyError)),
+    "roundtrip_cost_quote": (_roundtrip_cost_quote, (ValueError, TypeError, KeyError)),
+    "roundtrip_owner_approval": (_roundtrip_owner_approval, (ValueError, TypeError, KeyError)),
+}
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -1433,66 +1577,12 @@ def main() -> int:
     except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "invalid JSON"})
         return 2
-    if type(request) is dict and request.get("op") == "roundtrip_contract":
+    op = request.get("op") if type(request) is dict else None
+    if type(op) is str and op in _ROUNDTRIPS:
+        handler, refusals = _ROUNDTRIPS[op]
         try:
-            _emit(_roundtrip_contract(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_task_split":
-        try:
-            _emit(_roundtrip_task_split(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_model_descriptor":
-        try:
-            _emit(_roundtrip_model_descriptor(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_latent_batch":
-        try:
-            _emit(_roundtrip_latent_batch(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_compression":
-        try:
-            _emit(_roundtrip_compression(request))
-        except (ValueError, TypeError, KeyError, OverflowError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_experiment_protocol":
-        try:
-            _emit(_roundtrip_experiment_protocol(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_cost_quote":
-        try:
-            _emit(_roundtrip_cost_quote(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_compiled_bundle":
-        try:
-            _emit(_roundtrip_compiled_bundle(request))
-        except (ValueError, TypeError, KeyError) as exc:
-            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
-            return 2
-        return 0
-    if type(request) is dict and request.get("op") == "roundtrip_target_snapshot":
-        try:
-            _emit(_roundtrip_target_snapshot(request))
-        except (ValueError, TypeError, KeyError) as exc:
+            _emit(handler(request))
+        except refusals as exc:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
@@ -1503,18 +1593,7 @@ def main() -> int:
         {
             "schema": _SCHEMA,
             "status": "experimental_no_compute",
-            "supported_operations": [
-                "describe",
-                "roundtrip_contract",
-                "roundtrip_task_split",
-                "roundtrip_model_descriptor",
-                "roundtrip_latent_batch",
-                "roundtrip_compression",
-                "roundtrip_experiment_protocol",
-                "roundtrip_target_snapshot",
-                "roundtrip_compiled_bundle",
-                "roundtrip_cost_quote",
-            ],
+            "supported_operations": ["describe", *_ROUNDTRIPS],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,
         }

@@ -497,6 +497,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `OwnerApproval` contract
+  (`experimental/llm_qpu/contracts/approval.py`, schema `owner_approval.v1`)
+  for one exact cost quote. It binds the compiled bundle, its payload digest
+  and the quote, the provider, account route and device, caps on shots,
+  jobs, resource units and price in one currency, a UTC validity window,
+  the approved data-egress class, and an `ApprovalSignature` naming the
+  scheme (ML-DSA-65), the trusted key, its environment (live or test) and
+  the SHA-256 of a detached signature. A plain string is refused as
+  authority. `validate_owner_approval` refuses another bundle, payload,
+  quote, route or device, any unknown quoted total, a quote above a cap, a
+  different currency, a time outside the window, a test key in a live run,
+  and detached bytes that differ from the signed digest; only then does it
+  ask a caller-supplied trust store to verify the signature over the scope
+  and the signer identity, accepting nothing but `True`. The standalone
+  worker validates the same wire and every cross-check independently, and
+  reports that it does not verify signatures. The worker's operation
+  dispatch is now one table.
+
 - The experimental LLM-QPU lane gains a design-only `CostQuote` contract
   (`experimental/llm_qpu/contracts/cost.py`, schema `cost_quote.v1`) for one
   exact compiled bundle. It records circuit and shot totals, the provider

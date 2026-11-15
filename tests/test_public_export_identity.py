@@ -305,6 +305,27 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("CostQuote", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
             ("validate_cost_quote", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
             ("decode_cost_quote", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
+            (
+                "OWNER_APPROVAL_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "ApprovalSignature",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+            ),
+            ("OwnerApproval", "scpn_quantum_control.experimental.llm_qpu.contracts.approval"),
+            (
+                "SignatureVerifier",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+            ),
+            (
+                "validate_owner_approval",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+            ),
+            (
+                "decode_owner_approval",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
+            ),
         ),
     ),
 }

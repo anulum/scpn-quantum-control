@@ -24,6 +24,7 @@ _INVENTORY = (
     "__init__.py",
     "llm_qpu/__init__.py",
     "llm_qpu/contracts/__init__.py",
+    "llm_qpu/contracts/approval.py",
     "llm_qpu/contracts/cells.py",
     "llm_qpu/contracts/compiled.py",
     "llm_qpu/contracts/compressed.py",
