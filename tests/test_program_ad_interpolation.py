@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, cast
 
 import numpy as np
@@ -19,8 +20,11 @@ from numpy.typing import NDArray
 from scpn_quantum_control import differentiable as differentiable_facade
 from scpn_quantum_control import program_ad_interpolation_primitives
 from scpn_quantum_control.differentiable import (
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     Parameter,
+    PrimitiveContract,
     PrimitiveIdentity,
+    PrimitiveTransformRule,
     primitive_contract_for,
     program_ad_interpolation_interp_derivative_rule,
     program_adjoint_gradient,
@@ -37,13 +41,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_interp_matches_static_grid_piecewise_adjoint() -> None:
     """Program AD np.interp should replay exact static-grid piecewise adjoints."""
-
     grid = np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64)
     sample_weights = np.array([0.7, -1.1, 0.6], dtype=np.float64)
     static_weights = np.array([1.2, -0.8, 0.4], dtype=np.float64)
@@ -101,7 +103,6 @@ def test_program_ad_interp_matches_static_grid_piecewise_adjoint() -> None:
 
 def test_program_ad_interp_fails_closed_invalid_static_contracts() -> None:
     """Program AD np.interp should reject dynamic grids and singular piecewise cases."""
-
     with pytest.raises(ValueError, match="xp grid must be static"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.interp(np.array([0.5]), values[:3], values[3:])),
@@ -159,7 +160,6 @@ def test_program_ad_interp_fails_closed_invalid_static_contracts() -> None:
 
 def test_program_ad_interp_primitive_contract_and_direct_rule() -> None:
     """Static interpolation contracts should expose exact piecewise JVP/VJP rules."""
-
     samples = np.array([0.25, 1.75, 4.5], dtype=np.float64)
     grid = np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64)
     values = np.array([-1.0, 2.0, 0.5, 3.0], dtype=np.float64)
@@ -240,7 +240,6 @@ def test_program_ad_interp_primitive_contract_and_direct_rule() -> None:
 
 def test_program_ad_interp_direct_rule_is_exposed_from_extracted_module() -> None:
     """The interpolation facade should delegate fixed-grid direct rules to the module."""
-
     samples = np.array([0.25, 1.75], dtype=np.float64)
     grid = np.array([0.0, 1.0, 2.5], dtype=np.float64)
     values = np.array([-1.0, 2.0, 0.5], dtype=np.float64)
@@ -256,7 +255,6 @@ def test_program_ad_interp_direct_rule_is_exposed_from_extracted_module() -> Non
 
 def test_program_ad_interp_contract_helpers_are_exposed_from_extracted_module() -> None:
     """The interpolation facade should reuse the extracted registry-contract helpers."""
-
     facade_exports = vars(differentiable_facade)
     assert (
         facade_exports["_register_program_ad_interpolation_primitive_contracts"]
@@ -271,7 +269,6 @@ def test_program_ad_interp_contract_helpers_are_exposed_from_extracted_module() 
 
 def test_program_ad_interp_direct_rule_rejects_invalid_static_boundaries() -> None:
     """Extracted interpolation direct rules should fail closed for invalid signatures."""
-
     trace_value = type("TraceADScalar", (), {})()
     grid = np.array([0.0, 1.0, 2.0], dtype=np.float64)
     values = np.array([-1.0, 2.0, 0.5], dtype=np.float64)
@@ -333,7 +330,6 @@ def test_program_ad_interp_direct_rule_rejects_invalid_static_boundaries() -> No
 
 def test_program_ad_interp_batching_rule_maps_sample_batches() -> None:
     """Interpolation batching should map sample batches while keeping grid data static."""
-
     samples = np.array([[0.25, 1.75], [0.5, 3.25]], dtype=np.float64)
     grid = np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64)
     values = np.array([-1.0, 2.0, 0.5, 3.0], dtype=np.float64)
@@ -369,3 +365,120 @@ def test_program_ad_interp_batching_rule_maps_sample_batches() -> None:
             (0, None, 0, None, None, None),
             0,
         )
+
+
+def _scalar_value_grid(parameters: Any) -> object:
+    """Interpolate traced samples on a value grid that is one traced scalar."""
+    return np.sum(
+        np.interp(parameters[:1], np.array([0.0, 1.0, 2.0], dtype=np.float64), parameters[1])
+    )
+
+
+def test_program_ad_interp_refuses_a_traced_scalar_value_grid() -> None:
+    """A traced scalar cannot stand for the one-dimensional interpolation value grid."""
+    with pytest.raises(ValueError, match="interp fp must be one-dimensional"):
+        whole_program_value_and_grad(_scalar_value_grid, np.array([0.25, 1.0], dtype=np.float64))
+
+
+def test_program_ad_interp_contract_facets_refuse_malformed_dispatch() -> None:
+    """The static, shape and batching facets refuse argument and axis lists of the wrong form."""
+    contract = primitive_contract_for("scpn.program_ad.interpolation:interp")
+    assert contract.static_argument_rule is not None
+    assert contract.batching_rule is not None
+    samples = np.array([[0.25, 1.75], [0.5, 1.25]], dtype=np.float64)
+    grid = np.array([0.0, 1.0, 2.0], dtype=np.float64)
+    values = np.array([0.5, 1.0, 1.5], dtype=np.float64)
+    with pytest.raises(ValueError, match="requires x, xp, fp, left, right, and period"):
+        contract.static_argument_rule((samples, grid, values, None, None))
+    with pytest.raises(ValueError, match="period is not supported"):
+        contract.static_argument_rule((samples, grid, values, None, None, 2.0))
+    function = cast(Any, np.interp)
+    with pytest.raises(ValueError, match="batching requires x, xp, fp, left, right, and period"):
+        contract.batching_rule(function, (samples, grid, values), (0, None, None), 0)
+    unbatched = contract.batching_rule(
+        function,
+        (samples, grid, values, None, None, None),
+        (None, None, None, None, None, None),
+        0,
+    )
+    _assert_allclose(unbatched, np.interp(samples, grid, values), rtol=1.0e-12)
+
+
+def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
+    """Return a mutable registry transform that exactly mirrors a contract."""
+    return PrimitiveTransformRule(
+        identity=contract.identity,
+        derivative_rule=contract.derivative_rule,
+        batching_rule=contract.batching_rule,
+        lowering_rule=contract.lowering_rule,
+        lowering_metadata=contract.lowering_metadata,
+        shape_rule=contract.shape_rule,
+        dtype_rule=contract.dtype_rule,
+        static_argument_rule=contract.static_argument_rule,
+        nondifferentiable_policy=contract.nondifferentiable_policy,
+        effect=contract.effect,
+    )
+
+
+def test_program_ad_interp_contract_guards_reject_registry_corruption() -> None:
+    """A corrupted registered contract is refused, and the original registration is restored."""
+    original = primitive_contract_for("scpn.program_ad.interpolation:interp")
+    args = (
+        np.array([0.25], dtype=np.float64),
+        np.array([0.0, 1.0, 2.0], dtype=np.float64),
+        np.array([0.5, 1.0, 1.5], dtype=np.float64),
+        None,
+        None,
+        None,
+    )
+    require = program_ad_interpolation_primitives._require_program_ad_interpolation_contract
+    assert require("interp", args) == original
+    assert require("interp") == original
+    validate = (
+        program_ad_interpolation_primitives._validate_program_ad_interpolation_contract_dispatch
+    )
+    for broken, message in (
+        (replace(original, static_argument_rule=None), "missing static argument rule"),
+        (replace(original, shape_rule=None), "missing shape rule"),
+        (replace(original, dtype_rule=None), "missing dtype rule"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            validate(broken, args)
+    with pytest.raises(ValueError, match="no program AD interpolation primitive identity"):
+        require("cubic")
+    corrupted = (
+        (replace(original, nondifferentiable_policy="wrong"), "invalid .* policy"),
+        (replace(original, effect="stateful"), "invalid .* effect"),
+        (
+            replace(
+                original,
+                batching_rule=None,
+                lowering_metadata={},
+                shape_rule=None,
+                dtype_rule=None,
+                static_argument_rule=None,
+            ),
+            "missing batching_rule, lowering_metadata, mlir_op, nondifferentiable_boundary",
+        ),
+        (
+            replace(original, static_argument_rule=cast(Any, lambda _args: [])),
+            "static rule must return a tuple",
+        ),
+        (
+            replace(original, shape_rule=cast(Any, lambda _args: (-1,))),
+            "non-negative integer dimensions",
+        ),
+        (replace(original, dtype_rule=cast(Any, lambda _args: "")), "return a dtype name"),
+    )
+    try:
+        for contract, message in corrupted:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(contract), overwrite=True
+            )
+            with pytest.raises(ValueError, match=message):
+                require("interp", args)
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+    assert primitive_contract_for("scpn.program_ad.interpolation:interp") == original

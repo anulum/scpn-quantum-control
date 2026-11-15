@@ -409,6 +409,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     non-executed-branch cases exist not to execute, and a narrowing check for
     an IR that the builder always receives.
 
+- The Program AD interpolation primitive (`program_ad_interpolation_primitives.py`)
+  now has tests for its malformed dispatch and batching facets and for a traced
+  scalar value grid. They also cover every corrupted registry contract (policy,
+  effect, missing facets, and static, shape or dtype rules that return the
+  wrong form), with the registration restored afterwards. Coverage rises from
+  88.74% to 97.72%.
+  - Four defensive lines stay uncovered: a non-static trace shape, a traced
+    scalar sample (NumPy converts it before dispatch), and two name checks for
+    primitives other than `interp`.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
