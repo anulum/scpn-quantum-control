@@ -360,6 +360,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   seeds, unknown dedup rules, edited wires, and a split whose data origin
   differs from its task.
 
+- The measurement plan contract (`experimental/llm_qpu/contracts/measurement.py`)
+  has full line and branch coverage; the union had it at 89.43%. New tests
+  cover the refusals of another width, an unknown basis, a non-NFC register,
+  other label conventions and edited wires. They also cover sampled counts
+  that are not a bounded nonempty mapping of positive integers summing to the
+  shots, and circuits that are unreviewed or wider than their recipe.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

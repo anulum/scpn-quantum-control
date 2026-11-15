@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import replace
+from typing import Any
 
 import pytest
 
@@ -26,6 +27,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
 
 
 def _reservoir() -> ReservoirSpec:
+    """Return the n4 open-chain recipe the circuit is bound to."""
     return ReservoirSpec(
         kernel_id="xy_static_digital_v1",
         n_qubits=4,
@@ -41,6 +43,7 @@ def _reservoir() -> ReservoirSpec:
 
 
 def _circuit() -> StaticCircuitPlan:
+    """Return a one-gate static circuit bound to the n4 recipe."""
     reservoir = _reservoir()
     return StaticCircuitPlan(
         reservoir_digest=hashlib.sha256(canonical_bytes(reservoir.to_wire())).hexdigest(),
@@ -53,6 +56,7 @@ def _circuit() -> StaticCircuitPlan:
 
 
 def _plan(basis: str, *, physical: tuple[int, ...] | None = (5, 8, 6, 9)) -> MeasurementPlan:
+    """Return the 256-shot readout plan of one basis with a permuted bit custody."""
     return build_measurement_plan(
         _circuit(),
         _reservoir(),
@@ -141,3 +145,88 @@ def test_sampled_covariance_and_missing_layout_refusal() -> None:
         )
     with pytest.raises(ValueError, match="origin"):
         estimate_sampled_basis(one, {"0000": 1}, origin="rounded_counts")
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"n_qubits": 6}, "measurement plan requires n4/n8"),
+        ({"n_qubits": True}, "measurement plan requires n4/n8"),
+        ({"basis_id": "W"}, "measurement basis must be X, Y or Z"),
+        ({"register_name": "réadout"}, "measurement register must be NFC text"),
+        ({"pauli_label_convention": "big_endian"}, "unsupported Pauli label convention"),
+    ],
+)
+def test_measurement_plan_refuses_unsupported_width_basis_register_and_labels(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A plan refuses another width, an unknown basis, a non-NFC register and other labels."""
+    with pytest.raises(ValueError, match=f"^{message}$"):
+        replace(_plan("Z"), **changes)
+
+
+def test_measurement_plan_wire_refuses_edited_fields_and_containers() -> None:
+    """The decoder refuses an edited field set or object kind and non-list containers."""
+    encoded = _plan("Z").to_wire()
+    cases: list[tuple[dict[str, object], str]] = [
+        ({**encoded, "extra": 1}, "measurement plan fields mismatch"),
+        ({**encoded, "object_kind": "static_circuit_plan"}, "unsupported measurement plan schema"),
+        ({**encoded, "observable_ids": "Z0"}, "measurement observable_ids must be a list"),
+        ({**encoded, "physical_qubits": {"q0": 5}}, "measurement physical qubits must be a list"),
+    ]
+    for value, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}"):
+            decode_contract(canonical_bytes(value))
+    assert decode_contract(canonical_bytes(_plan("Z", physical=None).to_wire())) == _plan(
+        "Z", physical=None
+    )
+
+
+def test_sampled_estimate_refuses_unbounded_or_inconsistent_counts() -> None:
+    """Counts must be a bounded nonempty mapping of positive integers that sums to the shots."""
+    plan = _plan("Z")
+    listed: Any = [("0000", 256)]
+    too_many = {f"{index:05b}": 1 for index in range(17)}
+    flag: Any = True
+    for counts, message in (
+        (listed, "sampled estimate requires bounded nonempty counts"),
+        ({}, "sampled estimate requires bounded nonempty counts"),
+        (too_many, "sampled estimate requires bounded nonempty counts"),
+        ({"0000": 0}, "raw count must be a positive integer"),
+        ({"0000": flag}, "raw count must be a positive integer"),
+        ({"0000": 200}, "raw counts do not match requested shots"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            estimate_sampled_basis(plan, counts, origin="digital_sampled")
+
+
+def test_measurement_build_refuses_unreviewed_or_wider_circuits() -> None:
+    """The builder needs reviewed contracts and a circuit inside the recipe's width."""
+    loose_circuit: Any = _circuit().to_wire()
+    loose_reservoir: Any = _reservoir().to_wire()
+    for circuit, reservoir in ((loose_circuit, _reservoir()), (_circuit(), loose_reservoir)):
+        with pytest.raises(
+            ValueError, match="^measurement requires a static circuit and reservoir$"
+        ):
+            build_measurement_plan(
+                circuit,
+                reservoir,
+                basis_id="Z",
+                shots=256,
+                logical_to_clbit=(0, 1, 2, 3),
+                display_order_clbits=(3, 2, 1, 0),
+                register_name="readout",
+                physical_qubits=None,
+            )
+    wider = replace(_circuit(), operations=(("ry", (5,), (0.25).hex()),))
+    with pytest.raises(ValueError, match="^circuit operation exceeds measurement width$"):
+        build_measurement_plan(
+            wider,
+            _reservoir(),
+            basis_id="Z",
+            shots=256,
+            logical_to_clbit=(0, 1, 2, 3),
+            display_order_clbits=(3, 2, 1, 0),
+            register_name="readout",
+            physical_qubits=None,
+        )
