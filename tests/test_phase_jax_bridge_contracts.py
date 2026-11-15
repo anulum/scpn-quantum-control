@@ -15,6 +15,8 @@ from dataclasses import is_dataclass
 from typing import Any, cast
 
 import numpy as np
+import pytest
+from _phase_jax_bridge_test_helpers import _FakeJAX
 
 import scpn_quantum_control.phase as phase
 import scpn_quantum_control.phase.jax_bridge as jax_bridge
@@ -134,3 +136,73 @@ def test_json_ready_pytree_converts_numpy_leaves_recursively() -> None:
         "weights": [0.1, 0.2],
         "metadata": [0.3, {"count": 2}],
     }
+
+
+def test_route_lookups_refuse_unknown_names() -> None:
+    """Route lookups find the named route, not the first, and refuse names they do not hold."""
+    nested = contracts.PhaseJAXNestedTransformAlgebraResult(
+        jit_under_vmap_gradients=np.zeros((1, 1)),
+        jit_vmap_gradients=np.zeros((1, 1)),
+        pytree_gradient_vector=np.zeros(1),
+        parameter_shift_batch_gradients=np.zeros((1, 1)),
+        parameter_shift_pytree_gradient=np.zeros(1),
+        max_abs_error=0.0,
+        l2_error=0.0,
+        tolerance=1e-6,
+        routes=(
+            contracts.PhaseJAXNestedTransformRoute("jit_route", "passed", "local", ("jax.jit",)),
+            contracts.PhaseJAXNestedTransformRoute("qnode_route", "blocked", "open", ("jax",)),
+        ),
+    )
+    matrix = contracts.PhaseJAXPhaseQNodeLoweringMatrixResult(
+        routes=(
+            contracts.PhaseJAXPhaseQNodeLoweringRoute("native", "passed", "local", False),
+            contracts.PhaseJAXPhaseQNodeLoweringRoute("provider", "blocked", "open", True),
+        )
+    )
+
+    assert nested.route_status("qnode_route") == "blocked"
+    assert matrix.route_status("provider") == "blocked"
+    with pytest.raises(KeyError, match="unknown JAX nested-transform route: missing"):
+        nested.route_status("missing")
+    with pytest.raises(KeyError, match="unknown JAX Phase-QNode lowering route: missing"):
+        matrix.route_status("missing")
+
+
+def test_maturity_contract_keeps_plain_evidence_values() -> None:
+    """Evidence without its own to_dict is serialised as given."""
+    maturity = contracts.PhaseJAXMaturityAuditResult(
+        bounded_model_ready=False,
+        ready_for_provider_exceedance=False,
+        evidence={"operator_note": "awaiting isolated host"},
+        required_capabilities={},
+        open_gaps=(),
+    )
+
+    payload = maturity.to_dict()
+
+    assert payload["evidence"] == {"operator_note": "awaiting isolated host"}
+
+
+def test_jax_results_serialise_list_pytrees_and_native_gradients(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A list inside a parameter PyTree stays a list, and native gradients serialise."""
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_FakeJAX(), np))
+    features = np.array([[0.0, 0.2], [np.pi, np.pi + 0.2]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+
+    pytree = jax_bridge.run_jax_pytree_compatibility_audit(
+        features=features,
+        labels=labels,
+        params_pytree={"layers": [{"weight": np.array([0.25])}, np.array([0.45])]},
+    )
+    native = jax_bridge.jax_native_qnn_value_and_grad(features, labels, np.array([0.25, 0.45]))
+
+    gradients = cast(dict[str, object], pytree.to_dict()["native_gradient_pytree"])
+    layers = cast(list[object], gradients["layers"])
+    assert isinstance(layers, list)
+    assert isinstance(layers[0], dict) and set(layers[0]) == {"weight"}
+    native_payload = native.to_dict()
+    assert native_payload["gradient"] == native.gradient.tolist()
+    assert native_payload["method"] == "jax_native_bounded_phase_qnn_value_and_grad"

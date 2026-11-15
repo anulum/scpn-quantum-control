@@ -497,6 +497,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The JAX bridge contracts (`phase/jax_bridge_contracts.py`) now test route
+  lookups that find the named route among several and refuse unknown names,
+  for both the nested-transform and Phase-QNode lowering results. They also
+  test maturity evidence without its own serialiser, which is kept as given,
+  a list inside a parameter PyTree, which stays a list in the serialised
+  gradients, and the native QNN gradient payload. Coverage rises from 97.88%
+  to 100% over the JAX facade tests.
+
 - The native LLVM/JIT primitives (`compiler/mlir_native_primitives.py`) now
   have tests through the public scalar compiler:
   - a bare scalar sample counts as one value;
