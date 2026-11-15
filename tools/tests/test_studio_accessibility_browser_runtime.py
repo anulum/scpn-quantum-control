@@ -13,6 +13,7 @@ import json
 import os
 import shutil
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -43,6 +44,109 @@ def axe_source() -> Path:
     return source
 
 
+_ROUTES = (
+    "build",
+    "workspace",
+    "results",
+    "compare",
+    "evidence",
+    "operations",
+    "experiments",
+    "atlas",
+)
+_STATES = (
+    "actual-kernel-loading",
+    "malformed-route",
+    "malformed-evidence",
+    "partial-evidence",
+    "original-parameter-graph",
+    "actual-offline-kernel-refusal",
+    "native-compiled-tables:css-zoom-200",
+    "native-located-refusal:css-zoom-200",
+    "empty-result-filter",
+    "original-source-real-wasm-match",
+    "actual-original-verification-pending",
+    "same-id-changed-claim-retains-B-after-delayed-A",
+    "altered-source-digest-refused",
+    "attested-falsification-retains-source-status",
+    "missing-source-schema-seal-visible",
+    "malformed-evidence-retains-raw-input",
+)
+
+
+def _assert_custody(observed: dict[str, object]) -> None:
+    """Require the locked auditor, no failure record, no worker and no export.
+
+    Parameters
+    ----------
+    observed
+        Journey evidence.
+
+    """
+    assert observed["axe_version"] == AXE_VERSION
+    assert observed["axe_sha256"] == AXE_SHA256
+    assert (
+        observed["page_errors"] == observed["external_requests"] == observed["submissions"] == []
+    )
+    assert (
+        observed["workers"]
+        == observed["public_screenshots"]
+        == observed["user_workspace_exports"]
+        == 0
+    )
+
+
+def _assert_theme(observed: dict[str, object], states: set[object], theme: str) -> None:
+    """Require every audited route and state, the chart and graph tables and reduced motion.
+
+    Parameters
+    ----------
+    observed
+        Journey evidence.
+    states
+        Every audited state.
+    theme
+        Colour scheme.
+
+    """
+    for route in _ROUTES:
+        assert f"{theme}:{route}:normal" in states
+        assert f"{theme}:{route}:css-zoom-200" in states
+    for state in _STATES:
+        assert f"{theme}:{state}" in states
+    chart = observed[f"{theme}_chart_table"]
+    assert isinstance(chart, dict)
+    assert chart["samples"] == 301 and chart["phase_columns"] == 12
+    assert chart["play_lab_raw_values_exact"] is True
+    assert observed[f"{theme}_reduced_motion"] is True
+    graph = observed[f"{theme}_graph_table"]
+    assert isinstance(graph, dict) and graph["workspace_writes"] == 0
+    assert graph["original_archive_unchanged"] is True
+
+
+def _assert_reports_and_keyboard(audits: list[dict[str, Any]], keyboard: object) -> None:
+    """Require complete audit reports without serious findings and full keyboard reach.
+
+    Parameters
+    ----------
+    audits
+        Every audit record.
+    keyboard
+        Keyboard behaviour records.
+
+    """
+    for audit in audits:
+        assert "passes" in audit["report"] and "incomplete" in audit["report"]
+        assert not any(
+            row["impact"] in ("serious", "critical") for row in audit["report"]["violations"]
+        )
+    assert isinstance(keyboard, list) and len(keyboard) == 16
+    assert all(
+        row["enabled_controls"] == row["tab_reached"] and row["native_modal_trap_and_origin"]
+        for row in keyboard
+    )
+
+
 def test_workbench_accessibility_real_routes_values_and_refusal_states(
     program_bundle: Path, parameter_source: str, axe_source: Path
 ) -> None:
@@ -60,71 +164,13 @@ def test_workbench_accessibility_real_routes_values_and_refusal_states(
     """
     with owned_fault_host(program_bundle) as preview:
         observed = run_accessibility_journey(preview, parameter_source, axe_source)
-    assert observed["axe_version"] == AXE_VERSION
-    assert observed["axe_sha256"] == AXE_SHA256
-    assert (
-        observed["page_errors"] == observed["external_requests"] == observed["submissions"] == []
-    )
-    assert (
-        observed["workers"]
-        == observed["public_screenshots"]
-        == observed["user_workspace_exports"]
-        == 0
-    )
+    _assert_custody(observed)
     audits = observed["audits"]
     assert isinstance(audits, list)
     states = {audit["state"] for audit in audits}
     for theme in ("light", "dark"):
-        for route in (
-            "build",
-            "workspace",
-            "results",
-            "compare",
-            "evidence",
-            "operations",
-            "experiments",
-            "atlas",
-        ):
-            assert f"{theme}:{route}:normal" in states
-            assert f"{theme}:{route}:css-zoom-200" in states
-        for state in (
-            "actual-kernel-loading",
-            "malformed-route",
-            "malformed-evidence",
-            "partial-evidence",
-            "original-parameter-graph",
-            "actual-offline-kernel-refusal",
-            "native-compiled-tables:css-zoom-200",
-            "native-located-refusal:css-zoom-200",
-            "empty-result-filter",
-            "original-source-real-wasm-match",
-            "actual-original-verification-pending",
-            "same-id-changed-claim-retains-B-after-delayed-A",
-            "altered-source-digest-refused",
-            "attested-falsification-retains-source-status",
-            "missing-source-schema-seal-visible",
-            "malformed-evidence-retains-raw-input",
-        ):
-            assert f"{theme}:{state}" in states
-        chart = observed[f"{theme}_chart_table"]
-        assert isinstance(chart, dict)
-        assert chart["samples"] == 301 and chart["phase_columns"] == 12
-        assert chart["play_lab_raw_values_exact"] is True
-        assert observed[f"{theme}_reduced_motion"] is True
-        graph = observed[f"{theme}_graph_table"]
-        assert isinstance(graph, dict) and graph["workspace_writes"] == 0
-        assert graph["original_archive_unchanged"] is True
-    for audit in audits:
-        assert "passes" in audit["report"] and "incomplete" in audit["report"]
-        assert not any(
-            row["impact"] in ("serious", "critical") for row in audit["report"]["violations"]
-        )
-    keyboard = observed["keyboard"]
-    assert isinstance(keyboard, list) and len(keyboard) == 16
-    assert all(
-        row["enabled_controls"] == row["tab_reached"] and row["native_modal_trap_and_origin"]
-        for row in keyboard
-    )
+        _assert_theme(observed, states, theme)
+    _assert_reports_and_keyboard(audits, observed["keyboard"])
 
 
 @pytest.mark.parametrize("fault", ["page", "external"])
