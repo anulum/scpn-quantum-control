@@ -239,6 +239,38 @@ def test_torch_model_preserves_autograd_curvature_and_public_module(
     np.testing.assert_array_equal(parameters, np.linspace(-0.4, 0.3, width))
 
 
+def test_torch_compatibility_audits_differentiate_their_closures_with_real_torch() -> None:
+    """Real torch.func, torch.compile and module routes reach the reference gradient.
+
+    The audits hand loss closures over their own data and module to the real
+    transforms, so a closure that ignored its parameter tensor would differentiate
+    to the wrong gradient here.
+
+    """
+    importlib.import_module("torch")
+    bridge = importlib.import_module("scpn_quantum_control.phase.torch_bridge")
+    features = np.linspace(-1.3, 1.7, 6).reshape(3, 2)
+    labels = np.linspace(0.1, 0.9, 3)
+    parameters = np.linspace(-0.4, 0.3, 2)
+    batch = np.vstack([parameters, parameters + 0.1])
+    _loss, gradient, _hessian = _reference(features, labels, parameters)
+
+    func_result = bridge.run_torch_func_compatibility_audit(
+        features=features, labels=labels, params=parameters, params_batch=batch, tolerance=1e-12
+    )
+    compile_result = bridge.run_torch_compile_compatibility_audit(
+        features=features, labels=labels, params=parameters, tolerance=1e-12
+    )
+    module_result = bridge.run_torch_module_wrapper_audit(
+        features=features, labels=labels, initial_params=parameters, tolerance=1e-12
+    )
+
+    assert func_result.passed and compile_result.passed and module_result.passed
+    for actual in (func_result.grad_gradient, compile_result.gradient, module_result.gradient):
+        np.testing.assert_allclose(actual, gradient, rtol=0.0, atol=1e-14)
+    np.testing.assert_allclose(func_result.vmap_gradients[0], gradient, rtol=0.0, atol=1e-14)
+
+
 @pytest.mark.parametrize("samples,width", [(1, 1), (3, 2), (5, 4)])
 def test_tensorflow_model_preserves_nested_tapes_and_public_keras_layer(
     samples: int, width: int

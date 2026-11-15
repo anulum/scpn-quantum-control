@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, cast
 
 import numpy as np
@@ -279,6 +280,58 @@ class _FakeTorchWithoutNN(_FakeTorch):
         """Initialize deterministic state for the fake framework object."""
         super().__init__()
         cast(Any, self).nn = object()
+
+
+class _FakeTorchFuncRecordingLoss(_FakeTorchFunc):
+    """torch.func facade whose grad also evaluates the loss closure it receives."""
+
+    def __init__(self) -> None:
+        """Start with no recorded loss evaluations."""
+        super().__init__()
+        self.loss_values: list[float] = []
+
+    def grad(self, loss_fn: object) -> object:
+        """Return the fake gradient after evaluating ``loss_fn`` at the same point."""
+        gradient = cast(Callable[[object], _FakeTorchTensor], super().grad(loss_fn))
+        evaluate = cast(Callable[[object], object], loss_fn)
+
+        def recorded(params: object) -> _FakeTorchTensor:
+            """Record the closure's loss at ``params``, then return the fake gradient."""
+            self.loss_values.append(float(_FakeTorchTensor(evaluate(params)).numpy().item()))
+            return gradient(params)
+
+        return recorded
+
+
+class _FakeTorchRecordingLoss(_FakeTorch):
+    """PyTorch facade whose torch.func.grad evaluates the audited loss closure."""
+
+    def __init__(self) -> None:
+        """Install the recording torch.func facade."""
+        super().__init__()
+        self.recording_func = _FakeTorchFuncRecordingLoss()
+        self.func = self.recording_func
+
+
+class _FakeTorchModuleWithoutBuffers(_FakeTorchModule):
+    """Duck-typed module base that offers no ``register_buffer``."""
+
+    register_buffer: Any = None
+
+
+class _FakeTorchNNWithoutBuffers(_FakeTorchNN):
+    """torch.nn namespace whose module base cannot register buffers."""
+
+    Module = _FakeTorchModuleWithoutBuffers
+
+
+class _FakeTorchWithoutBuffers(_FakeTorch):
+    """PyTorch facade whose torch.nn.Module lacks buffer registration."""
+
+    def __init__(self) -> None:
+        """Install the buffer-less torch.nn namespace."""
+        super().__init__()
+        self.nn = _FakeTorchNNWithoutBuffers()
 
 
 def _objective(values: FloatArray) -> float:

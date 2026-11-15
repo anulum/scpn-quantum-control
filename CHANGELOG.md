@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The PyTorch compatibility audits (`phase/torch_compatibility.py`) now test
+  the loss closures they hand to `torch.func.grad`. The shared fake PyTorch
+  discarded each closure and returned a gradient computed from fixed data, so
+  no test ran the closures of the `torch.func`, `torch.compile` and module
+  wrapper audits. A new recording fake evaluates each closure and checks its
+  loss against the parameter-shift reference for the audit's own data. A
+  framework-lane test runs all three audits on real PyTorch (`torch.func`,
+  `torch.compile` and the module wrapper) and checks their gradients against
+  the analytic reference to 1e-14, so a closure that ignored its parameter
+  tensor now fails. A module base without `register_buffer` is tested to keep
+  the data as attributes. Coverage of the module rises from 97.22% to 100%
+  over its test files. No production change.
+
 - The TensorFlow bridge (`phase/tensorflow_bridge.py`) now tests its import
   probe in both directions. An absent TensorFlow and a broken install that
   raises a plain `ImportError` each make `is_phase_tensorflow_available()`

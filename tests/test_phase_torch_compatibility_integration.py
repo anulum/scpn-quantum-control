@@ -10,12 +10,15 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 
 import numpy as np
 import pytest
 from _phase_torch_bridge_test_helpers import (
     _FakeTorch,
+    _FakeTorchRecordingLoss,
     _FakeTorchTensor,
+    _FakeTorchWithoutBuffers,
     _FakeTorchWithoutCompile,
     _FakeTorchWithoutFunc,
     _FakeTorchWithoutNN,
@@ -325,3 +328,67 @@ def test_torch_module_wrapper_fails_closed_without_nn(
             labels=np.array([0.0], dtype=float),
             initial_params=np.array([0.45], dtype=float),
         )
+
+
+def _loader(fake_torch: _FakeTorch) -> Callable[[], _FakeTorch]:
+    """Return a loader bound to one fake PyTorch instance."""
+    return lambda: fake_torch
+
+
+def test_torch_audits_differentiate_closures_over_their_own_data(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """torch.func.grad receives a loss closure over the audit's features, labels and module."""
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+    expected_loss = parameter_shift_qnn_classifier_loss(features, labels, params)
+    audits: dict[
+        str,
+        Callable[
+            [],
+            PhaseTorchFuncCompatibilityResult
+            | PhaseTorchCompileCompatibilityResult
+            | PhaseTorchModuleWrapperAuditResult,
+        ],
+    ] = {
+        "func": lambda: run_torch_func_compatibility_audit(
+            features=features,
+            labels=labels,
+            params=params,
+            params_batch=np.array([[0.25], [0.45]], dtype=float),
+        ),
+        "compile": lambda: run_torch_compile_compatibility_audit(
+            features=features, labels=labels, params=params
+        ),
+        "module": lambda: run_torch_module_wrapper_audit(
+            features=features, labels=labels, initial_params=params
+        ),
+    }
+
+    for name, audit in audits.items():
+        fake_torch = _FakeTorchRecordingLoss()
+        monkeypatch.setattr(torch_bridge, "_load_torch", _loader(fake_torch))
+        assert audit().passed, name
+        assert fake_torch.recording_func.loss_values == [
+            pytest.approx(expected_loss, abs=1e-15)
+        ], name
+
+
+def test_torch_bounded_qnn_module_keeps_data_as_attributes_without_buffers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A module base without register_buffer still holds the data and evaluates the loss."""
+    fake_torch = _FakeTorchWithoutBuffers()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+
+    module = torch_bounded_qnn_module(features=features, labels=labels, initial_params=params)
+
+    assert module._buffers == {}
+    np.testing.assert_array_equal(module.features.numpy(), features)
+    np.testing.assert_array_equal(module.labels.numpy(), labels)
+    expected_loss = parameter_shift_qnn_classifier_loss(features, labels, params)
+    assert float(module().numpy()) == pytest.approx(expected_loss, abs=1e-15)
