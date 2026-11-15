@@ -75,7 +75,7 @@ Homepage = "https://github.com/anulum/scpn-quantum-control"
 Repository = "https://github.com/anulum/scpn-quantum-control"
 Issues = "https://github.com/anulum/scpn-quantum-control/issues"
 Changelog = "https://github.com/anulum/scpn-quantum-control/blob/main/oscillatools/CHANGELOG.md"
-Documentation = "https://anulum.github.io/scpn-quantum-control/oscillatools/"
+Documentation = "https://github.com/anulum/scpn-quantum-control/tree/main/oscillatools/docs"
 
 [tool.hatch.build.targets.sdist]
 exclude = [

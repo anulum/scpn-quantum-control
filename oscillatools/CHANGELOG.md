@@ -17,6 +17,10 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ### Fixed
 
+- The `Documentation` project URL pointed at
+  `https://anulum.github.io/scpn-quantum-control/oscillatools/`, which is not published and
+  returns 404. It now points at the documentation sources in the repository
+  (`oscillatools/docs`).
 - `train_kuramoto_neural_operator` initialises its layers from a model-local
   `torch.Generator` seeded by `seed`, on the active default device, with the
   same draw order as `nn.Linear`. Training no longer draws from or advances the
