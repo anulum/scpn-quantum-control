@@ -497,6 +497,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The classical Kuramoto reference (`hardware/classical.py`) now tests its
+  order-parameter fallback: with the Rust engine hidden and the
+  `oscillatools.accel` import blocked, the Python tier computes R with NumPy,
+  matching |mean(exp(i theta))| of its own phases to 1e-15 and the
+  accelerated tier to 1e-12. The fallback contract tests had 16
+  documentation findings and now have none, so the test documentation
+  ceiling falls to 6802 findings in 527 files. No production change.
+
 - **Fixed: an unknown Catalyst runner status raised `KeyError`.**
   `catalyst_compiler_workflow_comparison` looked the status up in its
   workflow-text table before the comparison record could validate it, so an

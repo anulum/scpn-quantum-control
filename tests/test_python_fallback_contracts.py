@@ -28,7 +28,6 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
 
 def _hide_engine() -> AbstractContextManager[dict[str, ModuleType]]:
     """Context manager to hide scpn_quantum_engine from imports."""
-
     return patch.dict(sys.modules, {"scpn_quantum_engine": None})
 
 
@@ -36,6 +35,7 @@ class TestClassicalPythonFallback:
     """Test classical.py code paths when Rust engine is unavailable."""
 
     def test_state_order_param_python(self) -> None:
+        """The dense state order parameter of |00> stays in [0, 1] without the engine."""
         from scpn_quantum_control.hardware.classical import _state_order_param
 
         n = 2
@@ -46,6 +46,7 @@ class TestClassicalPythonFallback:
         assert 0 <= r <= 1
 
     def test_state_order_param_sparse_python(self) -> None:
+        """The sparse state order parameter returns a float without the engine."""
         from scpn_quantum_control.hardware.classical import _state_order_param_sparse
 
         n = 2
@@ -55,6 +56,7 @@ class TestClassicalPythonFallback:
         assert isinstance(r, float)
 
     def test_expectation_pauli_python(self) -> None:
+        """Each single-qubit Pauli expectation of |00> is a float without the engine."""
         from scpn_quantum_control.hardware.classical import _expectation_pauli
 
         psi = np.array([1, 0, 0, 0], dtype=complex)
@@ -64,6 +66,7 @@ class TestClassicalPythonFallback:
             assert isinstance(val, float)
 
     def test_vectorized_xy_expectations_match_known_product_state(self) -> None:
+        """Vectorised X and Y expectations match a |+y>|+x> product state."""
         from scpn_quantum_control.hardware.classical import _xy_expectations_vectorized
 
         plus_y = np.array([1.0, 1j], dtype=complex) / np.sqrt(2.0)
@@ -77,6 +80,7 @@ class TestClassicalPythonFallback:
         np.testing.assert_allclose(exp_y, [0.0, 1.0], atol=1e-12)
 
     def test_classical_brute_mpc_python(self) -> None:
+        """Brute-force MPC evaluates all 2**3 action sequences without the engine."""
         from scpn_quantum_control.hardware.classical import classical_brute_mpc
 
         B = np.array([[1.0, 0.5], [0.5, 1.0]])
@@ -88,6 +92,7 @@ class TestClassicalPythonFallback:
         assert result["n_evaluated"] == 8
 
     def test_classical_exact_diag_dense_no_gpu(self) -> None:
+        """Dense exact diagonalisation reports eigenvalues and a non-negative gap."""
         from scpn_quantum_control.hardware.classical import classical_exact_diag
 
         result = classical_exact_diag(3)
@@ -96,6 +101,7 @@ class TestClassicalPythonFallback:
         assert result["spectral_gap"] >= 0
 
     def test_classical_exact_evolution_dense(self) -> None:
+        """Dense exact evolution returns a time grid and an order-parameter history."""
         from scpn_quantum_control.hardware.classical import classical_exact_evolution
 
         result = classical_exact_evolution(2, t_max=0.5, dt=0.1)
@@ -109,7 +115,6 @@ class TestClassicalPythonFallback:
         We use n=3 but pass a custom K/omega sized for 3 qubits.
         The sparse path condition is n_osc >= 13, so we mock it.
         """
-
         from scpn_quantum_control.hardware import classical as cls_mod
 
         K = build_knm_paper27(L=3)
@@ -120,6 +125,7 @@ class TestClassicalPythonFallback:
         assert len(result["R"]) > 0
 
     def test_bloch_vectors_from_json(self, tmp_path: Path) -> None:
+        """Bloch magnitudes are read back from a hardware result JSON file."""
         from scpn_quantum_control.hardware.classical import bloch_vectors_from_json
 
         data = {
@@ -142,6 +148,7 @@ class TestClassicalPythonFallback:
         )
 
     def test_classical_kuramoto_python_fallback(self) -> None:
+        """The Python Kuramoto tier returns times, phases and R without the engine."""
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
         with _hide_engine():
@@ -150,7 +157,21 @@ class TestClassicalPythonFallback:
         assert "R" in result
         assert result["theta"].shape[0] > 1
 
+    def test_classical_kuramoto_order_parameter_without_accel_package(self) -> None:
+        """Without oscillatools.accel the Python tier computes R with NumPy and agrees."""
+        from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
+
+        with _hide_engine():
+            accelerated = classical_kuramoto_reference(3, t_max=0.3, dt=0.1)
+            with patch.dict(sys.modules, {"oscillatools.accel": None}):
+                fallback = classical_kuramoto_reference(3, t_max=0.3, dt=0.1)
+
+        expected = np.abs(np.mean(np.exp(1j * fallback["theta"]), axis=1))
+        np.testing.assert_allclose(fallback["R"], expected, rtol=0.0, atol=1e-15)
+        np.testing.assert_allclose(fallback["R"], accelerated["R"], rtol=0.0, atol=1e-12)
+
     def test_classical_kuramoto_validation(self) -> None:
+        """A negative step or duration is refused by the Kuramoto reference."""
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
         with pytest.raises(ValueError, match="dt must be positive"):
@@ -161,6 +182,8 @@ class TestClassicalPythonFallback:
 
 
 class TestFallbackPhysics:
+    """Physical bounds of the Python fallback observables."""
+
     def test_python_R_bounded(self) -> None:
         """Python fallback R must be in [0, 1]."""
         from scpn_quantum_control.hardware.classical import _state_order_param
@@ -183,11 +206,13 @@ class TestFallbackPhysics:
 
 
 class TestFallbackPipeline:
+    """End-to-end Python fallback pipelines."""
+
     def test_pipeline_python_fallback_kuramoto(self) -> None:
         """Full pipeline: Python Kuramoto → R trajectory (no Rust).
+
         Verifies Python fallback is wired end-to-end.
         """
-
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
         t0 = time.perf_counter()
