@@ -236,6 +236,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - A workflow test requires every exact-gated run of the parity job to be
     uploaded and combined into the union.
 
+- The canonical wire of the experimental LLM-QPU contracts
+  (`experimental/llm_qpu/contracts/wire.py`) now has its own refusal tests
+  and full line and branch coverage; the union had it at 80.68%.
+  - The 61 cases cover malformed wire values, JSON wires, array descriptors
+    and provenance headers, and each refusal checks its reason.
+  - The array byte check is replaced by the element ceiling, which was already
+    the binding limit: one million elements of at most 8 bytes stay inside the
+    16 MiB array ceiling. A test pins that invariant. Behaviour is unchanged.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

@@ -59,7 +59,10 @@ _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 _COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 _DTYPE_SIZE = {"<f8": 8, "<f4": 4, "<i8": 8, "<i4": 4, "<u8": 8, "<u4": 4}
 _MAX_WIRE_BYTES = 1_048_576
-_MAX_ARRAY_BYTES = 16_777_216
+_MAX_ARRAY_ELEMENTS = 1_000_000
+# With the widest admitted dtype (8 bytes) the element ceiling bounds every payload
+# at 8,000,000 bytes, inside the reviewed 16 MiB array ceiling; the element check is
+# therefore the binding limit, and the contract test pins this invariant.
 _MAX_METADATA_BYTES = 8192
 
 
@@ -195,13 +198,11 @@ class ArrayDescriptor:
         elements = 1
         for axis in self.shape:
             elements *= _positive_int(axis, name="array axis")
-            if elements > 1_000_000:
+            if elements > _MAX_ARRAY_ELEMENTS:
                 raise ValueError("array element limit exceeded")
         expected = elements * _DTYPE_SIZE[self.dtype]
         if type(self.byte_length) is not int or expected != self.byte_length:
             raise ValueError("array byte length mismatch")
-        if expected > _MAX_ARRAY_BYTES:
-            raise ValueError("array byte limit exceeded")
         _digest(self.sha256, name="array payload")
 
     def validate_payload(self, payload: bytes) -> None:
