@@ -633,11 +633,14 @@ the Codecov step, so it holds the exact `coverage.xml` the gate read. The Codeco
 upload sends that file alone and runs none of the uploader's report plugins,
 which would otherwise rewrite it over tests and tools. Before the policy audit,
 the 3.15 lane appends the exact-commit coverage databases of the focused gates
-that run elsewhere: the native transform and NQS ansatz runs, and every run of
+that run elsewhere: the native transform and NQS ansatz runs, every run of
 the differentiable parity job that is held at 100% there, including
 Phase-QNode framework parity with the real JAX, PyTorch and PennyLane installs
-and the public package initialisers. A workflow test refuses an exact-gated
-parity run that is not uploaded and combined.
+and the public package initialisers, and the classical baseline run of the
+tensor-network job, which executes the quimb TEBD route with the pinned quimb
+install and holds `benchmarks/classical_baselines.py` at 100%. Workflow tests
+refuse an exact-gated parity run or the quimb baseline run that is not
+uploaded and combined.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 

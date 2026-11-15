@@ -214,6 +214,30 @@ jobs:
         run: >-
           python -m pytest -q -s
           tests/test_tensor_network_truncation.py
+      - name: Run real-quimb classical baseline coverage
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+        run: >-
+          python -m coverage run --rcfile=/dev/null --branch
+          --data-file=${{ runner.temp }}/scpn-qc-classical-baselines-quimb.coverage
+          -m pytest -q tests/test_classical_baselines.py
+          tests/test_classical_baselines_branches.py
+      - name: Enforce real-quimb classical baseline exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=${{ runner.temp }}/scpn-qc-classical-baselines-quimb.coverage
+          --precision=2 --show-missing --fail-under=100
+          --include=*/benchmarks/classical_baselines.py
+      - name: Export exact-commit real-quimb classical baseline coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: classical-baselines-quimb-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/scpn-qc-classical-baselines-quimb.coverage
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
   xy-compile-recompute-artifact-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20

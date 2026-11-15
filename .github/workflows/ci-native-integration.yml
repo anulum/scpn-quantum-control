@@ -770,6 +770,12 @@ jobs:
         with:
           name: public-package-imports-coverage-${{ github.sha }}
           path: ${{ runner.temp }}/public-package-imports-coverage
+      - name: Download exact-commit real-quimb classical baseline coverage (3.15 only)
+        if: matrix.python-version == '3.15'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: classical-baselines-quimb-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/classical-baselines-quimb-coverage
       - name: Admit complete test coverage (3.15 only)
         if: matrix.python-version == '3.15'
         run: |
@@ -788,6 +794,7 @@ jobs:
           python -m coverage combine --append --keep "$RUNNER_TEMP/framework-benchmark-examples-coverage/scpn-qc-framework-benchmark-examples.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/phase-qnode-framework-parity-coverage/scpn-qc-phase-qnode-framework-parity.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/public-package-imports-coverage/.coverage.public-package-imports"
+          python -m coverage combine --append --keep "$RUNNER_TEMP/classical-baselines-quimb-coverage/scpn-qc-classical-baselines-quimb.coverage"
           python -m coverage report --precision=2 --show-missing --fail-under=100 --include='*/phase/torch_qnode_transforms.py,*/phase/pennylane_import.py,*/phase_qnn_native_model.py,*/phase_qnn_native_contracts.py,*/phase_qnn_framework_gradients.py,*/phase_qnode_native_operators.py,*/phase_qnode_native_expectations.py,*/phase_qnode_gate_numerics.py,*/phase_qnode_state_evolution.py,*/phase_qnode_gate_dispatch.py,*/phase_qnode_native_gates.py,*/phase_qnode_statevector_engine.py,*/phase_qnode_native_statevector.py,*/differentiable_tree_vectors.py,*/differentiable_axis_compilation.py,*/phase/jax_qnode_transforms.py,*/phase_qnode_jax_audits.py,*/benchmarks/differentiable_programming_quantum.py,*/ml_examples/qnn_convergence.py'
           python -m coverage xml --include='*/scpn_quantum_control/*'
           python tools/audit_coverage_policy.py --coverage-xml coverage.xml

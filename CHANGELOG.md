@@ -497,6 +497,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The quimb route of the classical baselines now reaches the Python 3.15
+  coverage union. The tensor-network job, which installs the pinned quimb,
+  ran only the truncation contracts, so the TEBD baseline in
+  `benchmarks/classical_baselines.py` was skipped in every measured lane and
+  the recovery register kept its 4 lines open. The job now runs the
+  classical baseline tests under coverage with real quimb, holds the module
+  at 100%, and uploads the database; the 3.15 lane downloads and appends it
+  (12 combines). A workflow test refuses the run, gate, upload, download or
+  combine going missing or drifting. The test infrastructure page states
+  what the union appends.
+
 - The PyTorch compatibility audits (`phase/torch_compatibility.py`) now test
   the loss closures they hand to `torch.func.grad`. The shared fake PyTorch
   discarded each closure and returned a gradient computed from fixed data, so

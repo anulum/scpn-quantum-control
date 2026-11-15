@@ -91,7 +91,7 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
         item for item in steps if item.get("name") == "Admit complete test coverage (3.15 only)"
     )
     assert "--shards 4 --coverage-output .coverage" in union["run"]
-    assert union["run"].count("coverage combine --append --keep") == 11
+    assert union["run"].count("coverage combine --append --keep") == 12
     assert "tools/audit_coverage_policy.py" in union["run"]
     authoritative = next(
         item for item in steps if item.get("name") == "Upload coverage policy evidence (3.15 only)"
@@ -147,6 +147,44 @@ def test_every_exact_parity_coverage_database_joins_the_authoritative_union() ->
         target = downloads[artifact].replace("${{ runner.temp }}", "$RUNNER_TEMP")
         combined = f'coverage combine --append --keep "{target}/{Path(data_file).name}"'
         assert combined in union, (artifact, combined)
+
+
+def test_real_quimb_classical_baseline_coverage_joins_the_authoritative_union() -> None:
+    """The quimb route of the classical baselines, gated at 100% with real quimb, reaches 3.15."""
+    owner = yaml.safe_load(
+        inventory.workflow_path_for_job("tn-mps-crossover-admission-quality").read_text()
+    )
+    steps = owner["jobs"]["tn-mps-crossover-admission-quality"]["steps"]
+    data_file = "${{ runner.temp }}/scpn-qc-classical-baselines-quimb.coverage"
+    names = [step.get("name", "") for step in steps]
+    install = names.index("Install the pinned tensor-network execution runtime")
+    run = steps[names.index("Run real-quimb classical baseline coverage")]["run"]
+    gate = steps[names.index("Enforce real-quimb classical baseline exact coverage")]["run"]
+    upload = steps[names.index("Export exact-commit real-quimb classical baseline coverage")]
+    assert install < names.index("Run real-quimb classical baseline coverage")
+    assert f"--data-file={data_file}" in run
+    assert "tests/test_classical_baselines.py" in run
+    assert "tests/test_classical_baselines_branches.py" in run
+    assert f"--data-file={data_file}" in gate and "--fail-under=100" in gate
+    assert "--include=*/benchmarks/classical_baselines.py" in gate
+    assert upload["with"]["path"] == data_file
+    artifact = upload["with"]["name"]
+    job = yaml.safe_load(inventory.workflow_path_for_job("test").read_text())["jobs"]["test"]
+    downloads = {
+        step["with"]["name"]: step["with"]["path"]
+        for step in job["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@") and "name" in step["with"]
+    }
+    union = next(
+        step["run"]
+        for step in job["steps"]
+        if step.get("name") == "Admit complete test coverage (3.15 only)"
+    )
+
+    target = downloads[artifact].replace("${{ runner.temp }}", "$RUNNER_TEMP")
+    combined = f'coverage combine --append --keep "{target}/{Path(data_file).name}"'
+    assert combined in union
+    assert union.index(combined) < union.index("tools/audit_coverage_policy.py")
 
 
 def _policy() -> WorkflowPolicy:
