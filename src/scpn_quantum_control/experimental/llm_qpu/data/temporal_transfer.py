@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import hashlib
+from typing import Literal
 
 from ..contracts import ArtifactHeader, TaskSpec, canonical_bytes
 from ..contracts.wire import TASK_SCHEMA
@@ -24,6 +25,8 @@ _PRE_COPY_WRITES = {6: 1, 11: 2, 16: 3}
 _TASK_ID = "synthetic-temporal-key-value-v2"
 _OBJECTIVE = "Predict a key's final colour after ordered writes and value-at-time copies"
 _GROUP_DEFINITION = "Counterfactual transfer histories and phrasings share one source group"
+_Update = tuple[Literal["write"], int, str] | tuple[Literal["copy"], int, int]
+"""One ordered history step: write a colour to a slot, or copy one slot into another."""
 
 
 def _choice(seed: int, source: int, role: str, count: int) -> int:
@@ -54,7 +57,7 @@ def generate_transfer_records(*, seed: int, source_count: int = 128) -> tuple[Te
         first_colour = _COLOURS[_choice(seed, source, "critical-first", len(_COLOURS))]
         alternatives = tuple(colour for colour in _COLOURS if colour != first_colour)
         second_colour = alternatives[_choice(seed, source, "critical-second", len(alternatives))]
-        shared: list[tuple[str, int, int | str]] = []
+        shared: list[_Update] = []
         for step in range(_UPDATE_COUNT):
             if step in _COPY_STEPS:
                 hop = _COPY_STEPS.index(step)
@@ -71,13 +74,11 @@ def generate_transfer_records(*, seed: int, source_count: int = 128) -> tuple[Te
             updates = list(shared)
             updates[_CRITICAL_STEP] = ("write", path[0], target)
             state = list(initial)
-            for operation, slot, value in updates:
-                if operation == "write" and type(value) is str:
-                    state[slot] = value
-                elif operation == "copy" and type(value) is int:
-                    state[slot] = state[value]
+            for update in updates:
+                if update[0] == "write":
+                    state[update[1]] = update[2]
                 else:
-                    raise ValueError("transfer update is not a write or copy")
+                    state[update[1]] = state[update[2]]
             final_colour = state[path[3]]
             for variant_id in (0, 1):
                 if variant_id == 0:

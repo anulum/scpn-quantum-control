@@ -389,6 +389,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   non-synthetic split, a count outside the dev groups, and a dev group
   without its primary prompt.
 
+- The model descriptor, source deduplication, memory records, temporal records
+  and transfer generator (`experimental/llm_qpu`) have full line and branch
+  coverage.
+  - New tests cover an unknown hidden-state dtype, headers of another kind or
+    origin, edited model wires, non-text or empty source text, empty,
+    unvalidated or repeated inventories, invalid record identities and
+    variants, and out-of-range generator inputs.
+  - The transfer generator's history steps are a typed union of writes and
+    copies. Its unreachable "neither write nor copy" refusal is gone, and
+    768 generated records (three seeds) are byte-identical before and after.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

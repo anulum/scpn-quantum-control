@@ -275,3 +275,14 @@ def test_temporal_pilot_refuses_unsynthetic_splits_and_missing_pairs() -> None:
     foreign = replace(split, dev_groups=foreign_dev, header=header)
     with pytest.raises(ValueError, match="^paired temporal history is missing$"):
         temporal_pilot_inputs(task, records, foreign, group_count=2)
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [{"sample_id": ""}, {"source_id": "s" * 257}, {"group_id": 7}],
+)
+def test_temporal_record_refuses_invalid_identity(changes: dict[str, Any]) -> None:
+    """A record needs bounded nonempty text for its sample, source and group identities."""
+    record = generate_temporal_records(seed=73, source_count=3)[0]
+    with pytest.raises(ValueError, match="^temporal record identity is invalid$"):
+        replace(record, **changes)

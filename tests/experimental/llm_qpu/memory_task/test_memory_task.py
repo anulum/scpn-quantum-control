@@ -16,7 +16,10 @@ from typing import Any
 import pytest
 
 from scpn_quantum_control.experimental.llm_qpu.contracts import SplitManifest, canonical_bytes
-from scpn_quantum_control.experimental.llm_qpu.data.dedup import validate_source_families
+from scpn_quantum_control.experimental.llm_qpu.data.dedup import (
+    normalized_source_digest,
+    validate_source_families,
+)
 from scpn_quantum_control.experimental.llm_qpu.data.splits import (
     build_memory_split,
     pilot_inputs,
@@ -195,3 +198,42 @@ def test_memory_pilot_refuses_unsynthetic_splits_counts_and_missing_prompts() ->
     foreign = replace(split, dev_groups=foreign_dev, header=header)
     with pytest.raises(ValueError, match="^pilot source group is missing its primary prompt$"):
         pilot_inputs(records, foreign, count=2)
+
+
+def test_source_families_refuse_text_inventories_and_repeats() -> None:
+    """Duplicate checks need nonempty text, a bounded inventory of records and unique samples."""
+    records = generate_memory_records(seed=73, source_count=3)
+    number: Any = 7
+    for text in ("", number):
+        with pytest.raises(ValueError, match="^source text must be nonempty$"):
+            normalized_source_digest(text)
+    assert normalized_source_digest("Card  A") == normalized_source_digest("card a")
+    cases: tuple[tuple[Any, str], ...] = (
+        ((), "memory record inventory out of bounds"),
+        ((records[0].public_wire(), *records[1:]), "memory inventory contains an unvalidated"),
+        ((records[0], records[0], *records[1:]), "duplicate memory sample ID"),
+    )
+    for inventory, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}"):
+            validate_source_families(inventory)
+
+
+def test_memory_records_and_generator_refuse_invalid_identity_and_bounds() -> None:
+    """Records need bounded text identities and a known variant; the generator needs bounded inputs."""
+    record = generate_memory_records(seed=73, source_count=3)[0]
+    for changes, message in (
+        ({"sample_id": ""}, "memory record identity or prefix is invalid"),
+        ({"group_id": "g" * 1025}, "memory record identity or prefix is invalid"),
+        ({"variant_id": 2}, "unknown memory prompt variant"),
+        ({"variant_id": True}, "unknown memory prompt variant"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            replace(record, **changes)
+    for arguments, message in (
+        ({"seed": -1}, "memory generator seed must be nonnegative signed 64-bit"),
+        ({"seed": 2**63}, "memory generator seed must be nonnegative signed 64-bit"),
+        ({"seed": 73, "source_count": 2}, "memory source count must be between 3 and 4096"),
+        ({"seed": 73, "source_count": 4097}, "memory source count must be between 3 and 4096"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            generate_memory_records(**arguments)

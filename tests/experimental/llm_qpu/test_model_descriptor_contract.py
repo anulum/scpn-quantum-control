@@ -77,6 +77,7 @@ def _model(*, quantization: str = "gguf_q6_k") -> ModelDescriptor:
 
 
 def _worker(request: dict[str, object], tmp_path: Path) -> subprocess.CompletedProcess[bytes]:
+    """Run the standalone protocol worker on one request with poisoned provider tokens."""
     return subprocess.run(
         [sys.executable, "-S", str(_WORKER)],
         input=json.dumps(request).encode(),
@@ -140,3 +141,26 @@ def test_model_descriptor_refuses_inferred_width_and_fallback(tmp_path: Path) ->
     response = _worker({"op": "roundtrip_model_descriptor", "model": forged}, tmp_path)
     assert response.returncode == 2
     assert "content digest mismatch" in json.loads(response.stdout)["reason"]
+
+
+def test_model_descriptor_refuses_unknown_dtypes_other_headers_and_edited_wires() -> None:
+    """A descriptor refuses an unknown dtype, a header of another kind or origin, and an edited wire."""
+    model = _model()
+    with pytest.raises(ValueError, match="^unknown hidden-state dtype$"):
+        replace(model, tensor_dtype="int8")
+    header_wire: Any = model.header.to_wire()
+    other_kind = replace(model.header, object_kind="task_spec")
+    for header in (header_wire, other_kind):
+        with pytest.raises(
+            ValueError, match="^ModelDescriptor requires its exact artifact header$"
+        ):
+            replace(model, header=header)
+    with pytest.raises(ValueError, match="^ModelDescriptor requires owner-checkpoint origin$"):
+        replace(model, header=replace(model.header, data_origin="owner_dataset"))
+    encoded = model.to_wire()
+    for value, message in (
+        ({**encoded, "extra": 1}, "ModelDescriptor fields mismatch"),
+        ({**encoded, "object_kind": "task_spec"}, "unknown ModelDescriptor schema"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            decode_contract(canonical_bytes(value))
