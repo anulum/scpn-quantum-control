@@ -497,6 +497,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The MLIR compiler records (`compiler/mlir_records.py`) now test four
+  refusals with exact messages: `MLIRModule` given a list of pairs for
+  `resource_counts` or `metadata` (which `dict()` would otherwise accept),
+  `PrimitiveLoweringStatus` given an integer `has_jvp` or `has_vjp`, and a
+  declared fail-closed boundary whose lowering metadata names another
+  boundary policy, beside the matching metadata that is accepted. Coverage
+  of the four register lines is closed. No production change.
+
 - The quimb route of the classical baselines now reaches the Python 3.15
   coverage union. The tensor-network job, which installs the pinned quimb,
   ran only the truncation contracts, so the TEBD baseline in

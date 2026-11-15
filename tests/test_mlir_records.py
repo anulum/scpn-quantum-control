@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import hashlib
 from types import MappingProxyType
-from typing import cast
+from typing import Any, cast
 
 import pytest
 
@@ -190,6 +190,43 @@ def test_primitive_lowering_status_validates_static_and_boundary_metadata() -> N
     for overrides, match in invalid_cases:
         with pytest.raises(ValueError, match=match):
             _lowering_status(**overrides)  # type: ignore[arg-type]  # negative records
+
+
+def test_mlir_records_refuse_non_mapping_fields_flags_and_a_drifted_boundary_policy() -> None:
+    """Pair lists for mappings, integer rule flags and a drifted boundary policy fail closed."""
+    text = "module { func.func @main() }"
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    pairs: Any = [("ops", 1)]
+
+    with pytest.raises(ValueError, match="^resource_counts must be a mapping$"):
+        MLIRModule(text=text, sha256=digest, dialect="scpn_test", resource_counts=pairs)
+    with pytest.raises(ValueError, match="^metadata must be a mapping$"):
+        MLIRModule(
+            text=text,
+            sha256=digest,
+            dialect="scpn_test",
+            resource_counts={"ops": 1},
+            metadata=pairs,
+        )
+    flag_cases: tuple[dict[str, Any], ...] = ({"has_jvp": 1}, {"has_vjp": 0})
+    for flags in flag_cases:
+        with pytest.raises(ValueError, match="^has_jvp and has_vjp must be booleans$"):
+            _lowering_status(**flags)
+    boundary: dict[str, Any] = {
+        "nondifferentiable_boundary": "cusp",
+        "nondifferentiable_boundary_policy": "fail_closed",
+        "nondifferentiable_policy": "subgradient_zero",
+    }
+    with pytest.raises(
+        ValueError, match="^nondifferentiable_boundary_policy must match lowering metadata$"
+    ):
+        _lowering_status(
+            **boundary, lowering_metadata={"nondifferentiable_boundary_policy": "warn"}
+        )
+    accepted = _lowering_status(
+        **boundary, lowering_metadata={"nondifferentiable_boundary_policy": "fail_closed"}
+    )
+    assert accepted.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
 
 def test_primitive_lowering_status_validates_backend_provenance() -> None:
