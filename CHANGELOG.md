@@ -497,6 +497,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- **Fixed: the Qiskit local gradients leaked a Qiskit error for a parameter
+  the circuit does not use.** `generate_qiskit_parameter_shift_circuits`,
+  `execute_qiskit_statevector_parameter_shift` and
+  `execute_qiskit_finite_shot_parameter_shift` checked only that every circuit
+  parameter was listed, so a listed parameter absent from the circuit reached
+  Qiskit's binder and raised its `CircuitError`. It is now refused with
+  `ValueError` ("parameters must all appear in the circuit") before binding.
+  An unhashable entry in `parameters` raised `TypeError` from the repeat
+  check; the type check now runs first, so it gets the module's `ValueError`.
+  The bound-circuit check after binding could no longer fail and is removed.
+  The API guide states the parameter rule.
+  - The same unit tests the parameter-free circuit, a parameter expression, a
+    list and a string entry, repeated parameters, and the singular shift at
+    pi beside an accepted shift of 1e-12. Coverage of `phase/qiskit_gradients.py`
+    rises from 91.30% to 100% over its test files. Eight older tests gain
+    docstrings.
+
 - The gradient transform nesting planner (`phase/transform_nesting.py`) now
   tests that native vmap(grad), grad-of-grad and the Hessian are
   policy-blocked by name on hardware, and that the audit counts both an

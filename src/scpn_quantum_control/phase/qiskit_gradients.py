@@ -197,11 +197,10 @@ def _bind_circuit(
     parameters: tuple[Parameter, ...],
     values: FloatArray,
 ) -> QuantumCircuit:
+    # Callers validate that ``parameters`` equals the circuit's parameter set, so
+    # binding every listed parameter leaves the returned circuit fully bound.
     mapping = {parameter: float(values[index]) for index, parameter in enumerate(parameters)}
-    bound = circuit.assign_parameters(mapping, inplace=False)
-    if bound.num_parameters != 0:
-        raise ValueError("all circuit parameters must be supplied before Qiskit execution")
-    return bound
+    return circuit.assign_parameters(mapping, inplace=False)
 
 
 def _validate_circuit_parameters(
@@ -214,17 +213,19 @@ def _validate_circuit_parameters(
         raise ValueError("circuit must contain at least one trainable parameter")
     if not circuit_parameters.issubset(supplied):
         raise ValueError("all circuit parameters must be listed in parameters")
+    if not supplied.issubset(circuit_parameters):
+        raise ValueError("parameters must all appear in the circuit")
 
 
 def _normalise_parameters(parameters: Sequence[Parameter]) -> tuple[Parameter, ...]:
     parameter_tuple = tuple(parameters)
     if not parameter_tuple:
         raise ValueError("parameters must contain at least one Qiskit Parameter")
-    if len(set(parameter_tuple)) != len(parameter_tuple):
-        raise ValueError("parameters must not contain duplicates")
     for parameter in parameter_tuple:
         if not isinstance(parameter, Parameter):
             raise ValueError("parameters must contain Qiskit Parameter objects")
+    if len(set(parameter_tuple)) != len(parameter_tuple):
+        raise ValueError("parameters must not contain duplicates")
     return parameter_tuple
 
 

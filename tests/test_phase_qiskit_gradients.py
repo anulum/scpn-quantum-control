@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+from typing import Any
 
 import numpy as np
 import pytest
@@ -50,6 +51,7 @@ PRIVATE_GRADIENT_HELPERS = (
 
 
 def _single_rotation_problem() -> tuple[QuantumCircuit, tuple[Parameter, ...], SparsePauliOp]:
+    """Return a one-qubit RY circuit, its parameter, and a Z observable."""
     theta = Parameter("theta")
     circuit = QuantumCircuit(1)
     circuit.ry(theta, 0)
@@ -58,6 +60,7 @@ def _single_rotation_problem() -> tuple[QuantumCircuit, tuple[Parameter, ...], S
 
 
 def test_generate_qiskit_parameter_shift_circuits_binds_plus_minus_values() -> None:
+    """Each shifted record carries fully bound plus and minus circuits."""
     circuit, parameters, _observable = _single_rotation_problem()
 
     records = generate_qiskit_parameter_shift_circuits(
@@ -79,6 +82,7 @@ def test_generate_qiskit_parameter_shift_circuits_binds_plus_minus_values() -> N
 
 
 def test_execute_qiskit_statevector_parameter_shift_matches_analytic_reference() -> None:
+    """The Statevector value and gradient match cos and -sin of the angle."""
     circuit, parameters, observable = _single_rotation_problem()
 
     result = execute_qiskit_statevector_parameter_shift(
@@ -98,6 +102,7 @@ def test_execute_qiskit_statevector_parameter_shift_matches_analytic_reference()
 
 
 def test_execute_qiskit_finite_shot_parameter_shift_reports_uncertainty() -> None:
+    """Finite-shot evaluation propagates the shot variance into the standard error."""
     circuit, parameters, observable = _single_rotation_problem()
     shots = 400
 
@@ -128,6 +133,7 @@ def test_execute_qiskit_finite_shot_parameter_shift_reports_uncertainty() -> Non
 
 
 def test_qiskit_statevector_supports_multi_frequency_parameter_shift() -> None:
+    """A two-frequency rule reproduces the analytic gradient of a tied angle."""
     theta = Parameter("theta")
     circuit = QuantumCircuit(2)
     circuit.ry(theta, 0)
@@ -160,6 +166,7 @@ def test_qiskit_statevector_supports_multi_frequency_parameter_shift() -> None:
 
 
 def test_phase_qnode_gate_aware_plan_matches_qiskit_tied_parameter_count() -> None:
+    """The phase QNode plan and the Qiskit rule agree on tied-parameter cost and gradient."""
     theta = Parameter("theta")
     qiskit_circuit = QuantumCircuit(1)
     qiskit_circuit.h(0)
@@ -196,6 +203,7 @@ def test_phase_qnode_gate_aware_plan_matches_qiskit_tied_parameter_count() -> No
 
 
 def test_qiskit_finite_shot_supports_multi_frequency_parameter_shift() -> None:
+    """Finite-shot evaluation records every shift term of a multi-frequency rule."""
     theta = Parameter("theta")
     circuit = QuantumCircuit(2)
     circuit.ry(theta, 0)
@@ -229,6 +237,7 @@ def test_qiskit_finite_shot_supports_multi_frequency_parameter_shift() -> None:
 
 
 def test_execute_qiskit_statevector_parameter_shift_handles_two_parameters() -> None:
+    """Two independent angles each receive their own analytic gradient component."""
     theta_0 = Parameter("theta_0")
     theta_1 = Parameter("theta_1")
     circuit = QuantumCircuit(2)
@@ -254,6 +263,7 @@ def test_execute_qiskit_statevector_parameter_shift_handles_two_parameters() -> 
 
 
 def test_qiskit_parameter_shift_rejects_unbound_or_bad_inputs() -> None:
+    """Unlisted circuit parameters, wrong value widths, no parameters, and zero shots fail closed."""
     circuit, parameters, observable = _single_rotation_problem()
     extra = Parameter("extra")
     bad_circuit = circuit.copy()
@@ -272,7 +282,9 @@ def test_qiskit_parameter_shift_rejects_unbound_or_bad_inputs() -> None:
             parameters,
             np.array([0.4, 0.5], dtype=float),
         )
-    with pytest.raises(ValueError, match="parameters"):
+    with pytest.raises(
+        ValueError, match="^parameters must contain at least one Qiskit Parameter$"
+    ):
         generate_qiskit_parameter_shift_circuits(circuit, (), np.array([], dtype=float))
     with pytest.raises(ValueError, match="shots"):
         execute_qiskit_finite_shot_parameter_shift(
@@ -282,6 +294,45 @@ def test_qiskit_parameter_shift_rejects_unbound_or_bad_inputs() -> None:
             np.array([0.4], dtype=float),
             shots=0,
         )
+
+
+def test_qiskit_parameter_shift_refuses_parameters_the_circuit_does_not_use() -> None:
+    """A listed parameter absent from the circuit is refused by every public route."""
+    circuit, (theta,), observable = _single_rotation_problem()
+    unused = Parameter("unused")
+    values = np.array([0.4, 0.1], dtype=float)
+    message = "^parameters must all appear in the circuit$"
+
+    with pytest.raises(ValueError, match=message):
+        generate_qiskit_parameter_shift_circuits(circuit, (theta, unused), values)
+    with pytest.raises(ValueError, match=message):
+        execute_qiskit_statevector_parameter_shift(circuit, observable, (theta, unused), values)
+    with pytest.raises(ValueError, match=message):
+        execute_qiskit_finite_shot_parameter_shift(
+            circuit, observable, (theta, unused), values, shots=16
+        )
+
+
+def test_qiskit_parameter_shift_refuses_bad_parameter_lists_and_singular_shift() -> None:
+    """Parameter-free circuits, bad entries, repeats, and a sin(shift)=0 rule fail closed."""
+    circuit, (theta,), _observable = _single_rotation_problem()
+    values = np.array([0.4], dtype=float)
+
+    with pytest.raises(
+        ValueError, match="^circuit must contain at least one trainable parameter$"
+    ):
+        generate_qiskit_parameter_shift_circuits(QuantumCircuit(1), (theta,), values)
+    bad_entries: tuple[Any, ...] = (2.0 * theta, [theta], "theta")
+    for entry in bad_entries:
+        with pytest.raises(ValueError, match="^parameters must contain Qiskit Parameter objects$"):
+            generate_qiskit_parameter_shift_circuits(circuit, (entry,), values)
+    with pytest.raises(ValueError, match="^parameters must not contain duplicates$"):
+        generate_qiskit_parameter_shift_circuits(circuit, (theta, theta), np.zeros(2))
+    singular = "^shift must not make the parameter-shift denominator singular$"
+    with pytest.raises(ValueError, match=singular):
+        generate_qiskit_parameter_shift_circuits(circuit, (theta,), values, shift=float(np.pi))
+    records = generate_qiskit_parameter_shift_circuits(circuit, (theta,), values, shift=1.0e-12)
+    assert records[0].coefficient == pytest.approx(1.0 / (2.0 * np.sin(1.0e-12)))
 
 
 def test_qiskit_gradient_leaf_has_no_bridge_back_edge() -> None:
