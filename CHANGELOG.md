@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The Phase-QNode circuit builders (`phase/qnode_circuit_builders.py`) now
+  test:
+  - Ising coefficients that are boolean, complex, NaN, a matrix, or a vector
+    holding an infinity;
+  - unknown template names, zero or boolean layer counts, and unknown
+    entanglers;
+  - the named magnetisation observable and an explicit Pauli term on a
+    template;
+  - the gate, observable and noise-channel registries.
+
+  Coverage rises from 90.14% to 100%. Twelve older tests gain docstrings, so
+  the test documentation ceiling falls to 6907 findings in 538 files.
+
 - **Fixed: QNN framework agreement accepted framework names that duplicate
   conformance rows.** `verify_parameter_shift_qnn_framework_agreement`
   lower-cases framework names, so `JAX` and `jax` became two `jax`

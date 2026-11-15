@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -34,6 +36,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
 
 
 def test_phase_qnode_sparse_ising_chain_builder_matches_manual_hamiltonian() -> None:
+    """A periodic Ising chain built from site vectors matches the hand-written Hamiltonian."""
     x_field = np.linspace(0.05, 0.15, 6)
     z_field = np.linspace(0.2, 0.7, 6)
     zz_coupling = np.linspace(0.4, 0.9, 6)
@@ -88,6 +91,7 @@ def test_phase_qnode_sparse_ising_chain_builder_matches_manual_hamiltonian() -> 
 
 
 def test_phase_qnode_sparse_ising_chain_builder_validates_coefficients() -> None:
+    """Scalars broadcast; widths, periodicity, shapes and an all-zero chain are checked."""
     open_chain = build_sparse_ising_chain_hamiltonian(4, zz_coupling=0.25)
 
     assert len(open_chain.terms) == 3
@@ -103,6 +107,7 @@ def test_phase_qnode_sparse_ising_chain_builder_validates_coefficients() -> None
 
 
 def test_phase_qnode_ghz_chain_template_executes_multi_qubit_parity_reference() -> None:
+    """The four-qubit GHZ template has no parameters and gives the parity reference."""
     template = build_phase_qnode_template(
         "ghz_chain",
         4,
@@ -129,6 +134,7 @@ def test_phase_qnode_ghz_chain_template_executes_multi_qubit_parity_reference() 
 
 
 def test_phase_qnode_hardware_efficient_template_gradient_matches_finite_difference() -> None:
+    """The hardware-efficient template's gradient matches finite differences."""
     template = build_phase_qnode_template(
         "hardware_efficient_ryrz",
         3,
@@ -157,6 +163,7 @@ def test_phase_qnode_hardware_efficient_template_gradient_matches_finite_differe
 
 
 def test_phase_qnode_template_registry_validates_boundaries() -> None:
+    """The template registry lists three templates and refuses out-of-range requests."""
     assert set(registered_phase_qnode_templates()) == {
         "ghz_chain",
         "hardware_efficient_ry",
@@ -177,6 +184,7 @@ def test_phase_qnode_template_registry_validates_boundaries() -> None:
 
 
 def test_phase_qnode_registered_depth_builder_profiles_arbitrary_circuit() -> None:
+    """The registered builder profiles depth and operation counts of a mixed circuit."""
     spec = build_registered_phase_qnode_circuit(
         n_qubits=3,
         operations=(
@@ -219,6 +227,7 @@ def test_phase_qnode_registered_depth_builder_profiles_arbitrary_circuit() -> No
 
 
 def test_phase_qnode_registered_depth_builder_executes_and_gradients() -> None:
+    """A registered circuit executes and its gradient matches finite differences."""
     spec = build_registered_phase_qnode_circuit(
         n_qubits=3,
         operations=(
@@ -252,6 +261,7 @@ def test_phase_qnode_registered_depth_builder_executes_and_gradients() -> None:
 
 
 def test_phase_qnode_depth_profile_matches_template_circuit() -> None:
+    """The depth profile of a two-layer template matches its known depth and size."""
     template = build_phase_qnode_template(
         "hardware_efficient_ry",
         3,
@@ -269,6 +279,7 @@ def test_phase_qnode_depth_profile_matches_template_circuit() -> None:
 
 
 def test_phase_qnode_registered_depth_builder_fails_closed_for_budgets() -> None:
+    """Operation and depth budgets are enforced by the registered builder."""
     operations = (
         ("ry", (0,), 0),
         ("cnot", (0, 1)),
@@ -298,6 +309,7 @@ def test_phase_qnode_registered_depth_builder_fails_closed_for_budgets() -> None
 
 
 def test_phase_qnode_registered_depth_builder_fails_closed_for_unsupported_routes() -> None:
+    """An unregistered gate is refused with a support report naming it."""
     with pytest.raises(PhaseQNodeSupportError) as exc_info:
         build_registered_phase_qnode_circuit(
             1,
@@ -308,6 +320,7 @@ def test_phase_qnode_registered_depth_builder_fails_closed_for_unsupported_route
 
 
 def test_phase_qnode_toffoli_and_fredkin_decompositions_are_exact() -> None:
+    """Toffoli and Fredkin decompositions reproduce the native gates exactly."""
     ccnot_prefix = (
         ("x", (0,)),
         ("x", (1,)),
@@ -356,6 +369,7 @@ def test_phase_qnode_toffoli_and_fredkin_decompositions_are_exact() -> None:
 
 
 def test_phase_qnode_controlled_decomposition_registry_validates_inputs() -> None:
+    """Decompositions refuse parameters, wrong arity and gates without a rule."""
     assert set(registered_phase_qnode_decompositions()) == {"ccnot", "cswap"}
     with pytest.raises(ValueError, match="do not accept trainable"):
         decompose_phase_qnode_controlled_gate(("ccnot", (0, 1, 2), 0))
@@ -363,3 +377,64 @@ def test_phase_qnode_controlled_decomposition_registry_validates_inputs() -> Non
         decompose_phase_qnode_controlled_gate(("cswap", (0, 1)))
     with pytest.raises(ValueError, match="no registered"):
         decompose_phase_qnode_controlled_gate(("ch", (0, 1)))
+
+
+@pytest.mark.parametrize(
+    ("coefficients", "message"),
+    [
+        pytest.param(
+            {"x_field": True}, "x_field must contain finite real numeric values", id="bool"
+        ),
+        pytest.param(
+            {"z_field": 1j}, "z_field must contain finite real numeric values", id="complex"
+        ),
+        pytest.param(
+            {"x_field": float("nan")}, "x_field must contain finite real", id="nan-scalar"
+        ),
+        pytest.param(
+            {"z_field": np.ones((2, 2))},
+            "z_field must be a scalar or one-dimensional",
+            id="matrix",
+        ),
+        pytest.param(
+            {"x_field": np.array([0.1, np.inf, 0.2, 0.3])}, "x_field must contain finite", id="inf"
+        ),
+    ],
+)
+def test_phase_qnode_ising_builder_refuses_non_numeric_or_non_finite_coefficients(
+    coefficients: dict[str, Any], message: str
+) -> None:
+    """Field and coupling coefficients must be finite real scalars or site vectors."""
+    with pytest.raises(ValueError, match=message):
+        build_sparse_ising_chain_hamiltonian(4, **coefficients)
+
+
+def test_phase_qnode_template_builder_refuses_unknown_names_layers_and_entanglers() -> None:
+    """Unknown templates, non-positive or boolean layer counts and unknown entanglers are refused."""
+    with pytest.raises(ValueError, match="^unsupported Phase-QNode template"):
+        build_phase_qnode_template("brickwork", 3)
+    for layers in (0, True):
+        with pytest.raises(ValueError, match="^n_layers must be a positive integer$"):
+            build_phase_qnode_template("hardware_efficient_ry", 3, n_layers=layers)
+    with pytest.raises(ValueError, match="^entangler must be 'chain' or 'ring'$"):
+        build_phase_qnode_template("hardware_efficient_ry", 3, entangler="star")
+
+
+def test_phase_qnode_template_builder_accepts_named_and_explicit_observables() -> None:
+    """The magnetisation name and an explicit Pauli term are both used as given."""
+    named = build_phase_qnode_template("ghz_chain", 3, observable=" Z_Magnetization ")
+    default = build_phase_qnode_template("ghz_chain", 3)
+    explicit_term = PauliTerm(1.0, ((0, "z"), (2, "z")))
+    explicit = build_phase_qnode_template("ghz_chain", 3, observable=explicit_term)
+
+    assert named.circuit().observable == default.circuit().observable
+    assert explicit.circuit().observable == explicit_term
+
+
+def test_phase_qnode_registries_list_the_gate_and_observable_families() -> None:
+    """The gate, observable and noise registries name the families the builders accept."""
+    assert {"h", "cnot", "ry", "crz", "rzz"} <= set(phase.registered_phase_qnode_gates())
+    assert "pauli_z" in phase.registered_phase_qnode_observables()
+    assert {"bit_flip", "phase_flip", "amplitude_damping"} <= set(
+        phase.registered_phase_qnode_noise_channels()
+    )
