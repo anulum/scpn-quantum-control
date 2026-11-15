@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -24,7 +24,9 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeClassicalFisherResult,
+    PhaseQNodeDensityCircuit,
     PhaseQNodeMetricTensorResult,
+    PhaseQNodeNoiseChannel,
     PhaseQNodeSupportError,
     SparsePauliHamiltonian,
     execute_phase_qnode_circuit,
@@ -600,3 +602,147 @@ def test_phase_qnode_quantum_fisher_information_fails_closed_for_unsupported_rou
     with pytest.raises(PhaseQNodeSupportError) as exc_info:
         phase_qnode_quantum_fisher_information(circuit, np.array([0.2], dtype=float))
     assert "unsupported gates" in exc_info.value.report.failure_reason
+
+
+def test_computational_basis_fisher_support_report_returns_the_base_refusal() -> None:
+    """An unregistered gate is refused by the base report before any probability check."""
+    circuit = PhaseQNodeCircuit(n_qubits=1, operations=(("u3", (0,), 0),), observable="pauli_z")
+
+    report = phase_qnode_computational_basis_fisher_support_report(circuit, [0.2])
+
+    assert not report.supported
+    assert "unsupported gates" in report.failure_reason
+    assert "zero-probability" not in report.failure_reason
+
+
+def test_covariance_gradient_refuses_a_shared_parameter_with_two_frequencies() -> None:
+    """A covariance observable needs one frequency per parameter; an expectation does not."""
+    operations = (("ry", (0,), 0), ("ry", (1,), 0))
+    covariance = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=operations,
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "z"),)),
+        ),
+    )
+    with pytest.raises(ValueError, match="require an explicit product-rule implementation"):
+        parameter_shift_phase_qnode_gradient(covariance, [0.37])
+
+    expectation = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=operations,
+        observable=SparsePauliHamiltonian((PauliTerm(1.0, ((0, "z"), (1, "z"))),)),
+    )
+    gradient = parameter_shift_phase_qnode_gradient(expectation, [0.37])
+    # <Z0 Z1> = cos(theta)^2, so the derivative is -sin(2 theta).
+    np.testing.assert_allclose(gradient.gradient, [-np.sin(0.74)], atol=1e-12)
+
+
+def test_computational_basis_fisher_refuses_invalid_floor_and_confidence_settings() -> None:
+    """The probability floor, confidence level and z multiplier are checked first."""
+    circuit = PhaseQNodeCircuit(n_qubits=1, operations=(("ry", (0,), 0),), observable="pauli_z")
+    floor = "^min_probability must be a non-negative finite scalar$"
+    cases: tuple[tuple[dict[str, Any], str], ...] = (
+        ({"min_probability": np.array([1e-15, 1e-15])}, floor),
+        ({"min_probability": True}, floor),
+        ({"min_probability": -1e-15}, floor),
+        ({"min_probability": float("nan")}, floor),
+        ({"confidence_level": 1.0}, "^confidence_level must be between zero and one$"),
+        ({"confidence_level": 0.0}, "^confidence_level must be between zero and one$"),
+        ({"confidence_z": 0.0}, "^confidence_z must be finite and positive$"),
+    )
+    for settings, message in cases:
+        with pytest.raises(ValueError, match=message):
+            phase_qnode_computational_basis_fisher_information(
+                circuit, [0.31], shot_count=128, **settings
+            )
+
+
+def _finite_difference_states(
+    circuit: PhaseQNodeCircuit, params: np.ndarray
+) -> tuple[np.ndarray, list[np.ndarray]]:
+    """Return the executed statevector and its central-difference parameter derivatives."""
+    step = 1e-6
+    state = execute_phase_qnode_circuit(circuit, params).state
+    derivatives = []
+    for index in range(params.size):
+        shift = np.zeros_like(params)
+        shift[index] = step
+        plus = execute_phase_qnode_circuit(circuit, params + shift).state
+        minus = execute_phase_qnode_circuit(circuit, params - shift).state
+        derivatives.append((plus - minus) / (2.0 * step))
+    return state, derivatives
+
+
+def _finite_difference_fubini_study(circuit: PhaseQNodeCircuit, params: np.ndarray) -> np.ndarray:
+    """Return the Fubini-Study metric from central differences of the executed statevector."""
+    state, derivatives = _finite_difference_states(circuit, params)
+    metric = np.empty((params.size, params.size))
+    for row, left in enumerate(derivatives):
+        for column, right in enumerate(derivatives):
+            raw = np.vdot(left, right) - np.vdot(left, state) * np.vdot(state, right)
+            metric[row, column] = float(np.real(raw))
+    return metric
+
+
+def _finite_difference_basis_fisher(circuit: PhaseQNodeCircuit, params: np.ndarray) -> np.ndarray:
+    """Return the computational-basis classical Fisher matrix from central differences."""
+    state, derivatives = _finite_difference_states(circuit, params)
+    probabilities = np.abs(state) ** 2
+    rows = np.array([2.0 * np.real(np.conj(state) * derivative) for derivative in derivatives])
+    return np.asarray((rows / probabilities) @ rows.T, dtype=float)
+
+
+@pytest.mark.parametrize(
+    "gate", ["rx", "ry", "rz", "phase", "crx", "cry", "crz", "rxx", "ryy", "rzz"]
+)
+def test_quantum_fisher_information_matches_finite_differences_for_each_gate(gate: str) -> None:
+    """Each generator's analytic derivative matches the executed statevector.
+
+    Controlled rotations are the regression case: their derivative keeps only the
+    control-one block, so a constant control-zero identity must not leak into the
+    metric or the computational-basis Fisher information.
+    """
+    # Single-qubit gates act on qubit one, whose Ry-prepared state is no eigenstate of any of them.
+    qubits = (1,) if gate in {"rx", "ry", "rz", "phase"} else (0, 1)
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("h", (0,)), ("ry", (1,), 0), (gate, qubits, 1), ("rx", (1,), 2)),
+        observable="pauli_z",
+    )
+    params = np.array([0.37, 0.81, -0.29], dtype=float)
+
+    result = phase_qnode_quantum_fisher_information(circuit, params)
+
+    reference = _finite_difference_fubini_study(circuit, params)
+    assert abs(reference[1, 1]) > 1e-3
+    np.testing.assert_allclose(result.fubini_study_metric, reference, atol=1e-7)
+    fisher = phase_qnode_computational_basis_fisher_information(circuit, params)
+    np.testing.assert_allclose(
+        fisher.classical_fisher_information,
+        _finite_difference_basis_fisher(circuit, params),
+        atol=1e-6,
+    )
+
+
+def test_density_circuits_are_refused_by_every_pure_state_route() -> None:
+    """A noisy density circuit gets a blocked report and no gradient, metric or Fisher value."""
+    circuit = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0), PhaseQNodeNoiseChannel("phase_flip", (0,), 0.1)),
+        observable="pauli_z",
+    )
+    params = np.array([0.31], dtype=float)
+
+    report = phase_qnode_computational_basis_fisher_support_report(circuit, params)
+
+    assert not report.supported
+    assert "exact computational-basis Fisher diagnostics" in report.failure_reason
+    for route in (
+        parameter_shift_phase_qnode_gradient,
+        phase_qnode_quantum_fisher_information,
+        phase_qnode_computational_basis_fisher_information,
+    ):
+        with pytest.raises(PhaseQNodeSupportError):
+            route(circuit, params)

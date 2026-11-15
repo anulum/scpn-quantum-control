@@ -43,7 +43,6 @@ from .qnode_circuit_contracts import (
 )
 from .qnode_circuit_execution import (
     _apply_gate_matrix,
-    _controlled,
     _execute_state,
     _operation_matrix,
     _symmetrized_product_expectation,
@@ -118,9 +117,8 @@ def parameter_shift_phase_qnode_gradient(
     """Evaluate the analytic parameter-shift gradient for registered generators."""
     values = _as_parameter_vector(parameters)
     report = phase_qnode_gradient_support_report(circuit, values)
-    if not report.supported:
-        raise PhaseQNodeSupportError(report)
-    if isinstance(circuit, PhaseQNodeDensityCircuit):
+    # Density circuits always receive an unsupported report; isinstance narrows the type.
+    if not report.supported or isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
     plan = plan_phase_qnode_parameter_shift_evaluations(circuit, values)
     gradient = np.zeros_like(values)
@@ -176,9 +174,8 @@ def phase_qnode_quantum_fisher_information(
     """Compute the pure-state QFI and Fubini-Study metric for a local QNode."""
     values = _as_parameter_vector(parameters)
     report = phase_qnode_metric_support_report(circuit, values)
-    if not report.supported:
-        raise PhaseQNodeSupportError(report)
-    if isinstance(circuit, PhaseQNodeDensityCircuit):
+    # Density circuits always receive an unsupported report; isinstance narrows the type.
+    if not report.supported or isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
     state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
     width = values.size
@@ -292,9 +289,8 @@ def phase_qnode_computational_basis_fisher_information(
         values,
         min_probability=threshold,
     )
-    if not report.supported:
-        raise PhaseQNodeSupportError(report)
-    if isinstance(circuit, PhaseQNodeDensityCircuit):
+    # Density circuits always receive an unsupported report; isinstance narrows the type.
+    if not report.supported or isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
     state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
     probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
@@ -484,21 +480,25 @@ def _finite_shot_fisher_evidence(
     confidence_z: float,
 ) -> _FiniteShotFisherEvidence:
     """Return optional finite-shot Fisher uncertainty and replay evidence."""
-    if observed_counts is None and shot_count is None:
-        return _FiniteShotFisherEvidence(
-            shot_count=None,
-            count_record=None,
-            empirical_probabilities=None,
-            finite_shot_classical_fisher_information=None,
-            fisher_standard_error=None,
-            fisher_confidence_radius=None,
-            confidence_level=None,
-            confidence_z=None,
-            sampling_model=None,
-        )
-    count_record: tuple[int, ...] | None = None
-    effective_shots = shot_count
-    if observed_counts is not None:
+    count_record: tuple[int, ...] | None
+    if observed_counts is None:
+        if shot_count is None:
+            return _FiniteShotFisherEvidence(
+                shot_count=None,
+                count_record=None,
+                empirical_probabilities=None,
+                finite_shot_classical_fisher_information=None,
+                fisher_standard_error=None,
+                fisher_confidence_radius=None,
+                confidence_level=None,
+                confidence_z=None,
+                sampling_model=None,
+            )
+        count_record = None
+        effective_shots = shot_count
+        empirical_probabilities = np.asarray(probabilities.copy(), dtype=np.float64)
+        sampling_model = "multinomial_delta_method_expected_counts"
+    else:
         count_record, effective_shots = _as_observed_count_record(
             observed_counts,
             probabilities.size,
@@ -507,11 +507,6 @@ def _finite_shot_fisher_evidence(
         counts = np.asarray(count_record, dtype=np.float64)
         empirical_probabilities = np.asarray(counts / float(effective_shots), dtype=np.float64)
         sampling_model = "multinomial_delta_method_raw_count_replay"
-    else:
-        if effective_shots is None:
-            raise ValueError("shot_count is required when observed_counts are not supplied")
-        empirical_probabilities = np.asarray(probabilities.copy(), dtype=np.float64)
-        sampling_model = "multinomial_delta_method_expected_counts"
     finite_shot_fisher = _classical_fisher_from_probabilities(
         probability_derivatives,
         empirical_probabilities,
@@ -574,6 +569,19 @@ def _operation_derivative_matrix(
     return _gate_derivative_matrix(operation.gate, theta)
 
 
+def _controlled_derivative(target_derivative: ComplexArray) -> ComplexArray:
+    """Return the derivative of a controlled rotation |0><0| (x) I + |1><1| (x) U(theta).
+
+    The control-zero block is the constant identity, so its derivative is zero and
+    only |1><1| (x) U'(theta) remains. Reusing the gate's ``_controlled`` builder
+    here would keep that identity block and add the unrotated control-zero branch
+    to every state derivative.
+    """
+    matrix = np.zeros((4, 4), dtype=np.complex128)
+    matrix[2:4, 2:4] = target_derivative
+    return matrix
+
+
 def _gate_derivative_matrix(gate: str, theta: float) -> ComplexArray:
     if gate == "rx":
         return np.asarray(
@@ -596,11 +604,11 @@ def _gate_derivative_matrix(gate: str, theta: float) -> ComplexArray:
             dtype=np.complex128,
         )
     if gate == "crx":
-        return _controlled(_gate_derivative_matrix("rx", theta))
+        return _controlled_derivative(_gate_derivative_matrix("rx", theta))
     if gate == "cry":
-        return _controlled(_gate_derivative_matrix("ry", theta))
+        return _controlled_derivative(_gate_derivative_matrix("ry", theta))
     if gate == "crz":
-        return _controlled(_gate_derivative_matrix("rz", theta))
+        return _controlled_derivative(_gate_derivative_matrix("rz", theta))
     if gate == "rxx":
         return np.asarray(
             -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)

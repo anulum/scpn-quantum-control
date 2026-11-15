@@ -456,6 +456,33 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   rises from 84.19% to 100%. Three older docstrings are fixed, so the test
   documentation ceiling falls to 6988 findings in 549 files.
 
+- **Fixed: the Phase-QNode metric and Fisher routes differentiated
+  controlled rotations wrongly.** `phase_qnode_quantum_fisher_information`,
+  `phase_qnode_natural_gradient_metric` and
+  `phase_qnode_computational_basis_fisher_information` built the derivative
+  of `crx`, `cry` and `crz` with the gate's own controlled-matrix builder.
+  That builder keeps the constant identity on the control-off block, so the
+  unrotated control-off branch was added to every state derivative. The
+  Fubini-Study metric, the QFI and the classical Fisher information were too
+  large whenever the control qubit had amplitude in |0>; one test circuit
+  showed 0.367 instead of 0.117. The derivative now keeps only the control-on
+  block. Parameter-shift gradients, the JAX and PyTorch transforms, and the
+  Rust metric kernels (which take the derivatives as input) were not
+  affected. A new test compares the metric and the classical Fisher
+  information with central differences of the executed statevector for all
+  ten registered parametric gates.
+  - The same unit tests the module's remaining refusals: an unregistered gate
+    in the Fisher support report, a covariance gradient for a parameter
+    shared at two frequencies, invalid probability floors, confidence levels
+    and z multipliers, and density circuits on every pure-state route.
+  - Three type-narrowing density checks, which no caller could reach because
+    density circuits always get a blocked report, are merged into the
+    support check. The finite-shot evidence helper no longer has an
+    unreachable "shot_count is required" refusal.
+  - Coverage rises from 89.36% to 99.42%. One defensive line stays: the
+    unknown-gate refusal of the derivative table, because every registered
+    parametric gate has a derivative and every other gate gets zero first.
+
 - The symmetric 2x2 native LLVM/JIT compilers
   (`compiler/mlir_symmetric_native_compilation.py`, Cholesky and eigenvalues)
   now have tests for every refusal, driven through the public compilers,

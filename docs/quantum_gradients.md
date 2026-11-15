@@ -1256,7 +1256,10 @@ exact pure-state metric provider.  It propagates analytic state derivatives
 through the registered statevector gate family, computes the Fubini-Study
 metric and the quantum Fisher information relation `QFI = 4 * metric`, and
 returns the Fubini-Study metric in the shape expected by natural-gradient
-training:
+training. For a controlled rotation (`crx`, `cry`, `crz`) only the control-on
+block depends on the angle, so the derivative is zero on the control-off
+block. The same state derivatives feed the computational-basis classical
+Fisher information:
 
 ```python
 circuit = PhaseQNodeCircuit(
