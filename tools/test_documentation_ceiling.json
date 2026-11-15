@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "2be947ee60937de2b2c48b8e17a23e726fd94405",
+ "measured_commit": "c9fdd40f6bc0017d4113aead7e5bd6460fd54254",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6924,
- "total_files": 540,
+ "total_findings": 6919,
+ "total_files": 539,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -305,7 +305,6 @@
   "tests/test_logical_dla_parity.py": 8,
   "tests/test_loschmidt_echo.py": 23,
   "tests/test_ml_dsa_pqc.py": 15,
-  "tests/test_mlir_scalar_native_compilation.py": 5,
   "tests/test_module_size_policy.py": 14,
   "tests/test_monte_carlo_xy.py": 16,
   "tests/test_multimodal_bridge.py": 6,

@@ -497,6 +497,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The native LLVM/JIT primitives (`compiler/mlir_native_primitives.py`) now
+  have tests through the public scalar compiler:
+  - a bare scalar sample counts as one value;
+  - a rule name that starts with a digit gets a symbol prefix;
+  - a missing `llvmlite.binding` is named as the missing dependency;
+  - an "already initialised" LLVM error is tolerated, and any other
+    initialisation error propagates.
+
+  The rest of the module's uncovered code is defensive and stays untested: an
+  infinite error for mismatched arrays and zero error for empty ones (rule
+  contracts refuse such shapes first), the finite-number check of the MLIR
+  formatter (coefficients are validated first), and the missing-symbol
+  refusal (the emitters always write all four symbols). Five older
+  docstring-spacing findings are fixed, so the test documentation ceiling
+  falls to 6919 findings in 539 files.
+
 - The differentiable domain benchmark datasets
   (`phase/domain_benchmark_datasets.py`) now test:
   - the Kuramoto oscillator count and serialisation, the suite payloads, and

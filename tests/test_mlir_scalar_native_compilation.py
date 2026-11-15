@@ -9,7 +9,10 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
 from collections.abc import Callable
+from types import ModuleType
 from typing import Any, cast
 
 import numpy as np
@@ -141,7 +144,6 @@ def test_unary_native_primitives_execute_public_contract(
     sample: FloatArray,
 ) -> None:
     """Unary scalar native kernels should match NumPy derivatives."""
-
     tangent = np.array([0.6], dtype=np.float64)
     cotangent = np.array([-1.75], dtype=np.float64)
     kernel = compile_scalar_unary_elementwise_ad_to_native_llvm_jit(
@@ -172,7 +174,6 @@ def test_unary_native_primitives_execute_public_contract(
 @pytest.mark.parametrize("primitive", ("add", "subtract", "multiply"))
 def test_binary_native_primitives_execute_public_contract(primitive: str) -> None:
     """Binary scalar native kernels should expose correct JVP/VJP contracts."""
-
     values = np.array([1.25, -0.75], dtype=np.float64)
     tangent = np.array([0.5, -2.0], dtype=np.float64)
     cotangent = np.array([1.5], dtype=np.float64)
@@ -202,7 +203,6 @@ def test_binary_native_primitives_execute_public_contract(primitive: str) -> Non
 
 def test_scalar_native_entrypoints_reject_invalid_public_contracts() -> None:
     """Scalar native factories should reject invalid rules, backends, samples, and primitives."""
-
     rule = _quadratic_rule()
     bad_rule = cast(CustomDerivativeRule, object())
     wrong_backend = CompilerADExecutableConfig(backend="mlir_runtime")
@@ -293,7 +293,6 @@ def test_scalar_native_entrypoints_reject_invalid_public_contracts() -> None:
 
 def test_scalar_native_lowering_rules_capture_and_require_samples() -> None:
     """Lowering-rule factories should use captured samples and fail without samples."""
-
     rule = _quadratic_rule()
     config = CompilerADExecutableConfig(backend="native_llvm_jit")
     quadratic_lowering = make_scalar_quadratic_native_llvm_jit_lowering_rule(
@@ -369,7 +368,6 @@ def test_scalar_native_lowering_rules_capture_and_require_samples() -> None:
 
 def test_compiled_scalar_kernels_reject_wrong_runtime_shapes() -> None:
     """Compiled kernels should validate runtime vector arity before native calls."""
-
     quadratic = compile_scalar_quadratic_ad_to_native_llvm_jit(
         _quadratic_rule(),
         quadratic=2.0,
@@ -538,3 +536,76 @@ def _fake_binary_functions() -> dict[str, NativeFunction]:
         out[1] = 999.0
 
     return {"value": value, "jvp": jvp, "vjp": vjp, "gradient": gradient}
+
+
+def _compile_quadratic(rule: CustomDerivativeRule, sample_values: object) -> Any:
+    """Compile the quadratic rule through the public native scalar compiler."""
+    return compile_scalar_quadratic_ad_to_native_llvm_jit(
+        rule,
+        sample_values=cast(Any, sample_values),
+        quadratic=2.0,
+        linear=-3.0,
+        constant=0.25,
+    )
+
+
+def test_scalar_native_compiler_accepts_a_scalar_sample_and_a_digit_leading_rule_name() -> None:
+    """A bare scalar sample is one value, and a rule name starting with a digit gets a prefix."""
+    kernel = _compile_quadratic(_quadratic_rule("2nd_order_quadratic"), 0.4)
+
+    np.testing.assert_allclose(kernel.value(np.array([0.4])), [2.0 * 0.16 - 1.2 + 0.25])
+    assert kernel.llvm_gradient_ir is not None
+    assert "define void @_2nd_order_quadratic_value" in kernel.llvm_gradient_ir
+
+
+def test_scalar_native_compiler_reports_a_missing_llvmlite(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Without llvmlite.binding the native backend names the missing dependency."""
+    monkeypatch.setitem(sys.modules, "llvmlite.binding", None)
+
+    with pytest.raises(ValueError, match="requires llvmlite.binding to be installed$"):
+        _compile_quadratic(_quadratic_rule(), [0.4])
+
+
+class _ReinitialisingBinding(ModuleType):
+    """llvmlite.binding stand-in whose native initialisers raise, like repeated initialisation."""
+
+    def __init__(self, real: ModuleType, message: str) -> None:
+        """Wrap the real binding and record the message the initialisers raise."""
+        super().__init__("llvmlite.binding")
+        self._real = real
+        self._message = message
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate every other attribute to the real binding."""
+        return getattr(self._real, name)
+
+    def initialize_native_target(self) -> None:
+        """Raise the configured initialisation error."""
+        raise RuntimeError(self._message)
+
+    def initialize_native_asmprinter(self) -> None:
+        """Raise the configured initialisation error."""
+        raise RuntimeError(self._message)
+
+
+def test_scalar_native_compiler_tolerates_only_an_already_initialised_llvm(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An 'already initialised' error is benign; any other initialisation error propagates."""
+    real = importlib.import_module("llvmlite.binding")
+
+    monkeypatch.setitem(
+        sys.modules,
+        "llvmlite.binding",
+        _ReinitialisingBinding(real, "LLVM is Already initialised"),
+    )
+    kernel = _compile_quadratic(_quadratic_rule("reinitialised_quadratic"), [0.4])
+    np.testing.assert_allclose(kernel.value(np.array([0.4])), [2.0 * 0.16 - 1.2 + 0.25])
+
+    monkeypatch.setitem(
+        sys.modules, "llvmlite.binding", _ReinitialisingBinding(real, "no native target")
+    )
+    with pytest.raises(RuntimeError, match="^no native target$"):
+        _compile_quadratic(_quadratic_rule("uninitialised_quadratic"), [0.4])
