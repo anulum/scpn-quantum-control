@@ -25,27 +25,24 @@ from tools.studio_workbench_browser_journey import run_workbench_journey
 from tools.tests.test_studio_browser_runtime_refusal import owned_fault_host
 
 
-def assert_native_source_owners(
-    records: object, cohort: Literal["workbench", "parameters"], minimum_captures: int
-) -> Counter[str]:
-    """Bind actual browser counters to every declared owner and its original bytes.
+def _declared_owner_hashes(
+    root: Path, cohort: Literal["workbench", "parameters"]
+) -> dict[str, str]:
+    """Read the declared browser cohort and hash every owner's original source bytes.
 
     Parameters
     ----------
-    records : object
-        Actual V8 records returned by the public native journey.
+    root : Path
+        The studio-web directory.
     cohort : Literal["workbench", "parameters"]
-        Original public browser registry cohort required by the journey.
-    minimum_captures : int
-        Required completed capture intervals for every source owner.
+        Original public browser registry cohort.
 
     Returns
     -------
-    Counter[str]
-        Native record multiplicities, retaining legitimate repeated script identities.
+    dict[str, str]
+        SHA-256 of each declared owner by its served path.
 
     """
-    root = Path(__file__).resolve().parents[2] / "studio-web"
     declared = subprocess.run(
         [
             "node",
@@ -72,6 +69,30 @@ def assert_native_source_owners(
         source = (root / path.lstrip("/")).resolve()
         assert source.is_relative_to(root) and source.is_file() and path not in hashes
         hashes[path] = hashlib.sha256(source.read_bytes()).hexdigest()
+    return hashes
+
+
+def assert_native_source_owners(
+    records: object, cohort: Literal["workbench", "parameters"], minimum_captures: int
+) -> Counter[str]:
+    """Bind actual browser counters to every declared owner and its original bytes.
+
+    Parameters
+    ----------
+    records : object
+        Actual V8 records returned by the public native journey.
+    cohort : Literal["workbench", "parameters"]
+        Original public browser registry cohort required by the journey.
+    minimum_captures : int
+        Required completed capture intervals for every source owner.
+
+    Returns
+    -------
+    Counter[str]
+        Native record multiplicities, retaining legitimate repeated script identities.
+
+    """
+    hashes = _declared_owner_hashes(Path(__file__).resolve().parents[2] / "studio-web", cohort)
     assert isinstance(records, list)
     owners: Counter[str] = Counter()
     for record in records:
