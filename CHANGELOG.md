@@ -497,6 +497,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The bounded QNN framework bridge matrix
+  (`phase/qnn_framework_bridge_matrix.py`) now tests that capability lookup
+  folds case and padding (`"  JAX "` finds `jax`), that an unknown name
+  raises `KeyError`, and that names with a space or a tab are refused by the
+  lookup and by `assert_bounded_qnn_framework_bridge_supported`. Coverage
+  rises from 96.15% to 100%. No production change.
+
 - The provider capability metadata normaliser
   (`hardware/provider_capability_normalization.py`) now tests a scalar gate
   declaration through the Azure Quantum adapter: a `basis_gates` count of 7

@@ -126,6 +126,20 @@ def test_bounded_qnn_framework_bridge_assertion_fails_closed() -> None:
         run_bounded_qnn_framework_bridge_matrix(frameworks=("",))
 
 
+def test_bounded_qnn_framework_bridge_lookup_normalises_and_refuses_names() -> None:
+    """Lookup folds case and padding, and refuses unknown or spaced framework names."""
+    result = run_bounded_qnn_framework_bridge_matrix()
+
+    assert result.capability_by_framework("  JAX ") is result.capability_by_framework("jax")
+    with pytest.raises(KeyError, match="^'unknown bounded QNN framework bridge: Missing'$"):
+        result.capability_by_framework("Missing")
+    for name in ("py torch", "jax\tpennylane"):
+        with pytest.raises(ValueError, match="^framework name must not contain whitespace$"):
+            result.capability_by_framework(name)
+        with pytest.raises(ValueError, match="^framework name must not contain whitespace$"):
+            assert_bounded_qnn_framework_bridge_supported(name)
+
+
 def test_bounded_qnn_framework_bridge_matrix_to_dict_is_json_ready() -> None:
     """Serialize selected framework capabilities into JSON-ready values."""
     result = run_bounded_qnn_framework_bridge_matrix(frameworks=("jax", "tensorflow"))
