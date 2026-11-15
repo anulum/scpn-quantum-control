@@ -294,10 +294,8 @@ def _record_natural_gradient(
 
 
 def _best_value(records: Sequence[OptimizerConvergenceRecord], optimizer: str) -> float:
-    values = [record.best_value for record in records if record.optimizer == optimizer]
-    if not values:
-        raise ValueError(f"optimizer {optimizer!r} did not produce records")
-    return float(min(values))
+    # Every start records both optimizers, so the selection is never empty.
+    return float(min(record.best_value for record in records if record.optimizer == optimizer))
 
 
 def _best_optimizer(records: Sequence[OptimizerConvergenceRecord]) -> str:
@@ -385,9 +383,7 @@ def run_parameter_shift_optimizer_comparison(
         target_tol = _non_negative_float("target_value_tolerance", target_value_tolerance)
     objective_was_default = objective is None
     weights = _default_weights(start_matrix.shape[1])
-    objective_fn = _default_objective(weights) if objective_was_default else objective
-    if objective_fn is None:
-        raise ValueError("objective must be provided when default objective construction fails")
+    objective_fn = objective if objective is not None else _default_objective(weights)
     effective_metric = (
         _default_metric(weights)
         if metric_tensor is None and objective_was_default

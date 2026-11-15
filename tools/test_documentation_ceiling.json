@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "93fcf91e0c1a3d306158ec4134b7b87f4ba8416d",
+ "measured_commit": "f5f80013e03585c600ce73221c07d2f664cc5dbe",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6953,
- "total_files": 545,
+ "total_findings": 6949,
+ "total_files": 544,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -359,7 +359,6 @@
   "tests/test_phase_natural_gradient.py": 20,
   "tests/test_phase_objective_audit.py": 3,
   "tests/test_phase_objective_planner.py": 5,
-  "tests/test_phase_optimizer_audit.py": 4,
   "tests/test_phase_optimizer_convergence_suite.py": 11,
   "tests/test_phase_pennylane_provider_plugin_integration.py": 18,
   "tests/test_phase_qgnn.py": 12,

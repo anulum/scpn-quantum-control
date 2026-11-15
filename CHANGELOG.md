@@ -497,6 +497,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The optimizer comparison audit (`phase/optimizer_audit.py`) now tests:
+  - non-finite starts, a non-integer or zero step count, and a target
+    tolerance without a target;
+  - one one-dimensional start with unit weights, certified against a
+    target;
+  - strict certificate tolerances, which fail both optimizers;
+  - a target tolerance that decides certification (0.129 above a zero target
+    passes within 0.4 and fails with none);
+  - a poor caller metric that leaves natural gradient worse and fails the
+    comparison.
+
+  Two refusals that no input could reach are gone: a best-value lookup for an
+  optimizer without records (every start records both, and `min()` would
+  refuse an empty selection anyway), and a check for a missing objective
+  that the default construction always fills. Coverage rises from 87.14% to
+  99.00%. One defensive line stays: the default objective's own shape
+  check, which the optimizers never trip. Four older tests gain docstrings,
+  so the test documentation ceiling falls to 6949 findings in 544 files.
+
 - The JAX gradient routes (`phase/jax_gradients.py`) now have tests for every
   data refusal, each made before any JAX transform is built. They also show
   that:
