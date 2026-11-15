@@ -419,6 +419,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     scalar sample (NumPy converts it before dispatch), and two name checks for
     primitives other than `interp`.
 
+- The compiler promotion batch (`compiler/promotion_batch.py`) now tests every
+  refusal of its evidence-file checksums (empty path, role or ID, a SHA-256 of
+  the wrong length or with non-hex characters, a zero size, a non-boolean
+  readiness flag). It also covers the batch's identity and constant drift,
+  unordered, repeated or promoted entries, missing evidence IDs and an
+  incomplete claim boundary. The builder is driven over a copied evidence
+  folder to show that it refuses a non-object payload, a payload without an
+  ID, and evidence already marked promotion-ready. Coverage rises from 76.85%
+  to 100%.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

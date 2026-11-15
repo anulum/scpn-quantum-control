@@ -11,7 +11,9 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -119,3 +121,87 @@ def test_compiler_promotion_batch_rejects_promotion_ready_payload() -> None:
             enzyme_mlir_breadth_artifact_id=batch.enzyme_mlir_breadth_artifact_id,
             promotion_ready=True,
         )
+
+
+_DATA = Path(__file__).resolve().parents[1] / "data" / "differentiable_phase_qnode"
+_LOADED = (
+    "compiler_evidence_boundary_20260705.json",
+    "compiler_alias_activity_evidence_20260706.json",
+    "llvm_jit_claim_gate_20260704.json",
+    "native_whole_program_ad_execution_evidence_20260622.json",
+    "enzyme_mlir_maturity_audit_20260616.json",
+    "enzyme_mlir_compiler_ad_breadth_artifact_20260706.json",
+)
+
+
+def _evidence_repo(tmp_path: Path, name: str, content: object) -> Path:
+    """Copy the six loaded evidence payloads into a repository root and replace one of them."""
+    target = tmp_path / "data" / "differentiable_phase_qnode"
+    target.mkdir(parents=True)
+    for loaded in _LOADED:
+        (target / loaded).write_bytes((_DATA / loaded).read_bytes())
+    (target / name).write_text(json.dumps(content), encoding="utf-8")
+    return tmp_path
+
+
+def test_promotion_batch_builder_refuses_malformed_loaded_evidence(tmp_path: Path) -> None:
+    """The builder refuses a non-object payload, a payload without an ID, and promoted evidence."""
+    alias = json.loads((_DATA / _LOADED[1]).read_text(encoding="utf-8"))
+    cases: tuple[tuple[str, object, str], ...] = (
+        (_LOADED[0], [], "compiler promotion evidence must be a JSON object"),
+        (_LOADED[0], {"schema": "boundary"}, "compiler evidence boundary artifact_id must be"),
+        (_LOADED[1], {**alias, "promotion_ready": True}, "alias-activity evidence cannot be"),
+    )
+    for index, (name, content, message) in enumerate(cases):
+        root = _evidence_repo(tmp_path / f"case-{index}", name, content)
+        with pytest.raises(ValueError, match=message):
+            build_compiler_promotion_batch(repo_root=root, source_commit="test-commit")
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"path": ""}, "path must be non-empty"),
+        ({"role": ""}, "role must be non-empty"),
+        ({"artifact_id": ""}, "artifact_id must be non-empty"),
+        ({"sha256": "a" * 63}, "sha256 must be 64 hex characters"),
+        ({"sha256": "z" * 64}, "sha256 must be 64 hex characters"),
+        ({"size_bytes": 0}, "size_bytes must be positive"),
+        ({"promotion_ready": "no"}, "promotion_ready must be boolean"),
+    ],
+)
+def test_promotion_evidence_file_refuses_incomplete_checksums(
+    changes: dict[str, Any], message: str
+) -> None:
+    """An evidence-file summary needs its path, role, ID, a hex SHA-256, a size and a boolean."""
+    entry = build_compiler_promotion_batch(source_commit="test-commit").evidence_files[0]
+    with pytest.raises(ValueError, match=message):
+        replace(entry, **changes)
+
+
+def test_promotion_batch_refuses_drift_order_promoted_entries_and_gaps() -> None:
+    """A batch refuses drifted identity, unordered, repeated or promoted entries, and gaps."""
+    batch = build_compiler_promotion_batch(source_commit="test-commit")
+    files = batch.evidence_files
+    promoted = (replace(files[0], promotion_ready=True), *files[1:])
+    without_boundary = tuple(
+        entry for entry in files if entry.artifact_id != batch.boundary_artifact_id
+    )
+    cases: list[tuple[dict[str, Any], str]] = [
+        ({"artifact_id": "other"}, "artifact_id drifted"),
+        ({"schema": "other"}, "schema drifted"),
+        ({"classification": "isolated"}, "classification drifted"),
+        ({"status": "promoted"}, "status drifted"),
+        ({"missing_requirements": ()}, "missing requirements drifted"),
+        ({"promotion_blockers": ()}, "blockers drifted"),
+        ({"source_commit": ""}, "source_commit must be non-empty"),
+        ({"evidence_files": ()}, "evidence_files must be non-empty"),
+        ({"evidence_files": tuple(reversed(files))}, "must be sorted by path"),
+        ({"evidence_files": (files[0], files[0], *files[1:])}, "paths must be unique"),
+        ({"evidence_files": promoted}, "cannot include promoted evidence"),
+        ({"evidence_files": without_boundary}, "missing evidence ids"),
+        ({"claim_boundary": "bounded"}, "claim boundary is incomplete"),
+    ]
+    for changes, message in cases:
+        with pytest.raises(ValueError, match=message):
+            replace(batch, **changes)
