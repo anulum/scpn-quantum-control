@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -512,3 +512,84 @@ def test_report_and_bundle_invariants_refuse_promotion() -> None:
         replace(bundle, no_provider_contact=False)
     evaluation = CalibrationEvaluation(scale=1.0, loss=0.0, gradient=0.0)
     assert evaluation.to_dict()["scale"] == pytest.approx(1.0)
+
+
+_INTERNAL = "scpn_circuit_qed_design_v1"
+_SKETCH = "pulser_analogdevice_sketch_2026_07"
+
+
+@pytest.mark.parametrize(
+    ("profile_id", "changes", "message"),
+    [
+        (_INTERNAL, {"display_name": " "}, "string fields must be non-empty"),
+        (_INTERNAL, {"posture": "promoted"}, "unknown platform profile posture 'promoted'"),
+        (_INTERNAL, {"supported_topologies": ()}, "requires known supported topologies"),
+        (_INTERNAL, {"supported_topologies": ("star",)}, "requires known supported topologies"),
+        (_INTERNAL, {"max_nodes": 1}, r"max_nodes must be None or an integer >= 2"),
+        (_INTERNAL, {"coupling_abs_min": -0.1}, "coupling_abs_min must be finite"),
+        (_INTERNAL, {"coupling_abs_min": float("nan")}, "coupling_abs_min must be finite"),
+        (_INTERNAL, {"coupling_abs_max": float("inf")}, "coupling_abs_max must be None or"),
+        (_INTERNAL, {"supported_measurements": ()}, "requires known supported measurements"),
+        (_INTERNAL, {"source_url": "http://example.test"}, "source_url must use HTTPS"),
+        (_INTERNAL, {"limitations": ()}, "requires non-empty limitations"),
+        (_INTERNAL, {"limitations": (" ",)}, "requires non-empty limitations"),
+        (_INTERNAL, {"compiler_platform": None}, "internal compiler profiles require"),
+        (_SKETCH, {"compiler_platform": "circuit_qed"}, "cannot select an internal compiler"),
+    ],
+)
+def test_platform_profiles_refuse_incomplete_or_inconsistent_capability_rows(
+    profile_id: str, changes: dict[str, Any], message: str
+) -> None:
+    """A capability row needs its sources, known vocabularies, sane ranges and a matching posture."""
+    profile = platform_profile(profile_id)
+    with pytest.raises(ValueError, match=message):
+        replace(profile, **changes)
+
+
+def test_platform_profiles_accept_the_range_boundaries() -> None:
+    """Two nodes, a zero coupling floor and a ceiling just above it are valid."""
+    profile = platform_profile(_INTERNAL)
+
+    edited = replace(profile, max_nodes=2, coupling_abs_min=0.0, coupling_abs_max=1e-9)
+
+    assert edited.to_dict()["max_nodes"] == 2
+    with pytest.raises(ValueError, match="coupling_abs_max must be None or greater"):
+        replace(profile, coupling_abs_min=0.5, coupling_abs_max=0.5)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"topology": "star"}, "unknown requested topology 'star'"),
+        ({"measurement": "photon_count"}, "unknown requested measurement 'photon_count'"),
+        ({"ledger_ref": " "}, "ledger_ref must be non-empty"),
+    ],
+)
+def test_mapping_request_refuses_unknown_vocabulary_and_a_blank_ledger(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A request names a known topology and measurement and cites its ledger."""
+    with pytest.raises(ValueError, match=message):
+        replace(_ring_request(), **changes)
+
+
+def test_diagnostics_and_reports_refuse_blank_prose_unknown_severity_and_stray_results() -> None:
+    """Diagnostics need prose and a known severity; a blocked report carries no mapping result."""
+    for code, severity, text in ((" ", "warning", "text"), ("code", "warning", " ")):
+        with pytest.raises(ValueError, match="code and message must be non-empty"):
+            FeasibilityDiagnostic(code, cast(Any, severity), text)
+    with pytest.raises(ValueError, match="unknown diagnostic severity 'fatal'"):
+        FeasibilityDiagnostic("code", cast(Any, "fatal"), "text")
+    blocker = FeasibilityDiagnostic("blocked", "blocker", "blocked")
+    with pytest.raises(ValueError, match="supported reports require exactly one mapping_result"):
+        FeasibilityReport(
+            schema=ANALOG_MAPPING_SCHEMA,
+            request_digest="x",
+            profile_id="x",
+            observed_topology="sparse",
+            supported=False,
+            diagnostics=(blocker,),
+            mapping_result=MappingResult("model", 2, 1, 0.0, "digest", ("bounded",)),
+            source_url="https://example.test",
+            verified_at_source_utc="2026-07-25T00:00:00Z",
+        )

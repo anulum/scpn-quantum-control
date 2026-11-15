@@ -497,6 +497,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The analog-mapping contracts (`analog_mapping/contracts.py`) now have tests
+  for every refusal of a platform capability row, edited from the shipped
+  internal compiler profile and the Pulser sketch:
+  - blank strings, an unknown posture, and missing or unknown topologies and
+    measurements;
+  - a node limit below two, a negative or NaN coupling floor, and a ceiling
+    that is infinite or not above the floor;
+  - an HTTP source, and missing or blank limitations;
+  - an internal compiler model without a compiler, and an external sketch
+    that selects one.
+
+  The range boundaries that stay valid are pinned too. The tests also cover
+  requests with an unknown topology or measurement or a blank ledger
+  reference, diagnostics with blank prose or an unknown severity, and a
+  blocked report that carries a mapping result. Coverage rises from 85.34%
+  to 100%.
+
 - The Phase-QNode support module (`phase/qnode_circuit_support.py`) now has
   tests for every report refusal:
   - a parametric gate without a parameter index;
