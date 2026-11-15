@@ -103,7 +103,7 @@ def test_qnn_loss_landscape_fails_closed_on_invalid_controls() -> None:
 def test_qnn_loss_landscape_grid_keeps_its_center_point(
     grid_radius: float, points_per_axis: int
 ) -> None:
-    """A radius whose linspace middle misses 0.0 still samples the exact center."""
+    """A radius whose linspace middle misses 0.0 still samples the exact centre."""
     suite = run_parameter_shift_qnn_loss_landscape_suite(
         case_names=("single_feature_phase_flip",),
         grid_radius=grid_radius,
@@ -158,7 +158,7 @@ def test_qnn_loss_landscape_refuses_bad_span_and_an_oversized_case() -> None:
 
 
 def test_qnn_loss_landscape_result_without_its_center_refuses_center_loss() -> None:
-    """A result assembled without its center point cannot report a center loss."""
+    """A result assembled without its centre point cannot report a centre loss."""
     suite = run_parameter_shift_qnn_loss_landscape_suite(
         case_names=("single_feature_phase_flip",), grid_radius=0.2, points_per_axis=5
     )

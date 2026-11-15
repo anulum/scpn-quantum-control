@@ -286,7 +286,7 @@ def _axis_values(
 ) -> tuple[tuple[float, ...], ...]:
     offsets = np.linspace(-grid_radius, grid_radius, points_per_axis, dtype=np.float64)
     # linspace's middle sample can miss 0.0 by a rounding error, which moves the
-    # grid off its declared center; points_per_axis is odd, so pin that offset.
+    # grid off its declared centre; points_per_axis is odd, so pin that offset.
     offsets[points_per_axis // 2] = 0.0
     return tuple(tuple(float(value + offset) for offset in offsets) for value in center)
 
