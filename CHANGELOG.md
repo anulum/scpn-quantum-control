@@ -339,6 +339,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The final inventory check, which the per-result checks already made
     unreachable, is removed.
 
+- The experiment protocol contract (`experimental/llm_qpu/contracts/protocol.py`)
+  has full line and branch coverage; the union had it at 83.62%. New tests
+  cover the refusals of shared lineage and unknown modes, metrics and scopes.
+  They also cover unbounded or misnamed arms, a header of another kind, an
+  edited wire or delta tag, and a protocol bound to another task, metric or
+  data origin.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

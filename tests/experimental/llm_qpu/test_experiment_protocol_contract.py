@@ -37,10 +37,12 @@ _REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 
 def _sha(value: object) -> str:
+    """Return the SHA-256 of a value's canonical wire bytes."""
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
 
 
 def _header(kind: str, content: dict[str, object], parents: tuple[str, ...]) -> ArtifactHeader:
+    """Return a design-only synthetic header bound to the content and parents."""
     return ArtifactHeader(
         kind,
         _sha(content),
@@ -54,6 +56,7 @@ def _header(kind: str, content: dict[str, object], parents: tuple[str, ...]) -> 
 
 
 def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
+    """Return a frozen task, its split and a log-loss protocol bound to both."""
     task_fields: dict[str, Any] = {
         "task_id": "fixture-label",
         "objective": "Predict held-out generated labels",
@@ -158,6 +161,7 @@ def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
 
 
 def _worker(protocol: dict[str, object]) -> tuple[int, dict[str, Any]]:
+    """Round-trip one protocol wire through the standalone worker."""
     result = subprocess.run(
         [sys.executable, str(_WORKER)],
         input=json.dumps({"op": "roundtrip_experiment_protocol", "protocol": protocol}).encode(),
@@ -277,3 +281,122 @@ def test_v1_wire_does_not_silently_upgrade() -> None:
     code, response = _worker(wire)
     assert code == 2
     assert response["status"] == "refused"
+
+
+_LINEAGE = (
+    "task_digest",
+    "split_digest",
+    "model_digest",
+    "compressor_digest",
+    "kernel_plan_digest",
+    "measurement_plan_digest",
+    "analysis_plan_digest",
+)
+
+
+def _rewire(
+    protocol: ExperimentProtocol, origin: str | None = None, **changes: Any
+) -> dict[str, Any]:
+    """Return the protocol wire with changed fields and a header bound to them."""
+    wire: dict[str, Any] = protocol.to_wire()
+    wire.update(changes)
+    header = wire["header"]
+    header["content_digest"] = _sha({key: item for key, item in wire.items() if key != "header"})
+    header["parents"] = sorted(wire[name] for name in _LINEAGE)
+    if origin is not None:
+        header["data_origin"] = origin
+    return wire
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"compressor_digest": "c" * 64}, "protocol parent digests must identify distinct"),
+        ({"mode": "streaming"}, "unknown memory experiment mode"),
+        ({"prediction_mode": "beam_search"}, "unknown prediction mode"),
+        ({"arms": ("classical",)}, "protocol needs bounded comparison arms"),
+        ({"arms": ["classical", "quantum"]}, "protocol needs bounded comparison arms"),
+        ({"arms": tuple(f"arm-{index:02d}" for index in range(33))}, "protocol needs bounded"),
+        ({"classical_arm": "unregistered"}, "primary contrast must name distinct registered arms"),
+        ({"quantum_arm": "classical"}, "primary contrast must name distinct registered arms"),
+        ({"primary_metric": "auroc"}, "unknown primary metric"),
+        ({"analysis_scope": "post_hoc"}, "analysis scope must be declared"),
+    ],
+)
+def test_protocol_refuses_unregistered_designs(changes: dict[str, Any], message: str) -> None:
+    """A protocol refuses shared lineage, unknown modes, unbounded arms, contrasts and scopes."""
+    _, _, protocol = _fixture()
+    with pytest.raises(ValueError, match=f"^{message}"):
+        replace(protocol, **changes)
+
+
+def test_protocol_refuses_a_header_of_another_kind() -> None:
+    """A protocol accepts only its own experiment-protocol header."""
+    task, _, protocol = _fixture()
+    header_wire: Any = protocol.header.to_wire()
+    for header in (task.header, header_wire):
+        with pytest.raises(
+            ValueError, match="^ExperimentProtocol requires its exact artifact header$"
+        ):
+            replace(protocol, header=header)
+
+
+def test_protocol_wire_refuses_other_fields_schemas_arms_and_thresholds() -> None:
+    """The wire decoder refuses an edited field set, schema, arm list or delta tag."""
+    _, _, protocol = _fixture()
+    encoded = protocol.to_wire()
+    cases: list[tuple[object, str]] = [
+        ("protocol", "ExperimentProtocol fields mismatch"),
+        ({**encoded, "extra": 1}, "ExperimentProtocol fields mismatch"),
+        ({**encoded, "schema": "v0"}, "unknown ExperimentProtocol schema"),
+        ({**encoded, "object_kind": "task_spec"}, "unknown ExperimentProtocol schema"),
+        ({**encoded, "arms": "classical"}, "protocol arms must be a list on wire"),
+        ({**encoded, "minimum_relevant_delta": 0.02}, "minimum relevant delta must be tagged f64"),
+        (
+            {**encoded, "minimum_relevant_delta": {"$f64": 5}},
+            "minimum relevant delta must be tagged",
+        ),
+        (
+            {**encoded, "minimum_relevant_delta": {"$f64": "zz"}},
+            "minimum relevant delta must be tagged",
+        ),
+        (
+            {**encoded, "minimum_relevant_delta": {"$f64": "0x1p-1"}},
+            "minimum relevant delta must be canonical",
+        ),
+        (
+            {**encoded, "minimum_relevant_delta": {"$f64": "inf"}},
+            "minimum relevant delta must be canonical",
+        ),
+    ]
+    for value, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}"):
+            ExperimentProtocol.from_wire(value)
+
+
+def test_validation_refuses_a_protocol_bound_to_another_design() -> None:
+    """Validation needs the frozen protocol bound to the task, its metric and its origin."""
+    task, split, protocol = _fixture()
+    loose: Any = protocol.to_wire()
+    with pytest.raises(ValueError, match="^protocol must be a validated contract$"):
+        validate_experiment_protocol(loose, task, split)
+    cases: list[tuple[dict[str, Any], str]] = [
+        (_rewire(protocol, task_digest="1" * 64), "protocol task digest mismatch"),
+        (
+            _rewire(
+                protocol,
+                primary_metric="accuracy",
+                contrast_direction="quantum_minus_classical",
+            ),
+            "protocol primary metric differs from frozen task",
+        ),
+        (
+            _rewire(protocol, origin="owner_dataset"),
+            "protocol data origin differs from frozen task",
+        ),
+    ]
+    for wire, message in cases:
+        rebound = decode_contract(canonical_bytes(wire))
+        assert isinstance(rebound, ExperimentProtocol)
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            validate_experiment_protocol(rebound, task, split)
