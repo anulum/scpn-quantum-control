@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -134,7 +135,10 @@ def test_self_consistency_from_counts() -> None:
 
 
 class TestEntanglementEntropyJaxPath:
+    """Entanglement scans when the JAX path is not taken."""
+
     def test_scan_falls_through_without_jax(self) -> None:
+        """A three-point coupling scan returns one entropy per coupling."""
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
 
         K_topo = np.array([[0, 1], [1, 0]], dtype=float)
@@ -144,7 +148,10 @@ class TestEntanglementEntropyJaxPath:
 
 
 class TestSyncWitnessTopological:
+    """Topological synchronisation witness from correlator matrices."""
+
     def test_topological_witness_no_ripser(self) -> None:
+        """Without ripser the witness is still named but carries no value."""
         from scpn_quantum_control.analysis.sync_witness import (
             topological_witness_from_correlator,
         )
@@ -155,6 +162,7 @@ class TestSyncWitnessTopological:
         assert result.witness_name == "topological"
 
     def test_topological_witness_empty_h1(self) -> None:
+        """An empty H1 diagram gives a persistent fraction of zero."""
         from scpn_quantum_control.analysis.sync_witness import (
             topological_witness_from_correlator,
         )
@@ -165,9 +173,36 @@ class TestSyncWitnessTopological:
             result = topological_witness_from_correlator(np.eye(3))
         assert result.raw_observable == 0.0
 
+    def test_topological_witness_counts_bars_longer_than_the_median(self) -> None:
+        """Only H1 bars outliving the median lifetime count towards the persistent fraction.
+
+        ripser is an optional extra with no CI lane, so the documented result shape stands in.
+        """
+        from scpn_quantum_control.analysis.sync_witness import (
+            topological_witness_from_correlator,
+        )
+
+        mock_ripser = MagicMock()
+        h1 = np.array([[0.0, 0.1], [0.0, 0.3], [0.0, 0.5]])
+        mock_ripser.ripser.return_value = {"dgms": [np.array([[0.0, np.inf]]), h1]}
+        corr = np.full((4, 4), 0.25) + 0.75 * np.eye(4)
+        with patch.dict(sys.modules, {"ripser": mock_ripser}):
+            result = topological_witness_from_correlator(corr, threshold=0.5)
+
+        distance = mock_ripser.ripser.call_args.args[0]
+        np.testing.assert_allclose(np.diag(distance), 0.0)
+        np.testing.assert_allclose(distance[0, 1], 0.75)
+        assert mock_ripser.ripser.call_args.kwargs == {"maxdim": 1, "distance_matrix": True}
+        assert result.raw_observable == pytest.approx(1 / 6)
+        assert result.expectation_value == pytest.approx(1 / 6 - 0.5)
+        assert result.is_synchronized is True
+
 
 class TestSyncEntanglementWitnessEdge:
+    """Edge cases of the synchronisation entanglement witness."""
+
     def test_certified_entanglement_depth_is_conservative(self) -> None:
+        """The certified depth is one without a witness and two with one."""
         from scpn_quantum_control.analysis.sync_entanglement_witness import (
             _certified_entanglement_depth,
         )
@@ -176,6 +211,7 @@ class TestSyncEntanglementWitnessEdge:
         assert _certified_entanglement_depth(True) == 2
 
     def test_R_from_statevector(self) -> None:
+        """The order parameter of a basis state is a float in [0, 1]."""
         from scpn_quantum_control.analysis.sync_entanglement_witness import (
             R_from_statevector,
         )
@@ -187,7 +223,10 @@ class TestSyncEntanglementWitnessEdge:
 
 
 class TestQFICriticalityDefaults:
+    """Default coupling grid of the QFI criticality scan."""
+
     def test_default_k_range(self) -> None:
+        """Without a range the scan uses twenty couplings."""
         from scpn_quantum_control.analysis.qfi_criticality import qfi_vs_coupling
 
         result = qfi_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -195,13 +234,17 @@ class TestQFICriticalityDefaults:
 
 
 class TestEntanglementPercolationEdge:
+    """Default grid and the no-entanglement edge of the percolation scan."""
+
     def test_default_k_range(self) -> None:
+        """Without a range the scan uses twenty couplings."""
         from scpn_quantum_control.analysis.entanglement_percolation import percolation_scan
 
         result = percolation_scan(OMEGA_N_16[:2], _ring(2))
         assert len(result.k_values) == 20
 
     def test_no_entangled_pairs(self) -> None:
+        """A vanishing coupling leaves no entangled pair."""
         from scpn_quantum_control.analysis.entanglement_percolation import percolation_scan
 
         result = percolation_scan(OMEGA_N_16[:2], _ring(2), k_range=np.array([0.001]))
@@ -209,7 +252,10 @@ class TestEntanglementPercolationEdge:
 
 
 class TestOTOCProbeDefaults:
+    """Default coupling grid of the OTOC synchronisation probe."""
+
     def test_default_k_range(self) -> None:
+        """Without a range the probe still scans some couplings."""
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
 
         result = otoc_sync_scan(_ring(2), OMEGA_N_16[:2])
@@ -217,7 +263,10 @@ class TestOTOCProbeDefaults:
 
 
 class TestSelfConsistencyEdge:
+    """Shot-noise estimate of the Hamiltonian self-consistency check."""
+
     def test_correlator_shot_noise(self) -> None:
+        """Balanced counts give a positive correlator shot-noise estimate."""
         from scpn_quantum_control.analysis.hamiltonian_self_consistency import (
             correlator_shot_noise,
         )
@@ -229,13 +278,17 @@ class TestSelfConsistencyEdge:
 
 
 class TestMagicNonstabilizerness:
+    """Stabiliser Renyi entropy at one coupling and across a scan."""
+
     def test_magic_at_coupling(self) -> None:
+        """The stabiliser Renyi entropy at one coupling is non-negative."""
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_at_coupling
 
         result = magic_at_coupling(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result.sre_m2 >= 0
 
     def test_magic_scan(self) -> None:
+        """A three-point scan returns one entropy per coupling."""
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_vs_coupling
 
         scan = magic_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0, 2.0]))
@@ -244,7 +297,10 @@ class TestMagicNonstabilizerness:
 
 
 class TestKrylovComplexity:
+    """Lanczos coefficients and Krylov complexity of a small Hamiltonian."""
+
     def test_lanczos_coefficients(self) -> None:
+        """Lanczos recursion returns at most the requested number of coefficients."""
         from scpn_quantum_control.analysis.krylov_complexity import lanczos_coefficients
 
         H = _dense_H()
@@ -254,6 +310,7 @@ class TestKrylovComplexity:
         assert len(b_n) <= 3
 
     def test_krylov_at_coupling(self) -> None:
+        """Krylov complexity records its Lanczos coefficients."""
         from scpn_quantum_control.analysis.krylov_complexity import krylov_complexity
 
         H = _dense_H()
@@ -264,7 +321,10 @@ class TestKrylovComplexity:
 
 
 class TestLoschmidtEcho:
+    """Loschmidt echo after a coupling quench and across quench targets."""
+
     def test_quench(self) -> None:
+        """A quench returns one Loschmidt amplitude per time point."""
         from scpn_quantum_control.analysis.loschmidt_echo import loschmidt_quench
 
         result = loschmidt_quench(
@@ -273,6 +333,7 @@ class TestLoschmidtEcho:
         assert len(result.loschmidt_amplitude) == 5
 
     def test_quench_scan(self) -> None:
+        """A quench scan records its final couplings."""
         from scpn_quantum_control.analysis.loschmidt_echo import quench_scan
 
         scan = quench_scan(
@@ -287,13 +348,17 @@ class TestLoschmidtEcho:
 
 
 class TestEntanglementEntropy:
+    """Entanglement entropy at one coupling and across a scan."""
+
     def test_at_coupling(self) -> None:
+        """The entanglement entropy at one coupling is non-negative."""
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_at_coupling
 
         result = entanglement_at_coupling(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result.entropy >= 0
 
     def test_scan(self) -> None:
+        """A three-point scan returns one entropy per coupling."""
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
 
         scan = entanglement_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0, 2.0]))
@@ -301,13 +366,17 @@ class TestEntanglementEntropy:
 
 
 class TestPairingCorrelator:
+    """Pairing correlator map and its anisotropy scan."""
+
     def test_pairing_map(self) -> None:
+        """The pairing map at one coupling is produced."""
         from scpn_quantum_control.analysis.pairing_correlator import pairing_map
 
         result = pairing_map(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result is not None
 
     def test_pairing_vs_anisotropy(self) -> None:
+        """The anisotropy scan records its anisotropy values."""
         from scpn_quantum_control.analysis.pairing_correlator import pairing_vs_anisotropy
 
         scan = pairing_vs_anisotropy(
@@ -317,7 +386,10 @@ class TestPairingCorrelator:
 
 
 class TestOTOCSyncProbe:
+    """OTOC synchronisation scan and its comparison with the order parameter."""
+
     def test_otoc_sync_scan(self) -> None:
+        """A two-point scan returns two couplings."""
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
 
         scan = otoc_sync_scan(
@@ -326,6 +398,7 @@ class TestOTOCSyncProbe:
         assert len(scan.K_base_values) == 2
 
     def test_compare_otoc_vs_R(self) -> None:
+        """The comparison reports the OTOC critical coupling."""
         from scpn_quantum_control.analysis.otoc_sync_probe import compare_otoc_vs_R, otoc_sync_scan
 
         scan = otoc_sync_scan(

@@ -497,6 +497,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The topological synchronisation witness (`analysis/sync_witness.py`) now
+  tests its persistent-H1 path with ripser's documented result shape:
+  - only bars that outlive the median lifetime count;
+  - the fraction uses the n(n-1)/2 cycle bound;
+  - the distance matrix has a zero diagonal and is passed as a distance
+    matrix;
+  - the witness fires below its threshold.
+
+  Coverage rises from 95.00% to 100%. All thirteen test classes and 22 tests
+  in the contracts file gain docstrings, so the test documentation ceiling
+  falls to 6863 findings in 535 files.
+
 - The analog/digital model comparison (`analog_mapping/compare.py`) now tests
   every refusal of its record:
   - more than six nodes or no Trotter steps;

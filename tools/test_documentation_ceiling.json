@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "abc8a9122f734e171b38f19cbbc9ea7a8085240b",
+ "measured_commit": "05b660a5dbdea6bf6a1d61693de903f66acf1ed8",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6898,
- "total_files": 536,
+ "total_findings": 6863,
+ "total_files": 535,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -121,7 +121,6 @@
   "tests/test_analyse_iqm_layout_pinned_repeat.py": 2,
   "tests/test_analyse_s1_dynamic_circuit_constraints.py": 3,
   "tests/test_analyse_s1_feedback_hardware.py": 3,
-  "tests/test_analysis_entanglement_sync_contracts.py": 35,
   "tests/test_analysis_monte_carlo_contracts.py": 5,
   "tests/test_analysis_topology_contracts.py": 19,
   "tests/test_ancilla_lindblad.py": 14,
