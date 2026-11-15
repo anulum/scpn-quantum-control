@@ -497,6 +497,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The hardware-gradient policy (`phase/hardware_gradient_policy.py`) now tests
+  that each out-of-bounds request is named as a blocker: non-positive or
+  excessive parameter counts, shift terms and shots. It also tests that the
+  policy still blocks, and judges approval by the backend alias, when the
+  backend planner cannot plan: a zero count is never sent to it, and a float
+  count read from JSON is refused by it. An unsupported plan carries the
+  planner's own reasons, and an approved decision passes the approval
+  assertion. Coverage rises from 89.90% to 100%. Eight older tests gain
+  docstrings, so the test documentation ceiling falls to 6930 findings in
+  541 files.
+
 - The bounded QNN training routes (`phase/qnn_training.py`) now have tests for
   every data refusal:
   - one-dimensional, empty or non-finite features, and a matrix without

@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "ad379114069731637f41c7ede3d2fcde729e2be0",
+ "measured_commit": "6461cc011f83a446f51f8b88e01dbba0f0cdac10",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6938,
- "total_files": 542,
+ "total_findings": 6930,
+ "total_files": 541,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -352,7 +352,6 @@
   "tests/test_phase_dynamics_contracts.py": 41,
   "tests/test_phase_gradient_support_matrix.py": 7,
   "tests/test_phase_gradient_training.py": 3,
-  "tests/test_phase_hardware_gradient_policy.py": 8,
   "tests/test_phase_jax_bridge.py": 1,
   "tests/test_phase_jax_maturity_integration.py": 4,
   "tests/test_phase_model_training_evidence.py": 4,
