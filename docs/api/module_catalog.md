@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **868 modules** across **41 package families**
-- **4686 documented public module-level symbols**
+- **869 modules** across **41 package families**
+- **4690 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2446,6 +2446,16 @@ Train-only fitted LLM latent compressor provenance.
 **Classes:** `CompressorArtifact`
 
 **Functions:** `validate_compressor_artifact()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.cost`
+
+Frozen cost quotes whose unknown totals and prices never read as zero.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/cost.py) · Public symbols: **4**
+
+**Classes:** `QuotedCount`, `CostQuote`
+
+**Functions:** `validate_cost_quote()`, `decode_cost_quote()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.latent`
 

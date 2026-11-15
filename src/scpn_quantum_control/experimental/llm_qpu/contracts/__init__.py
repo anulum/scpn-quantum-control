@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     )
     from .compressed import CompressedLatentBatch, validate_compressed_latent_batch
     from .compressor import CompressorArtifact, validate_compressor_artifact
+    from .cost import CostQuote, QuotedCount, decode_cost_quote, validate_cost_quote
     from .latent import LatentBatch, validate_latent_batch
     from .measurement import (
         MeasurementPlan,
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
         COMPILED_BUNDLE_SCHEMA,
         COMPRESSED_SCHEMA,
         COMPRESSOR_SCHEMA,
+        COST_QUOTE_SCHEMA,
         EXPERIMENT_PROTOCOL_SCHEMA,
         HEADER_SCHEMA,
         LATENT_SCHEMA,
@@ -191,6 +193,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
         "decode_compiled_bundle",
     ),
+    "QuotedCount": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.cost",
+        "QuotedCount",
+    ),
+    "CostQuote": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.cost",
+        "CostQuote",
+    ),
+    "validate_cost_quote": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.cost",
+        "validate_cost_quote",
+    ),
+    "decode_cost_quote": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.cost",
+        "decode_cost_quote",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -241,6 +259,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "COMPRESSOR_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "COMPRESSOR_SCHEMA",
+    ),
+    "COST_QUOTE_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "COST_QUOTE_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -442,4 +464,9 @@ __all__ = (
     "compiled_payload_digest",
     "validate_compiled_bundle",
     "decode_compiled_bundle",
+    "COST_QUOTE_SCHEMA",
+    "QuotedCount",
+    "CostQuote",
+    "validate_cost_quote",
+    "decode_cost_quote",
 )

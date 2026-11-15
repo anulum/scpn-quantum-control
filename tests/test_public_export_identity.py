@@ -300,6 +300,11 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_compiled_bundle",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.compiled",
             ),
+            ("COST_QUOTE_SCHEMA", "scpn_quantum_control.experimental.llm_qpu.contracts.wire"),
+            ("QuotedCount", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
+            ("CostQuote", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
+            ("validate_cost_quote", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
+            ("decode_cost_quote", "scpn_quantum_control.experimental.llm_qpu.contracts.cost"),
         ),
     ),
 }

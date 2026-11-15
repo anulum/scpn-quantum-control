@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `CostQuote` contract
+  (`experimental/llm_qpu/contracts/cost.py`, schema `cost_quote.v1`) for one
+  exact compiled bundle. It records circuit and shot totals, the provider
+  options the bundle runs with, and job count, overhead executions,
+  resource units and price as typed `QuotedCount` values, known
+  (non-negative) or unknown with a blocker, so an unknown never reads as
+  zero. Shots are refused as a resource unit, a known price needs its
+  source and UTC quote time, and `validate_cost_quote` refuses a quote for
+  another bundle, wrong totals, an option the quote does not name, and a
+  job count that does not match the target's circuit batch limit (partial
+  batches round up; an unknown limit keeps the job count unknown). The
+  standalone worker validates the same wire independently.
+
 - The experimental LLM-QPU lane gains a design-only `CompiledBundle`
   contract (`experimental/llm_qpu/contracts/compiled.py`, schema
   `compiled_bundle.v1`) for one target snapshot and one SDK lock: ordered

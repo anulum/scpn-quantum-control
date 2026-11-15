@@ -34,6 +34,8 @@ _COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
 _EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 _TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
 _COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
+_COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
+_QUOTE_COUNTS = ("job_count", "overhead_executions", "resource_units", "price_minor_units")
 _BUNDLE_CELL_FIELDS = (
     "planned_cell_digest",
     "logical_plan_digest",
@@ -1274,6 +1276,136 @@ def _roundtrip_compiled_bundle(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+_QUOTE_FIELDS = {
+    "schema",
+    "object_kind",
+    "compiled_bundle_digest",
+    "bundle_payload_digest",
+    "circuit_count",
+    "total_shots",
+    "quoted_options",
+    *_QUOTE_COUNTS,
+    "resource_unit",
+    "resource_derivation",
+    "currency",
+    "pricing_source",
+    "priced_at_utc",
+    "header",
+}
+
+
+def _validate_quoted_count(value: object, name: str) -> None:
+    if type(value) is not dict or set(value) != {"state", "value", "blocker"}:
+        raise ValueError("QuotedCount fields mismatch")
+    if value["state"] == "unknown":
+        if value["value"] is not None:
+            raise ValueError("an unknown count cannot carry a value; zero is not unknown")
+        _target_text(value["blocker"], "count blocker")
+        return
+    number = value["value"]
+    if value["state"] != "known" or value["blocker"] is not None:
+        raise ValueError("a known count needs a value and no blocker")
+    if type(number) is not int or not 0 <= number <= 10**15:
+        raise ValueError(f"{name} must be a bounded non-negative integer")
+
+
+def _validate_quote_fields(quote: object) -> dict[str, object]:
+    if type(quote) is not dict or set(quote) != _QUOTE_FIELDS:
+        raise ValueError("CostQuote fields mismatch")
+    if quote["schema"] != _COST_QUOTE_SCHEMA or quote["object_kind"] != "cost_quote":
+        raise ValueError("unknown CostQuote schema")
+    for name in ("compiled_bundle_digest", "bundle_payload_digest"):
+        _worker_digest(quote[name], name)
+    for name, maximum in (("circuit_count", 10_000_000), ("total_shots", 10**12)):
+        count = quote[name]
+        if type(count) is not int or not 0 < count <= maximum:
+            raise ValueError(f"{name} must be bounded")
+    _sorted_unique_names(quote["quoted_options"], "quoted options", allow_empty=True)
+    for name in _QUOTE_COUNTS:
+        _validate_quoted_count(quote[name], name)
+    job = quote["job_count"]
+    if type(job) is dict and job["value"] == 0:
+        raise ValueError("a known job count must be positive")
+    unit = _target_text(quote["resource_unit"], "resource unit")
+    if unit.lower() in ("shot", "shots") or quote["resource_derivation"] == "shots_as_credits":
+        raise ValueError("provider credits are not shots")
+    if quote["resource_derivation"] not in ("provider_estimate", "published_rate_card"):
+        raise ValueError("unknown resource derivation")
+    if type(quote["currency"]) is not str or re.fullmatch(r"[A-Z]{3}", quote["currency"]) is None:
+        raise ValueError("currency must be an ISO 4217 code")
+    _target_text(quote["pricing_source"], "pricing source")
+    price, priced_at = quote["price_minor_units"], quote["priced_at_utc"]
+    known_price = type(price) is dict and price["state"] == "known"
+    if known_price and (type(priced_at) is not str or _UTC_SECOND.fullmatch(priced_at) is None):
+        raise ValueError("a known price needs its ISO-8601 UTC quote time")
+    if not known_price and priced_at is not None:
+        raise ValueError("an unknown price cannot carry a quote time")
+    return quote
+
+
+def _cross_check_quote(
+    quote: dict[str, object], bundle: dict[str, object], target: dict[str, object]
+) -> None:
+    if quote["compiled_bundle_digest"] != hashlib.sha256(_canonical_bytes(bundle)).hexdigest():
+        raise ValueError("quote prices a different compiled bundle")
+    cells, options = bundle["cells"], bundle["provider_options"]
+    if type(cells) is not list or type(options) is not list:
+        raise ValueError("bundle sequences must be lists")
+    if quote["bundle_payload_digest"] != bundle["payload_digest"] or quote["circuit_count"] != len(
+        cells
+    ):
+        raise ValueError("quote payload or circuit count differs from the bundle")
+    if quote["total_shots"] != sum(
+        int(str(cell["shots"])) for cell in cells if type(cell) is dict
+    ):
+        raise ValueError("quoted total shots differ from the bundle")
+    if quote["quoted_options"] != [pair[0] for pair in options if type(pair) is list]:
+        raise ValueError("quote does not name every provider option the bundle runs with")
+    header, bundle_header = quote["header"], bundle["header"]
+    if type(header) is not dict or type(bundle_header) is not dict:
+        raise ValueError("artifact headers must be objects")
+    if header["data_origin"] != bundle_header["data_origin"]:
+        raise ValueError("quote and bundle data origins differ")
+    limit, job = target["max_circuits_per_job"], quote["job_count"]
+    if type(limit) is not dict or type(job) is not dict:
+        raise ValueError("limit and job count must be objects")
+    if limit["state"] == "known":
+        expected = -(-len(cells) // int(str(limit["value"])))
+        if job["value"] != expected:
+            raise ValueError("quoted job count differs from the target's circuit batch limit")
+    elif job["state"] == "known":
+        raise ValueError("a job count cannot be known while the batch limit is unknown")
+
+
+def _roundtrip_cost_quote(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "target", "bundle", "quote"}:
+        raise ValueError("quote request fields mismatch")
+    bundle_request = {
+        "op": "roundtrip_compiled_bundle",
+        "target": request["target"],
+        "bundle": request["bundle"],
+    }
+    _roundtrip_compiled_bundle(bundle_request)
+    target, bundle = request["target"], request["bundle"]
+    if type(target) is not dict or type(bundle) is not dict:
+        raise ValueError("target and bundle must be objects")
+    quote = _validate_quote_fields(request["quote"])
+    header = quote["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    if origin not in ("provider_metadata", "synthetic_classical"):
+        raise ValueError("a cost quote derives from provider metadata or a fixture")
+    _validate_artifact_header(quote, (str(quote["compiled_bundle_digest"]),), origin)
+    _cross_check_quote(quote, bundle, target)
+    wire = _canonical_bytes(quote)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "quote": json.loads(wire),
+        "quote_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -1343,6 +1475,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_cost_quote":
+        try:
+            _emit(_roundtrip_cost_quote(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is dict and request.get("op") == "roundtrip_compiled_bundle":
         try:
             _emit(_roundtrip_compiled_bundle(request))
@@ -1374,6 +1513,7 @@ def main() -> int:
                 "roundtrip_experiment_protocol",
                 "roundtrip_target_snapshot",
                 "roundtrip_compiled_bundle",
+                "roundtrip_cost_quote",
             ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,

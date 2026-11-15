@@ -930,6 +930,7 @@
         "tests/experimental/llm_qpu/test_compiled_bundle_contract.py",
         "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
         "tests/experimental/llm_qpu/test_contract_wire.py",
+        "tests/experimental/llm_qpu/test_cost_quote_contract.py",
         "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
         "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
         "tests/experimental/llm_qpu/test_latent_batch_contract.py",

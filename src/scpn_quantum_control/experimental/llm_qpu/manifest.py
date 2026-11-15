@@ -28,6 +28,7 @@ _INVENTORY = (
     "llm_qpu/contracts/compiled.py",
     "llm_qpu/contracts/compressed.py",
     "llm_qpu/contracts/compressor.py",
+    "llm_qpu/contracts/cost.py",
     "llm_qpu/contracts/latent.py",
     "llm_qpu/contracts/measurement.py",
     "llm_qpu/contracts/model.py",
