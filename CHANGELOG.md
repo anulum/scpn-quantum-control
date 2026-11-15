@@ -239,8 +239,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - The canonical wire of the experimental LLM-QPU contracts
   (`experimental/llm_qpu/contracts/wire.py`) now has its own refusal tests
   and full line and branch coverage; the union had it at 80.68%.
-  - The 61 cases cover malformed wire values, JSON wires, array descriptors
-    and provenance headers, and each refusal checks its reason.
+  - The 63 cases cover malformed wire values, JSON wires, array descriptors
+    and provenance headers, and each refusal checks its reason. They reach
+    the validators through the public encoder, `decode_contract`, `CellKey`
+    and the descriptor and header types.
   - The array byte check is replaced by the element ceiling, which was already
     the binding limit: one million elements of at most 8 bytes stay inside the
     16 MiB array ceiling. A test pins that invariant. Behaviour is unchanged.

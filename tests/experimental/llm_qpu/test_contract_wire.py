@@ -15,7 +15,7 @@ from typing import Any
 
 import pytest
 
-from scpn_quantum_control.experimental.llm_qpu.contracts import wire
+from scpn_quantum_control.experimental.llm_qpu.contracts import CellKey, decode_contract, wire
 from scpn_quantum_control.experimental.llm_qpu.contracts.wire import (
     ARRAY_SCHEMA,
     HEADER_SCHEMA,
@@ -107,11 +107,29 @@ def test_canonical_bytes_refuses_a_wire_above_one_mebibyte() -> None:
         canonical_bytes(["x" * 256] * 4096)
 
 
-def test_text_refuses_non_text_from_any_contract_field() -> None:
-    """The shared field validator refuses a value that is not text."""
-    with pytest.raises(ValueError, match="^calibration epoch must be text$"):
-        wire._text(7, name="calibration epoch")
-    assert wire._text("e\u0301", name="epoch") == "\u00e9"
+def _key(**changes: Any) -> CellKey:
+    """Build a valid cell identity, then apply the requested field changes."""
+    fields: dict[str, Any] = {
+        "experiment_id": "exp",
+        "source_sample_id": "sample",
+        "sequence_id": "seq",
+        "arm_id": "arm",
+        "basis_id": "z",
+        "replicate_id": "r0",
+        "planned_epoch_id": "epoch",
+        "parameter_binding_id": "binding",
+    }
+    fields.update(changes)
+    return CellKey(**fields)
+
+
+def test_contract_text_fields_refuse_non_text_and_normalise_to_nfc() -> None:
+    """A contract identity refuses a non-text field and stores text in NFC form."""
+    with pytest.raises(ValueError, match="^experiment_id must be text$"):
+        _key(experiment_id=7)
+    with pytest.raises(ValueError, match="^arm_id must be bounded nonempty text$"):
+        _key(arm_id="")
+    assert _key(arm_id="e\u0301").arm_id == "\u00e9"
 
 
 @pytest.mark.parametrize(
@@ -124,17 +142,23 @@ def test_text_refuses_non_text_from_any_contract_field() -> None:
         (b"\xff", "invalid UTF-8 JSON"),
         (b"{", "invalid UTF-8 JSON"),
         (b'{"b":1, "a":2}', "noncanonical JSON wire"),
+        (b"[1]", "contract wire must be an object"),
+        (b'{"schema":"unknown"}', "unsupported contract schema"),
     ],
 )
-def test_strict_json_refuses_ambiguous_or_noncanonical_bytes(raw: Any, message: str) -> None:
+def test_decode_contract_refuses_ambiguous_or_noncanonical_bytes(raw: Any, message: str) -> None:
     """Decoding refuses text, oversize, duplicate, nonfinite, broken and reordered wires."""
     with pytest.raises(ValueError, match=f"^{message}$"):
-        wire._strict_json(raw)
+        decode_contract(raw)
 
 
-def test_strict_json_returns_the_canonical_value() -> None:
-    """A canonical wire decodes to the value it encodes."""
-    assert wire._strict_json(b'{"a":[1,null]}') == {"a": [1, None]}
+def test_decode_contract_returns_the_record_its_canonical_wire_encodes() -> None:
+    """A descriptor's canonical bytes decode back to an equal descriptor."""
+    descriptor = ArrayDescriptor("<i4", (4,), 16, _DIGEST_B)
+    raw = canonical_bytes(descriptor.to_wire())
+    assert decode_contract(raw) == descriptor
+    with pytest.raises(ValueError, match="^noncanonical JSON wire$"):
+        decode_contract(raw.replace(b",", b", ", 1))
 
 
 @pytest.mark.parametrize(
