@@ -106,6 +106,39 @@ def parameter_source() -> str:
     return supplied
 
 
+_OBSERVATIONS = [
+    "built-original-wasm-and-workspace-link",
+    "signed-directed-graph-form-and-exact-undo",
+    "invalid-values-domain-unit-refusal-and-explicit-conversion",
+    "symmetric-edit-mask-native-save-and-python-digest-parity",
+    "reload-mask-and-second-native-save-preserve-all-prior-results",
+    "unicode-source-key-linked-graph-and-native-marker-resolution",
+]
+_PARAMETER_OWNERS = Counter(
+    {
+        "/src/shared/storage/workspaceStore.ts": 2,
+        "/src/shared/storage/workspaceArchive.ts": 2,
+        "/src/WorkspacePanel.tsx": 2,
+        "/src/shared/workspace/WorkspaceEditor.tsx": 2,
+        "/src/shared/workspace/useWorkspace.ts": 2,
+        "/src/shared/parameters/parameterDraft.ts": 2,
+        "/src/shared/parameters/parameterRevision.ts": 2,
+        "/src/modules/parameters/ParameterEditor.tsx": 2,
+        "/src/modules/parameters/ParameterWorkspace.tsx": 2,
+    }
+)
+_CONTROLLER_CASES = (
+    "staleSource",
+    "cancelledBeforeTransaction",
+    "crossProject",
+    "newerDraftRetained",
+    "concurrentCommitRetained",
+    "explicitReload",
+    "previewChildCommitted",
+    "lateCommitRetained",
+)
+
+
 def test_parameter_journey_real_signed_matrix_and_native_revision_recovery(
     parameter_bundle: Path, parameter_source: str
 ) -> None:
@@ -121,51 +154,19 @@ def test_parameter_journey_real_signed_matrix_and_native_revision_recovery(
     """
     with owned_fault_host(parameter_bundle) as preview:
         observed = run_parameter_journey(preview, parameter_source)
-    assert observed["observations"] == [
-        "built-original-wasm-and-workspace-link",
-        "signed-directed-graph-form-and-exact-undo",
-        "invalid-values-domain-unit-refusal-and-explicit-conversion",
-        "symmetric-edit-mask-native-save-and-python-digest-parity",
-        "reload-mask-and-second-native-save-preserve-all-prior-results",
-        "unicode-source-key-linked-graph-and-native-marker-resolution",
-    ]
+    assert observed["observations"] == _OBSERVATIONS
     assert observed["workers"] == 0
     assert observed["page_errors"] == [] and observed["external_requests"] == []
     assert observed["original_members"] == 12
     assert observed["first_child_members"] == 13
     assert observed["second_child_members"] == 14
-    records = observed["native_v8_coverage"]
+    owners = assert_native_source_owners(observed["native_v8_coverage"], "parameters", 2)
+    assert owners >= _PARAMETER_OWNERS
     identity = observed["python_child_digest"]
-    owners = assert_native_source_owners(records, "parameters", 2)
-    assert owners >= Counter(
-        {
-            "/src/shared/storage/workspaceStore.ts": 2,
-            "/src/shared/storage/workspaceArchive.ts": 2,
-            "/src/WorkspacePanel.tsx": 2,
-            "/src/shared/workspace/WorkspaceEditor.tsx": 2,
-            "/src/shared/workspace/useWorkspace.ts": 2,
-            "/src/shared/parameters/parameterDraft.ts": 2,
-            "/src/shared/parameters/parameterRevision.ts": 2,
-            "/src/modules/parameters/ParameterEditor.tsx": 2,
-            "/src/modules/parameters/ParameterWorkspace.tsx": 2,
-        }
-    )
     assert isinstance(identity, str) and len(identity) == 64
     controller = observed["native_controller_refusal"]
     assert isinstance(controller, dict)
-    assert all(
-        controller[name] is True
-        for name in (
-            "staleSource",
-            "cancelledBeforeTransaction",
-            "crossProject",
-            "newerDraftRetained",
-            "concurrentCommitRetained",
-            "explicitReload",
-            "previewChildCommitted",
-            "lateCommitRetained",
-        )
-    )
+    assert all(controller[name] is True for name in _CONTROLLER_CASES)
 
 
 @pytest.mark.parametrize("fault", ["page", "external"])
