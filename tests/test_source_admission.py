@@ -17,6 +17,7 @@ import os
 import subprocess
 import sys
 import tokenize
+from collections.abc import Buffer
 from pathlib import Path
 
 import pytest
@@ -297,8 +298,9 @@ def test_source_reader_refuses_nonregular_observation(tmp_path: Path) -> None:
 def test_source_reader_refuses_expanding_registered_codec_and_recovers(tmp_path: Path) -> None:
     """An actual codec cannot produce text larger than its admitted character bound."""
 
-    def decode(data: bytes | bytearray | memoryview, errors: str = "strict") -> tuple[str, int]:
-        return bytes(data).decode("ascii", errors) * 2, len(data)
+    def decode(data: Buffer, errors: str = "strict", /) -> tuple[str, int]:
+        raw = bytes(data)
+        return raw.decode("ascii", errors) * 2, len(raw)
 
     def lookup(name: str) -> codecs.CodecInfo | None:
         # CPython 3.12 hands search functions the cookie name with an

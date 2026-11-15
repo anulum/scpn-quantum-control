@@ -830,7 +830,9 @@ def test_an_output_pipe_that_accepts_no_bytes_gives_the_execution_failure_status
     monkeypatch.setattr(sys, "stdout", stream)
     status = programme.main([str(request)])
     os.close(reader)
-    stream.detach().detach().close()
+    buffer = stream.detach()
+    assert isinstance(buffer, io.BufferedWriter)
+    buffer.detach().close()
     assert status == 3
     assert capfd.readouterr().err == "execution failure: BlockingIOError\n"
 
