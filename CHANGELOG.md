@@ -497,6 +497,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The bounded QNN training routes (`phase/qnn_training.py`) now have tests for
+  every data refusal:
+  - one-dimensional, empty or non-finite features, and a matrix without
+    features;
+  - a label matrix or labels outside [0, 1];
+  - a parameter matrix or non-finite parameters.
+
+  They also show that a single-column label matrix gives the same loss, and
+  that a prediction without labels reports no accuracy. Gradient
+  verification refuses a negative or NaN tolerance, a blank or spaced
+  external-gradient name, and an external gradient with non-finite values.
+  Coverage rises from 90.94% to 99.25%. One defensive line stays: the
+  probability helper's width check, which validated callers never trip. Six
+  older tests gain docstrings, so the test documentation ceiling falls to
+  6938 findings in 542 files.
+
 - **Fixed: a diverging optimizer aborted the QNN optimizer benchmark.** Each
   baseline in `run_parameter_shift_qnn_optimizer_benchmark_suite` was meant to
   stop when its step left the finite range. The guard tested the loss after

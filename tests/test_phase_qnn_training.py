@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -25,6 +27,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_parameter_shift_qnn_classifier_converges_on_phase_separable_data() -> None:
+    """Training on phase-separable data reaches the zero-loss target within tolerance."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
 
@@ -57,6 +60,7 @@ def test_parameter_shift_qnn_classifier_converges_on_phase_separable_data() -> N
 
 
 def test_parameter_shift_qnn_prediction_is_bounded_and_thresholded() -> None:
+    """Predicted probabilities are bounded and thresholded at the decision threshold."""
     features = np.array([[0.0, np.pi], [np.pi, 0.0]], dtype=float)
     params = np.array([0.0, 0.0], dtype=float)
     labels = np.array([0.5, 0.5], dtype=float)
@@ -77,6 +81,7 @@ def test_parameter_shift_qnn_prediction_is_bounded_and_thresholded() -> None:
 
 
 def test_parameter_shift_qnn_gradient_matches_finite_difference_reference() -> None:
+    """The parameter-shift gradient matches the central finite-difference reference."""
     features = np.array(
         [
             [0.2, -0.4],
@@ -123,6 +128,7 @@ def test_parameter_shift_qnn_gradient_matches_finite_difference_reference() -> N
 
 
 def test_parameter_shift_qnn_gradient_records_external_agreements() -> None:
+    """Named external gradients are recorded with their agreement against parameter shift."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
@@ -149,6 +155,7 @@ def test_parameter_shift_qnn_gradient_records_external_agreements() -> None:
 
 
 def test_parameter_shift_qnn_training_fails_closed_for_hardware() -> None:
+    """Training on the hardware backend without an explicit grant is refused."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
 
@@ -163,6 +170,7 @@ def test_parameter_shift_qnn_training_fails_closed_for_hardware() -> None:
 
 
 def test_parameter_shift_qnn_rejects_invalid_inputs() -> None:
+    """Mismatched samples, parameter widths, thresholds, labels, steps and gradients are refused."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
 
@@ -208,3 +216,80 @@ def test_parameter_shift_qnn_rejects_invalid_inputs() -> None:
             np.array([0.5], dtype=float),
             external_gradients={"jax": lambda _values: np.array([0.1, 0.2], dtype=float)},
         )
+
+
+_FEATURES = np.array([[0.0], [np.pi]], dtype=float)
+_LABELS = np.array([0.0, 1.0], dtype=float)
+_PARAMS = np.array([0.5], dtype=float)
+
+
+@pytest.mark.parametrize(
+    ("features", "labels", "params", "message"),
+    [
+        pytest.param(np.array([0.0, np.pi]), _LABELS, _PARAMS, "two-dimensional array$", id="1d"),
+        pytest.param(np.empty((0, 1)), _LABELS[:0], _PARAMS, "at least one sample$", id="empty"),
+        pytest.param(np.empty((2, 0)), _LABELS, _PARAMS[:0], "feature column$", id="no-column"),
+        pytest.param(
+            np.array([[0.0], [np.inf]]), _LABELS, _PARAMS, "features must contain only", id="inf"
+        ),
+        pytest.param(
+            _FEATURES, np.ones((2, 2)), _PARAMS, "single-column matrix$", id="label-matrix"
+        ),
+        pytest.param(_FEATURES, np.array([0.0, 1.5]), _PARAMS, r"\[0, 1\]$", id="label-range"),
+        pytest.param(
+            _FEATURES, _LABELS, np.ones((1, 1)), "one-dimensional array$", id="param-matrix"
+        ),
+        pytest.param(_FEATURES, _LABELS, np.array([np.nan]), "params must contain only", id="nan"),
+    ],
+)
+def test_parameter_shift_qnn_loss_refuses_malformed_data(
+    features: np.ndarray, labels: np.ndarray, params: np.ndarray, message: str
+) -> None:
+    """Features, labels and parameters are each checked for shape, range and finiteness."""
+    with pytest.raises(ValueError, match=message):
+        parameter_shift_qnn_classifier_loss(features, labels, params)
+
+
+def test_parameter_shift_qnn_loss_accepts_a_single_column_label_matrix() -> None:
+    """A single-column label matrix gives the same loss as the label vector."""
+    column = parameter_shift_qnn_classifier_loss(_FEATURES, _LABELS[:, None], _PARAMS)
+
+    assert column == parameter_shift_qnn_classifier_loss(_FEATURES, _LABELS, _PARAMS)
+
+
+@pytest.mark.parametrize(
+    ("settings", "message"),
+    [
+        ({"tolerance": -1.0}, "^tolerance must be finite and non-negative$"),
+        ({"external_tolerance": float("nan")}, "^tolerance must be finite and non-negative$"),
+        (
+            {"external_gradients": {" ": lambda values: values}},
+            "^external gradient name must be non-empty$",
+        ),
+        (
+            {"external_gradients": {"py torch": lambda values: values}},
+            "^external gradient name must not contain whitespace$",
+        ),
+        (
+            {"external_gradients": {"jax": lambda values: np.array([np.nan])}},
+            "^external gradient 'jax' must contain only finite values$",
+        ),
+    ],
+)
+def test_parameter_shift_qnn_verification_refuses_bad_tolerances_and_external_gradients(
+    settings: dict[str, Any], message: str
+) -> None:
+    """Tolerances must be finite and non-negative; external gradients need a clean name and values."""
+    with pytest.raises(ValueError, match=message):
+        verify_parameter_shift_qnn_classifier_gradient(_FEATURES, _LABELS, _PARAMS, **settings)
+
+
+def test_parameter_shift_qnn_prediction_without_labels_reports_no_accuracy() -> None:
+    """Without labels a prediction carries probabilities and labels but no accuracy."""
+    prediction = predict_parameter_shift_qnn_classifier(_FEATURES, _PARAMS)
+
+    assert prediction.labels is None
+    assert prediction.accuracy is None
+    np.testing.assert_array_equal(
+        prediction.predicted_labels, (prediction.probabilities >= 0.5).astype(int)
+    )
