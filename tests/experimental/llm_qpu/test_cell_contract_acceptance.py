@@ -481,3 +481,87 @@ def test_raw_completion_refuses_unmapped_or_inconsistent_results() -> None:
     for received, message in cases:
         with pytest.raises(ValueError, match=f"^{message}"):
             validate_completion([first, second], received)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"source_kind": "web_scrape"}, "task source kind must be declared"),
+        ({"primary_metric": "auroc"}, "primary metric must be fixed and known"),
+    ],
+)
+def test_task_refuses_unknown_sources_and_metrics(changes: dict[str, Any], message: str) -> None:
+    """A task refuses an undeclared source kind and an unknown primary metric."""
+    with pytest.raises(ValueError, match=f"^{message}$"):
+        replace(_task(), **changes)
+
+
+def test_task_refuses_another_header_and_a_header_of_another_origin() -> None:
+    """A task takes only its own header, and that header must carry the task's source kind."""
+    task = _task()
+    split = _split(task)
+    header_wire: Any = task.header.to_wire()
+    for header in (split.header, header_wire):
+        with pytest.raises(ValueError, match="^TaskSpec requires its exact artifact header$"):
+            replace(task, header=header)
+    with pytest.raises(ValueError, match="^TaskSpec data origin mismatch$"):
+        replace(task, header=replace(task.header, data_origin="external_dataset"))
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"train_groups": ()}, "train_groups must be a nonempty bounded tuple"),
+        ({"dev_groups": ["source-03"]}, "dev_groups must be a nonempty bounded tuple"),
+        (
+            {"test_groups": tuple(f"source-{index:05d}" for index in range(4097))},
+            "test_groups must be a nonempty bounded tuple",
+        ),
+        ({"train_groups": ("source-02", "source-01")}, "source groups must be sorted and unique"),
+        ({"train_groups": ("source-01", "source-01")}, "source groups must be sorted and unique"),
+        ({"seed": -1}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"seed": 2**63}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"seed": True}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"dedup_rule": "fuzzy_title_match"}, "unknown source dedup rule"),
+    ],
+)
+def test_split_refuses_unbounded_groups_seeds_and_dedup_rules(
+    changes: dict[str, Any], message: str
+) -> None:
+    """A split refuses empty, listed, oversized or unordered groups, bad seeds and unknown dedup."""
+    with pytest.raises(ValueError, match=f"^{message}$"):
+        replace(_split(_task()), **changes)
+
+
+def test_task_and_split_wires_refuse_edited_fields_and_lists() -> None:
+    """Both decoders refuse an extra field and another object kind; split groups must be lists."""
+    task = _task()
+    split = _split(task)
+    task_wire = task.to_wire()
+    split_wire = split.to_wire()
+    cases: list[tuple[dict[str, object], str]] = [
+        ({**task_wire, "extra": 1}, "TaskSpec fields mismatch"),
+        ({**task_wire, "object_kind": "split_manifest"}, "unknown TaskSpec schema"),
+        ({**split_wire, "extra": 1}, "SplitManifest fields mismatch"),
+        ({**split_wire, "object_kind": "task_spec"}, "unknown SplitManifest schema"),
+        ({**split_wire, "train_groups": "source-01"}, "split groups must be lists on wire"),
+    ]
+    for value, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            decode_contract(canonical_bytes(value))
+
+
+def test_split_refuses_another_header_and_validation_binds_one_origin() -> None:
+    """A split takes only its own header, and validation needs frozen records of one origin."""
+    task = _task()
+    split = _split(task)
+    header_wire: Any = split.header.to_wire()
+    for header in (task.header, header_wire):
+        with pytest.raises(ValueError, match="^SplitManifest requires its exact artifact header$"):
+            replace(split, header=header)
+    loose: Any = task.to_wire()
+    with pytest.raises(ValueError, match="^task and split must be validated contracts$"):
+        validate_task_split(loose, split)
+    external = replace(split, header=replace(split.header, data_origin="external_dataset"))
+    with pytest.raises(ValueError, match="^split data origin does not bind TaskSpec$"):
+        validate_task_split(task, external)

@@ -353,6 +353,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   shapes. They also cover a header of another kind, an edited wire, and a
   compressor bound to another split, model, input width or data origin.
 
+- The task and split contract (`experimental/llm_qpu/contracts/task.py`) has
+  full line and branch coverage; the union had it at 85.58%. New tests cover
+  the refusals of unknown sources and metrics, and of headers of another kind
+  or origin. They also cover empty, listed, oversized or unordered groups, bad
+  seeds, unknown dedup rules, edited wires, and a split whose data origin
+  differs from its task.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
