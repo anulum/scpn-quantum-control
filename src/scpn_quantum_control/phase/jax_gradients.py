@@ -415,11 +415,9 @@ def jax_custom_vjp_qnn_value_and_grad(
     custom_loss: Any = _custom_vjp_function(jax_module, loss_fn)
 
     def loss_fwd(raw_params: object) -> tuple[object, object]:
+        # The forward rule evaluates the primal itself, so the two cannot drift apart.
         parameter_tensor = jnp.asarray(raw_params)
-        return (
-            _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor),
-            parameter_tensor,
-        )
+        return loss_fn(parameter_tensor), parameter_tensor
 
     def loss_bwd(parameter_tensor: object, cotangent: object) -> tuple[object]:
         gradient = _jax_bounded_qnn_gradient(

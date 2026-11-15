@@ -497,6 +497,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The JAX gradient routes (`phase/jax_gradients.py`) now have tests for every
+  data refusal, each made before any JAX transform is built. They also show
+  that:
+  - a single-column label matrix gives the same gradient as the label vector;
+  - an unimportable JAX makes availability false and names the optional
+    extra;
+  - a JIT backend that answers the callback shape without running the host
+    function is refused;
+  - the custom-VJP route refuses a missing `jit` and a loss that drifts from
+    parameter shift.
+
+  The custom-VJP forward rule now evaluates the primal loss, which JAX never
+  ran under differentiation, instead of repeating its body. Coverage rises
+  from 85.94% to 100%. Thirteen older tests gain docstrings, so the test
+  documentation ceiling falls to 6953 findings in 545 files.
+
 - The differentiable readiness ledger (`phase/differentiable_readiness.py`)
   now has tests for every way it reads a readiness result, through
   `run_differentiable_readiness_audit` with custom surfaces:
