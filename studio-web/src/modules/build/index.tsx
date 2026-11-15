@@ -22,7 +22,7 @@ const BuildView = lazy(() => import("./BuildView"));
 /** Original compiled instruments and registered authoring editors on their existing addresses. */
 export const buildModule: StudioModule<Services, WorkspaceViewServices, "build"> = {
   id: "build",
-  apiVersion: "2.1",
+  apiVersion: "2.2",
   requires: { verbs: ["compile"], schemas: [] },
   stages: [
     {
@@ -40,6 +40,14 @@ export const buildModule: StudioModule<Services, WorkspaceViewServices, "build">
     },
   ],
   statusItems: [{ id: "browser-kernel", label: "Browser kernel · WASM", tone: "active" }],
+  capabilities: [
+    {
+      id: "recompute-xy-compile",
+      label: "Recompute the XY compile digest in the browser",
+      maturity: "stable",
+      needs: ["browser-kernel"],
+    },
+  ],
   commands: [
     {
       id: "open-build",

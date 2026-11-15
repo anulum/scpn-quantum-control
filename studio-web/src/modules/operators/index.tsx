@@ -16,7 +16,7 @@ const OperationsView = lazy(() => import("./OperationsView"));
 /** Source-owned offline profiles, policy metadata and review dossiers on the original stage. */
 export const operatorsModule: StudioModule<Services, WorkspaceViewServices, "operations"> = {
   id: "operations",
-  apiVersion: "2.0",
+  apiVersion: "2.2",
   requires: { verbs: [], schemas: [] },
   stages: [
     {
@@ -25,6 +25,14 @@ export const operatorsModule: StudioModule<Services, WorkspaceViewServices, "ope
       group: "context",
       instruments: [],
       render: () => <OperationsView />,
+    },
+  ],
+  capabilities: [
+    {
+      id: "execute-on-hardware",
+      label: "Execute programs on quantum hardware",
+      maturity: "experimental",
+      needs: ["hardware"],
     },
   ],
   commands: [

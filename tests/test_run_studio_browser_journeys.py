@@ -44,6 +44,7 @@ _SCENARIOS = (
     "topology_symmetry_instrument",
     "attestation_verification",
     "benchmark_databank",
+    "capability_resolver",
 )
 _SHARD_OWNERS = (
     "studio_browser_runtime_refusal",
@@ -67,6 +68,7 @@ _MEASURED_JOURNEYS = (
     "topology",
     "attestation",
     "benchmark",
+    "capability",
 )
 
 
@@ -90,7 +92,7 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
     assert "tools/tests/test_studio_preview_custody.py" in source
     assert '--include="*/tools/studio_workbench_steps.py"' in source
     # One exact coverage report per separately measured journey owner.
-    assert source.count("--fail-under=100") == 18
+    assert source.count("--fail-under=100") == 19
     assert "trap " in source and 'wait "$preview_pid"' in source and 'wait "$source_pid"' in source
     evidence = next(
         item for item in steps if item.get("name") == "Preserve browser acceptance evidence"

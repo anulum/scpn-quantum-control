@@ -16,7 +16,7 @@ const EvidenceView = lazy(() => import("./EvidenceView"));
 /** Committed capability, support, gradient-plan and scorecard surfaces, attestation checks and benchmarks. */
 export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evidence"> = {
   id: "evidence",
-  apiVersion: "2.0",
+  apiVersion: "2.2",
   requires: { verbs: [], schemas: [] },
   stages: [
     {
@@ -30,6 +30,20 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
           focusBenchmarks={instrument === "benchmarks"}
         />
       ),
+    },
+  ],
+  capabilities: [
+    {
+      id: "verify-attestations",
+      label: "Verify attested result packs in the browser",
+      maturity: "stable",
+      needs: [],
+    },
+    {
+      id: "verify-benchmarks",
+      label: "Verify and read the tier benchmark databank",
+      maturity: "stable",
+      needs: [],
     },
   ],
   commands: [

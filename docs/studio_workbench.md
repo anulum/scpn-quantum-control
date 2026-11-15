@@ -310,7 +310,7 @@ cannot load executable code or change that registry.
 
 Each module has an identifier, the shell contract version it was written for
 (`apiVersion`, as `major.minor`) and the manifest verbs and evidence schemas it
-requires. The shell offers contract version `2.1`. It refuses a module from a
+requires. The shell offers contract version `2.2`. It refuses a module from a
 different major version or a later minor version when the registry is built,
 before reading any of the module's contributions. A minor version only adds
 optional contribution points. A module may contribute any of these slots:
@@ -330,6 +330,11 @@ optional contribution points. A module may contribute any of these slots:
   a tone: `active` for something that works, `boundary` for a limit it keeps.
   The shell shows an item only while its module is available. The shell's own
   limit, "Remote execution off", is not a module contribution.
+- **Capabilities** (since contract 2.2) say what the user can do and which
+  runtimes that needs. The runtime names are generic (`browser-kernel`,
+  `program-ad-kernel`, `browser-storage`, `local-service`, `hardware`), so the
+  shell holds no domain names; an unknown or repeated need is refused when the
+  registry is built.
 
 Module presentation lives in `studio-web/src/modules/<module>/`. The shell, in
 `studio-web/src/app/`, also owns the rendering of every contribution slot
@@ -2265,3 +2270,33 @@ competitive comparison. The CI baseline was measured on Python 3.12 before the
 CI job moved to Python 3.15, and its re-baseline is pending. Regenerate or
 check the pin with `python tools/studio_benchmark_databank.py --write` or
 `--check` after a benchmark artefact changes.
+
+## What this installation can do
+
+The Workspace stage lists every capability the compiled modules declare, under
+"What this installation can do". None is hidden: each row shows its state in
+words and, when something is missing, only what is missing. The shell resolves
+the states in this order:
+
+1. a manifest verb or schema the installation lacks, a runtime the host
+   refuses, or an unavailable runtime makes the capability **unavailable**;
+2. a degraded or unchecked runtime makes it **degraded**;
+3. otherwise it has its declared maturity, **stable** or **experimental**.
+
+What each runtime reports:
+
+- `browser-kernel` and `program-ad-kernel` are checked when the user selects
+  "Check runtimes": each kernel is loaded and must reproduce its committed input
+  (the same bounded checks the capability catalogue uses). The list does not
+  borrow what other panels observed, so until the check the kernel rows read
+  "not checked yet".
+- `browser-storage` is available when projects are kept in the browser cache
+  and degraded when storage is unavailable and work is kept for this page
+  session only.
+- `local-service` is optional and reported unavailable here; start the local job
+  service and connect from Run. The list never contacts it.
+- `hardware` is refused by the host: remote execution is a separate gated
+  service integration that this installation does not include.
+
+The pattern follows the SC-NeuroCore Studio capability shell, where a backend
+registry gives the same four states and the shell projects them per panel.

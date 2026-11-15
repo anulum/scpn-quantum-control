@@ -15,7 +15,7 @@ import type { ResourcePlan } from "../resources/admission";
  * A minor step only adds optional contribution points; a major step changes
  * or removes something a module relies on.
  */
-export const MODULE_API_VERSION = "2.1";
+export const MODULE_API_VERSION = "2.2";
 
 const apiVersionPattern = /^(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})$/u;
 
@@ -182,6 +182,35 @@ export interface ModuleStatusItem {
   readonly tone: "active" | "boundary";
 }
 
+/** Runtimes a capability can need; the names are generic so the shell holds no domain names. */
+export const runtimeNeeds = [
+  "browser-kernel",
+  "program-ad-kernel",
+  "browser-storage",
+  "local-service",
+  "hardware",
+] as const;
+
+/** One runtime a capability needs. */
+export type RuntimeNeed = (typeof runtimeNeeds)[number];
+
+/**
+ * Something the installation can do, with the runtimes it needs.
+ *
+ * The shell resolves each declared capability to stable, experimental,
+ * degraded or unavailable and always shows it. Since contract 2.2.
+ */
+export interface ModuleCapability {
+  /** Unique identifier in the capabilities slot. */
+  readonly id: string;
+  /** What the user can do, in a few words. */
+  readonly label: string;
+  /** Declared maturity when every need is met. */
+  readonly maturity: "stable" | "experimental";
+  /** Runtimes that must be present; an empty list needs none. */
+  readonly needs: readonly RuntimeNeed[];
+}
+
 /** Contribution slots whose ownership the shell can inspect. */
 export type ModuleSlot =
   | "explorer"
@@ -190,7 +219,8 @@ export type ModuleSlot =
   | "commands"
   | "jobs"
   | "settings"
-  | "statusItems";
+  | "statusItems"
+  | "capabilities";
 
 /**
  * One destination a module adds to the workbench.
@@ -253,6 +283,8 @@ export interface StudioModule<
   readonly settings?: readonly ModuleDocumentView<DocumentServices>[];
   /** Title-bar facts about what the module makes possible; since contract 2.1. */
   readonly statusItems?: readonly ModuleStatusItem[];
+  /** What the module lets the user do and which runtimes that needs; since contract 2.2. */
+  readonly capabilities?: readonly ModuleCapability[];
 }
 
 /** Destination of one admitted address path. */
@@ -301,6 +333,8 @@ export interface ModuleRegistry<Services, DocumentServices = Services> {
   readonly settings: readonly ModuleDocumentView<DocumentServices>[];
   /** Registered title-bar status items in module order. */
   readonly statusItems: readonly ModuleStatusItem[];
+  /** Registered capabilities in module order. */
+  readonly capabilities: readonly ModuleCapability[];
   /** Find the module responsible for a contribution without transferring authority. */
   readonly contributionOwner: (
     slot: ModuleSlot,
@@ -316,6 +350,7 @@ const contributionSlots: readonly ModuleSlot[] = [
   "jobs",
   "settings",
   "statusItems",
+  "capabilities",
 ];
 
 const identifier = /^[a-z][a-z0-9-]{0,39}$/u;
@@ -326,6 +361,14 @@ function requireIdentifier(kind: string, value: string): void {
 
 function requireDistinct(kind: string, values: readonly string[]): void {
   if (new Set(values).size !== values.length) throw new Error(`Repeated ${kind} identifier`);
+}
+
+function requireKnownNeeds(capabilities: readonly ModuleCapability[]): void {
+  for (const capability of capabilities) {
+    if (capability.needs.some((need) => !runtimeNeeds.includes(need)))
+      throw new Error(`Capability ${capability.id} names an unknown runtime`);
+    requireDistinct("runtime need", capability.needs);
+  }
 }
 
 /**
@@ -380,6 +423,8 @@ export function createModuleRegistry<Services, DocumentServices = Services>(
   const jobs = Object.freeze(modules.flatMap((module) => module.jobs ?? []));
   const settings = Object.freeze(modules.flatMap((module) => module.settings ?? []));
   const statusItems = Object.freeze(modules.flatMap((module) => module.statusItems ?? []));
+  const capabilities = Object.freeze(modules.flatMap((module) => module.capabilities ?? []));
+  requireKnownNeeds(capabilities);
   const contributionOwners = new Map<
     ModuleSlot,
     ReadonlyMap<string, StudioModule<Services, DocumentServices>>
@@ -415,6 +460,7 @@ export function createModuleRegistry<Services, DocumentServices = Services>(
     jobs,
     settings,
     statusItems,
+    capabilities,
     contributionOwner: (slot: ModuleSlot, id: string) => contributionOwners.get(slot)?.get(id),
     stage: (id: string) => byIdentifier.get(id),
     owner: (stage: string) => owners.get(stage),

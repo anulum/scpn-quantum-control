@@ -7,6 +7,7 @@
 // SCPN Quantum Control — shared workbench service contract
 
 import type { ReactNode } from "react";
+import type { CapabilityServices } from "./capabilities";
 import type { ExperimentRunController } from "../experiments/experimentRunService";
 import type { WorkflowRunController } from "../workflows/workflowRunService";
 import type { WorkspaceController } from "../workspace/workspaceService";
@@ -70,4 +71,5 @@ export interface WorkbenchServices
     NavigationServices,
     StageCompositionServices,
     ExperimentServices,
-    WorkflowServices {}
+    WorkflowServices,
+    CapabilityServices {}

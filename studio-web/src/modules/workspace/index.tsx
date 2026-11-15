@@ -6,19 +6,21 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — registered workbench module
 
+import type { CapabilityServices } from "../../shared/contracts/capabilities";
 import type { StudioModule } from "../../shared/contracts/module";
+import { CapabilityList } from "./CapabilityList";
 import type {
   SourceServices,
   StageCompositionServices,
   WorkspaceViewServices,
 } from "../../shared/contracts/workbench";
 /** Shell services this module uses; the compiler refuses any other. */
-type Services = SourceServices & StageCompositionServices;
+type Services = SourceServices & StageCompositionServices & CapabilityServices;
 
 /** Original workspace landing stage; persistence remains in the shared shell owner. */
 export const workspaceModule: StudioModule<Services, WorkspaceViewServices, "workspace"> = {
   id: "workspace",
-  apiVersion: "2.0",
+  apiVersion: "2.2",
   requires: { verbs: [], schemas: [] },
   stages: [
     {
@@ -26,7 +28,12 @@ export const workspaceModule: StudioModule<Services, WorkspaceViewServices, "wor
       label: "Workspace",
       group: "primary",
       instruments: [],
-      render: (services: Services) => services.overview(services.renderEditors("workspace")),
+      render: (services: Services) => (
+        <>
+          {services.overview(services.renderEditors("workspace"))}
+          <CapabilityList services={services} />
+        </>
+      ),
     },
   ],
   explorer: [
@@ -41,6 +48,14 @@ export const workspaceModule: StudioModule<Services, WorkspaceViewServices, "wor
           label: `${document.schema} · ${document.sha256.slice(0, 12)}`,
           document,
         })),
+    },
+  ],
+  capabilities: [
+    {
+      id: "save-projects",
+      label: "Save projects in this browser",
+      maturity: "stable",
+      needs: ["browser-storage"],
     },
   ],
   commands: [

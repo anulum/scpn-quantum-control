@@ -666,6 +666,7 @@ _WITH_EVIDENCE: dict[str, tuple[str, str]] = {
     "topology_symmetry_instrument": ("tools.studio_topology_browser", "run_topology_journey"),
     "attestation_verification": ("tools.studio_attestation_browser", "run_attestation_journey"),
     "benchmark_databank": ("tools.studio_benchmark_browser", "run_benchmark_journey"),
+    "capability_resolver": ("tools.studio_capability_browser", "run_capability_journey"),
     "pulse_feasibility": ("tools.studio_pulse_browser", "run_pulse_journey"),
     "compiler_trace_inspector": (
         "tools.studio_compiler_trace_browser",
@@ -700,6 +701,7 @@ _SCENARIOS = (
     "topology_symmetry_instrument",
     "attestation_verification",
     "benchmark_databank",
+    "capability_resolver",
     "operator_backend_profiles",
     "operator_policy_decisions",
     "operator_review_dossiers",

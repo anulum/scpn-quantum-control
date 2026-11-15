@@ -216,6 +216,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+### Capability states
+
+- The Workspace stage lists what this installation can do: every capability
+  the modules declare, each stable, experimental, degraded or unavailable, with
+  only what is missing. Nothing is hidden. Hardware execution is shown as
+  unavailable because the host does not include remote execution, and the
+  optional local job service as unavailable until it is started and connected.
+- "Check runtimes" loads both WASM kernels and checks them against their
+  committed inputs; until then the kernel rows read "not checked yet".
+- The module contract moves to 2.2: modules may declare capabilities with
+  generic runtime needs; modules written for 2.0 and 2.1 still load.
+
 ### Benchmark databank
 
 - Evidence shows the canonical Kuramoto tier benchmarks of the CI and local

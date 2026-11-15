@@ -26,7 +26,7 @@ const LocalJobsPanel = lazy(() => import("./LocalJobsPanel"));
 /** Original experiment runner shares the work area with independently registered workflow controls. */
 export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "experiments"> = {
   id: "experiments",
-  apiVersion: "2.0",
+  apiVersion: "2.2",
   requires: { verbs: [], schemas: [] },
   stages: [
     {
@@ -46,6 +46,20 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
           <LocalJobsPanel focus={instrument === "local-jobs"} />
         </>
       ),
+    },
+  ],
+  capabilities: [
+    {
+      id: "run-local-experiments",
+      label: "Run local Kuramoto experiments in the browser",
+      maturity: "stable",
+      needs: ["browser-kernel"],
+    },
+    {
+      id: "durable-local-jobs",
+      label: "Run durable local jobs through the local service",
+      maturity: "experimental",
+      needs: ["local-service"],
     },
   ],
   commands: [

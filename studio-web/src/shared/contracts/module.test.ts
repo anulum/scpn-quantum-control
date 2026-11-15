@@ -117,6 +117,14 @@ describe("createModuleRegistry", () => {
       ],
       jobs: [localJob],
       statusItems: [{ id: "local-kernel", label: "Local kernel", tone: "active" }],
+      capabilities: [
+        {
+          id: "replay-locally",
+          label: "Replay locally",
+          maturity: "stable",
+          needs: ["browser-kernel"],
+        },
+      ],
     };
     const base = createModuleRegistry([first]);
     const registry = createModuleRegistry([first, extension]);
@@ -132,6 +140,7 @@ describe("createModuleRegistry", () => {
     expect(registry.statusItems).toEqual([
       { id: "local-kernel", label: "Local kernel", tone: "active" },
     ]);
+    expect(registry.capabilities.map((capability) => capability.id)).toEqual(["replay-locally"]);
     for (const slot of [
       "explorer",
       "editors",
@@ -140,6 +149,7 @@ describe("createModuleRegistry", () => {
       "jobs",
       "settings",
       "statusItems",
+      "capabilities",
     ] as const) {
       expect(registry.contributionOwner(slot, requirePresent(registry[slot][0]).id)).toBe(
         extension,
@@ -159,6 +169,7 @@ describe("createModuleRegistry", () => {
     "jobs",
     "settings",
     "statusItems",
+    "capabilities",
   ] as const)(
     "refuses colliding identifiers in the %s slot before a view or job can run",
     (slot: ModuleSlot) => {
@@ -177,7 +188,9 @@ describe("createModuleRegistry", () => {
               ? [{ ...localJob, id: "same" }]
               : slot === "statusItems"
                 ? [{ id: "same", label: "Same", tone: "boundary" }]
-                : [{ ...documentView, id: "same" }];
+                : slot === "capabilities"
+                  ? [{ id: "same", label: "Same", maturity: "stable", needs: [] }]
+                  : [{ ...documentView, id: "same" }];
       const extension = { ...module("second", []), [slot]: contributors };
       const duplicate = { ...module("third", []), [slot]: contributors };
       expect(() => createModuleRegistry([first, extension, duplicate])).toThrow(
@@ -303,15 +316,35 @@ describe("module contract version", () => {
   });
 
   it("refuses a module written against a contract this shell does not offer, naming both", () => {
-    expect(MODULE_API_VERSION).toBe("2.1");
+    expect(MODULE_API_VERSION).toBe("2.2");
     expect(createModuleRegistry([{ ...first, apiVersion: "2.0" }, second]).modules).toHaveLength(2);
-    const later = { ...first, apiVersion: "2.2" };
+    expect(createModuleRegistry([{ ...first, apiVersion: "2.1" }]).modules).toHaveLength(1);
+    const later = { ...first, apiVersion: "2.3" };
     expect(() => createModuleRegistry([second, later])).toThrow(
-      `Module first targets contract 2.2; this shell offers ${MODULE_API_VERSION}`,
+      `Module first targets contract 2.3; this shell offers ${MODULE_API_VERSION}`,
     );
     expect(() => createModuleRegistry([{ ...first, apiVersion: "1.0" }])).toThrow(
       "targets contract 1.0",
     );
     expect(() => createModuleRegistry([{ ...first, apiVersion: "2" }])).toThrow("major.minor");
+  });
+});
+
+describe("module capabilities", () => {
+  it("refuses an unknown or repeated runtime need before any capability is shown", () => {
+    const declaring = (needs: readonly string[]) =>
+      ({
+        ...first,
+        capabilities: [{ id: "probe", label: "Probe", maturity: "stable", needs }],
+      }) as unknown as typeof first;
+    expect(() => createModuleRegistry([declaring(["quantum-cloud"])])).toThrow(
+      "Capability probe names an unknown runtime",
+    );
+    expect(() => createModuleRegistry([declaring(["hardware", "hardware"])])).toThrow(
+      "Repeated runtime need identifier",
+    );
+    expect(
+      createModuleRegistry([declaring(["hardware", "local-service"])]).capabilities,
+    ).toHaveLength(1);
   });
 });

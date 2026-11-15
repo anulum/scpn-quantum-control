@@ -7,21 +7,12 @@
 // scpn-quantum-control — useCatalogueRuntimes
 
 import { useEffect, useState } from "react";
-import { fetchKernel, recomputeUnit, verifyRecomputeUnit } from "../../shared/browser/recompute";
-import { fetchProgramAd, programAdUnit, verifyProgramAdUnit } from "../../shared/browser/programAd";
+import { probeBrowserKernel, probeProgramAdKernel } from "../../shared/browser/runtimeProbes";
 import type { RuntimeAvailability } from "./catalogue";
 
 const loaders: Readonly<Record<string, () => Promise<unknown>>> = {
-  compile: async () => {
-    if (!recomputeUnit.ok) throw new Error(recomputeUnit.reason);
-    const verdict = verifyRecomputeUnit(recomputeUnit.value, await fetchKernel());
-    if (verdict.display !== "match") throw new Error("Committed XY input did not verify");
-  },
-  differentiate: async () => {
-    if (!programAdUnit.ok) throw new Error(programAdUnit.reason);
-    const verdict = await verifyProgramAdUnit(programAdUnit.value, await fetchProgramAd());
-    if (verdict.display !== "match") throw new Error("Committed program-AD input did not verify");
-  },
+  compile: probeBrowserKernel,
+  differentiate: probeProgramAdKernel,
 };
 /** Load and bind optional WASM runtimes; late resolutions cannot update a disposed panel. */
 export function useCatalogueRuntimes(

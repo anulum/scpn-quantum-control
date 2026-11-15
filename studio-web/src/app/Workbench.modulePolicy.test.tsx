@@ -28,6 +28,7 @@ import { ModuleJobDock } from "./moduleViews/ModuleJobDock";
 import { useWorkflowRun } from "../shared/workflows/useWorkflowRun";
 import { useWorkspace } from "../shared/workspace/useWorkspace";
 import { workbenchModules } from "./moduleRegistry";
+import { noCapabilityServices } from "../../test-fixtures/capabilityServices";
 
 const originalCrypto = globalThis.crypto;
 beforeEach(() => {
@@ -51,6 +52,7 @@ function OriginalOwners({
   });
   const workflow = useWorkflowRun(workspace.draft, true);
   const services: WorkbenchServices = {
+    ...noCapabilityServices,
     workspace,
     experiment,
     workflow,

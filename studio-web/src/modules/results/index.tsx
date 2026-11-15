@@ -20,7 +20,7 @@ const ResultsView = lazy(() => import("./ResultsView"));
 /** Original results and committed replay retain their source and lifecycle bindings. */
 export const resultsModule: StudioModule<Services, WorkspaceViewServices, "results"> = {
   id: "results",
-  apiVersion: "2.0",
+  apiVersion: "2.2",
   requires: { verbs: [], schemas: [] },
   stages: [
     {
@@ -54,6 +54,14 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
           editors={services.renderEditors("results")}
         />
       ),
+    },
+  ],
+  capabilities: [
+    {
+      id: "replay-program-ad",
+      label: "Replay a differentiated program in the browser",
+      maturity: "stable",
+      needs: ["program-ad-kernel"],
     },
   ],
   commands: [

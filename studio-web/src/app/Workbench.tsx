@@ -32,6 +32,7 @@ import { RouteBoundary } from "./RouteBoundary";
 import { WorkbenchInspector } from "./WorkbenchInspector";
 import { WorkbenchHelp } from "./WorkbenchHelp";
 import { displayTheme } from "./displayTheme";
+import { useCapabilityReport } from "./useCapabilityReport";
 
 const committedDeclarations = declaredBy(studioManifest);
 
@@ -96,7 +97,9 @@ export function Workbench({
   } | null>(null);
   const selectedDocument =
     admittedSources.documents.find((source) => source.sha256 === selectedSource) ?? null;
+  const report = useCapabilityReport(registry, registry.missing(declared), workspace.persistence);
   const services: WorkbenchServices = {
+    ...report,
     documents: admittedSources.documents,
     renderEditors: (stage) => (
       <ModuleStageEditors
