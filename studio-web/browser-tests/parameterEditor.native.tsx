@@ -36,6 +36,16 @@ import type { WorkspaceController } from "../src/shared/workspace/workspaceServi
 import { openWorkspaceStore } from "../src/shared/storage/workspaceStore";
 import { conformanceArchive, conformanceCodecs } from "./workspaceFixture";
 
+/**
+ * Mount the original workspace controller and expose it to the native cases.
+ * @param props - The holder that receives the current controller.
+ * @returns Nothing visible.
+ */
+function ControllerProbe({ holder }: { holder: { current: WorkspaceController | null } }) {
+  holder.current = useWorkspace(conformanceCodecs);
+  return null;
+}
+
 function take<T>(result: ParseResult<T>): T {
   if (!result.ok) throw new Error(`${result.path}: ${result.message}`);
   return result.value;
@@ -161,10 +171,6 @@ export async function runParameterControllerCases(
   document.body.append(host);
   const root = createRoot(host);
   const holder: { current: WorkspaceController | null } = { current: null };
-  function Host() {
-    holder.current = useWorkspace(conformanceCodecs);
-    return null;
-  }
   const read = (): WorkspaceController => {
     if (holder.current === null) throw new Error("Original workspace controller missing");
     return holder.current;
@@ -189,7 +195,7 @@ export async function runParameterControllerCases(
       throw new Error("Native child refusal changed the prior saved archive or omitted its cause");
   };
   try {
-    flushSync(() => root.render(<Host />));
+    flushSync(() => root.render(<ControllerProbe holder={holder} />));
     await settle();
     flushSync(() => read().edit(prior.json));
     await read().inspect();

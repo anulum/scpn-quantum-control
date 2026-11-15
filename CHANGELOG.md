@@ -87,9 +87,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   @vitejs/plugin-react 6.2.1, jsdom 30.1.3, @module-federation/vite 1.23.9,
   @testing-library/react 16.3.3, axe-core 4.14.0 and @types/node 26.6.6. Every
   chosen release is at least seven days old. React stays at 19.3.0 because the
-  module-federation contract shares it as a singleton with the Hub, and Biome
-  stays at 2.5.15 because 2.6 reports eight findings above the measured web
-  source ceiling.
+  module-federation contract shares it as a singleton with the Hub. Biome moves
+  from 2.5.15 to 2.6.6, the newest 2.6 release at least seven days old: its
+  eight new findings are fixed without suppressions (seven test harness
+  components move to module scope, and a BigInt byte-count minimum, where
+  `Math.min` would throw, becomes a direct comparison), the configuration is
+  migrated (`rules.preset`), and the web source ceiling is re-measured at the
+  same counts.
 - Engine release: the Rust engine is not abi3, and its release workflow built
   CPython 3.12 wheels only. It now builds wheels for 3.12, 3.13 and 3.15 on Linux
   (x86_64, aarch64), Windows and macOS (x86_64, arm64). The build fails if any of

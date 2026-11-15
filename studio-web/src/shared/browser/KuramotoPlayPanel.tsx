@@ -76,6 +76,17 @@ export function controlsToRequest(controls: Controls): KuramotoRequest {
   return { mode, omega, theta0, steps, dt: FIXED_DT, coupling } as const;
 }
 
+/**
+ * The smaller of two byte counts. `Math.min` throws on BigInt, so compare directly.
+ * @param left - A byte count.
+ * @param right - Another byte count.
+ * @returns The smaller count.
+ */
+function smallerBytes(left: bigint, right: bigint): bigint {
+  if (left < right) return left;
+  return right;
+}
+
 /** Map an R(t) series to an SVG polyline over a 0..1 vertical band. */
 export function sparklinePoints(series: Float64Array, width: number, height: number): string {
   if (series.length < 2) {
@@ -266,11 +277,7 @@ export function useKuramotoPlay(
       return {
         ...ceiling,
         memoryBytes:
-          ceiling.memoryBytes === null
-            ? null
-            : requestedBytes < ceiling.memoryBytes
-              ? requestedBytes
-              : ceiling.memoryBytes,
+          ceiling.memoryBytes === null ? null : smallerBytes(requestedBytes, ceiling.memoryBytes),
       };
     } catch {
       return null;

@@ -19,7 +19,7 @@
   },
   "linter": {
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "complexity": {
         // Wire records are read by their literal field names, e.g. record["plan_sha256"].
         "useLiteralKeys": "off"

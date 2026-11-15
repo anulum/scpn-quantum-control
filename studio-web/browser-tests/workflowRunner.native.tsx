@@ -15,6 +15,47 @@ import type { WorkspaceController } from "../src/shared/workspace/workspaceServi
 import { WorkflowRunner } from "../src/modules/workflows/WorkflowRunner";
 import { useWorkflowRun } from "../src/shared/workflows/useWorkflowRun";
 
+/** What the native refusal cases hand to the hosted workflow view. */
+interface WorkflowHarness {
+  /** Whether the view is active. */ readonly active: boolean;
+  /** Receives the mounted workspace controller. */ readonly state: {
+    workspace: WorkspaceController | null;
+  };
+  /** Kernel loader the view uses, held by the case. */ readonly loadKernel: () => ReturnType<
+    typeof fetchKuramoto
+  >;
+  /** Called once each workflow run has finished. */ readonly settle: () => void;
+}
+
+/**
+ * Host the original workflow view with the case's kernel loader and run hook.
+ * @param props - The harness of the current native case.
+ * @returns The workflow view.
+ */
+function WorkflowHost({ harness }: { harness: WorkflowHarness }) {
+  const workspace = useWorkspace(localExperimentCodecs);
+  const original = useWorkflowRun(workspace.draft, harness.active);
+  harness.state.workspace = workspace;
+  return (
+    <WorkflowRunner
+      workspace={workspace}
+      rawCodecs={localExperimentCodecs}
+      experimentBlocked={false}
+      loadKernel={harness.loadKernel}
+      run={{
+        ...original,
+        run: async (request) => {
+          try {
+            await original.run(request);
+          } finally {
+            harness.settle();
+          }
+        },
+      }}
+    />
+  );
+}
+
 async function tick(): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
@@ -43,36 +84,19 @@ export async function runNativeWorkflowViewRefusals(): Promise<Record<string, un
     });
     let loadStarted = false;
     let unmounted = false;
-    function Host() {
-      const workspace = useWorkspace(localExperimentCodecs);
-      const original = useWorkflowRun(workspace.draft, phase !== "inactive");
-      state.workspace = workspace;
-      return (
-        <WorkflowRunner
-          workspace={workspace}
-          rawCodecs={localExperimentCodecs}
-          experimentBlocked={false}
-          loadKernel={async () => {
-            loadStarted = true;
-            await loading;
-            return fetchKuramoto();
-          }}
-          run={{
-            ...original,
-            run: async (request) => {
-              try {
-                await original.run(request);
-              } finally {
-                settle();
-              }
-            },
-          }}
-        />
-      );
-    }
+    const harness: WorkflowHarness = {
+      active: phase !== "inactive",
+      state,
+      loadKernel: async () => {
+        loadStarted = true;
+        await loading;
+        return fetchKuramoto();
+      },
+      settle: () => settle(),
+    };
     const started = observed.started;
     try {
-      flushSync(() => root.render(<Host />));
+      flushSync(() => root.render(<WorkflowHost harness={harness} />));
       const deadline = performance.now() + 10_000;
       let run: HTMLButtonElement | null = null;
       while (run === null || run.disabled) {

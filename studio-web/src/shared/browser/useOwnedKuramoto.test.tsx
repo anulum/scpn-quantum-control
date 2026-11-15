@@ -59,6 +59,22 @@ function job(change: Partial<OwnedKuramotoJob> = {}): OwnedKuramotoJob {
   };
 }
 
+/**
+ * Render the owned run hook on the server and hand its cancel callback out.
+ * @param props - The job to bind and the receiver of the cancel callback.
+ * @returns A fixed marker element.
+ */
+function ServerConsumer({
+  input,
+  onCancel,
+}: {
+  input: OwnedKuramotoJob;
+  onCancel: (cancel: () => Promise<void>) => void;
+}) {
+  onCancel(useOwnedKuramoto(input).cancel);
+  return <span>bounded source</span>;
+}
+
 it("computes with the original source and separately verifies a sequential reference", async () => {
   const input = job();
   const reference = { ...input.request, theta0: [0.1, 0.3] };
@@ -260,11 +276,15 @@ it("server rendering and a callback retained after unmount cannot allocate or re
   const input = job();
   const started = BuiltKernelWorker.started;
   let cancel!: () => Promise<void>;
-  function ServerConsumer() {
-    cancel = useOwnedKuramoto(input).cancel;
-    return <span>bounded source</span>;
-  }
-  expect(renderToString(<ServerConsumer />)).toContain("bounded source");
+  const consumer = (
+    <ServerConsumer
+      input={input}
+      onCancel={(retained) => {
+        cancel = retained;
+      }}
+    />
+  );
+  expect(renderToString(consumer)).toContain("bounded source");
   await cancel();
   expect(BuiltKernelWorker.started).toBe(started);
   const mounted = renderHook(() => useOwnedKuramoto(input));

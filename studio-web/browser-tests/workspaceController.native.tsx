@@ -12,6 +12,16 @@ import { useWorkspace } from "../src/shared/workspace/useWorkspace";
 import type { WorkspaceController } from "../src/shared/workspace/workspaceService";
 import { conformanceCodecs } from "./workspaceFixture";
 
+/**
+ * Mount the original workspace controller and expose it to the native cases.
+ * @param props - The holder that receives the current controller.
+ * @returns Nothing visible.
+ */
+function ControllerProbe({ holder }: { holder: { current: WorkspaceController | null } }) {
+  holder.current = useWorkspace(conformanceCodecs);
+  return null;
+}
+
 async function tick(): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
@@ -34,10 +44,6 @@ export async function runNativeControllerUnmountCases(): Promise<Record<string, 
         flushSync(() => root.unmount());
       }
     };
-    function Host() {
-      useWorkspace(conformanceCodecs);
-      return null;
-    }
     try {
       IDBDatabase.prototype.close = function (this: IDBDatabase): void {
         if (this.name === "scpn-quantum-workspace-v1") closedConnections++;
@@ -64,7 +70,7 @@ export async function runNativeControllerUnmountCases(): Promise<Record<string, 
           return transaction;
         };
       }
-      flushSync(() => root.render(<Host />));
+      flushSync(() => root.render(<ControllerProbe holder={{ current: null }} />));
       if (phase === "open") unmount();
       const deadline = performance.now() + 10_000;
       while (closedConnections === 0) {
@@ -92,10 +98,6 @@ export async function runNativeControllerCases(): Promise<Record<string, unknown
   document.body.append(container);
   const root = createRoot(container);
   const state: { current: WorkspaceController | null } = { current: null };
-  function Host() {
-    state.current = useWorkspace(conformanceCodecs);
-    return null;
-  }
   const read = (): WorkspaceController => {
     if (state.current === null) throw new Error("Actual controller was not mounted");
     return state.current;
@@ -105,7 +107,7 @@ export async function runNativeControllerCases(): Promise<Record<string, unknown
     await tick();
   };
   try {
-    flushSync(() => root.render(<Host />));
+    flushSync(() => root.render(<ControllerProbe holder={state} />));
     const deadline = performance.now() + 10_000;
     while (read().busy) {
       if (performance.now() > deadline)
@@ -275,13 +277,9 @@ export async function runNativeControllerFailedOpenCases(): Promise<Record<strin
       document.body.append(container);
       const root = createRoot(container);
       const state: { current: WorkspaceController | null } = { current: null };
-      function Host() {
-        state.current = useWorkspace(conformanceCodecs);
-        return null;
-      }
       let disposed = false;
       try {
-        flushSync(() => root.render(<Host />));
+        flushSync(() => root.render(<ControllerProbe holder={state} />));
         if (phase === "disposed") {
           flushSync(() => root.unmount());
           disposed = true;

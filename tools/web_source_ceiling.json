@@ -1,7 +1,7 @@
 {
  "schema": "web_source_ceiling_v1",
- "release": "2.5.15",
- "measured_commit": "c2e88669e7c2d678a195638cae5d7a079d451f46",
+ "release": "2.6.6",
+ "measured_commit": "040aa85c9a2c0056f99dd3c8a556636d72b45c11",
  "total_lint_findings": 40,
  "total_lint_files": 9,
  "total_unformatted_files": 33,
@@ -51,5 +51,13 @@
   "studio-web/src/shared/storage/workspaceStore.test.ts",
   "studio-web/test-support/kernelWorker.ts"
  ],
- "history": []
+ "history": [
+  {
+   "release": "2.5.15",
+   "measured_commit": "c2e88669e7c2d678a195638cae5d7a079d451f46",
+   "total_lint_findings": 40,
+   "total_lint_files": 9,
+   "total_unformatted_files": 33
+  }
+ ]
 }

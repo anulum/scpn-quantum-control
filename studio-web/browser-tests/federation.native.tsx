@@ -28,6 +28,26 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+/**
+ * Host the federated panel beside a host-owned counter that shares React.
+ * @param props - The panel component the remote exposed.
+ * @returns The counter, its state and the embedded panel.
+ */
+function Host({ Panel }: { Panel: React.ComponentType<QuantumStudioPanelProps> }) {
+  const [count, setCount] = React.useState(0);
+  return (
+    <>
+      <button type="button" onClick={() => setCount((value) => value + 1)}>
+        Host singleton counter
+      </button>
+      <output aria-label="Federation consumer state">{count}</output>
+      <div style={{ width: "100%", maxWidth: "720px" }}>
+        <Panel mode="embedded" rawCodecs={conformanceCodecs} />
+      </div>
+    </>
+  );
+}
+
 async function boot(): Promise<void> {
   const url = "/remoteEntry.js";
   const imported: unknown = await import(/* @vite-ignore */ url);
@@ -61,24 +81,10 @@ async function boot(): Promise<void> {
   )
     throw new Error("Original named/default panel identity missing");
   const Panel = exposed["default"] as React.ComponentType<QuantumStudioPanelProps>;
-  function Host() {
-    const [count, setCount] = React.useState(0);
-    return (
-      <>
-        <button type="button" onClick={() => setCount((value) => value + 1)}>
-          Host singleton counter
-        </button>
-        <output aria-label="Federation consumer state">{count}</output>
-        <div style={{ width: "100%", maxWidth: "720px" }}>
-          <Panel mode="embedded" rawCodecs={conformanceCodecs} />
-        </div>
-      </>
-    );
-  }
   const container = document.getElementById("consumer");
   if (container === null) throw new Error("Native consumer root missing");
   const root = createRoot(container);
-  root.render(<Host />);
+  root.render(<Host Panel={Panel} />);
   window.addEventListener("pagehide", () => root.unmount(), { once: true });
 }
 
