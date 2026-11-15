@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from scpn_quantum_control.phase import (
@@ -21,6 +23,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_qnn_convergence_suite_records_deterministic_training_evidence() -> None:
+    """The default suite trains all three cases to tolerance without hardware claims."""
     suite = run_parameter_shift_qnn_convergence_suite()
 
     assert isinstance(suite, ParameterShiftQNNConvergenceSuiteResult)
@@ -51,6 +54,7 @@ def test_qnn_convergence_suite_records_deterministic_training_evidence() -> None
 
 
 def test_qnn_convergence_suite_supports_case_selection() -> None:
+    """A selected case runs alone and is found by name."""
     suite = run_parameter_shift_qnn_convergence_suite(case_names=("two_feature_phase_flip",))
 
     assert suite.passed
@@ -60,6 +64,7 @@ def test_qnn_convergence_suite_supports_case_selection() -> None:
 
 
 def test_qnn_multi_seed_convergence_suite_records_seed_envelope() -> None:
+    """Three seeds give a passing envelope with per-run seeds and evaluation totals."""
     suite = run_parameter_shift_qnn_multi_seed_convergence_suite(
         case_names=("single_feature_phase_flip",),
         seeds=(11, 17, 23),
@@ -91,6 +96,7 @@ def test_qnn_multi_seed_convergence_suite_records_seed_envelope() -> None:
 
 
 def test_qnn_multi_seed_convergence_records_failures_without_hiding_them() -> None:
+    """An unreachable loss-drop threshold fails every seeded run and the case."""
     suite = run_parameter_shift_qnn_multi_seed_convergence_suite(
         case_names=("single_feature_phase_flip",),
         seeds=(11, 17),
@@ -108,6 +114,7 @@ def test_qnn_multi_seed_convergence_records_failures_without_hiding_them() -> No
 
 
 def test_qnn_multi_seed_convergence_fails_closed_on_invalid_controls() -> None:
+    """Empty or repeated seeds and a negative noise scale are refused."""
     with pytest.raises(ValueError, match="seeds must contain at least one"):
         run_parameter_shift_qnn_multi_seed_convergence_suite(seeds=())
 
@@ -119,6 +126,7 @@ def test_qnn_multi_seed_convergence_fails_closed_on_invalid_controls() -> None:
 
 
 def test_qnn_convergence_suite_records_threshold_failures_without_hiding_them() -> None:
+    """An unreachable loss-drop threshold is recorded as a failed case."""
     suite = run_parameter_shift_qnn_convergence_suite(
         case_names=("single_feature_phase_flip",),
         min_loss_drop=1.0,
@@ -135,6 +143,7 @@ def test_qnn_convergence_suite_records_threshold_failures_without_hiding_them() 
 
 
 def test_qnn_convergence_suite_fails_closed_on_invalid_controls() -> None:
+    """Unknown cases, a negative loss drop and an accuracy above one are refused."""
     with pytest.raises(ValueError, match="unknown QNN convergence case"):
         run_parameter_shift_qnn_convergence_suite(case_names=("missing",))
 
@@ -146,6 +155,7 @@ def test_qnn_convergence_suite_fails_closed_on_invalid_controls() -> None:
 
 
 def test_qnn_convergence_unsuitable_scenarios_are_documented() -> None:
+    """Every unsuitable scenario is named, staged and has a mitigation."""
     scenarios = summarize_parameter_shift_qnn_convergence_unsuitable_scenarios()
 
     assert len(scenarios) >= 4
@@ -157,3 +167,39 @@ def test_qnn_convergence_unsuitable_scenarios_are_documented() -> None:
     }
     assert all(scenario.status == "fail_closed_or_staged" for scenario in scenarios)
     assert all(scenario.mitigation for scenario in scenarios)
+
+
+def test_qnn_convergence_suite_totals_lookups_and_accuracy_threshold() -> None:
+    """The suite totals its evaluations, finds its second case, refuses unknown names and applies a threshold."""
+    suite = run_parameter_shift_qnn_convergence_suite(
+        case_names=("single_feature_phase_flip", "two_feature_phase_flip"), min_accuracy=0.5
+    )
+
+    assert suite.total_gradient_evaluations == sum(
+        case.gradient_evaluations for case in suite.cases
+    )
+    assert suite.unsuitable_scenario_count == len(
+        summarize_parameter_shift_qnn_convergence_unsuitable_scenarios()
+    )
+    assert suite.case_by_name("two_feature_phase_flip") is suite.cases[1]
+    assert all(case.min_accuracy == 0.5 for case in suite.cases)
+    with pytest.raises(KeyError, match="unknown QNN convergence case: missing"):
+        suite.case_by_name("missing")
+    assert suite.to_dict()["total_gradient_evaluations"] == suite.total_gradient_evaluations
+
+
+def test_qnn_multi_seed_suite_lookups_empty_suites_and_runs_without_accuracy() -> None:
+    """Multi-seed lookups find the named case, an empty suite has no seeds, and a missing accuracy is worst."""
+    suite = run_parameter_shift_qnn_multi_seed_convergence_suite(
+        case_names=("single_feature_phase_flip", "two_feature_phase_flip"), seeds=(11, 17)
+    )
+
+    case = suite.case_by_name("two_feature_phase_flip")
+    assert case is suite.cases[1]
+    with pytest.raises(KeyError, match="unknown QNN multi-seed convergence case: missing"):
+        suite.case_by_name("missing")
+    assert replace(suite, cases=()).seed_count == 0
+    first = case.runs[0]
+    no_accuracy = replace(first, case=replace(first.case, accuracy=None))
+    unknown_accuracy = replace(case, runs=(no_accuracy, *case.runs[1:]))
+    assert unknown_accuracy.worst_accuracy == float("-inf")

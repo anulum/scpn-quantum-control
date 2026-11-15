@@ -497,6 +497,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The QNN convergence suites (`phase/qnn_convergence.py`) now test the
+  gradient-evaluation total and its payload, the unsuitable-scenario count, and
+  lookups that find the second of two cases and refuse unknown names, in
+  both suites. They also test an accepted accuracy threshold, an empty
+  multi-seed suite with no seeds, and a seeded run without an accuracy, which
+  counts as the worst. Coverage rises from 95.13% to 100%. Eight older tests
+  gain docstrings, so the test documentation ceiling falls to 6899 findings
+  in 537 files.
+
 - The Phase-QNode circuit builders (`phase/qnode_circuit_builders.py`) now
   test:
   - Ising coefficients that are boolean, complex, NaN, a matrix, or a vector
