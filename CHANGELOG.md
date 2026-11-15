@@ -497,6 +497,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The gradient transform nesting planner (`phase/transform_nesting.py`) now
+  tests that native vmap(grad), grad-of-grad and the Hessian are
+  policy-blocked by name on hardware, and that the audit counts both an
+  unexpected supported stack and an expected stack that became blocked as
+  failures. Coverage rises from 96.58% to 100% over the nesting tests. Ten
+  older tests gain docstrings, so the test documentation ceiling falls to
+  6830 findings in 530 files.
+
 - The TensorFlow bounded-QNN gradient (`phase/tensorflow_gradients.py`) now
   tests every feature and label refusal through the facade and the existing
   fake TensorFlow:

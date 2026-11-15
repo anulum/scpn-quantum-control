@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "a575818d4d3c3a68619f5af09ec15a8f9289497d",
+ "measured_commit": "e3995c334e2c1fe232f5489688cf234684885a29",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6840,
- "total_files": 531,
+ "total_findings": 6830,
+ "total_files": 530,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -367,7 +367,6 @@
   "tests/test_phase_torch_bridge_runtime_boundaries.py": 33,
   "tests/test_phase_torch_bridge_validation_edges.py": 11,
   "tests/test_phase_torch_maturity_integration.py": 2,
-  "tests/test_phase_transform_nesting.py": 10,
   "tests/test_phase_vqe.py": 21,
   "tests/test_physics_accuracy.py": 1,
   "tests/test_physics_first_tutorial.py": 1,

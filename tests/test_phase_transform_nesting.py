@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import cast
 
 import pytest
@@ -22,6 +23,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_transform_nesting_supports_first_order_and_value_grad_routes() -> None:
+    """First-order grad and value_grad are supported through parameter shift."""
     grad_plan = plan_gradient_transform_nesting("grad", n_params=2)
     value_grad_plan = plan_gradient_transform_nesting("value_grad", n_params=2)
 
@@ -38,6 +40,7 @@ def test_transform_nesting_supports_first_order_and_value_grad_routes() -> None:
 
 
 def test_transform_nesting_supports_deterministic_native_curvature_routes() -> None:
+    """A native Hessian and grad-of-grad are supported as deterministic second-order routes."""
     hessian = plan_gradient_transform_nesting("hessian", n_params=2)
     nested_grad = plan_gradient_transform_nesting(("grad", "grad"), n_params=2)
 
@@ -54,6 +57,7 @@ def test_transform_nesting_supports_deterministic_native_curvature_routes() -> N
 
 
 def test_transform_nesting_supports_single_adapter_and_tape_routes() -> None:
+    """A single JAX transform and the gradient tape are supported with their strategies."""
     jax_plan = plan_gradient_transform_nesting("value_and_grad", adapter="jax", n_params=2)
     tape_plan = plan_gradient_transform_nesting("tape", n_params=2)
 
@@ -69,6 +73,7 @@ def test_transform_nesting_supports_single_adapter_and_tape_routes() -> None:
 
 
 def test_transform_nesting_supports_local_directional_and_scalar_jacobian_routes() -> None:
+    """JVP, VJP and the scalar Jacobians are supported as local diagnostics."""
     jvp = plan_gradient_transform_nesting("jvp", n_params=2)
     vjp = plan_gradient_transform_nesting("vjp", n_params=2)
     jacfwd = plan_gradient_transform_nesting("jacfwd", n_params=2)
@@ -88,6 +93,7 @@ def test_transform_nesting_supports_local_directional_and_scalar_jacobian_routes
 
 
 def test_transform_nesting_supports_native_manual_vmap_grad() -> None:
+    """Native vmap(grad) is supported as a manual batch loop."""
     vmap_grad = plan_gradient_transform_nesting(("vmap", "grad"), n_params=2)
 
     assert vmap_grad.supported
@@ -97,6 +103,7 @@ def test_transform_nesting_supports_native_manual_vmap_grad() -> None:
 
 
 def test_transform_nesting_blocks_framework_vectorized_transform_stacks() -> None:
+    """vmap(grad) through a framework adapter is blocked."""
     vmap_grad = plan_gradient_transform_nesting(("vmap", "grad"), adapter="jax", n_params=2)
 
     assert vmap_grad.fail_closed
@@ -112,6 +119,7 @@ def test_transform_nesting_blocks_framework_vectorized_transform_stacks() -> Non
 
 
 def test_transform_nesting_blocks_unsafe_curvature_and_tape_nesting() -> None:
+    """A finite-shot Hessian, an adapter grad-of-grad and grad over a tape are blocked."""
     finite_shot_hessian = plan_gradient_transform_nesting(
         "hessian",
         backend="qasm_simulator",
@@ -153,6 +161,7 @@ def test_transform_nesting_blocks_unsafe_curvature_and_tape_nesting() -> None:
 
 
 def test_transform_nesting_blocks_hardware_and_unknown_transforms() -> None:
+    """Hardware without a policy and an unknown transform are blocked."""
     hardware = plan_gradient_transform_nesting(
         "grad",
         backend="hardware",
@@ -174,6 +183,7 @@ def test_transform_nesting_blocks_hardware_and_unknown_transforms() -> None:
 
 
 def test_transform_nesting_audit_records_supported_and_blocked_routes() -> None:
+    """The audit holds eleven supported and six blocked stacks and no failures."""
     audit = run_gradient_transform_nesting_audit()
     payload = audit.to_dict()
     plans = cast(list[dict[str, object]], payload["plans"])
@@ -191,7 +201,51 @@ def test_transform_nesting_audit_records_supported_and_blocked_routes() -> None:
 
 
 def test_transform_nesting_rejects_invalid_input() -> None:
+    """An empty stack and a blank transform name are refused."""
     with pytest.raises(ValueError, match="at least one transform"):
         plan_gradient_transform_nesting(())
     with pytest.raises(ValueError, match="transform names"):
         plan_gradient_transform_nesting(("grad", " "))
+
+
+@pytest.mark.parametrize(
+    ("transforms", "reason"),
+    [
+        pytest.param(
+            ("vmap", "grad"),
+            "native vmap(grad) hardware execution is policy-blocked",
+            id="vmap-grad",
+        ),
+        pytest.param(
+            ("grad", "grad"),
+            "second-order hardware-gradient execution is policy-blocked",
+            id="grad-grad",
+        ),
+        pytest.param(
+            ("hessian",),
+            "second-order hardware-gradient execution is policy-blocked",
+            id="hessian",
+        ),
+    ],
+)
+def test_transform_nesting_blocks_vectorised_and_second_order_stacks_on_hardware(
+    transforms: tuple[str, ...], reason: str
+) -> None:
+    """Hardware execution of vmap(grad) or of a second-order stack is policy-blocked by name."""
+    plan = plan_gradient_transform_nesting(
+        transforms, backend="ibm_quantum", allow_hardware=True, shots=1024
+    )
+
+    assert plan.fail_closed
+    assert reason in plan.blocked_reasons
+
+
+def test_transform_nesting_audit_flags_unexpected_and_regressed_routes() -> None:
+    """A supported stack outside the expected set, or an expected stack now blocked, is a failure."""
+    audit = run_gradient_transform_nesting_audit()
+    supported = next(plan for plan in audit.plans if plan.supported)
+    unexpected = replace(supported, adapter="unlisted_adapter")
+    withdrawn = replace(supported, supported=False, blocked_reasons=("withdrawn",))
+
+    assert replace(audit, plans=(*audit.plans, unexpected)).failing_plans == (unexpected,)
+    assert replace(audit, plans=(withdrawn,)).failing_plans == (withdrawn,)
