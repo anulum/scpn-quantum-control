@@ -101,6 +101,11 @@
       "path_glob": "src/scpn_quantum_control/benchmarks/kyma_v3/*.py",
       "reason": "The broad CPU-only release coverage lane omits the KYMA v3 package because its substrate, baselines and probe require the optional JAX stack. A separate hash-pinned JAX owner reports every KYMA v3 source, including the NumPy-only task module, at exact branch coverage.",
       "exercised_by": "ci-topology-evidence.yml kyma-v3-quality installs the pinned JAX requirements, executes tests/test_kyma_v3_*.py, and enforces exact branch coverage for every file in the package and scripts/run_kyma_v3_probe.py."
+    },
+    {
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py",
+      "reason": "Read-only IQM job recovery needs the IQM SDK, which does not install on Python 3.15 (iqm-client caps pydantic-core at a PyO3 release without 3.15), so the Python 3.15 coverage union cannot execute it.",
+      "exercised_by": "ci-control-provider.yml provider-sdk-conformance, iqm cohort on Python 3.13 with the locked SDK: tests/experimental/llm_qpu/attempt_journal/test_provider_recovery.py under exact line and branch coverage (fail-under 100)."
     }
   ]
 }

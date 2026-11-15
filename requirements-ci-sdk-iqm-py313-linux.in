@@ -6,6 +6,7 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — native provider SDK cohort input
 
+coverage[toml]==7.14.0
 hypothesis==6.165.10
 jinja2==3.1.6
 networkx>=3.3,<4.0

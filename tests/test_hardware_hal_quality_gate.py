@@ -12,6 +12,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -451,3 +452,36 @@ def test_native_coverage_enrollment_refuses_missing_or_unreadable_databases(
     corrupt.write_text("invalid coverage database")
     with pytest.raises(DataError):
         quality_gates.validate_coverage_sources(str(corrupt))
+
+
+def test_iqm_cohort_runs_job_recovery_at_exact_coverage_with_the_locked_sdk() -> None:
+    """The IQM cohort executes the SDK-bound recovery test and refuses a skip through coverage."""
+    workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
+    steps = workflow["jobs"]["provider-sdk-conformance"]["steps"]
+    names = [step.get("name") for step in steps]
+    name = "Enforce exact IQM job-recovery coverage with the locked SDK (iqm only)"
+    recovery = steps[names.index(name)]
+    assert names.index("Check installed dependency compatibility") < names.index(name)
+    assert recovery["if"] == "matrix.cohort == 'iqm'"
+    command = " ".join(recovery["run"].replace("\\\n", " ").split())
+    assert command == (
+        "python -m pip install --require-hashes -r requirements-ci-sdk-iqm-py313-linux.txt "
+        "python -m coverage run --rcfile=/dev/null --branch "
+        '--data-file="$RUNNER_TEMP/iqm-job-recovery.coverage" '
+        "--include='*/llm_qpu/runtime/provider_recovery.py' "
+        "-m pytest -q -rs tests/experimental/llm_qpu/attempt_journal/test_provider_recovery.py "
+        "python -m coverage report --rcfile=/dev/null "
+        '--data-file="$RUNNER_TEMP/iqm-job-recovery.coverage" '
+        "--precision=2 --show-missing --fail-under=100"
+    )
+    assert (
+        "coverage[toml]==7.14.0"
+        in Path("requirements-ci-sdk-iqm-py313-linux.in").read_text(encoding="utf-8").splitlines()
+    )
+    assert (
+        "coverage==7.14.0 \\"
+        in Path("requirements-ci-sdk-iqm-py313-linux.txt").read_text(encoding="utf-8").splitlines()
+    )
+    report = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    omitted = report["tool"]["coverage"]["report"]["omit"]
+    assert "*/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py" in omitted

@@ -521,6 +521,9 @@ omit = [
     # host-independent arithmetic it relies on lives in neural_operator_cost_model.py, which is NOT
     # omitted and is covered to 100% in the ordinary lane.
     "*/scpn_quantum_control/forecasting/neural_operator_advantage.py",
+    # Read-only IQM job recovery needs the IQM SDK, which does not install on Python 3.15; the
+    # IQM provider cohort runs its test with the locked SDK on 3.13 at exact coverage.
+    "*/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py",
 ]
 exclude_lines = [
     "pragma: no cover",

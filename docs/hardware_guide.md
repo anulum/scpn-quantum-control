@@ -200,6 +200,14 @@ job builds and installs the actual base wheels without extras, exercises local
 HAL sampling, and verifies that unavailable optional routes remain explicit
 and fail `scpn-provider-smoke --require-all`.
 
+The IQM cohort also runs the read-only IQM job-recovery test with the locked
+SDK under exact line and branch coverage: it rebuilds a job's run request from
+the provider payload and binds an ambiguous submission only on an exact digest
+match. Its lock pins `coverage` for that run. If the test were skipped, its
+coverage would fall below 100% and fail the job. Because the SDK does not
+install on Python 3.15, the module is omitted from the 3.15 coverage union and
+recorded in `docs/release_coverage_exclusions.json`.
+
 The SDK reference runner is Ubuntu 24.04. Quantinuum's native `pyqir` wheels
 require glibc 2.34 or newer. The IQM base-client model codec is distinct from its
 optional Qiskit extension: the currently admitted IQM extension requires Qiskit

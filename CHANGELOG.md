@@ -320,6 +320,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - With the locked SDK the recovery helper has full line and branch
     coverage.
 
+- CI now runs that IQM job-recovery test, in the IQM provider cohort on Python
+  3.13, with the locked SDK and exact line and branch coverage.
+  - A skip would fail the job.
+  - The cohort lock pins `coverage==7.14.0`. It was recompiled with its
+    recorded command, and only coverage was added.
+  - The module is omitted from the Python 3.15 coverage union, with a ledger
+    row that names where it runs.
+  - The external-validation environment manifest, the dependency map and the
+    artefact bundle record the new `pyproject.toml` digest.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

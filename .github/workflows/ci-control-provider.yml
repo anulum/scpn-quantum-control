@@ -882,6 +882,17 @@ jobs:
           python -m pytest -q
           tests/test_provider_sdk_conformance.py::test_native_sdk_cohort_roundtrip
           | tee "${RUNNER_TEMP}/provider-sdk-conformance.txt"
+      - name: Enforce exact IQM job-recovery coverage with the locked SDK (iqm only)
+        if: matrix.cohort == 'iqm'
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-sdk-iqm-py313-linux.txt
+          python -m coverage run --rcfile=/dev/null --branch \
+            --data-file="$RUNNER_TEMP/iqm-job-recovery.coverage" \
+            --include='*/llm_qpu/runtime/provider_recovery.py' \
+            -m pytest -q -rs tests/experimental/llm_qpu/attempt_journal/test_provider_recovery.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/iqm-job-recovery.coverage" \
+            --precision=2 --show-missing --fail-under=100
       - name: Retain native codec diagnostics
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
