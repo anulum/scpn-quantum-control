@@ -367,6 +367,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   that are not a bounded nonempty mapping of positive integers summing to the
   shots, and circuits that are unreviewed or wider than their recipe.
 
+- The revision cache (`experimental/llm_qpu/data/cache.py`) has full line and
+  branch coverage; the union had it at 86.21%. New tests cover the refusals of
+  unknown stages and modes and of revision sets a stage cannot carry. They
+  also cover unreviewed stores and keys, public objects, a key rebound to
+  other content, an absent source and a damaged index digest.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

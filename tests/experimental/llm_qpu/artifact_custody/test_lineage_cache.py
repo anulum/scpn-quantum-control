@@ -288,3 +288,74 @@ def test_loading_refuses_unadmitted_and_damaged_index_state(tmp_path: Path) -> N
     _execute(store, "UPDATE objects SET kind='evidence' WHERE sha256=?", (descriptor.sha256,))
     with pytest.raises(ValueError, match="^manifest shard custody label mismatch$"):
         load_manifest(store, digest)
+
+
+@pytest.mark.parametrize(
+    ("stage", "changes", "message"),
+    [
+        ("latent", {"stage": "raw_tokens"}, "unsupported cache stage"),
+        ("latent", {"context_mode": "streaming"}, "unsupported cache context mode"),
+        ("latent", {"compressor_digest": "c" * 64}, "latent cache cannot claim downstream"),
+        ("latent", {"sdk_lock_digest": "d" * 64}, "latent cache cannot claim downstream"),
+        ("compressed", {"compressor_digest": None}, "derived cache requires a compressor digest"),
+        ("compiled", {"sdk_lock_digest": None}, "provider-derived cache requires SDK and circuit"),
+        ("features", {"circuit_map_digest": None}, "provider-derived cache requires SDK"),
+    ],
+)
+def test_cache_key_refuses_unversioned_identities(
+    stage: str, changes: dict[str, Any], message: str
+) -> None:
+    """A key refuses unknown stages and modes and any revision set its stage cannot carry."""
+    with pytest.raises(ValueError, match=f"^{message}"):
+        replace(_key(stage), **changes)
+
+
+def test_cache_refuses_unreviewed_inputs_public_objects_and_rebinding(tmp_path: Path) -> None:
+    """The cache needs the private store and exact keys, and never rebinds a key."""
+    loose_store: Any = tmp_path / "private"
+    with pytest.raises(ValueError, match="^cache requires the private artifact store$"):
+        ArtifactCache(loose_store)
+    store = ArtifactStore(tmp_path / "private")
+    cache = ArtifactCache(store)
+    key = _key("compiled")
+    loose_key: Any = key.digest
+    first = store.put(
+        b"first evidence", kind="evidence", retention="pinned", egress="private_derived"
+    )
+    with pytest.raises(ValueError, match="^cache bind requires a CacheKey$"):
+        cache.bind(loose_key, first.sha256)
+    with pytest.raises(ValueError, match="^cache lookup requires a CacheKey$"):
+        cache.lookup(loose_key)
+    with pytest.raises(MissingArtifactError, match="cache source has no entry"):
+        cache.lookup(key)
+    public = store.put(
+        b"public evidence", kind="evidence", retention="pinned", egress="value_free"
+    )
+    with pytest.raises(ValueError, match="^cache object must preserve private-derived egress$"):
+        cache.bind(key, public.sha256)
+    cache.bind(key, first.sha256)
+    cache.bind(key, first.sha256)
+    second = store.put(
+        b"second evidence", kind="evidence", retention="pinned", egress="private_derived"
+    )
+    with pytest.raises(StaleCacheError, match="^exact cache key already binds different content$"):
+        cache.bind(key, second.sha256)
+    assert cache.lookup(key) == first.sha256
+
+
+def test_cache_lookup_refuses_a_damaged_index_digest(tmp_path: Path) -> None:
+    """An index row whose object digest is not text is refused, never returned."""
+    store = ArtifactStore(tmp_path / "private")
+    cache = ArtifactCache(store)
+    key = _key("compiled")
+    evidence = store.put(
+        b"evidence", kind="evidence", retention="pinned", egress="private_derived"
+    )
+    cache.bind(key, evidence.sha256)
+    with sqlite3.connect(store.database) as connection:
+        connection.execute(
+            "UPDATE cache_entries SET object_sha256=? WHERE key_sha256=?", (b"\x00", key.digest)
+        )
+    connection.close()
+    with pytest.raises(ValueError, match="^indexed cache digest is invalid$"):
+        cache.lookup(key)
