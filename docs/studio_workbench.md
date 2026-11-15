@@ -886,6 +886,15 @@ and choose **Run job**. The panel shows the attempt's state, its numbered events
 and the digest of the sealed record. To reconnect, enter the attempt id and
 choose **Reconnect**: the whole history is replayed from the first event.
 
+The address and token belong to the workbench, not to the panel: they stay
+when you move between stages, and every other view that uses the service reads
+the same connection. Its status follows the calls you make. An answer marks the
+service connected; a service that does not answer (down, a wrong address, a
+malformed answer or an address that is not `http://127.0.0.1:<port>`) marks it
+refused; the refusal of one request leaves the status as it was. Nothing
+contacts the service before you do, and changing the address or the token
+returns the status to not connected.
+
 What the service guarantees:
 
 - **Local only.** It binds `127.0.0.1`, requires the token on every request,
@@ -2293,8 +2302,10 @@ What each runtime reports:
 - `browser-storage` is available when projects are kept in the browser cache
   and degraded when storage is unavailable and work is kept for this page
   session only.
-- `local-service` is optional and reported unavailable here; start the local job
-  service and connect from Run. The list never contacts it.
+- `local-service` follows the workbench's connection to the optional local job
+  service: available after the service answered a call from Run, unavailable
+  with the reason when it did not, and unavailable until then. The list never
+  contacts the service itself.
 - `hardware` is refused by the host: remote execution is a separate gated
   service integration that this installation does not include.
 

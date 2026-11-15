@@ -16,6 +16,7 @@ import { hostRefusals, useCapabilityReport } from "./useCapabilityReport";
 import type { KernelProbes } from "./useCapabilityReport";
 
 const resolved = async () => {};
+const idle = { status: "not-connected", reason: "not connected yet" } as const;
 const state = (report: ReturnType<typeof useCapabilityReport>, id: string) =>
   report.capabilities.find((capability) => capability.id === id)?.state;
 
@@ -29,7 +30,7 @@ it("loads no kernel until asked, then resolves every declared capability", async
     },
   };
   const { result } = renderHook(() =>
-    useCapabilityReport(workbenchRegistry, [], "browser", probes),
+    useCapabilityReport(workbenchRegistry, [], "browser", idle, probes),
   );
   expect(calls).toEqual([]);
   expect(state(result.current, "recompute-xy-compile")).toBe("degraded");
@@ -54,8 +55,8 @@ it("loads no kernel until asked, then resolves every declared capability", async
 it("reads storage as opening, browser cache or this page session only", () => {
   const probes: KernelProbes = { "browser-kernel": resolved, "program-ad-kernel": resolved };
   const storage = (persistence: WorkspacePersistence | null) =>
-    renderHook(() => useCapabilityReport(workbenchRegistry, [], persistence, probes)).result.current
-      .runtimes["browser-storage"].status;
+    renderHook(() => useCapabilityReport(workbenchRegistry, [], persistence, idle, probes)).result
+      .current.runtimes["browser-storage"].status;
   expect([storage(null), storage("browser"), storage("session")]).toEqual([
     "unknown",
     "available",
@@ -72,7 +73,7 @@ it("names a missing manifest requirement and drops results after unmounting", as
   };
   const missing = [{ module: "workspace", kind: "verb", name: "simulate" }] as const;
   const { result, unmount } = renderHook(() =>
-    useCapabilityReport(workbenchRegistry, missing, "browser", probes),
+    useCapabilityReport(workbenchRegistry, missing, "browser", idle, probes),
   );
   expect(result.current.capabilities.find((row) => row.id === "save-projects")?.reasons).toEqual([
     "the installation does not declare the verb simulate",
@@ -93,6 +94,23 @@ it("labels a capability without a registered owner instead of dropping it", () =
     capabilities: [{ id: "probe", label: "Probe", maturity: "stable", needs: [] }],
   } as const satisfies StudioModule<object>;
   const registry = { ...createModuleRegistry([module]), contributionOwner: () => undefined };
-  const { result } = renderHook(() => useCapabilityReport(registry, [], "browser"));
+  const { result } = renderHook(() => useCapabilityReport(registry, [], "browser", idle));
   expect(result.current.capabilities[0]?.module).toBe("unknown");
+});
+
+it("reads the local service from the shared connection", () => {
+  const probes: KernelProbes = { "browser-kernel": resolved, "program-ad-kernel": resolved };
+  const local = (status: "not-connected" | "connected" | "refused", reason: string) =>
+    renderHook(() =>
+      useCapabilityReport(workbenchRegistry, [], "browser", { status, reason }, probes),
+    ).result.current;
+  const connected = local("connected", "the service answered");
+  expect(state(connected, "durable-local-jobs")).toBe("experimental");
+  const refused = local("refused", "the local job service did not answer");
+  expect(refused.capabilities.find((row) => row.id === "durable-local-jobs")?.reasons).toEqual([
+    "local-service: the local job service did not answer",
+  ]);
+  expect(local("not-connected", "x").runtimes["local-service"].reason).toContain(
+    "start the local job service",
+  );
 });

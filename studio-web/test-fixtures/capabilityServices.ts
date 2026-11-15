@@ -7,6 +7,7 @@
 // SCPN Quantum Control — capability services for tests that build the shell services by hand
 
 import type { CapabilityServices, RuntimeObservation } from "../src/shared/contracts/capabilities";
+import type { LocalServiceConnection } from "../src/shared/transport/localService";
 
 const unchecked: RuntimeObservation = { status: "unknown", reason: "not checked in this test" };
 
@@ -21,4 +22,15 @@ export const noCapabilityServices: CapabilityServices = {
     "local-service": unchecked,
     hardware: unchecked,
   },
+};
+
+/** A connection that was never used; its setters and report do nothing. */
+export const idleLocalService: LocalServiceConnection = {
+  url: "http://127.0.0.1:8765",
+  token: "",
+  status: "not-connected",
+  reason: "not connected in this test",
+  setUrl: () => {},
+  setToken: () => {},
+  report: () => {},
 };

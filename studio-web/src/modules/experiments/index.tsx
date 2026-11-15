@@ -11,6 +11,7 @@ import { experimentJob } from "./moduleJob";
 import type { StudioModule } from "../../shared/contracts/module";
 import type {
   ExperimentServices,
+  LocalServiceServices,
   NavigationServices,
   StageCompositionServices,
   WorkspaceViewServices,
@@ -19,7 +20,8 @@ import type {
 type Services = NavigationServices &
   StageCompositionServices &
   WorkspaceViewServices &
-  ExperimentServices;
+  ExperimentServices &
+  LocalServiceServices;
 
 const ExperimentRunner = lazy(() => import("./ExperimentRunner"));
 const LocalJobsPanel = lazy(() => import("./LocalJobsPanel"));
@@ -43,7 +45,7 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
             workspaceHref={services.workspaceHref}
           />
           {services.renderEditors("experiments")}
-          <LocalJobsPanel focus={instrument === "local-jobs"} />
+          <LocalJobsPanel focus={instrument === "local-jobs"} connection={services.localService} />
         </>
       ),
     },

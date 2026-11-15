@@ -216,6 +216,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+### One connection to the local job service
+
+- The address and session token of the optional local job service now belong
+  to the workbench: they stay when you change stages, and the capability list
+  shows the service as available once it has answered a call from Run, or
+  unavailable with the reason when it did not. Nothing contacts the service
+  before you do.
+- The Run-stage panel keeps its behaviour and is split into a state hook and
+  small sections.
+
 ### Capability states
 
 - The Workspace stage lists what this installation can do: every capability

@@ -11,6 +11,7 @@ import { probeBrowserKernel, probeProgramAdKernel } from "../shared/browser/runt
 import type { CapabilityServices, RuntimeObservation } from "../shared/contracts/capabilities";
 import type { MissingRequirement, ModuleRegistry, RuntimeNeed } from "../shared/contracts/module";
 import type { WorkspacePersistence } from "../shared/storage/workspacePersistence";
+import type { LocalServiceStatus } from "../shared/transport/localService";
 import { resolveCapabilities } from "./capabilityResolver";
 
 /** The two runtimes checked by loading and verifying their committed inputs. */
@@ -41,6 +42,18 @@ function storage(persistence: WorkspacePersistence | null): RuntimeObservation {
     return { status: "unknown", reason: "browser storage is still opening" };
   if (persistence === "browser") return { status: "available", reason: "browser cache" };
   return { status: "degraded", reason: "this page session only; export your work to keep it" };
+}
+
+function service(local: {
+  readonly status: LocalServiceStatus;
+  readonly reason: string;
+}): RuntimeObservation {
+  if (local.status === "connected") return { status: "available", reason: local.reason };
+  if (local.status === "refused") return { status: "unavailable", reason: local.reason };
+  return {
+    status: "unavailable",
+    reason: "optional; start the local job service and connect from Run → Local job service",
+  };
 }
 
 function useKernelObservations(probes: KernelProbes) {
@@ -80,6 +93,7 @@ function useKernelObservations(probes: KernelProbes) {
  * @param registry - The compiled module registry.
  * @param missing - Manifest requirements the installation does not declare.
  * @param persistence - Where saved work lives, or null while storage opens.
+ * @param localService - What the shared local service connection last showed.
  * @param probes - Kernel checks; tests pass their own.
  * @returns The resolved capabilities, the runtime observations and the check action.
  */
@@ -87,16 +101,14 @@ export function useCapabilityReport<Services, DocumentServices>(
   registry: ModuleRegistry<Services, DocumentServices>,
   missing: readonly MissingRequirement[],
   persistence: WorkspacePersistence | null,
+  localService: { readonly status: LocalServiceStatus; readonly reason: string },
   probes: KernelProbes = shippedProbes,
 ): CapabilityServices {
   const { kernels, check } = useKernelObservations(probes);
   const runtimes: Record<RuntimeNeed, RuntimeObservation> = {
     ...kernels,
     "browser-storage": storage(persistence),
-    "local-service": {
-      status: "unavailable",
-      reason: "optional; start the local job service and connect from Run → Local job service",
-    },
+    "local-service": service(localService),
     hardware: { status: "unavailable", reason: "not part of this installation" },
   };
   const owned = registry.capabilities.map((capability) => ({

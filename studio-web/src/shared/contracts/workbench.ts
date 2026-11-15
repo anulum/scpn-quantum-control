@@ -7,6 +7,7 @@
 // SCPN Quantum Control — shared workbench service contract
 
 import type { ReactNode } from "react";
+import type { LocalServiceConnection } from "../transport/localService";
 import type { CapabilityServices } from "./capabilities";
 import type { ExperimentRunController } from "../experiments/experimentRunService";
 import type { WorkflowRunController } from "../workflows/workflowRunService";
@@ -59,6 +60,12 @@ export interface WorkflowServices {
   readonly workflow: WorkflowRunController;
 }
 
+/** The shell's one connection to the optional local job service. */
+export interface LocalServiceServices {
+  /** Address, token and what the service last showed. */
+  readonly localService: LocalServiceConnection;
+}
+
 /**
  * Everything the shell hands a stage; a stage reaches nothing else.
  *
@@ -72,4 +79,5 @@ export interface WorkbenchServices
     StageCompositionServices,
     ExperimentServices,
     WorkflowServices,
-    CapabilityServices {}
+    CapabilityServices,
+    LocalServiceServices {}

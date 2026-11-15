@@ -24,7 +24,7 @@ import type { ModuleJobDockProps } from "../src/app/moduleViews/ModuleJobDock";
 import { useWorkflowRun } from "../src/shared/workflows/useWorkflowRun";
 import { useWorkspace } from "../src/shared/workspace/useWorkspace";
 import { BuiltKernelWorker } from "../test-support/kernelWorker";
-import { noCapabilityServices } from "./capabilityServices";
+import { idleLocalService, noCapabilityServices } from "./capabilityServices";
 
 /** Exercise registered controls with original admission, source and genuinely disposable worker owners. */
 export function RegisteredExperimentRuntime({
@@ -68,6 +68,7 @@ export function RegisteredExperimentRuntime({
   const workflow = useWorkflowRun(workspace.draft, stage === "experiments");
   const services: WorkbenchServices = {
     ...noCapabilityServices,
+    localService: idleLocalService,
     get workspace() {
       return currentWorkspace.current;
     },

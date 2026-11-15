@@ -33,6 +33,7 @@ import { WorkbenchInspector } from "./WorkbenchInspector";
 import { WorkbenchHelp } from "./WorkbenchHelp";
 import { displayTheme } from "./displayTheme";
 import { useCapabilityReport } from "./useCapabilityReport";
+import { useLocalServiceConnection } from "../shared/transport/localService";
 
 const committedDeclarations = declaredBy(studioManifest);
 
@@ -97,9 +98,12 @@ export function Workbench({
   } | null>(null);
   const selectedDocument =
     admittedSources.documents.find((source) => source.sha256 === selectedSource) ?? null;
-  const report = useCapabilityReport(registry, registry.missing(declared), workspace.persistence);
+  const localService = useLocalServiceConnection();
+  const missingNow = registry.missing(declared);
+  const report = useCapabilityReport(registry, missingNow, workspace.persistence, localService);
   const services: WorkbenchServices = {
     ...report,
+    localService,
     documents: admittedSources.documents,
     renderEditors: (stage) => (
       <ModuleStageEditors
