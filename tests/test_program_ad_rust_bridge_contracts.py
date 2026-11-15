@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import replace
 from types import ModuleType
 from typing import Any, cast
 
@@ -460,3 +461,90 @@ def test_value_and_gradient_result_rejects_invalid_states(
     """Value+gradient result container should reject inconsistent states."""
     with pytest.raises(ValueError, match=match):
         RustProgramADValueAndGradientResult(**kwargs)  # type: ignore[arg-type]
+
+
+def _mirror_payload(snapshot: str, **overrides: object) -> str:
+    """Return the JSON a faithful Rust mirror gives for a registry snapshot, with overrides."""
+    report = json.loads(snapshot)
+    payload: dict[str, object] = {
+        "supported": True,
+        "primitive_count": report["total_primitives"],
+        "covered_primitives": report["covered_primitives"],
+        "family_counts": report["family_counts"],
+        "facet_counts": {"derivative_rule": report["total_primitives"]},
+        "executable_operation_count": 2,
+        "executable_operations": ["det", "sin"],
+        "blocked_reasons": [],
+        "claim_boundary": "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion",
+    }
+    payload.update(overrides)
+    return json.dumps(payload)
+
+
+def _install_mirror(monkeypatch: pytest.MonkeyPatch, mirror: Any) -> None:
+    """Install a fake native engine whose registry mirror is the given callable."""
+    fake_engine = ModuleType("scpn_quantum_engine")
+    cast(Any, fake_engine).program_ad_registry_metadata_mirror = mirror
+    _install_fake_engine(monkeypatch, fake_engine)
+
+
+def test_registry_metadata_mirror_result_refuses_inconsistent_counts_and_lists(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every count, list and flag of a mirror result must agree with the others."""
+    _install_mirror(monkeypatch, lambda snapshot: _mirror_payload(snapshot))
+    result = mirror_program_ad_registry_metadata_with_rust()
+    assert result.supported is True
+    families = dict(result.family_counts)
+    first_family = next(iter(families))
+    cases: list[tuple[dict[str, Any], str]] = [
+        ({"supported": "yes"}, "supported flag must be boolean"),
+        ({"primitive_count": -1}, "counts must be non-negative"),
+        ({"covered_primitives": result.primitive_count + 1}, "covered count exceeds total"),
+        (
+            {"family_counts": {**families, first_family: families[first_family] + 1}},
+            "family counts must sum to total",
+        ),
+        ({"executable_operation_count": 3}, "executable count is inconsistent"),
+        (
+            {"executable_operations": ("", "sin"), "executable_operation_count": 2},
+            "executable operations must be non-empty",
+        ),
+        ({"executable_operations": ("sin", "det")}, "must be sorted and unique"),
+        ({"blocked_reasons": ("",)}, "blocked reasons must be non-empty"),
+        ({"supported": False}, "supported state is inconsistent"),
+        ({"claim_boundary": ""}, "claim boundary must be non-empty"),
+    ]
+    for changes, message in cases:
+        with pytest.raises(ValueError, match=message):
+            replace(result, **changes)
+
+
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    [
+        pytest.param(lambda snapshot: b"{}", "must return JSON text", id="bytes"),
+        pytest.param(
+            lambda snapshot: _mirror_payload(snapshot, supported="yes"),
+            "supported must be a boolean",
+            id="bool",
+        ),
+        pytest.param(
+            lambda snapshot: _mirror_payload(snapshot, family_counts={"": 1}),
+            "family_counts keys must be non-empty strings",
+            id="empty-key",
+        ),
+        pytest.param(
+            lambda snapshot: _mirror_payload(snapshot, family_counts={"array": -1}),
+            "family_counts values must be non-negative",
+            id="negative",
+        ),
+    ],
+)
+def test_registry_metadata_mirror_refuses_malformed_native_payloads(
+    monkeypatch: pytest.MonkeyPatch, raw: Any, message: str
+) -> None:
+    """Non-text output, a non-boolean flag and bad family counts from the engine are refused."""
+    _install_mirror(monkeypatch, raw)
+    with pytest.raises(ValueError, match=message):
+        mirror_program_ad_registry_metadata_with_rust()

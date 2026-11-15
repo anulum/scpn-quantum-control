@@ -497,6 +497,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The Program AD Rust bridge (`program_ad_rust_bridge.py`) now tests every
+  refusal of its registry metadata mirror, through a fake native engine as
+  the sibling tests do. A mirror result refuses a non-boolean flag, negative
+  or excess counts, family counts that do not sum to the total, an
+  executable count or list that is blank, unsorted or repeated, a blank
+  blocked reason, an inconsistent support state, and an empty claim boundary.
+  The mirror call refuses non-text output, a non-boolean flag, and family
+  counts with an empty key or a negative value. Coverage rises from 91.46%
+  to 100%.
+
 - The JAX compatibility leaf (`phase/jax_compatibility.py`) now has tests for
   its fail-closed paths, using the existing fake JAX module through the
   facade's loader. The VMAP and PMAP audits refuse a batched loss or gradient
