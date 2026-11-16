@@ -918,6 +918,7 @@
         "tests/_pickle_identity.py",
         "tests/_program_ad_rust_bridge_test_fixtures.py",
         "tests/_qualification_receipt_vectors.py",
+        "tests/experimental/llm_qpu/_llm_qpu_dev_chain.py",
         "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
         "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",
         "tests/experimental/llm_qpu/attempt_journal/test_attempt_journal.py",

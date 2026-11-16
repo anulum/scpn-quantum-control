@@ -13,7 +13,7 @@
     "python_model_source_modules": 882,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1654
+    "test_files": 1655
   },
   "documentation": {
     "examples": [
@@ -9609,6 +9609,7 @@
       "tests/_test_identifier_limits.py",
       "tests/_whole_program_trace_array_helpers.py",
       "tests/conftest.py",
+      "tests/experimental/llm_qpu/_llm_qpu_dev_chain.py",
       "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
       "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",
       "tests/experimental/llm_qpu/attempt_journal/test_attempt_journal.py",
