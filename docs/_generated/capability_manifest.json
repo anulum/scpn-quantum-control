@@ -13,7 +13,7 @@
     "python_model_source_modules": 893,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1668
+    "test_files": 1670
   },
   "documentation": {
     "examples": [
@@ -10279,6 +10279,7 @@
       "tests/test_hybrid_digital_analog.py",
       "tests/test_hybrid_digital_analog_branches.py",
       "tests/test_hypothesis_properties.py",
+      "tests/test_hypothesis_shared_host_profile.py",
       "tests/test_ibm_latency_probe.py",
       "tests/test_ibm_public_artifact_anonymizer.py",
       "tests/test_ibm_public_artifact_audit.py",
@@ -10894,6 +10895,7 @@
       "tests/test_qsynapse.py",
       "tests/test_qualification_projection_quality_gate.py",
       "tests/test_qualification_status_projection.py",
+      "tests/test_quality_coverage_paths.py",
       "tests/test_quantum_advantage.py",
       "tests/test_quantum_advantage_branches.py",
       "tests/test_quantum_advantage_crossover_figure.py",
