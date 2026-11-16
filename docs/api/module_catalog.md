@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **886 modules** across **41 package families**
-- **4760 documented public module-level symbols**
+- **887 modules** across **41 package families**
+- **4761 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2644,6 +2644,14 @@ Bounded immutable CAS for private LLM-QPU shards and manifests.
 **Classes:** `MissingArtifactError`, `CorruptArtifactError`, `ArtifactRecord`, `ArtifactStore`
 
 **Functions:** `open_repository_store()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.bundle_quote`
+
+Quote a compiled bundle offline: exact totals and jobs, with every provider-only figure an explicit blocker.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/bundle_quote.py) · Public symbols: **1**
+
+**Functions:** `quote_bundle()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.cache`
 

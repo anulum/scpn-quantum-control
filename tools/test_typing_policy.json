@@ -927,6 +927,7 @@
         "tests/experimental/llm_qpu/memory_task/test_temporal_memory_task.py",
         "tests/experimental/llm_qpu/memory_task/test_temporal_transfer_task.py",
         "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
+        "tests/experimental/llm_qpu/test_bundle_quote.py",
         "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
         "tests/experimental/llm_qpu/test_circuit_plan_set_contract.py",
         "tests/experimental/llm_qpu/test_compiled_bundle_contract.py",

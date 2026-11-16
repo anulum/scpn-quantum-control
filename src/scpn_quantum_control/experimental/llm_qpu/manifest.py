@@ -48,6 +48,7 @@ _INVENTORY = (
     "llm_qpu/contracts/task.py",
     "llm_qpu/contracts/wire.py",
     "llm_qpu/data/artifact_store.py",
+    "llm_qpu/data/bundle_quote.py",
     "llm_qpu/data/cache.py",
     "llm_qpu/data/compile_records.py",
     "llm_qpu/data/compiled_cell_proof.py",

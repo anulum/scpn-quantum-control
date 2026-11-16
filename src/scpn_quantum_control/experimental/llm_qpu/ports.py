@@ -143,7 +143,8 @@ PORTS: tuple[PortSpec, ...] = (
         ("CompiledBundle", "ResourceLimits"),
         "CostQuote",
         "offline_planning",
-        _NOT_BUILT,
+        "data.bundle_quote.quote_bundle quotes offline: exact totals and jobs, with resource "
+        "units and price as blockers until a provider estimate or rate card",
     ),
     PortSpec(
         "submit_approved",

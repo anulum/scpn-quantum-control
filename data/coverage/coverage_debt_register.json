@@ -889,9 +889,9 @@
   "source_inventory": {
     "baseline_report_file_count": 911,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 935,
+    "file_count": 936,
     "path": "src/scpn_quantum_control",
-    "sha256": "50aa71f9a25eb4f8de7c3da5ec9070d5e8c9a8fc3b556824ce3a7586d0f2f3d5"
+    "sha256": "53c2cd5c4740b7d13c1e05e93220229ec23c907ab0464d6f873658fa5f3cc8e1"
   },
   "summary": {
     "debt_file_count": 79,

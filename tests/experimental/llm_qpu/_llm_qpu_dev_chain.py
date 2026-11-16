@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — shared experimental LLM-QPU dev-chain test fixtures
-"""One dev chain (task, split, model, latents, fitted compressor, angles), its plans and the worker runner."""
+"""One dev chain (task, split, model, latents, fitted compressor, angles), its plans, a synthetic target and the worker runner."""
 
 from __future__ import annotations
 
@@ -32,11 +32,14 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     PlannedExperiment,
     ReservoirSpec,
     SplitManifest,
+    TargetSnapshot,
     TaskSpec,
     build_circuit_plan_set,
     canonical_bytes,
     plan_measurements,
 )
+from scpn_quantum_control.experimental.llm_qpu.contracts.target import ReportedValue
+from scpn_quantum_control.experimental.llm_qpu.contracts.wire import TARGET_SNAPSHOT_SCHEMA
 from scpn_quantum_control.experimental.llm_qpu.data.compression_fit import (
     FittedCompressor,
     compress_latents,
@@ -407,3 +410,60 @@ def _forge(wire: dict[str, Any], path: tuple[str | int, ...], value: object) -> 
         holder = holder[key]
     holder[path[-1]] = value
     return wire
+
+
+_LINE = ((0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7), (1, 8))
+_BASIS = ("cz", "measure", "rz", "sx", "x")
+
+
+def _both_ways(edges: tuple[tuple[int, int], ...]) -> tuple[tuple[int, int], ...]:
+    """Return the sorted edges in both directions."""
+    return tuple(sorted({*edges, *((b, a) for a, b in edges)}))
+
+
+def _target(**changes: Any) -> TargetSnapshot:
+    """Return a synthetic nine-qubit target whose header hashes exactly its fields."""
+    fields: dict[str, Any] = {
+        "provider": "ibm",
+        "account_route": "fixture",
+        "device_name": "synthetic_line_9",
+        "sdk_name": "qiskit",
+        "sdk_version": "2.6.2",
+        "sdk_target_digest": "b" * 64,
+        "capability_provenance": "synthetic_fixture",
+        "num_qubits": 9,
+        "basis_gates": _BASIS,
+        "coupling_edges": _both_ways(_LINE),
+        "calibration_id": ReportedValue("unknown", None, "a synthetic target has no calibration"),
+        "calibration_time_utc": ReportedValue(
+            "unknown", None, "a synthetic target has no calibration"
+        ),
+        "max_shots": ReportedValue("known", 100_000, None),
+        "max_circuits_per_job": ReportedValue("known", 300, None),
+        **changes,
+    }
+    scientific = {
+        "schema": TARGET_SNAPSHOT_SCHEMA,
+        "object_kind": "target_snapshot",
+        **{
+            name: [list(edge) for edge in value]
+            if name == "coupling_edges"
+            else list(value)
+            if name == "basis_gates"
+            else value.to_wire()
+            if type(value) is ReportedValue
+            else value
+            for name, value in fields.items()
+        },
+    }
+    header = ArtifactHeader(
+        "target_snapshot",
+        hashlib.sha256(canonical_bytes(scientific)).hexdigest(),
+        (fields["sdk_target_digest"],),
+        _BASE,
+        _REVISION,
+        "offline_design",
+        "synthetic_classical",
+        "design_only",
+    )
+    return TargetSnapshot(**fields, header=header)

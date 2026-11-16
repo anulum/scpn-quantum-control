@@ -497,6 +497,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains offline quotes of compiled bundles.
+  - `quote_bundle` (`experimental/llm_qpu/data/bundle_quote.py`) quotes one
+    compiled bundle against its target. Its known figures are the circuit
+    count, the total shots, every provider option, and the job count
+    implied by a reported circuit batch limit. Overhead executions are
+    zero when every option is a compile option.
+  - An unreported batch limit, or an execution option that may add runs,
+    becomes a named blocker. Resource units and price stay unknown, with
+    their blockers, until a provider estimate or a published rate card
+    exists; they are never zero.
+  - The quote passes the cost-quote contract's validation and the
+    standalone worker's round trip.
+  - The `quote_bundle` port names this function.
+
 - The experimental LLM-QPU lane gains offline compilation against a stored
   target snapshot.
   - `compile_experiment` (`experimental/llm_qpu/data/target_compiler.py`)
