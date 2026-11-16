@@ -497,6 +497,30 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains seeded sampled simulation.
+  - `SimulatedCountSet` (`experimental/llm_qpu/contracts/sampled.py`, schema
+    `simulated_count_set.v1`) records seeded counts for every cell of a
+    `PlannedExperiment`. Each cell names its planned cell, its measurement
+    request and its shots, and keys its counts in the register's display
+    order. The record names the sampler, a 256-bit seed and the simulator
+    used for the probability cross-check. It is a design-only record,
+    separate from `RawResultSet`, and never stands in for provider results.
+  - The sampler `sha256_counter_inverse_cdf_v1` draws each shot by inverse
+    CDF over outcomes of nonzero probability. Each uniform comes from
+    SHA-256 of a domain tag, the seed, the cell ordinal and the shot
+    index. A record can therefore be regenerated with the standard library
+    alone, independent of any NumPy random stream.
+  - `cell_probabilities` applies the plan or sentinel gates and the H and
+    S-dagger readout rotations with the independent pure-Python
+    statevector.
+  - `simulate_sampled` (`experimental/llm_qpu/data/digital_simulation.py`)
+    checks every cell's probabilities against Qiskit `Statevector` within
+    1e-10 before drawing.
+  - `validate_simulated_count_set` regenerates every cell and requires
+    identical counts. The standalone worker regenerates them again with its
+    own statevector and sampler.
+  - The `simulate` port names both the exact and the sampled path.
+
 - The experimental LLM-QPU lane gains exact ideal-digital simulation.
   - `ExactFeatureSet` (`experimental/llm_qpu/contracts/exact.py`, schema
     `exact_feature_set.v1`) records, for every plan of a `CircuitPlanSet`,

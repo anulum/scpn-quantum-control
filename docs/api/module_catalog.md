@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **881 modules** across **41 package families**
-- **4743 documented public module-level symbols**
+- **882 modules** across **41 package families**
+- **4751 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2575,6 +2575,16 @@ Raw per-cell results: exact shots, sparse integer counts, no silently missing ce
 
 **Functions:** `validate_raw_result_set()`, `decode_raw_result_set()`
 
+### `scpn_quantum_control.experimental.llm_qpu.contracts.sampled`
+
+Seeded simulated counts for every planned cell, reproducible from the record alone.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/sampled.py) · Public symbols: **7**
+
+**Classes:** `SimulatedCell`, `SimulatedCountSet`
+
+**Functions:** `cell_probabilities()`, `draw_counts()`, `experiment_circuits()`, `validate_simulated_count_set()`, `decode_simulated_count_set()`
+
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.static`
 
 Static open-chain XY recipe and elementary digital gate list.
@@ -2663,11 +2673,11 @@ Check source and prompt identity before any group-safe split is admitted.
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.digital_simulation`
 
-Exact ideal-digital expectations of every plan, computed with the Qiskit statevector.
+Exact expectations and seeded counts of every plan, computed with the Qiskit statevector.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/digital_simulation.py) · Public symbols: **1**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/digital_simulation.py) · Public symbols: **2**
 
-**Functions:** `simulate_exact()`
+**Functions:** `simulate_exact()`, `simulate_sampled()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.lineage`
 

@@ -128,7 +128,7 @@ PORTS: tuple[PortSpec, ...] = (
         ("CircuitPlanSet", "SimulationMode"),
         "RawResultSet | ExactFeatureSet",
         "offline_planning",
-        "exact mode is data.digital_simulation.simulate_exact; sampled mode is not built",
+        "exact mode is data.digital_simulation.simulate_exact; seeded sampled mode is simulate_sampled",
     ),
     PortSpec(
         "compile_bundle",

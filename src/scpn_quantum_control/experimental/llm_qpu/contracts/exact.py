@@ -74,11 +74,19 @@ def _pauli_expectation(state: list[complex], pauli: str, wires: tuple[int, ...])
     return total.real
 
 
+def _prepared_state(
+    operations: tuple[tuple[str, tuple[int, ...], str], ...], n_qubits: int
+) -> list[complex]:
+    """Return the statevector after applying hex-parameterised gates to the zero state."""
+    state = [1.0 + 0.0j] + [0.0j] * ((1 << n_qubits) - 1)
+    for gate, wires, parameter in operations:
+        state = _apply(state, gate, wires, float.fromhex(parameter))
+    return state
+
+
 def exact_expectations(plan: StaticCircuitPlan, n_qubits: int, basis: str) -> tuple[float, ...]:
     """Return the plan's ideal single-site and adjacent same-axis expectations in one basis."""
-    state = [1.0 + 0.0j] + [0.0j] * ((1 << n_qubits) - 1)
-    for gate, wires, parameter in plan.operations:
-        state = _apply(state, gate, wires, float.fromhex(parameter))
+    state = _prepared_state(plan.operations, n_qubits)
     singles = tuple(_pauli_expectation(state, basis, (wire,)) for wire in range(n_qubits))
     pairs = tuple(
         _pauli_expectation(state, basis, (wire, wire + 1)) for wire in range(n_qubits - 1)

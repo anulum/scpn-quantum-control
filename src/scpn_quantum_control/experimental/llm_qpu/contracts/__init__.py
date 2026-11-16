@@ -95,6 +95,14 @@ if TYPE_CHECKING:
         decode_raw_result_set,
         validate_raw_result_set,
     )
+    from .sampled import (
+        SimulatedCell,
+        SimulatedCountSet,
+        cell_probabilities,
+        decode_simulated_count_set,
+        draw_counts,
+        validate_simulated_count_set,
+    )
     from .static import (
         ReservoirSpec,
         StaticCircuitPlan,
@@ -131,6 +139,7 @@ if TYPE_CHECKING:
         RESERVOIR_SCHEMA,
         SCHEMA,
         SENTINEL_SCHEMA,
+        SIMULATED_COUNT_SET_SCHEMA,
         SPLIT_SCHEMA,
         STATIC_PLAN_SCHEMA,
         STUDENT_ARTIFACT_SCHEMA,
@@ -443,6 +452,30 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
         "decode_exact_feature_set",
     ),
+    "SimulatedCell": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
+        "SimulatedCell",
+    ),
+    "SimulatedCountSet": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
+        "SimulatedCountSet",
+    ),
+    "cell_probabilities": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
+        "cell_probabilities",
+    ),
+    "draw_counts": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
+        "draw_counts",
+    ),
+    "validate_simulated_count_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
+        "validate_simulated_count_set",
+    ),
+    "decode_simulated_count_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
+        "decode_simulated_count_set",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -541,6 +574,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "EXACT_FEATURE_SET_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "EXACT_FEATURE_SET_SCHEMA",
+    ),
+    "SIMULATED_COUNT_SET_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "SIMULATED_COUNT_SET_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -799,4 +836,11 @@ __all__ = (
     "exact_expectations",
     "validate_exact_feature_set",
     "decode_exact_feature_set",
+    "SIMULATED_COUNT_SET_SCHEMA",
+    "SimulatedCell",
+    "SimulatedCountSet",
+    "cell_probabilities",
+    "draw_counts",
+    "validate_simulated_count_set",
+    "decode_simulated_count_set",
 )

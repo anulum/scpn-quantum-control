@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import base64
 import binascii
+import bisect
 import cmath
 import hashlib
+import itertools
 import json
 import math
 import random
@@ -50,6 +52,8 @@ _SPEC_SCHEMA = "scpn.experimental.llm_qpu.measurement_spec.v1"
 _SENTINEL_SCHEMA = "scpn.experimental.llm_qpu.sentinel_preparation.v1"
 _EXPERIMENT_SCHEMA = "scpn.experimental.llm_qpu.planned_experiment.v1"
 _EXACT_SCHEMA = "scpn.experimental.llm_qpu.exact_feature_set.v1"
+_SIMULATED_SCHEMA = "scpn.experimental.llm_qpu.simulated_count_set.v1"
+_SAMPLER_DOMAIN = b"scpn.experimental.llm_qpu.simulated_counts.v1\x00"
 _TEACHER_ORIGINS = {
     "hardware_features": "provider_result",
     "simulated_features": "synthetic_classical",
@@ -3151,6 +3155,161 @@ def _roundtrip_exact_feature_set(request: dict[str, object]) -> dict[str, object
     }
 
 
+def _readout(state: list[complex], gate: str, wire: int) -> list[complex]:
+    bit = 1 << wire
+    if gate == "sdg":
+        return [-1j * a if index & bit else a for index, a in enumerate(state)]
+    root = math.sqrt(2.0)
+    return [
+        (state[index ^ bit] - a) / root if index & bit else (a + state[index | bit]) / root
+        for index, a in enumerate(state)
+    ]
+
+
+def _cell_probabilities(operations: list[Any], measurement: dict[str, Any]) -> list[float]:
+    width = int(measurement["n_qubits"])
+    state = [1 + 0j] + [0j] * ((1 << width) - 1)
+    for op in operations:
+        wires = list(op["wires"]) if "wires" in op else [op["wire"]]
+        angle = op["parameter_hex"] if "parameter_hex" in op else op["angle_hex"]
+        state = _gate(state, op["gate"], wires, float.fromhex(angle))
+    basis = measurement["basis_id"]
+    gates = [] if basis == "Z" else ["h"] if basis == "X" else ["sdg", "h"]
+    for wire in range(width):
+        for gate in gates:
+            state = _readout(state, gate, wire)
+    return [abs(a) ** 2 for a in state]
+
+
+def _seeded_counts(
+    probabilities: list[float], measurement: dict[str, Any], seed: str, ordinal: int
+) -> list[list[object]]:
+    support = [i for i, p in enumerate(probabilities) if p > 0.0]
+    cumulative = list(itertools.accumulate(probabilities[i] for i in support))
+    last = len(cumulative) - 1
+    prefix = _SAMPLER_DOMAIN + bytes.fromhex(seed) + ordinal.to_bytes(4, "big")
+    tallies: dict[int, int] = {}
+    for shot in range(int(measurement["shots"])):
+        block = hashlib.sha256(prefix + shot.to_bytes(4, "big")).digest()
+        uniform = (int.from_bytes(block[:8], "big") >> 11) * 2.0**-53
+        outcome = support[bisect.bisect_right(cumulative, uniform, hi=last)]
+        tallies[outcome] = tallies.get(outcome, 0) + 1
+    wire_of = {clbit: wire for wire, clbit in enumerate(measurement["logical_to_clbit"])}
+    order = measurement["display_order_clbits"]
+    keys = {o: "".join(str(o >> wire_of[c] & 1) for c in order) for o in tallies}
+    return sorted([keys[o], n] for o, n in tallies.items())
+
+
+def _check_simulated_fields(counts: object, experiment: object) -> dict[str, Any]:
+    names = {"schema", "object_kind", "planned_experiment_digest", "sampler", "seed_hex"}
+    if type(counts) is not dict or set(counts) != names | {
+        "simulator",
+        "simulator_version",
+        "cells",
+        "header",
+    }:
+        raise ValueError("SimulatedCountSet fields mismatch")
+    if counts["schema"] != _SIMULATED_SCHEMA or counts["object_kind"] != "simulated_count_set":
+        raise ValueError("unknown SimulatedCountSet schema")
+    if counts["sampler"] != "sha256_counter_inverse_cdf_v1":
+        raise ValueError("unknown simulated-count sampler")
+    seed = counts["seed_hex"]
+    if type(seed) is not str or len(seed) != 64 or set(seed) - set("0123456789abcdef"):
+        raise ValueError("seed must be 64 lowercase hex characters")
+    if counts["simulator"] != "qiskit_statevector":
+        raise ValueError("unknown ideal-digital simulator")
+    _target_text(counts["simulator_version"], "simulator version")
+    if type(experiment) is not dict:
+        raise ValueError("experiment must be an object")
+    digest = hashlib.sha256(_canonical_bytes(experiment)).hexdigest()
+    if counts["planned_experiment_digest"] != digest:
+        raise ValueError("the counts name a different planned experiment")
+    header = experiment["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    _validate_artifact_header(counts, (digest,), origin)
+    return counts
+
+
+def _check_simulated_cell(
+    cell: object,
+    ordinal: int,
+    planned: dict[str, Any],
+    measurement: dict[str, Any],
+    expected: list[list[object]],
+) -> None:
+    fields = {
+        "cell_ordinal",
+        "planned_cell_digest",
+        "measurement_request_digest",
+        "shots",
+        "counts",
+    }
+    if type(cell) is not dict or set(cell) != fields:
+        raise ValueError("SimulatedCell fields mismatch")
+    lineage = [
+        ordinal,
+        hashlib.sha256(_canonical_bytes(planned)).hexdigest(),
+        hashlib.sha256(_canonical_bytes(measurement)).hexdigest(),
+        planned["shots"],
+    ]
+    names = ("cell_ordinal", "planned_cell_digest", "measurement_request_digest", "shots")
+    if [cell[name] for name in names] != lineage:
+        raise ValueError("a simulated cell does not follow its planned cell")
+    if cell["counts"] != expected:
+        raise ValueError("simulated counts differ from the seeded sampler")
+
+
+def _roundtrip_simulated_count_set(request: dict[str, object]) -> dict[str, object]:
+    chain = (
+        "task",
+        "split",
+        "model",
+        "latent",
+        "latent_base64",
+        "compressor",
+        "centering_base64",
+        "projection_base64",
+        "scales_base64",
+        "compressed",
+        "angles_base64",
+        "reservoir",
+        "plan_set",
+        "measurement_spec",
+        "experiment",
+    )
+    if set(request) != {"op", *chain, "counts"}:
+        raise ValueError("simulated-count request fields mismatch")
+    _roundtrip_planned_experiment(
+        {"op": "roundtrip_planned_experiment", **{n: request[n] for n in chain}}
+    )
+    experiment: Any = request["experiment"]
+    counts = _check_simulated_fields(request["counts"], experiment)
+    plan_set: Any = request["plan_set"]
+    circuits = {
+        hashlib.sha256(_canonical_bytes(p)).hexdigest(): p["operations"] for p in plan_set["plans"]
+    }
+    for sentinel in experiment["sentinels"]:
+        circuits[hashlib.sha256(_canonical_bytes(sentinel)).hexdigest()] = sentinel["operations"]
+    cells, planned = counts["cells"], experiment["cells"]
+    if type(cells) is not list or len(cells) != len(planned):
+        raise ValueError("every planned cell needs exactly one simulated cell")
+    for ordinal, (cell, planned_cell, measurement) in enumerate(
+        zip(cells, planned, experiment["measurements"], strict=True)
+    ):
+        operations = circuits[measurement["circuit_plan_digest"]]
+        probabilities = _cell_probabilities(operations, measurement)
+        expected = _seeded_counts(probabilities, measurement, counts["seed_hex"], ordinal)
+        _check_simulated_cell(cell, ordinal, planned_cell, measurement, expected)
+    wire = _canonical_bytes(counts)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "counts": json.loads(wire),
+        "counts_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -3189,6 +3348,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     ),
     "roundtrip_exact_feature_set": (
         _roundtrip_exact_feature_set,
+        (ValueError, TypeError, KeyError, OverflowError),
+    ),
+    "roundtrip_simulated_count_set": (
+        _roundtrip_simulated_count_set,
         (ValueError, TypeError, KeyError, OverflowError),
     ),
 }
