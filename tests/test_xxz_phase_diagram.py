@@ -35,7 +35,10 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestScanCouplingAtDelta:
+    """Scanning the coupling at fixed anisotropy."""
+
     def test_returns_result(self) -> None:
+        """The scan returns one gap per coupling."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -45,6 +48,7 @@ class TestScanCouplingAtDelta:
         assert len(result.gaps) == 3
 
     def test_gap_positive(self) -> None:
+        """Every gap is positive."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -52,6 +56,7 @@ class TestScanCouplingAtDelta:
         assert np.all(result.gaps > 0)
 
     def test_k_c_in_range(self) -> None:
+        """The critical coupling is one of the scanned couplings."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -61,7 +66,10 @@ class TestScanCouplingAtDelta:
 
 
 class TestAnisotropyPhaseDiagram:
+    """The phase diagram across anisotropies."""
+
     def test_returns_result(self) -> None:
+        """The diagram has one critical coupling per anisotropy."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -90,6 +98,7 @@ class TestAnisotropyPhaseDiagram:
         assert len(result.scans) == 2
 
     def test_all_gaps_positive(self) -> None:
+        """Every gap of every scan is positive."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -103,6 +112,7 @@ class TestAnisotropyPhaseDiagram:
             assert np.all(scan.gaps > 0)
 
     def test_delta_values_match_input(self) -> None:
+        """The anisotropies are those requested."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -114,13 +124,17 @@ class TestAnisotropyPhaseDiagram:
 
 
 class TestScanGapProperties:
+    """Numerical properties of the gap scan."""
+
     def test_gap_finite(self) -> None:
+        """Every gap is finite."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = scan_coupling_at_delta(omega, T, delta=0.0, k_range=np.linspace(0.5, 3.0, 5))
         assert np.all(np.isfinite(result.gaps))
 
     def test_2osc_scan(self) -> None:
+        """A two-oscillator scan gives one gap per coupling."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         result = scan_coupling_at_delta(omega, T, delta=0.0, k_range=np.array([1.0, 2.0]))
@@ -137,6 +151,7 @@ class TestScanGapProperties:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense eigensolve above the budget is refused before the Hamiltonian is built."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
 
@@ -153,6 +168,7 @@ class TestScanGapProperties:
             xxz_module._ground_state_properties(T, omega, delta=0.5, max_dense_gib=1e-12)
 
     def test_scan_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The scan passes the dense budget on."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen_budgets = []
@@ -177,6 +193,7 @@ class TestScanGapProperties:
         assert np.allclose(result.gaps, 0.5)
 
     def test_phase_diagram_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The diagram passes the dense budget on."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen_budgets = []
@@ -218,6 +235,8 @@ class TestScanGapProperties:
 
 
 class TestPhaseDiagramPhysics:
+    """Physics of the phase diagram."""
+
     def test_xy_and_heisenberg_different_gaps(self) -> None:
         """XY (Δ=0) and Heisenberg (Δ=1) produce different gap structure."""
         T = _ring(3)
@@ -241,8 +260,11 @@ class TestPhaseDiagramPhysics:
 
 
 class TestXXZPipeline:
+    """The topology-to-phase-diagram pipeline."""
+
     def test_pipeline_xxz_phase_diagram(self) -> None:
         """Full pipeline: topology → XXZ scan → K_c across anisotropies.
+
         Verifies XXZ module is wired end-to-end.
         """
         import time

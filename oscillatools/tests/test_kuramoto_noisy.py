@@ -37,7 +37,10 @@ _N = 8
 
 
 class TestNoisyKuramotoStep:
+    """One Euler-Maruyama step of the noisy Kuramoto model."""
+
     def test_matches_euler_maruyama_update(self) -> None:
+        """A step matches the Euler-Maruyama update."""
         rng = np.random.default_rng(0)
         theta, omega, noise = (
             rng.uniform(-np.pi, np.pi, _N),
@@ -54,6 +57,7 @@ class TestNoisyKuramotoStep:
         np.testing.assert_allclose(result, expected)
 
     def test_zero_noise_is_deterministic_drift(self) -> None:
+        """Without noise a step is the deterministic drift."""
         rng = np.random.default_rng(1)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
         result = noisy_kuramoto_step(
@@ -63,6 +67,7 @@ class TestNoisyKuramotoStep:
         np.testing.assert_allclose(result, expected)
 
     def test_accepts_networked_force(self) -> None:
+        """A step accepts a networked force."""
         rng = np.random.default_rng(2)
         coupling = rng.standard_normal((_N, _N))
         coupling = 0.5 * (coupling + coupling.T)
@@ -96,22 +101,28 @@ class TestNoisyKuramotoStep:
     def test_shape_validation(
         self, phases: np.ndarray, omega: np.ndarray, noise: np.ndarray, match: str
     ) -> None:
+        """Inputs of the wrong shape are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             noisy_kuramoto_step(phases, omega, _bound_force(1.0), 0.1, 0.01, noise)
 
     def test_rejects_negative_diffusion(self) -> None:
+        """A negative diffusion is refused."""
         with pytest.raises(ValueError, match="diffusion must be non-negative"):
             noisy_kuramoto_step(
                 np.zeros(3), np.zeros(3), _bound_force(1.0), -0.1, 0.01, np.zeros(3)
             )
 
     def test_rejects_non_positive_dt(self) -> None:
+        """A non-positive time step is refused."""
         with pytest.raises(ValueError, match="dt must be positive"):
             noisy_kuramoto_step(np.zeros(3), np.zeros(3), _bound_force(1.0), 0.1, 0.0, np.zeros(3))
 
 
 class TestIntegrateNoisyKuramoto:
+    """Integrating the noisy Kuramoto model."""
+
     def test_reproducible_under_shared_seed(self) -> None:
+        """The same seed gives identical runs."""
         rng = np.random.default_rng(3)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
         kwargs = dict(diffusion=0.3, dt=0.01, n_steps=200, seed=42)
@@ -122,6 +133,7 @@ class TestIntegrateNoisyKuramoto:
         assert first.mean_order_parameter == second.mean_order_parameter
 
     def test_different_seed_diverges(self) -> None:
+        """Different seeds give different terminal phases."""
         rng = np.random.default_rng(4)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
         a = integrate_noisy_kuramoto(
@@ -133,6 +145,7 @@ class TestIntegrateNoisyKuramoto:
         assert not np.array_equal(a.terminal_phases, b.terminal_phases)
 
     def test_zero_diffusion_is_deterministic_euler(self) -> None:
+        """Without diffusion the run is a deterministic Euler integration."""
         rng = np.random.default_rng(5)
         theta0, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
         run = integrate_noisy_kuramoto(
@@ -144,6 +157,7 @@ class TestIntegrateNoisyKuramoto:
         np.testing.assert_allclose(run.terminal_phases, theta)
 
     def test_run_structure_and_settle_default(self) -> None:
+        """A run has its documented shapes and the default settling window."""
         rng = np.random.default_rng(6)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
         run = integrate_noisy_kuramoto(
@@ -160,6 +174,7 @@ class TestIntegrateNoisyKuramoto:
         assert run.mean_order_parameter == pytest.approx(expected_mean)
 
     def test_explicit_settle_window(self) -> None:
+        """An explicit settling window sets the averaged span."""
         rng = np.random.default_rng(8)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
         run = integrate_noisy_kuramoto(
@@ -180,6 +195,7 @@ class TestIntegrateNoisyKuramoto:
     def test_noise_raises_the_onset(self) -> None:
         # At a fixed coupling above the deterministic onset, stronger noise lowers the stationary
         # coherence (the synchronisation threshold rises with diffusion).
+        """Noise lowers synchrony at the same coupling, raising the onset."""
         rng = np.random.default_rng(9)
         n = 400
         omega = np.tan(np.pi * (rng.uniform(size=n) - 0.5))  # Lorentzian, half-width 1
@@ -213,10 +229,12 @@ class TestIntegrateNoisyKuramoto:
         ],
     )
     def test_run_validation(self, kwargs: dict[str, float], match: str) -> None:
+        """Invalid run arguments are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             integrate_noisy_kuramoto(np.zeros(3), np.zeros(3), _bound_force(1.0), **kwargs)
 
     def test_rejects_mismatched_phases(self) -> None:
+        """Phases of the wrong shape are refused."""
         with pytest.raises(ValueError, match="phases must have shape"):
             integrate_noisy_kuramoto(
                 np.zeros(4),
@@ -230,6 +248,7 @@ class TestIntegrateNoisyKuramoto:
 
 
 def test_public_symbols_exported() -> None:
+    """The noisy-model symbols are exported from the accelerated package."""
     import oscillatools.accel as accel
 
     for symbol in (

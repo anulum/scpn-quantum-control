@@ -189,6 +189,7 @@ def _write_behavioural_test(root: Path) -> None:
 
 
 def test_release_readiness_passes_when_all_component_gates_pass(tmp_path: Path) -> None:
+    """With every component gate passing the release is ready for a tag."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     coverage_xml = _write_coverage_xml(tmp_path)
@@ -212,6 +213,7 @@ def test_release_readiness_passes_when_all_component_gates_pass(tmp_path: Path) 
 
 
 def test_release_readiness_blocks_missing_coverage_report(tmp_path: Path) -> None:
+    """A missing coverage report blocks the release."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     _write_behavioural_test(tmp_path)
@@ -232,6 +234,7 @@ def test_release_readiness_blocks_missing_coverage_report(tmp_path: Path) -> Non
 
 
 def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path) -> None:
+    """Version mismatches and missing artefacts are reported as blockers."""
     _write_version_carriers(tmp_path, version="0.9.7")
     (tmp_path / "CITATION.cff").write_text('version: "0.9.8"\n', encoding="utf-8")
 
@@ -245,6 +248,7 @@ def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path)
 
 
 def test_required_artifacts_lists_stable_core_release_inputs(tmp_path: Path) -> None:
+    """The required artefacts include the stable-core release inputs."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
 
@@ -257,6 +261,7 @@ def test_required_artifacts_lists_stable_core_release_inputs(tmp_path: Path) -> 
 
 
 def test_required_artifacts_blocks_missing_stable_core_release_inputs(tmp_path: Path) -> None:
+    """A missing stable-core release input blocks the release."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     stable_core_paths = (
@@ -276,6 +281,7 @@ def test_required_artifacts_blocks_missing_stable_core_release_inputs(tmp_path: 
 def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(
     tmp_path: Path,
 ) -> None:
+    """File coverage gaps are reported without blocking an aggregate pass."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     (tmp_path / "src" / "scpn_quantum_control" / "low.py").write_text(
@@ -328,6 +334,7 @@ def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(
 
 
 def test_release_readiness_can_block_on_file_gaps(tmp_path: Path) -> None:
+    """File coverage gaps can be made to block."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     (tmp_path / "src" / "scpn_quantum_control" / "low.py").write_text(
@@ -375,6 +382,7 @@ def test_release_readiness_cli_exit_status(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """The command fails when the release is not ready."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     _write_behavioural_test(tmp_path)
@@ -454,6 +462,7 @@ def _write_hardware_evidence_packet(root: Path) -> Path:
 
 
 def test_release_readiness_accepts_hardware_evidence_packet(tmp_path: Path) -> None:
+    """A hardware evidence packet is accepted with its cited packs."""
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     coverage_xml = _write_coverage_xml(tmp_path)
@@ -480,6 +489,7 @@ def test_release_readiness_accepts_hardware_evidence_packet(tmp_path: Path) -> N
 
 
 def test_release_readiness_blocks_hardware_log_digest_mismatch(tmp_path: Path) -> None:
+    """A reproduction log digest mismatch blocks the release."""
     import json
 
     _write_version_carriers(tmp_path)
@@ -509,7 +519,6 @@ def test_release_readiness_blocks_hardware_log_digest_mismatch(tmp_path: Path) -
 
 def test_release_readiness_requires_synchronisation_benchmark_artifacts() -> None:
     """Release artefact gate includes synchronisation benchmark surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/synchronisation_benchmarks/synchronisation_benchmark_registry.json" in required
@@ -526,7 +535,6 @@ def test_release_readiness_requires_synchronisation_benchmark_artifacts() -> Non
 
 def test_release_readiness_requires_knm_measured_candidate_artifacts() -> None:
     """Release artefact gate includes package-owned K_nm candidate surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json" in required
@@ -538,7 +546,6 @@ def test_release_readiness_requires_knm_measured_candidate_artifacts() -> None:
 
 def test_release_readiness_requires_s7_logical_dla_roadmap_artifacts() -> None:
     """Release artefact gate includes the S7 logical-DLA roadmap surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/s7_logical_dla_parity/logical_dla_parity_roadmap_2026-05-20.json" in required
@@ -547,7 +554,6 @@ def test_release_readiness_requires_s7_logical_dla_roadmap_artifacts() -> None:
 
 def test_release_readiness_requires_s8_adaptive_branching_artifacts() -> None:
     """Release artefact gate includes the S8 adaptive-branching surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/s8_adaptive_branching/adaptive_branching_readiness_2026-05-20.json" in required
@@ -556,7 +562,6 @@ def test_release_readiness_requires_s8_adaptive_branching_artifacts() -> None:
 
 def test_release_readiness_requires_s9_quantum_thermo_artifacts() -> None:
     """Release artefact gate includes the S9 quantum-thermo surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/s9_quantum_thermo/quantum_thermo_readiness_2026-05-20.json" in required
@@ -565,7 +570,6 @@ def test_release_readiness_requires_s9_quantum_thermo_artifacts() -> None:
 
 def test_release_readiness_requires_s10_analog_native_artifacts() -> None:
     """Release artefact gate includes the S10 analog-native readiness surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/s10_analog_native/analog_native_readiness_2026-05-20.json" in required
@@ -574,7 +578,6 @@ def test_release_readiness_requires_s10_analog_native_artifacts() -> None:
 
 def test_release_readiness_requires_s11_quantum_sensing_artifacts() -> None:
     """Release artefact gate includes the S11 quantum-sensing readiness surfaces."""
-
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/s11_quantum_sensing/quantum_sensing_readiness_2026-05-20.json" in required

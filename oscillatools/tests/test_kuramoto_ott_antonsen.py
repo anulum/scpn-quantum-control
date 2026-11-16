@@ -34,7 +34,10 @@ from oscillatools.accel import (
 
 
 class TestField:
+    """The Ott-Antonsen vector field."""
+
     def test_matches_analytic_form(self) -> None:
+        """The field matches its analytic form."""
         coupling, half_width, centre = 3.0, 0.5, 0.7
         for z in (0.3 + 0.1j, -0.4 + 0.6j, 0.8 - 0.2j):
             linear = 0.5 * coupling - half_width
@@ -44,6 +47,7 @@ class TestField:
             )
 
     def test_steady_state_is_a_fixed_point(self) -> None:
+        """The steady state is a fixed point of the field."""
         coupling, half_width = 3.0, 0.5  # K_c = 1.0, r* = sqrt(1 - 2*0.5/3)
         r_star = ott_antonsen_steady_state(coupling, half_width)
         # With zero mean frequency the synchronised state is a genuine fixed point.
@@ -51,13 +55,17 @@ class TestField:
 
 
 class TestSteadyState:
+    """The partially synchronised steady state."""
+
     def test_matches_mean_field_self_consistency(self) -> None:
+        """The steady state solves the mean-field self-consistency."""
         for coupling, half_width in ((2.0, 0.5), (5.0, 1.0), (0.8, 0.5)):
             assert ott_antonsen_steady_state(coupling, half_width) == pytest.approx(
                 lorentzian_order_parameter(coupling, half_width)
             )
 
     def test_relaxes_onto_branch_from_below_and_above(self) -> None:
+        """Trajectories relax onto the branch from below and above."""
         coupling, half_width, dt, n_steps = 3.0, 0.5, 0.02, 600
         r_star = ott_antonsen_steady_state(coupling, half_width)
         from_below = ott_antonsen_order_parameter(0.05 + 0j, coupling, half_width, dt, n_steps)
@@ -68,6 +76,7 @@ class TestSteadyState:
         assert from_above[0] > from_above[-1]  # falls towards the branch
 
     def test_incoherent_below_critical(self) -> None:
+        """Below the critical coupling the state decays to incoherence."""
         coupling, half_width, dt, n_steps = 0.7, 0.5, 0.02, 800  # K < K_c = 1.0
         radii = ott_antonsen_order_parameter(0.4 + 0j, coupling, half_width, dt, n_steps)
         # Below the critical coupling the only stable state is incoherence: the order parameter
@@ -78,7 +87,10 @@ class TestSteadyState:
 
 
 class TestEnsembleAgreement:
+    """Agreement with a full oscillator ensemble."""
+
     def test_reduced_matches_full_lorentzian_ensemble(self) -> None:
+        """The reduced model matches a full Lorentzian ensemble."""
         coupling, half_width, centre = 3.0, 0.5, 0.0
         dt, n_steps = 0.02, 200
         r0 = 0.1
@@ -109,7 +121,10 @@ class TestEnsembleAgreement:
 
 
 class TestFrequencyInvariance:
+    """Invariance under a shift of the frequency centre."""
+
     def test_modulus_invariant_and_phase_drifts(self) -> None:
+        """A centre shift leaves the modulus unchanged and drifts the phase."""
         coupling, half_width, dt, n_steps = 3.0, 0.5, 0.01, 300
         centre = 0.9
         z0 = 0.3 + 0.0j
@@ -124,7 +139,10 @@ class TestFrequencyInvariance:
 
 
 class TestDifferentiableForm:
+    """The differentiable form of the reduction."""
+
     def test_gradient_matches_finite_difference(self) -> None:
+        """Gradients agree with finite differences."""
         coupling, half_width, dt, n_steps = 3.0, 0.5, 0.02, 200
         z0 = 0.1 + 0.0j
         value, grad_coupling, grad_half_width = (
@@ -149,12 +167,16 @@ class TestDifferentiableForm:
 
     def test_origin_is_not_differentiable(self) -> None:
         # z0 = 0 stays at the incoherent origin where r has no gradient.
+        """The origin is refused as not differentiable."""
         with pytest.raises(ValueError, match="not differentiable at the origin"):
             ott_antonsen_terminal_order_parameter_value_and_grad(0.0 + 0.0j, 0.8, 0.5, 0.02, 50)
 
 
 class TestValidation:
+    """Input validation."""
+
     def test_trajectory_rejects_bad_inputs(self) -> None:
+        """Invalid trajectory inputs are refused with their reasons."""
         with pytest.raises(ValueError, match="coupling must be positive"):
             ott_antonsen_trajectory(0.1 + 0j, 0.0, 0.5, 0.02, 10)
         with pytest.raises(ValueError, match="half_width must be positive"):
@@ -165,5 +187,6 @@ class TestValidation:
             ott_antonsen_trajectory(0.1 + 0j, 3.0, 0.5, 0.02, 0)
 
     def test_steady_state_rejects_bad_inputs(self) -> None:
+        """Invalid steady-state inputs are refused."""
         with pytest.raises(ValueError, match="coupling must be positive"):
             ott_antonsen_steady_state(0.0, 0.5)

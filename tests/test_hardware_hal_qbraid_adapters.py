@@ -20,7 +20,7 @@ from scpn_quantum_control.hardware.hal_qbraid import (
 
 
 def test_qbraid_adapter_uses_injected_device_and_approval_gate() -> None:
-    """qBraid cloud routes should be injectable and approval-gated."""
+    """The qBraid cloud routes should be injectable and approval-gated."""
 
     class FakeResultData:
         def get_counts(self) -> dict[str, int]:
@@ -129,8 +129,7 @@ def test_qbraid_adapter_can_load_device_from_provider() -> None:
 
 
 def test_qbraid_adapter_requires_device_route() -> None:
-    """qBraid construction should fail closed without a device or provider route."""
-
+    """The qBraid construction should fail closed without a device or provider route."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("qbraid_ionq")
 
     with pytest.raises(ValueError, match="device"):
@@ -138,7 +137,7 @@ def test_qbraid_adapter_requires_device_route() -> None:
 
 
 def test_qbraid_adapter_rejects_provider_job_without_id() -> None:
-    """qBraid adapter should fail closed when device.run() omits job id."""
+    """The qBraid adapter should fail closed when device.run() omits job id."""
 
     class FakeResultData:
         def get_counts(self) -> dict[str, int]:
@@ -176,8 +175,7 @@ def test_qbraid_adapter_rejects_provider_job_without_id() -> None:
 
 
 def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
-    """qBraid status values should map to canonical HAL status values."""
-
+    """The qBraid status values should map to canonical HAL status values."""
     from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
 
     assert qbraid_mod._normalise_status("CANCELED") == "cancelled"
@@ -192,8 +190,7 @@ def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
 
 
 def test_qbraid_provider_job_id_rejects_control_characters() -> None:
-    """qBraid provider job identifiers must reject control-character payloads."""
-
+    """The qBraid provider job identifiers must reject control-character payloads."""
     from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
 
     class BadJob:
@@ -204,8 +201,7 @@ def test_qbraid_provider_job_id_rejects_control_characters() -> None:
 
 
 def test_qbraid_provider_job_id_trims_padding() -> None:
-    """qBraid provider job identifiers should be canonicalised by trimming padding."""
-
+    """The qBraid provider job identifiers should be canonicalised by trimming padding."""
     from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
 
     class PaddedJob:
@@ -215,8 +211,7 @@ def test_qbraid_provider_job_id_trims_padding() -> None:
 
 
 def test_qbraid_device_id_rejects_control_characters() -> None:
-    """qBraid device identifiers must reject control-character payloads."""
-
+    """The qBraid device identifiers must reject control-character payloads."""
     from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
 
     class BadDevice:
@@ -227,8 +222,7 @@ def test_qbraid_device_id_rejects_control_characters() -> None:
 
 
 def test_qbraid_device_id_trims_padding() -> None:
-    """qBraid device identifiers should be canonicalised by trimming padding."""
-
+    """The qBraid device identifiers should be canonicalised by trimming padding."""
     from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
 
     class PaddedDevice:
@@ -238,7 +232,7 @@ def test_qbraid_device_id_trims_padding() -> None:
 
 
 def test_qbraid_adapter_rejects_shot_mismatch() -> None:
-    """qBraid adapter must fail closed when decoded counts diverge from requested shots."""
+    """The qBraid adapter must fail closed when decoded counts diverge from requested shots."""
 
     class FakeResultData:
         def get_counts(self) -> dict[str, int]:
@@ -285,6 +279,7 @@ def test_qbraid_adapter_rejects_shot_mismatch() -> None:
 
 
 def test_qbraid_adapter_device_id_rejects_control_characters() -> None:
+    """A qBraid device id with control characters is refused."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("qbraid_ionq")
     with pytest.raises(ValueError, match="qBraid device id"):
         QbraidRuntimeHALAdapter(
@@ -295,6 +290,7 @@ def test_qbraid_adapter_device_id_rejects_control_characters() -> None:
 
 
 def test_qbraid_adapter_device_id_trims_padding() -> None:
+    """A qBraid device id is trimmed of padding."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("qbraid_ionq")
     adapter = QbraidRuntimeHALAdapter(
         profile,

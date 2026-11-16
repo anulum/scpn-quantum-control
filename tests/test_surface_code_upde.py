@@ -17,34 +17,44 @@ from scpn_quantum_control.qec.surface_code_upde import SurfaceCodeSpec, SurfaceC
 
 
 class TestSurfaceCodeSpec:
+    """Surface-code layout for a given distance."""
+
     def test_d3(self) -> None:
+        """Distance three has 9 data, 8 ancilla and 17 physical qubits."""
         spec = SurfaceCodeSpec.from_distance(3)
         assert spec.n_data == 9
         assert spec.n_ancilla == 8
         assert spec.n_physical == 17
 
     def test_d5(self) -> None:
+        """Distance five has 25 data, 24 ancilla and 49 physical qubits."""
         spec = SurfaceCodeSpec.from_distance(5)
         assert spec.n_data == 25
         assert spec.n_ancilla == 24
         assert spec.n_physical == 49
 
     def test_even_distance_rejected(self) -> None:
+        """An even distance is refused."""
         with pytest.raises(ValueError, match="odd"):
             SurfaceCodeSpec.from_distance(4)
 
     def test_distance_1_rejected(self) -> None:
+        """Distance one is refused."""
         with pytest.raises(ValueError, match="odd >= 3"):
             SurfaceCodeSpec.from_distance(1)
 
 
 class TestSurfaceCodeUPDE:
+    """Encoding oscillators in surface-code logical qubits."""
+
     def test_init_4osc_d3(self) -> None:
+        """Four oscillators at distance three use 68 qubits."""
         sc = SurfaceCodeUPDE(n_osc=4, code_distance=3)
         assert sc.total_qubits == 4 * 17
         assert sc.spec.distance == 3
 
     def test_physical_qubit_budget(self) -> None:
+        """The budget reports 68 physical qubits, one correctable error and 9 data qubits per oscillator."""
         sc = SurfaceCodeUPDE(n_osc=4, code_distance=3)
         budget = sc.physical_qubit_budget()
         assert budget["total_physical"] == 68
@@ -52,12 +62,14 @@ class TestSurfaceCodeUPDE:
         assert budget["data_per_osc"] == 9
 
     def test_build_step_circuit(self) -> None:
+        """A step circuit for two oscillators uses 34 qubits."""
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3)
         qc = sc.build_step_circuit(dt=0.1)
         assert qc.num_qubits == 2 * 17
         assert qc.size() > 0
 
     def test_encode_produces_valid_circuit(self) -> None:
+        """Encoding gives a non-empty circuit."""
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3)
         from qiskit import QuantumCircuit
 
@@ -66,6 +78,7 @@ class TestSurfaceCodeUPDE:
         assert qc.size() > 0
 
     def test_logical_rz(self) -> None:
+        """A logical RZ applies one RZ per data qubit."""
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3)
         from qiskit import QuantumCircuit
 
@@ -75,6 +88,7 @@ class TestSurfaceCodeUPDE:
         assert rz_count == sc.spec.n_data
 
     def test_logical_zz(self) -> None:
+        """A logical ZZ applies one RZZ per data qubit."""
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3)
         from qiskit import QuantumCircuit
 
@@ -84,6 +98,7 @@ class TestSurfaceCodeUPDE:
         assert rzz_count == sc.spec.n_data
 
     def test_x_syndrome_extract(self) -> None:
+        """X-syndrome extraction gives a non-empty circuit."""
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3)
         from qiskit import QuantumCircuit
 
@@ -92,6 +107,7 @@ class TestSurfaceCodeUPDE:
         assert qc.size() > 0
 
     def test_z_syndrome_extract(self) -> None:
+        """Z-syndrome extraction gives a non-empty circuit."""
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3)
         from qiskit import QuantumCircuit
 
@@ -116,6 +132,7 @@ class TestSurfaceCodeUPDE:
         assert qc.num_clbits == 0
 
     def test_budget_scaling(self) -> None:
+        """The budget scales as 2d^2 - 1 qubits per oscillator and corrects (d - 1)/2 errors."""
         for d in [3, 5, 7]:
             sc = SurfaceCodeUPDE(n_osc=4, code_distance=d)
             budget = sc.physical_qubit_budget()
@@ -123,10 +140,12 @@ class TestSurfaceCodeUPDE:
             assert budget["correctable_errors"] == (d - 1) // 2
 
     def test_n_osc_1_rejected(self) -> None:
+        """A single oscillator is refused."""
         with pytest.raises(ValueError, match="Need >= 2"):
             SurfaceCodeUPDE(n_osc=1)
 
     def test_custom_K_omega(self) -> None:
+        """Custom couplings and frequencies give a 34-qubit circuit."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, 2.0])
         sc = SurfaceCodeUPDE(n_osc=2, code_distance=3, K=K, omega=omega)

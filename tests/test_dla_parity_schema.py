@@ -66,7 +66,10 @@ def _make_run(
 
 
 class TestDlaParityCircuitMeta:
+    """Metadata of one DLA-parity circuit."""
+
     def test_happy_path(self) -> None:
+        """Metadata keeps its qubit count, depth and sector."""
         meta = _make_meta()
         assert meta.n_qubits == 4
         assert meta.depth == 2
@@ -76,32 +79,41 @@ class TestDlaParityCircuitMeta:
         assert meta.t_step == 0.3
 
     def test_frozen(self) -> None:
+        """Metadata cannot be modified."""
         meta = _make_meta()
         with pytest.raises(AttributeError):
             meta.depth = 99  # type: ignore[misc]
 
 
 class TestDlaParityCircuit:
+    """One DLA-parity circuit with its counts."""
+
     def test_happy_path(self) -> None:
+        """A circuit keeps its metadata and counts."""
         c = _make_circuit(depth=6, sector="odd")
         assert c.meta.depth == 6
         assert c.meta.sector == "odd"
         assert c.counts == {"1100": 1500}
 
     def test_frozen(self) -> None:
+        """A circuit cannot be modified."""
         c = _make_circuit()
         with pytest.raises(AttributeError):
             c.counts = {}  # type: ignore[misc]
 
 
 class TestDlaParityRun:
+    """One DLA-parity run on a backend."""
+
     def test_happy_path(self) -> None:
+        """A run keeps its backend and circuits."""
         run = _make_run()
         assert run.backend == "ibm_kingston"
         assert run.n_circuits == 2
         assert len(run.circuits) == 2
 
     def test_name_resolution_each_known_experiment(self) -> None:
+        """Each known experiment resolves to its canonical name."""
         cases = {
             "phase1_dla_parity_mini_bench": "bench",
             "phase1_5_reinforce": "reinforce",
@@ -113,19 +125,24 @@ class TestDlaParityRun:
             assert run.name == canonical
 
     def test_name_raises_on_unknown_experiment(self) -> None:
+        """An unknown experiment is refused."""
         run = _make_run(experiment="phase3_future_unknown", n_circuits=1)
         with pytest.raises(ValueError, match="Unknown DLA-parity run"):
             _ = run.name
 
 
 class TestDlaParityDataset:
+    """A dataset of DLA-parity runs."""
+
     def test_empty(self) -> None:
+        """An empty dataset has no circuits and no backends."""
         ds = DlaParityDataset(runs=())
         assert ds.n_circuits_total == 0
         assert ds.backends == frozenset()
         assert ds.circuits == ()
 
     def test_aggregates_across_runs(self) -> None:
+        """The dataset aggregates circuits across runs."""
         run1 = _make_run(experiment="phase1_dla_parity_mini_bench", n_circuits=3)
         run2 = _make_run(experiment="phase1_5_reinforce", n_circuits=4)
         ds = DlaParityDataset(runs=(run1, run2))
@@ -134,6 +151,7 @@ class TestDlaParityDataset:
         assert len(ds.circuits) == 7
 
     def test_multi_backend_reported_as_set(self) -> None:
+        """Several backends are reported as a set."""
         run1 = _make_run()
         run2 = DlaParityRun(
             experiment="phase2_exhaust_cycle",
@@ -150,7 +168,10 @@ class TestDlaParityDataset:
 
 
 class TestStatisticalSummary:
+    """The statistical summary of one depth."""
+
     def test_happy_path(self) -> None:
+        """A summary keeps its depth, asymmetry and repetition counts."""
         s = StatisticalSummary(
             depth=6,
             leakage_even=0.1291,
@@ -168,6 +189,7 @@ class TestStatisticalSummary:
         assert s.n_reps_even == s.n_reps_odd == 21
 
     def test_frozen(self) -> None:
+        """A summary cannot be modified."""
         s = StatisticalSummary(
             depth=2,
             leakage_even=0.0,

@@ -82,11 +82,15 @@ def _install_fake_transfer_boundaries(
 
 
 class TestBuildSystems:
+    """Building the four physical systems."""
+
     def test_returns_four_systems(self) -> None:
+        """Four systems are built."""
         systems = build_systems(n_qubits=3)
         assert len(systems) == 4
 
     def test_system_shapes(self) -> None:
+        """Each system has a 4-by-4 coupling and four frequencies."""
         systems = build_systems(n_qubits=4)
         for s in systems:
             assert isinstance(s, PhysicalSystem)
@@ -94,18 +98,23 @@ class TestBuildSystems:
             assert len(s.omega) == 4
 
     def test_names_unique(self) -> None:
+        """System names are unique."""
         systems = build_systems(n_qubits=3)
         names = [s.name for s in systems]
         assert len(names) == len(set(names))
 
     def test_K_symmetric(self) -> None:
+        """Each coupling matrix is symmetric."""
         systems = build_systems(n_qubits=4)
         for s in systems:
             np.testing.assert_array_almost_equal(s.K, s.K.T)
 
 
 class TestTransferExperiment:
+    """One transfer experiment between two systems."""
+
     def test_returns_result(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The experiment returns a result naming its source and target."""
         _install_fake_transfer_boundaries(monkeypatch)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=10)
@@ -114,6 +123,7 @@ class TestTransferExperiment:
         assert result.target_system == systems[1].name
 
     def test_energies_finite(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Random, transferred and exact energies are finite."""
         _install_fake_transfer_boundaries(monkeypatch)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=10)
@@ -122,6 +132,7 @@ class TestTransferExperiment:
         assert np.isfinite(result.exact_energy)
 
     def test_exact_is_lower_bound(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The exact energy bounds both variational energies from below, within 0.1."""
         _install_fake_transfer_boundaries(monkeypatch)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=20)
@@ -130,6 +141,7 @@ class TestTransferExperiment:
         assert result.transfer_init_energy >= result.exact_energy - 0.1
 
     def test_speedup_positive(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The speed-up is positive and the transfer reuses the parameter shape."""
         calls = _install_fake_transfer_boundaries(monkeypatch, n_params=3)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=15)
@@ -138,6 +150,8 @@ class TestTransferExperiment:
         assert calls[2].shape == calls[1].shape
 
     def test_vqe_optimize_uses_cost_function(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The optimiser minimises the given cost function with COBYLA."""
+
         def fake_minimize(
             cost: Callable[[NDArray[np.float64]], float],
             init_params: NDArray[np.float64],
@@ -166,13 +180,17 @@ class TestTransferExperiment:
 
 
 class TestRunTransferMatrix:
+    """Running every ordered pair of systems."""
+
     def test_all_pairs(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """All 12 ordered pairs are run."""
         _install_fake_transfer_boundaries(monkeypatch)
         results = run_transfer_matrix(n_qubits=2, reps=1, maxiter=5)
         # 4 systems × 3 targets each = 12 pairs
         assert len(results) == 12
 
     def test_no_self_transfer(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """No system transfers to itself."""
         _install_fake_transfer_boundaries(monkeypatch)
         results = run_transfer_matrix(n_qubits=2, reps=1, maxiter=5)
         for r in results:
@@ -180,7 +198,10 @@ class TestRunTransferMatrix:
 
 
 class TestSummarizeTransfer:
+    """Summarising the transfer results."""
+
     def test_summary_keys(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The summary counts pairs and positive transfers and names the best speed-up."""
         _install_fake_transfer_boundaries(monkeypatch)
         results = run_transfer_matrix(n_qubits=2, reps=1, maxiter=5)
         summary = summarize_transfer(results)
@@ -191,5 +212,6 @@ class TestSummarizeTransfer:
         assert summary["n_pairs"] == 12
 
     def test_empty_results(self) -> None:
+        """No results give zero pairs."""
         summary = summarize_transfer([])
         assert summary["n_pairs"] == 0

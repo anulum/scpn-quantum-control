@@ -5,8 +5,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Orchestrator Adapter Errors
-"""Multi-angle tests for PhaseOrchestratorAdapter: error paths, edge cases,
-field resolution, payload conversion.
+"""Tests for PhaseOrchestratorAdapter error paths and edge cases.
+
+They cover field resolution and payload conversion.
 """
 
 from __future__ import annotations
@@ -19,25 +20,34 @@ from scpn_quantum_control.bridge.orchestrator_adapter import PhaseOrchestratorAd
 
 
 class TestBuildKnmErrors:
+    """Errors when building the coupling matrix."""
+
     def test_empty_layers_raises(self) -> None:
+        """Empty layers are refused."""
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec({"layers": []})
 
     def test_none_layers_raises(self) -> None:
+        """Layers given as None are refused."""
         with pytest.raises((ValueError, TypeError, KeyError)):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec({"layers": None})
 
     def test_missing_layers_raises(self) -> None:
+        """Missing layers are refused."""
         with pytest.raises((ValueError, TypeError, KeyError, AttributeError)):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec({})
 
 
 class TestBuildOmegaErrors:
+    """Errors when building the frequencies."""
+
     def test_empty_layers_raises(self) -> None:
+        """Empty layers are refused."""
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_omega_from_binding_spec({"layers": []})
 
     def test_none_layers_raises(self) -> None:
+        """Layers given as None are refused."""
         with pytest.raises((ValueError, TypeError, KeyError)):
             PhaseOrchestratorAdapter.build_omega_from_binding_spec({"layers": None})
 
@@ -60,7 +70,10 @@ class TestFieldResolution:
 
 
 class TestStaticMethods:
+    """The adapter's static interface."""
+
     def test_adapter_methods_are_static(self) -> None:
+        """The adapter's builders are static methods."""
         assert isinstance(
             PhaseOrchestratorAdapter.__dict__["build_knm_from_binding_spec"],
             staticmethod,
@@ -71,10 +84,12 @@ class TestStaticMethods:
         )
 
     def test_adapter_has_from_orchestrator_state(self) -> None:
+        """The adapter can read orchestrator state."""
         assert hasattr(PhaseOrchestratorAdapter, "from_orchestrator_state")
         assert callable(PhaseOrchestratorAdapter.from_orchestrator_state)
 
     def test_adapter_has_to_orchestrator_payload(self) -> None:
+        """The adapter can write an orchestrator payload."""
         assert hasattr(PhaseOrchestratorAdapter, "to_orchestrator_payload")
         assert callable(PhaseOrchestratorAdapter.to_orchestrator_payload)
 
@@ -85,7 +100,10 @@ class TestStaticMethods:
 
 
 class TestPayloadErrors:
+    """Errors when converting to an orchestrator payload."""
+
     def test_missing_regime_id_raises(self) -> None:
+        """A missing regime id is refused."""
         payload = {
             "layers": [{"R": 0.5, "psi": 0.0, "lock_signatures": {}}],
             "cross_layer_alignment": [[1.0]],
@@ -95,6 +113,7 @@ class TestPayloadErrors:
             PhaseOrchestratorAdapter.from_orchestrator_state(payload)
 
     def test_missing_stability_raises(self) -> None:
+        """A missing stability value is refused."""
         payload = {
             "layers": [{"R": 0.5, "psi": 0.0}],
             "cross_layer_alignment": [[1.0]],
@@ -121,8 +140,11 @@ class TestPayloadErrors:
 
 
 class TestErrorPipeline:
+    """The error pipeline for invalid binding specs."""
+
     def test_pipeline_binding_spec_validation(self) -> None:
         """Full pipeline: invalid binding spec → clear error → no crash.
+
         Verifies error handling is wired, not silently passing garbage.
         """
         import time

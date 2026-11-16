@@ -69,7 +69,10 @@ def _variant_problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 class TestCommutatorBounds:
+    """Commutator norms and Trotter error bounds."""
+
     def test_commutator_norm_positive(self) -> None:
+        """The commutator norm is positive."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         gamma = commutator_norm_bound(K, omega)
@@ -128,6 +131,7 @@ class TestCommutatorBounds:
         assert bound >= empirical - 1e-12
 
     def test_bound_decreases_with_reps(self) -> None:
+        """The bound decreases with more repetitions."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         b1 = trotter_error_bound(K, omega, 1.0, 1, order=1)
@@ -136,6 +140,7 @@ class TestCommutatorBounds:
         assert b1 > b5 > b10
 
     def test_second_order_better_than_first(self) -> None:
+        """The second-order bound is below the first-order one."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         b1 = trotter_error_bound(K, omega, 0.5, 5, order=1)
@@ -143,6 +148,7 @@ class TestCommutatorBounds:
         assert b2 < b1
 
     def test_nested_commutator_bound_matches_exact_small_system(self) -> None:
+        """The nested commutator bound matches the exact value on a small system."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K = build_knm_paper27(L=3)
@@ -159,6 +165,7 @@ class TestCommutatorBounds:
         assert actual == pytest.approx(expected, rel=1e-12, abs=1e-12)
 
     def test_nested_commutator_bound_has_large_system_upper_bound(self) -> None:
+        """On a large system the nested bound is a finite, positive upper bound."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
 
@@ -168,6 +175,7 @@ class TestCommutatorBounds:
         assert bound > 0.0
 
     def test_optimal_dt_respects_epsilon(self) -> None:
+        """The optimal step keeps the error bound within epsilon."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=1)
@@ -176,6 +184,7 @@ class TestCommutatorBounds:
         assert _step_float(result, "dt") > 0
 
     def test_optimal_dt_order2(self) -> None:
+        """The second order needs no more steps than the first."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         r1 = optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=1)
@@ -184,6 +193,7 @@ class TestCommutatorBounds:
         assert _step_int(r2, "n_steps") <= _step_int(r1, "n_steps")
 
     def test_frequency_heterogeneity(self) -> None:
+        """Uniform frequencies have zero heterogeneity and spread ones a positive value."""
         omega_uniform = np.ones(4) * 1.0
         assert frequency_heterogeneity(omega_uniform) == pytest.approx(0.0)
 
@@ -200,7 +210,7 @@ class TestCommutatorBounds:
         assert gamma < 200  # upper bound sanity
 
     def test_scpn_optimal_dt_value(self) -> None:
-        """For 16-layer SCPN at epsilon=0.01, what dt do we need?"""
+        """For the 16-layer SCPN at epsilon=0.01, find the step size dt."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         result = optimal_dt(K, omega, epsilon=0.01, t_total=5.0, order=1)
@@ -215,6 +225,8 @@ class TestCommutatorBounds:
 
 
 class TestCommutatorPhysics:
+    """Physical properties of the bounds."""
+
     def test_heterogeneity_drives_error(self) -> None:
         """More frequency spread → larger commutator norm → larger Trotter error."""
         K = build_knm_paper27(L=4)
@@ -225,12 +237,14 @@ class TestCommutatorPhysics:
         assert gamma_wide > gamma_narrow
 
     def test_error_bound_nonnegative(self) -> None:
+        """The error bound is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         b = trotter_error_bound(K, omega, 1.0, 5, order=1)
         assert b >= 0
 
     def test_invalid_trotter_bound_contracts_are_rejected(self) -> None:
+        """Invalid bound arguments are refused with their reasons."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
 
@@ -253,10 +267,12 @@ class TestCommutatorPhysics:
     def test_nested_bound_validates_problem_shape_and_finiteness(
         self, bad_K: NDArray[np.float64], bad_omega: NDArray[np.float64], message: str
     ) -> None:
+        """The nested bound refuses bad shapes and non-finite values."""
         with pytest.raises(ValueError, match=message):
             nested_commutator_norm_bound(bad_K, bad_omega)
 
     def test_frequency_heterogeneity_single_frequency_is_zero(self) -> None:
+        """A single frequency has zero heterogeneity."""
         assert frequency_heterogeneity(np.array([1.25])) == pytest.approx(0.0)
 
 
@@ -451,8 +467,11 @@ class TestKuramotoVariantContracts:
 
 
 class TestCommutatorPipeline:
+    """The coupling-to-step-size pipeline."""
+
     def test_pipeline_knm_to_optimal_dt(self) -> None:
         """Full pipeline: build_knm → commutator norm → optimal dt for ε=0.01.
+
         Verifies Trotter error module is wired and produces actionable circuit params.
         """
         import time

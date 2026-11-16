@@ -60,21 +60,25 @@ class TestImportErrorPaths:
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
     def test_build_knm_plasma_raises(self, _mock: MagicMock) -> None:
+        """Without the sibling package the matrix builder raises ImportError."""
         with pytest.raises(ImportError, match="scpn_control"):
             build_knm_plasma()
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
     def test_plasma_omega_raises(self, _mock: MagicMock) -> None:
+        """Without the sibling package the frequency builder raises ImportError."""
         with pytest.raises(ImportError, match="scpn_control"):
             plasma_omega()
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
     def test_build_knm_plasma_from_config_raises(self, _mock: MagicMock) -> None:
+        """Without the sibling package the configured builder raises ImportError."""
         with pytest.raises(ImportError, match="scpn_control"):
             build_knm_plasma_from_config(R0=6.2, a=2.0, B0=5.3, Ip=15.0, n_e=10.1)
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
     def test_build_knm_plasma_spec_raises(self, _mock: MagicMock) -> None:
+        """Without the sibling package the specification builder raises ImportError."""
         with pytest.raises(ImportError, match="scpn_control"):
             build_knm_plasma_spec()
 
@@ -89,17 +93,20 @@ class TestBuildKnmPlasma:
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_returns_ndarray(self, _mock: MagicMock) -> None:
+        """The builder returns a float64 array."""
         result = build_knm_plasma()
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(4))
     def test_shape_matches_L(self, _mock: MagicMock) -> None:
+        """The matrix is square in the layer count."""
         result = build_knm_plasma(L=4)
         assert result.shape == (4, 4)
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_default_params_forwarded(self, mock_import: MagicMock) -> None:
+        """The default parameters are forwarded to the sibling builder."""
         build_knm_plasma()
         mod = mock_import.return_value
         mod.build_knm_plasma.assert_called_once_with(
@@ -117,6 +124,7 @@ class TestBuildKnmPlasmaSpec:
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_returns_dict_with_expected_keys(self, _mock: MagicMock) -> None:
+        """The specification holds the matrix, zeta and the layer names."""
         result = build_knm_plasma_spec()
         assert set(result.keys()) == {"K", "zeta", "layer_names"}
         assert isinstance(result["K"], np.ndarray)
@@ -124,18 +132,21 @@ class TestBuildKnmPlasmaSpec:
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_zeta_is_ndarray(self, _mock: MagicMock) -> None:
+        """Zeta is a float64 array."""
         result = build_knm_plasma_spec()
         assert isinstance(result["zeta"], np.ndarray)
         assert result["zeta"].dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_layer_names_is_list(self, _mock: MagicMock) -> None:
+        """The layer names are a list of eight."""
         result = build_knm_plasma_spec()
         assert isinstance(result["layer_names"], list)
         assert len(result["layer_names"]) == 8
 
     @patch(_PATCH_TARGET)
     def test_none_zeta_passthrough(self, mock_import: MagicMock) -> None:
+        """A missing zeta and missing layer names pass through as None."""
         mod = _make_mock_module(4)
         mod.build_knm_plasma.return_value = SimpleNamespace(
             K=np.eye(4), zeta=None, layer_names=None
@@ -151,12 +162,14 @@ class TestBuildKnmPlasmaFromConfig:
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_returns_ndarray(self, _mock: MagicMock) -> None:
+        """The configured builder returns a float64 array."""
         result = build_knm_plasma_from_config(R0=6.2, a=2.0, B0=5.3, Ip=15.0, n_e=10.1)
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_forwards_all_params(self, mock_import: MagicMock) -> None:
+        """Every configuration parameter is forwarded."""
         build_knm_plasma_from_config(
             R0=6.2, a=2.0, B0=5.3, Ip=15.0, n_e=10.1, mode="enhanced", L=4
         )
@@ -178,17 +191,20 @@ class TestPlasmaOmega:
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_returns_ndarray(self, _mock: MagicMock) -> None:
+        """The frequencies are a float64 array."""
         result = plasma_omega()
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
     def test_shape_default_L(self, _mock: MagicMock) -> None:
+        """The default gives eight frequencies."""
         result = plasma_omega()
         assert result.shape == (8,)
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(4))
     def test_forwards_L(self, mock_import: MagicMock) -> None:
+        """The layer count is forwarded."""
         plasma_omega(L=4)
         mod = mock_import.return_value
         mod.plasma_omega.assert_called_once_with(L=4)
@@ -232,6 +248,7 @@ class TestExports:
     """__all__ must list exactly the public API."""
 
     def test_all_exports(self) -> None:
+        """The module exports exactly its four builders."""
         from scpn_quantum_control.bridge import control_plasma_knm
 
         expected = {

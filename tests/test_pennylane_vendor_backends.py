@@ -165,6 +165,7 @@ class TestVendorBackendConstruction:
         kwargs: dict[str, Any],
         label: str,
     ) -> None:
+        """The device string is forwarded once and unchanged."""
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(K, omega, device=device_str, shots=shots, **kwargs)
         assert len(spy_pl.device_calls) == 1
@@ -179,6 +180,7 @@ class TestVendorBackendConstruction:
         kwargs: dict[str, Any],
         label: str,
     ) -> None:
+        """One wire is requested per oscillator."""
         K, omega = _minimal_inputs(n=4)
         pl_mod.PennyLaneRunner(K, omega, device=device_str, shots=shots, **kwargs)
         assert spy_pl.device_calls[0]["wires"] == 4, f"{label}: wires != N"
@@ -191,6 +193,7 @@ class TestVendorBackendConstruction:
         kwargs: dict[str, Any],
         label: str,
     ) -> None:
+        """The shot count is forwarded."""
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(K, omega, device=device_str, shots=shots, **kwargs)
         assert spy_pl.device_calls[0]["shots"] == shots
@@ -203,6 +206,7 @@ class TestVendorBackendConstruction:
         kwargs: dict[str, Any],
         label: str,
     ) -> None:
+        """Vendor keyword arguments are forwarded unchanged."""
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(K, omega, device=device_str, shots=shots, **kwargs)
         assert spy_pl.device_calls[0]["kwargs"] == kwargs, (
@@ -217,6 +221,7 @@ class TestVendorBackendConstruction:
         kwargs: dict[str, Any],
         label: str,
     ) -> None:
+        """The runner keeps the device name."""
         K, omega = _minimal_inputs()
         runner = pl_mod.PennyLaneRunner(K, omega, device=device_str, shots=shots, **kwargs)
         assert runner.device_name == device_str
@@ -229,6 +234,7 @@ class TestVendorBackendConstruction:
         kwargs: dict[str, Any],
         label: str,
     ) -> None:
+        """The result carries the device name."""
         K, omega = _minimal_inputs()
         runner = pl_mod.PennyLaneRunner(K, omega, device=device_str, shots=shots, **kwargs)
         result = runner.run_trotter(t=0.1, reps=1)
@@ -241,6 +247,8 @@ class TestVendorBackendConstruction:
 
 
 class TestVendorPassThroughSemantics:
+    """Vendor device strings passed through to PennyLane."""
+
     def test_unknown_vendor_reaches_qml_device_unfiltered(self, spy_pl: _SpyQml) -> None:
         """Adapter must not maintain a hard-coded allow-list of devices.
 
@@ -284,9 +292,10 @@ class TestVendorPassThroughSemantics:
         assert spy_pl.device_calls == []
 
     def test_exactly_one_device_call_per_runner(self, spy_pl: _SpyQml) -> None:
-        """Each ``PennyLaneRunner`` construction issues exactly one
-        ``qml.device`` call — regression guard against an accidental
-        double-instantiation on hardware, which would double-bill users.
+        """Each ``PennyLaneRunner`` construction issues exactly one ``qml.device`` call.
+
+        This guards against an accidental double instantiation on hardware, which would
+        double-bill users.
         """
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(K, omega, device="ionq.qpu", shots=100)
@@ -294,25 +303,29 @@ class TestVendorPassThroughSemantics:
         assert len(spy_pl.device_calls) == 2
 
     def test_shots_none_is_distinct_from_shots_zero(self, spy_pl: _SpyQml) -> None:
-        """shots=None (analytic) must not be coerced into shots=0 or
-        shots=1 when forwarded to PennyLane — some plugins treat 0 as
-        'one sample'."""
+        """Analytic ``shots=None`` is forwarded to PennyLane unchanged, never as 0 or 1.
+
+        Some plugins treat 0 as 'one sample'.
+        """
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(K, omega, device="default.qubit", shots=None)
         assert spy_pl.device_calls[0]["shots"] is None
 
     def test_hardware_vendor_with_no_kwargs_is_allowed(self, spy_pl: _SpyQml) -> None:
-        """Passing a hardware vendor string without vendor-specific kwargs
-        must not raise — the PennyLane plugin is responsible for validating
-        its own required configuration."""
+        """A hardware vendor string without vendor-specific kwargs does not raise.
+
+        The PennyLane plugin is responsible for validating its own required configuration.
+        """
         K, omega = _minimal_inputs()
         runner = pl_mod.PennyLaneRunner(K, omega, device="rigetti.qpu", shots=512)
         assert runner.device_name == "rigetti.qpu"
         assert spy_pl.device_calls[0]["kwargs"] == {}
 
     def test_no_hidden_global_state_between_vendors(self, spy_pl: _SpyQml) -> None:
-        """Constructing runners for different vendors must not share
-        cached device handles — each call is a fresh plugin invocation."""
+        """Runners for different vendors share no cached device handles.
+
+        Each construction is a fresh plugin invocation.
+        """
         K, omega = _minimal_inputs()
         r1 = pl_mod.PennyLaneRunner(K, omega, device="ionq.simulator")
         r2 = pl_mod.PennyLaneRunner(K, omega, device="braket.aws.qubit", shots=100)
@@ -329,7 +342,10 @@ class TestVendorPassThroughSemantics:
 
 
 class TestVendorPipelineSmoke:
+    """End-to-end runs against mocked vendor devices."""
+
     def test_pipeline_braket_end_to_end_mocked(self, spy_pl: _SpyQml) -> None:
+        """A mocked Braket device runs end to end."""
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
         K = build_knm_paper27(L=3)
@@ -347,6 +363,7 @@ class TestVendorPipelineSmoke:
         assert spy_pl.device_calls[0]["kwargs"]["device_arn"].startswith("arn:aws:braket:")
 
     def test_pipeline_quantinuum_preserves_machine_kwarg(self, spy_pl: _SpyQml) -> None:
+        """The Quantinuum machine argument is kept."""
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(
             K,

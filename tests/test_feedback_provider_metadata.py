@@ -20,6 +20,8 @@ from scpn_quantum_control.hardware.feedback_provider_metadata import (
 
 
 class DummyConfig:
+    """Backend configuration stub with eight qubits, basis gates, limits and timing."""
+
     num_qubits = 8
     basis_gates = ["rz", "sx", "x", "cx", "measure", "reset"]
     max_shots = 4096
@@ -30,21 +32,27 @@ class DummyConfig:
 
 
 class DummyTarget:
+    """Backend target stub with operation names, including if_else, and a measurement map."""
+
     operation_names = {"rz", "sx", "cx", "measure", "reset", "if_else"}
     meas_map = [[0], [1], [2], [3], [4], [5], [6], [7]]
 
 
 class DummyBackend:
+    """Backend stub named dummy_heron with eight qubits, the target stub and a configuration."""
+
     name = "dummy_heron"
     num_qubits = 8
     target = DummyTarget()
     simulator = False
 
     def configuration(self) -> DummyConfig:
+        """Return the configuration stub."""
         return DummyConfig()
 
 
 def test_snapshot_from_generic_metadata_preserves_declared_features() -> None:
+    """A snapshot from generic metadata keeps the declared features."""
     snapshot = snapshot_from_generic_metadata(
         {
             "provider": "generic",
@@ -66,6 +74,7 @@ def test_snapshot_from_generic_metadata_preserves_declared_features() -> None:
 
 
 def test_snapshot_from_qiskit_backend_infers_dynamic_features_without_submission() -> None:
+    """A snapshot from a Qiskit backend infers dynamic features without submitting."""
     snapshot = snapshot_from_qiskit_backend(DummyBackend())
 
     assert snapshot.backend_name == "dummy_heron"
@@ -87,6 +96,8 @@ def test_snapshot_from_qiskit_backend_infers_dynamic_features_without_submission
 
 
 def test_snapshot_from_qiskit_backend_merges_configuration_and_target_operations() -> None:
+    """The snapshot merges configuration and target operations."""
+
     class LegacyConfig:
         num_qubits = 156
         basis_gates = ["cz", "id", "rz", "sx", "x"]
@@ -123,6 +134,8 @@ def test_snapshot_from_qiskit_backend_merges_configuration_and_target_operations
 
 
 def test_snapshot_from_qiskit_backend_accepts_target_operation_view() -> None:
+    """A target's operation view is accepted."""
+
     class Config:
         num_qubits = 4
         basis_gates = ["rz", "sx", "x", "cz"]
@@ -149,11 +162,13 @@ def test_snapshot_from_qiskit_backend_accepts_target_operation_view() -> None:
 
 
 def test_snapshot_from_generic_metadata_rejects_missing_required_fields() -> None:
+    """Generic metadata without required fields is refused."""
     with pytest.raises(ValueError, match="provider"):
         snapshot_from_generic_metadata({"backend_name": "x", "n_qubits": 2})
 
 
 def test_snapshot_from_generic_metadata_rejects_non_text_feature_entries() -> None:
+    """Feature entries that are not strings are refused."""
     with pytest.raises(ValueError, match="string sequences"):
         snapshot_from_generic_metadata(
             {
@@ -166,6 +181,8 @@ def test_snapshot_from_generic_metadata_rejects_non_text_feature_entries() -> No
 
 
 def test_snapshot_from_qiskit_backend_preserves_no_submit_provenance_for_callable_name() -> None:
+    """A callable backend name keeps the no-submission provenance."""
+
     class CallableNameBackend:
         num_qubits = 3
         simulator = True
@@ -190,6 +207,8 @@ def test_snapshot_from_qiskit_backend_preserves_no_submit_provenance_for_callabl
 
 
 def test_snapshot_from_qiskit_backend_uses_configuration_qubits_and_limits() -> None:
+    """The snapshot takes qubits and limits from the configuration."""
+
     class ConfigOnlyBackend:
         name = "config_only"
 
@@ -222,16 +241,20 @@ def test_snapshot_from_generic_metadata_rejects_invalid_boundary_fields(
     metadata: dict[str, object],
     message: str,
 ) -> None:
+    """Invalid boundary fields are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         snapshot_from_generic_metadata(metadata)
 
 
 def test_snapshot_from_qiskit_backend_rejects_missing_backend_identity() -> None:
+    """A backend without a name is refused."""
     with pytest.raises(ValueError, match="backend name"):
         snapshot_from_qiskit_backend(object())
 
 
 def test_snapshot_from_qiskit_backend_tolerates_target_without_operation_names() -> None:
+    """A target without operation names gives no basis gates."""
+
     class TargetOnlyBackend:
         name = "target_only"
         num_qubits = 4
@@ -244,6 +267,8 @@ def test_snapshot_from_qiskit_backend_tolerates_target_without_operation_names()
 
 
 def test_snapshot_from_qiskit_backend_accepts_configuration_without_limits() -> None:
+    """A configuration without limits gives no shot limit."""
+
     class MinimalConfig:
         num_qubits = 4
         basis_gates = "measure"
@@ -272,6 +297,7 @@ def test_snapshot_from_generic_metadata_rejects_malformed_string_sequences(
     field: str,
     value: object,
 ) -> None:
+    """Malformed string sequences are refused."""
     with pytest.raises(ValueError):
         snapshot_from_generic_metadata(
             {

@@ -46,6 +46,7 @@ def _trajectory(steps: int = 24, count: int = 6, seed: int = 20260703) -> NDArra
 
 
 def test_phase_raster_creates_figure_image_and_labels() -> None:
+    """The phase raster draws one image of oscillators against time, with labels."""
     phases = _trajectory()
     axis = viz.phase_raster(phases)
     assert len(axis.images) == 1
@@ -60,6 +61,7 @@ def test_phase_raster_creates_figure_image_and_labels() -> None:
 
 
 def test_phase_raster_draws_into_a_supplied_axis() -> None:
+    """The phase raster draws into a supplied axis."""
     phases = _trajectory()
     _, supplied = plt.subplots()
     returned = viz.phase_raster(phases, ax=supplied)
@@ -68,6 +70,7 @@ def test_phase_raster_draws_into_a_supplied_axis() -> None:
 
 
 def test_phase_raster_single_timestep_widens_the_extent() -> None:
+    """A single time step gets an extent of width one."""
     phases = _trajectory(steps=1)
     axis = viz.phase_raster(phases)
     left, right, _, _ = axis.images[0].get_extent()
@@ -75,6 +78,7 @@ def test_phase_raster_single_timestep_widens_the_extent() -> None:
 
 
 def test_phase_raster_uses_supplied_times_for_the_extent() -> None:
+    """Supplied times set the extent."""
     phases = _trajectory(steps=10)
     times = np.linspace(2.0, 6.5, 10)
     axis = viz.phase_raster(phases, times=times)
@@ -84,6 +88,7 @@ def test_phase_raster_uses_supplied_times_for_the_extent() -> None:
 
 
 def test_order_parameter_timeseries_matches_the_shipped_order_parameter() -> None:
+    """The order-parameter plot draws the shipped order parameter on [0, 1.05]."""
     phases = _trajectory()
     axis = viz.order_parameter_timeseries(phases)
     assert len(axis.lines) == 1
@@ -95,6 +100,7 @@ def test_order_parameter_timeseries_matches_the_shipped_order_parameter() -> Non
 
 
 def test_order_parameter_timeseries_draws_into_a_supplied_axis() -> None:
+    """The order-parameter plot draws into a supplied axis."""
     phases = _trajectory()
     _, supplied = plt.subplots()
     returned = viz.order_parameter_timeseries(phases, ax=supplied)
@@ -103,6 +109,7 @@ def test_order_parameter_timeseries_draws_into_a_supplied_axis() -> None:
 
 
 def test_chimera_snapshot_draws_one_curve_per_community_with_the_index_title() -> None:
+    """The chimera snapshot draws one curve per community and is titled with the index."""
     phases = _trajectory(count=6)
     communities = [np.array([0, 1, 2]), np.array([3, 4, 5])]
     axis = viz.chimera_snapshot(phases, communities)
@@ -111,6 +118,7 @@ def test_chimera_snapshot_draws_one_curve_per_community_with_the_index_title() -
 
 
 def test_chimera_snapshot_curves_are_the_shipped_community_order_parameters() -> None:
+    """The chimera curves are the shipped community order parameters."""
     from oscillatools.accel.kuramoto_chimera import community_order_parameters
 
     phases = _trajectory(count=6)
@@ -122,6 +130,7 @@ def test_chimera_snapshot_curves_are_the_shipped_community_order_parameters() ->
 
 
 def test_network_phase_embedding_draws_edges_and_nodes() -> None:
+    """The network embedding draws coupling edges and phase-coloured nodes."""
     rng = np.random.default_rng(1)
     phases = rng.uniform(-np.pi, np.pi, 5)
     coupling = rng.uniform(0.3, 0.9, (5, 5))
@@ -134,6 +143,7 @@ def test_network_phase_embedding_draws_edges_and_nodes() -> None:
 
 
 def test_network_phase_embedding_without_coupling_omits_the_edge_collection() -> None:
+    """Without a coupling the embedding draws no edges."""
     phases = np.linspace(-np.pi, np.pi, 4, endpoint=False)
     coupling = np.zeros((4, 4))
     axis = viz.network_phase_embedding(phases, coupling)
@@ -143,6 +153,7 @@ def test_network_phase_embedding_without_coupling_omits_the_edge_collection() ->
 
 
 def test_network_phase_embedding_draws_into_a_supplied_axis() -> None:
+    """The embedding draws into a supplied axis."""
     phases = np.linspace(-np.pi, np.pi, 4, endpoint=False)
     coupling = np.eye(4) * 0.0 + 0.5
     np.fill_diagonal(coupling, 0.0)
@@ -152,31 +163,37 @@ def test_network_phase_embedding_draws_into_a_supplied_axis() -> None:
 
 
 def test_phase_raster_rejects_a_non_two_dimensional_trajectory() -> None:
+    """A trajectory that is not two-dimensional is refused."""
     with pytest.raises(ValueError, match="two-dimensional"):
         viz.phase_raster(np.zeros(5))
 
 
 def test_phase_raster_rejects_an_empty_trajectory() -> None:
+    """An empty trajectory is refused."""
     with pytest.raises(ValueError, match="at least one step and one oscillator"):
         viz.phase_raster(np.zeros((0, 4)))
 
 
 def test_order_parameter_timeseries_rejects_mismatched_times() -> None:
+    """Times of the wrong shape are refused."""
     with pytest.raises(ValueError, match="times must have shape"):
         viz.order_parameter_timeseries(_trajectory(steps=10), times=np.zeros(9))
 
 
 def test_network_phase_embedding_rejects_a_non_one_dimensional_snapshot() -> None:
+    """A snapshot that is not one-dimensional is refused."""
     with pytest.raises(ValueError, match="one-dimensional"):
         viz.network_phase_embedding(np.zeros((3, 3)), np.zeros((3, 3)))
 
 
 def test_network_phase_embedding_rejects_a_mismatched_coupling_shape() -> None:
+    """A coupling of the wrong shape is refused."""
     with pytest.raises(ValueError, match="coupling must have shape"):
         viz.network_phase_embedding(np.zeros(4), np.zeros((3, 3)))
 
 
 def test_missing_matplotlib_raises_a_helpful_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without matplotlib the error names the [viz] extra."""
     real_import: Callable[..., object] = builtins.__import__
 
     def _fail_matplotlib(name: str, *args: object, **kwargs: object) -> object:

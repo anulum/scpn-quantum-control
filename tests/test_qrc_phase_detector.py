@@ -36,7 +36,10 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestGenerateTrainingData:
+    """Generating training data from couplings."""
+
     def test_returns_correct_shapes(self) -> None:
+        """There is one feature row and one label per coupling."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -47,6 +50,7 @@ class TestGenerateTrainingData:
         assert y.shape == (4,)
 
     def test_labels_correct(self) -> None:
+        """Couplings at or above the threshold are labelled one."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -69,6 +73,7 @@ class TestGenerateTrainingData:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense eigensolve above the budget is refused before the Hamiltonian is built."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -91,6 +96,7 @@ class TestGenerateTrainingData:
             )
 
     def test_training_data_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The dense budget reaches each eigensolve."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -118,7 +124,10 @@ class TestGenerateTrainingData:
 
 
 class TestTrainLinearReadout:
+    """Training the linear readout."""
+
     def test_weights_correct_shape(self) -> None:
+        """The weights have the expected length."""
         X = np.random.default_rng(42).standard_normal((10, 5))
         y = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1], dtype=float)
         W = train_linear_readout(X, y, alpha=1.0)
@@ -140,7 +149,10 @@ class TestTrainLinearReadout:
 
 
 class TestClassify:
+    """Classifying with the trained readout."""
+
     def test_threshold_at_half(self) -> None:
+        """Scores are thresholded at one half."""
         X = np.array([[1.0], [-1.0]])
         W = np.array([1.0])
         preds = classify(X, W)
@@ -149,7 +161,10 @@ class TestClassify:
 
 
 class TestQRCPhaseDetection:
+    """The full phase detection."""
+
     def test_returns_result(self) -> None:
+        """The detection returns a result with an accuracy in [0, 1]."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -161,6 +176,7 @@ class TestQRCPhaseDetection:
         assert result.n_features > 0
 
     def test_3qubit_pipeline(self) -> None:
+        """Three qubits split into six training and two test points."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -184,6 +200,7 @@ class TestQRCPhaseDetection:
         assert result.accuracy >= 0.5
 
     def test_qrc_pipeline_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The pipeline passes the dense budget on."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -224,6 +241,8 @@ class TestQRCPhaseDetection:
 
 
 class TestQRCPhysics:
+    """Numerical properties of the detector."""
+
     def test_features_finite(self) -> None:
         """All reservoir features must be finite."""
         n = 2
@@ -233,6 +252,7 @@ class TestQRCPhysics:
         assert np.all(np.isfinite(X))
 
     def test_readout_weights_finite(self) -> None:
+        """The readout weights are finite."""
         X = np.random.default_rng(42).standard_normal((8, 4))
         y = np.array([0, 0, 0, 0, 1, 1, 1, 1], dtype=float)
         W = train_linear_readout(X, y, alpha=1.0)
@@ -245,8 +265,11 @@ class TestQRCPhysics:
 
 
 class TestQRCPipeline:
+    """The topology-to-phase pipeline."""
+
     def test_pipeline_topology_to_phase_detection(self) -> None:
         """Full pipeline: ring topology → QRC features → linear readout → phase.
+
         Verifies QRC phase detector is wired end-to-end.
         """
         import time
