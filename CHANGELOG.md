@@ -497,6 +497,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a measurement compiler with bit custody.
+  - `render_measured_cell` (`experimental/llm_qpu/data/measurement_compiler.py`)
+    renders a cell's gates and its H and S-dagger readout rotations into
+    a Qiskit circuit. It then measures logical wire *w* into clbit
+    `logical_to_clbit[w]` of the register the measurement plan names.
+  - `check_bit_custody` prepares every logical basis state of the
+    register (16 for n4, 256 for n8) and reads it through the Qiskit
+    `StatevectorSampler`. It requires `MeasurementPlan.logical_bits` to
+    decode each count key back to the prepared state. Qiskit writes the
+    highest clbit first, so only a descending `display_order_clbits`
+    passes; any logical map is accepted.
+  - `render_measured_experiment` renders every cell of a
+    `PlannedExperiment` after its register passes bit custody. It
+    requires each rendered cell's Qiskit probabilities to match the
+    independent statevector within 1e-10.
+  - The `compile_bundle` port names the measured-circuit step; target
+    compilation is not built.
+
 - The experimental LLM-QPU lane gains seeded sampled simulation.
   - `SimulatedCountSet` (`experimental/llm_qpu/contracts/sampled.py`, schema
     `simulated_count_set.v1`) records seeded counts for every cell of a

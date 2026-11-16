@@ -135,7 +135,8 @@ PORTS: tuple[PortSpec, ...] = (
         ("PlannedExperiment", "TargetSnapshot"),
         "CompiledBundle",
         "offline_planning",
-        "it compiles against a stored target only, and the compiler does not exist yet",
+        "it compiles against a stored target only; data.measurement_compiler renders the logical "
+        "measured circuits with bit custody, and target compilation does not exist yet",
     ),
     PortSpec(
         "quote_bundle",

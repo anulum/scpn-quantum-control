@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **882 modules** across **41 package families**
-- **4751 documented public module-level symbols**
+- **883 modules** across **41 package families**
+- **4754 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2688,6 +2688,14 @@ Immutable latent-shard manifests with explicit incomplete-evidence states.
 **Classes:** `ShardRef`, `ShardManifest`
 
 **Functions:** `publish_manifest()`, `load_manifest()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.measurement_compiler`
+
+Render planned cells as measured Qiskit circuits whose count keys decode back to the logical bits.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/measurement_compiler.py) · Public symbols: **3**
+
+**Functions:** `render_measured_cell()`, `check_bit_custody()`, `render_measured_experiment()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.splits`
 
