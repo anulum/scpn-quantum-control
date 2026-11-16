@@ -57,6 +57,8 @@ def _system(n: int = 3) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 class TestBuildEffectiveHamiltonian:
+    """The effective non-Hermitian Hamiltonian."""
+
     def test_non_hermitian(self) -> None:
         """H_eff should NOT be Hermitian when L_ops are non-trivial."""
         from scpn_quantum_control.phase.lindblad import _sigma
@@ -68,11 +70,13 @@ class TestBuildEffectiveHamiltonian:
         assert diff > 1e-10
 
     def test_no_ops_returns_copy(self) -> None:
+        """Without jump operators the Hamiltonian is unchanged."""
         H = np.eye(4, dtype=np.complex128) * 3.0
         H_eff = _build_effective_hamiltonian(H, [])
         np.testing.assert_allclose(H_eff, H)
 
     def test_shape_preserved(self) -> None:
+        """The shape is kept."""
         from scpn_quantum_control.phase.lindblad import _sigma
 
         H = np.zeros((8, 8), dtype=np.complex128)
@@ -82,9 +86,12 @@ class TestBuildEffectiveHamiltonian:
 
 
 class TestSparseJumpOperators:
+    """Sparse jump operators."""
+
     @pytest.mark.parametrize("pauli", ["X", "Y", "Z", "+", "-"])
     @pytest.mark.parametrize("qubit", [0, 1, 2])
     def test_single_qubit_sparse_matches_dense_sigma(self, pauli: str, qubit: int) -> None:
+        """A single-qubit sparse operator matches the dense sigma."""
         from scpn_quantum_control.phase.lindblad import _sigma
 
         dense = _sigma(pauli, qubit, 3)
@@ -94,24 +101,30 @@ class TestSparseJumpOperators:
 
 
 class TestMCWFTrajectory:
+    """One Monte Carlo wave-function trajectory."""
+
     def test_output_keys(self) -> None:
+        """The trajectory reports times, order, final state and jump count."""
         K, omega = _system(2)
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.5, dt=0.1, seed=42)
         assert set(result.keys()) == {"times", "R", "psi_final", "n_jumps"}
 
     def test_r_bounded(self) -> None:
+        """The order parameter lies in [0, 1]."""
         K, omega = _system(2)
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.5, dt=0.1, seed=42)
         assert np.all(result["R"] >= 0)
         assert np.all(result["R"] <= 1.0 + 1e-10)
 
     def test_psi_normalised(self) -> None:
+        """The final state is normalised."""
         K, omega = _system(3)
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.3, dt=0.05, seed=7)
         norm = np.linalg.norm(result["psi_final"])
         np.testing.assert_allclose(norm, 1.0, atol=1e-8)
 
     def test_seed_reproducibility(self) -> None:
+        """The same seed gives the same trajectory."""
         K, omega = _system(2)
         r1 = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.3, dt=0.1, seed=42)
         r2 = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.3, dt=0.1, seed=42)
@@ -126,6 +139,7 @@ class TestMCWFTrajectory:
         assert result["n_jumps"] == 0
 
     def test_dephasing_only(self) -> None:
+        """Dephasing alone gives a final state of the right size."""
         K, omega = _system(2)
         result = mcwf_trajectory(
             K, omega, gamma_amp=0.0, gamma_deph=0.1, t_max=0.3, dt=0.05, seed=42
@@ -133,11 +147,13 @@ class TestMCWFTrajectory:
         assert result["psi_final"].shape == (4,)
 
     def test_single_step(self) -> None:
+        """One step gives two time points."""
         K, omega = _system(2)
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.05, dt=0.05, seed=42)
         assert len(result["times"]) == 2
 
     def test_time_grid_respects_requested_maximum_step(self) -> None:
+        """The time grid respects the maximum step."""
         K, omega = _system(2)
 
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.25, dt=0.1, seed=42)
@@ -150,6 +166,7 @@ class TestMCWFTrajectory:
     def test_propagation_steps_match_reported_time_grid(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Propagation steps match the reported time grid."""
         from scpn_quantum_control.phase import tensor_jump as module
 
         K = np.zeros((1, 1))
@@ -185,6 +202,7 @@ class TestMCWFTrajectory:
         assert max(step_durations) <= 0.1 + 1e-12
 
     def test_order_parameter_uses_kron_qubit_ordering(self) -> None:
+        """The order parameter uses Kronecker qubit ordering."""
         from scpn_quantum_control.phase.lindblad import _sigma
 
         psi = np.array([0.2 + 0.1j, 0.3 - 0.4j, -0.5 + 0.2j, 0.6 + 0.1j])
@@ -201,6 +219,7 @@ class TestMCWFTrajectory:
     def test_zero_horizon_returns_initial_state_without_propagation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A zero horizon returns the initial state without propagating."""
         K, omega = _system(2)
 
         def fail_propagation(*args: object, **kwargs: object) -> None:
@@ -219,6 +238,7 @@ class TestMCWFTrajectory:
     def test_zero_weight_selected_jump_falls_back_to_no_jump(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A selected jump of zero weight falls back to no jump."""
         from scpn_quantum_control.phase import tensor_jump as module
 
         class FixedRng:
@@ -270,6 +290,7 @@ class TestMCWFTrajectory:
     def test_rejects_statevector_budget_before_sparse_setup(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A statevector above the budget is refused before sparse setup."""
         K, omega = _system(3)
 
         def fail_sparse(*args: object, **kwargs: object) -> None:
@@ -300,12 +321,16 @@ class TestMCWFTrajectory:
         kwargs: _TrajectoryOverrides,
         match: str,
     ) -> None:
+        """Invalid inputs are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             mcwf_trajectory(K, omega, **kwargs)
 
 
 class TestMCWFEnsemble:
+    """An ensemble of trajectories."""
+
     def test_output_keys(self) -> None:
+        """The ensemble reports the mean, spread and trajectories of the order parameter."""
         K, omega = _system(2)
         result = mcwf_ensemble(
             K, omega, gamma_amp=0.05, t_max=0.3, dt=0.1, n_trajectories=5, seed=42
@@ -316,6 +341,7 @@ class TestMCWFEnsemble:
         assert result["n_trajectories"] == 5
 
     def test_r_mean_bounded(self) -> None:
+        """The mean order parameter lies in [0, 1]."""
         K, omega = _system(2)
         result = mcwf_ensemble(
             K, omega, gamma_amp=0.05, t_max=0.3, dt=0.1, n_trajectories=10, seed=42
@@ -324,6 +350,7 @@ class TestMCWFEnsemble:
         assert np.all(result["R_mean"] <= 1.0 + 1e-10)
 
     def test_trajectories_shape(self) -> None:
+        """There is one row per trajectory."""
         K, omega = _system(2)
         result = mcwf_ensemble(
             K, omega, gamma_amp=0.05, t_max=0.2, dt=0.1, n_trajectories=3, seed=42
@@ -331,6 +358,7 @@ class TestMCWFEnsemble:
         assert result["R_trajectories"].shape[0] == 3
 
     def test_ensemble_time_grid_matches_trajectory_resolution(self) -> None:
+        """The ensemble time grid matches the trajectory resolution."""
         K, omega = _system(2)
 
         result = mcwf_ensemble(
@@ -343,6 +371,7 @@ class TestMCWFEnsemble:
         assert result["R_trajectories"].shape[1] == result["times"].shape[0]
 
     def test_total_jumps_nonneg(self) -> None:
+        """The total jump count is non-negative."""
         K, omega = _system(2)
         result = mcwf_ensemble(
             K, omega, gamma_amp=0.1, t_max=0.5, dt=0.05, n_trajectories=10, seed=42
@@ -350,6 +379,7 @@ class TestMCWFEnsemble:
         assert result["total_jumps"] >= 0
 
     def test_ensemble_propagates_statevector_budget(self) -> None:
+        """The ensemble refuses a statevector above the budget."""
         K, omega = _system(3)
 
         with pytest.raises(DenseAllocationError, match="MCWF statevector workspace"):
@@ -366,6 +396,7 @@ class TestMCWFEnsemble:
 
     @pytest.mark.parametrize("n_trajectories", [0, -1])
     def test_rejects_non_positive_trajectory_count(self, n_trajectories: int) -> None:
+        """A non-positive trajectory count is refused."""
         K, omega = _system(2)
 
         with pytest.raises(ValueError, match="n_trajectories"):
@@ -373,6 +404,8 @@ class TestMCWFEnsemble:
 
 
 class TestOrderParamVec:
+    """The order parameter from a statevector."""
+
     def test_all_up_r(self) -> None:
         """All spin up → R depends on the state structure."""
         psi = np.zeros(4, dtype=np.complex128)

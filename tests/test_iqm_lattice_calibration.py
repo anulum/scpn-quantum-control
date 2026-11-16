@@ -75,24 +75,31 @@ def _calibration() -> LatticeCalibration:
 
 
 class TestExtraction:
+    """Extracting a lattice calibration."""
+
     def test_edges_are_canonical_and_sorted(self) -> None:
+        """Edges are canonical and sorted."""
         cal = _calibration()
         assert cal.edges == ((0, 1), (0, 3), (1, 2), (2, 3))
 
     def test_edge_fidelity_is_one_minus_error_on_zero_based_indices(self) -> None:
+        """Edge fidelity is one minus the error, on zero-based indices."""
         cal = _calibration()
         assert cal.edge_fidelity[(0, 1)] == pytest.approx(0.990)
         assert cal.edge_fidelity[(0, 3)] == pytest.approx(0.960)
 
     def test_readout_error_is_mean_of_both_state_rates(self) -> None:
+        """Readout error is the mean of both state error rates."""
         cal = _calibration()
         assert cal.readout_error[0] == pytest.approx(0.03)
         assert cal.readout_error[1] == pytest.approx(0.01)
 
     def test_neighbours_sorted(self) -> None:
+        """Neighbours come sorted."""
         assert _calibration().neighbours(0) == (1, 3)
 
     def test_integer_qubit_labels_accepted(self) -> None:
+        """Integer qubit labels are accepted."""
         backend = _StubBackend()
         backend.error_profile = _StubErrorProfile(
             {"cz": {(0, 1): 0.01, (1, 2): 0.02, (2, 3): 0.03, (0, 3): 0.04}},
@@ -103,10 +110,12 @@ class TestExtraction:
         assert cal.readout_error[2] == pytest.approx(0.03)
 
     def test_rejects_non_positive_qubit_count(self) -> None:
+        """A non-positive qubit count is refused."""
         with pytest.raises(ValueError, match="non-positive qubit count"):
             lattice_calibration_from_backend(_StubBackend(num_qubits=0))
 
     def test_rejects_unparseable_label(self) -> None:
+        """An unparseable qubit label is refused."""
         backend = _StubBackend()
         backend.error_profile.two_qubit_gate_depolarizing_error_parameters["cz"] = {
             ("QBx", "QB2"): 0.01
@@ -115,6 +124,7 @@ class TestExtraction:
             lattice_calibration_from_backend(backend)
 
     def test_rejects_out_of_range_fidelity(self) -> None:
+        """A fidelity out of range is refused."""
         backend = _StubBackend()
         backend.error_profile.two_qubit_gate_depolarizing_error_parameters["cz"][
             ("QB1", "QB2")
@@ -123,6 +133,7 @@ class TestExtraction:
             lattice_calibration_from_backend(backend)
 
     def test_rejects_missing_edge_calibration(self) -> None:
+        """A missing two-qubit error is refused."""
         backend = _StubBackend()
         del backend.error_profile.two_qubit_gate_depolarizing_error_parameters["cz"][
             ("QB2", "QB3")
@@ -131,6 +142,7 @@ class TestExtraction:
             lattice_calibration_from_backend(backend)
 
     def test_rejects_empty_readout_entry(self) -> None:
+        """An empty readout entry is refused."""
         backend = _StubBackend()
         backend.error_profile.readout_errors["QB2"] = {}
         with pytest.raises(ValueError, match="empty readout-error entry"):
@@ -138,7 +150,10 @@ class TestExtraction:
 
 
 class TestSerialisation:
+    """Serialising the calibration."""
+
     def test_round_trip_preserves_snapshot(self) -> None:
+        """A round trip preserves the snapshot."""
         import json
 
         cal = _calibration()
@@ -147,18 +162,21 @@ class TestSerialisation:
         assert rebuilt == cal
 
     def test_from_dict_rejects_missing_key(self) -> None:
+        """A payload missing a key is refused."""
         payload = _calibration().to_dict()
         del payload["edges"]
         with pytest.raises(ValueError, match="malformed lattice-calibration payload"):
             LatticeCalibration.from_dict(payload)
 
     def test_from_dict_rejects_non_pair_edge(self) -> None:
+        """An edge that is not a pair is refused."""
         payload = _calibration().to_dict()
         payload["edges"][0] = [0, 1, 2]
         with pytest.raises(ValueError, match="malformed lattice-calibration payload"):
             LatticeCalibration.from_dict(payload)
 
     def test_from_dict_rejects_fidelity_edge_mismatch(self) -> None:
+        """Fidelity keys that differ from the edges are refused."""
         payload = _calibration().to_dict()
         del payload["edge_fidelity"]["0-1"]
         with pytest.raises(ValueError, match="edge_fidelity keys must match edges"):
@@ -166,18 +184,23 @@ class TestSerialisation:
 
 
 class TestChainEnumeration:
+    """Enumerating qubit chains."""
+
     def test_ring_has_four_canonical_three_chains(self) -> None:
+        """A four-ring has four canonical three-qubit chains."""
         regions, truncated = enumerate_chain_regions(_calibration(), 3)
         assert not truncated
         assert len(regions) == 4
         assert all(isinstance(r, ChainRegion) for r in regions)
 
     def test_regions_sorted_by_descending_fidelity(self) -> None:
+        """Regions are sorted by descending fidelity."""
         regions, _ = enumerate_chain_regions(_calibration(), 3)
         fids = [r.mean_gate_fidelity for r in regions]
         assert fids == sorted(fids, reverse=True)
 
     def test_best_region_picks_highest_fidelity_chain(self) -> None:
+        """The best region is the highest-fidelity chain, with its mean readout error."""
         best = best_chain_region(_calibration(), 3)
         # edges (0,1)=0.990 and (1,2)=0.980 form the best 3-chain 0-1-2.
         assert best.physical_qubits == (0, 1, 2)
@@ -185,30 +208,36 @@ class TestChainEnumeration:
         assert best.mean_readout_error == pytest.approx((0.03 + 0.01 + 0.04) / 3)
 
     def test_canonical_orientation_deduplicates_reversed_paths(self) -> None:
+        """Canonical orientation removes reversed duplicates."""
         regions, _ = enumerate_chain_regions(_calibration(), 4)
         tuples = [r.physical_qubits for r in regions]
         assert len(tuples) == len(set(tuples))
         assert all(t <= t[::-1] for t in tuples)
 
     def test_truncation_flag_and_capped_count(self) -> None:
+        """Capping the count sets the truncation flag."""
         regions, truncated = enumerate_chain_regions(_calibration(), 3, max_paths=2)
         assert truncated
         assert len(regions) == 2
 
     def test_rejects_chain_shorter_than_two(self) -> None:
+        """A chain shorter than two qubits is refused."""
         with pytest.raises(ValueError, match="at least two qubits"):
             enumerate_chain_regions(_calibration(), 1)
 
     def test_rejects_chain_longer_than_lattice(self) -> None:
+        """A chain longer than the lattice is refused."""
         with pytest.raises(ValueError, match="longer than the lattice"):
             enumerate_chain_regions(_calibration(), 5)
 
     def test_rejects_non_positive_cap(self) -> None:
+        """A non-positive cap is refused."""
         with pytest.raises(ValueError, match="max_paths must be positive"):
             enumerate_chain_regions(_calibration(), 3, max_paths=0)
 
     def test_best_region_raises_when_no_chain_exists(self) -> None:
         # Two disconnected edges cannot host a 3-chain.
+        """Without a chain of the requested length the best region raises."""
         backend = _StubBackend()
         backend.coupling_map = _StubCouplingMap([(0, 1), (2, 3)])
         backend.error_profile = _StubErrorProfile(
@@ -225,6 +254,8 @@ class TestChainEnumeration:
     reason="iqm optional extra not installed",
 )
 class TestAgainstRealFakeGarnet:
+    """Extraction from the Qiskit fake Garnet backend."""
+
     def test_fake_garnet_extraction_is_complete(self) -> None:
         # The IQM provider SDK is an optional extra and is absent from the pinned
         # type-check environment; the class-level `find_spec` guard above skips
@@ -232,6 +263,7 @@ class TestAgainstRealFakeGarnet:
         # `iqm.*` override in `pyproject.toml`, which a second test now needs as
         # well — the earlier site suppression was placed here only because that
         # override would then have been the sole unused one.
+        """The fake Garnet gives 20 qubits and 30 calibrated edges."""
         from iqm.qiskit_iqm.fake_backends.fake_garnet import IQMFakeGarnet
 
         cal = lattice_calibration_from_backend(IQMFakeGarnet())

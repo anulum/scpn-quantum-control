@@ -95,11 +95,13 @@ def _single_cell(p50_us: float) -> list[dict[str, Any]]:
 
 
 def test_digest_is_deterministic_and_excludes_existing_field() -> None:
+    """The digest is deterministic and ignores a stored digest."""
     payload = {"a": 1, "payload_sha256": "stale"}
     assert gate_mod._payload_digest(payload) == gate_mod._payload_digest({"a": 1})
 
 
 def test_parse_thresholds_accepts_a_valid_policy() -> None:
+    """A valid threshold policy is accepted."""
     policy = gate_mod.parse_thresholds(
         {"default": {"rust": 2.5}, "order_parameter": {"julia": 4.0}}
     )
@@ -122,11 +124,13 @@ def test_parse_thresholds_accepts_a_valid_policy() -> None:
     ],
 )
 def test_parse_thresholds_rejects_invalid_policies(raw: dict[str, Any], match: str) -> None:
+    """Invalid policies are refused with their reasons."""
     with pytest.raises(ValueError, match=match):
         gate_mod.parse_thresholds(raw)
 
 
 def test_resolve_threshold_prefers_operation_override() -> None:
+    """An operation's own threshold wins over the default; an unknown backend has none."""
     policy = {"default": {"rust": 2.5}, "order_parameter": {"rust": 1.5}}
     assert gate_mod.resolve_threshold(policy, "order_parameter", "rust") == 1.5
     assert gate_mod.resolve_threshold(policy, "mean_phase", "rust") == 2.5
@@ -134,10 +138,12 @@ def test_resolve_threshold_prefers_operation_override() -> None:
 
 
 def test_validate_artifact_accepts_a_stamped_artifact() -> None:
+    """A stamped artefact validates."""
     assert gate_mod.validate_artifact(_artifact(_single_cell(10.0)), "report") == []
 
 
 def test_validate_artifact_rejects_schema_results_and_digest_defects() -> None:
+    """Schema, results and digest defects are reported."""
     wrong_schema = _artifact(_single_cell(10.0))
     wrong_schema["schema_version"] = "other.v1"
     assert any("schema_version" in e for e in gate_mod.validate_artifact(wrong_schema, "report"))
@@ -156,6 +162,7 @@ def test_validate_artifact_rejects_schema_results_and_digest_defects() -> None:
 
 
 def test_coerce_float_rejects_bools_strings_and_nan() -> None:
+    """Booleans, strings and NaN do not coerce to floats."""
     assert gate_mod._coerce_float(1.5) == 1.5
     assert gate_mod._coerce_float(3) == 3.0
     assert gate_mod._coerce_float(True) is None
@@ -164,6 +171,7 @@ def test_coerce_float_rejects_bools_strings_and_nan() -> None:
 
 
 def test_environment_mismatch_flags_ci_vs_local() -> None:
+    """A CI baseline against a local report is an environment mismatch."""
     report = _artifact(_single_cell(10.0), environment="local")
     baseline = _artifact(_single_cell(10.0))
     finding = gate_mod.environment_mismatch(report, baseline)
@@ -172,6 +180,7 @@ def test_environment_mismatch_flags_ci_vs_local() -> None:
 
 
 def test_hardware_mismatch_flags_cpu_drift_and_tolerates_absence() -> None:
+    """A CPU change is a hardware mismatch; a missing CPU is tolerated."""
     report = _artifact(_single_cell(10.0), cpu="AMD EPYC 9B14")
     baseline = _artifact(_single_cell(10.0), cpu="AMD EPYC 7763 64-Core Processor")
     finding = gate_mod.hardware_mismatch(report, baseline)
@@ -182,6 +191,7 @@ def test_hardware_mismatch_flags_cpu_drift_and_tolerates_absence() -> None:
 
 
 def test_compare_passes_within_threshold_and_counts_cells() -> None:
+    """Cells within threshold pass and are counted."""
     baseline = _artifact(_single_cell(10.0))
     report = _artifact(_single_cell(20.0))
     findings, summary = gate_mod.compare(report, baseline, _THRESHOLDS)
@@ -190,6 +200,7 @@ def test_compare_passes_within_threshold_and_counts_cells() -> None:
 
 
 def test_compare_flags_a_regression_beyond_threshold() -> None:
+    """A cell beyond its threshold is a regression."""
     baseline = _artifact(_single_cell(10.0))
     report = _artifact(_single_cell(30.0))
     findings, _ = gate_mod.compare(report, baseline, _THRESHOLDS)
@@ -202,6 +213,7 @@ def test_compare_flags_a_regression_beyond_threshold() -> None:
 
 
 def test_compare_treats_zero_baseline_p50_as_infinite_ratio() -> None:
+    """A zero baseline median gives an infinite ratio."""
     baseline = _artifact(_single_cell(0.0))
     report = _artifact(_single_cell(10.0))
     findings, _ = gate_mod.compare(report, baseline, _THRESHOLDS)
@@ -210,6 +222,7 @@ def test_compare_treats_zero_baseline_p50_as_infinite_ratio() -> None:
 
 
 def test_compare_skips_deliberate_tier_exclusion_without_alarming() -> None:
+    """A deliberately excluded tier is skipped without alarm."""
     baseline = _artifact(
         [_result("order_parameter", 8, [_measured("rust", 10.0), _measured("julia", 20.0)])]
     )
@@ -228,6 +241,7 @@ def test_compare_skips_deliberate_tier_exclusion_without_alarming() -> None:
 
 
 def test_compare_alarms_when_a_tier_silently_vanishes() -> None:
+    """A tier that silently disappears raises an alarm."""
     baseline = _artifact(
         [_result("order_parameter", 8, [_measured("rust", 10.0), _measured("julia", 20.0)])]
     )
@@ -246,6 +260,7 @@ def test_compare_alarms_when_a_tier_silently_vanishes() -> None:
 
 
 def test_compare_alarms_when_the_whole_result_row_is_gone() -> None:
+    """A missing result row raises an alarm."""
     baseline = _artifact(
         [
             _result("order_parameter", 8, [_measured("rust", 10.0)]),
@@ -260,6 +275,7 @@ def test_compare_alarms_when_the_whole_result_row_is_gone() -> None:
 
 
 def test_compare_flags_policy_gap_for_an_unknown_backend() -> None:
+    """An unknown backend is a policy gap."""
     baseline = _artifact([_result("order_parameter", 8, [_measured("fortran", 10.0)])])
     report = _artifact([_result("order_parameter", 8, [_measured("fortran", 10.0)])])
     findings, _ = gate_mod.compare(report, baseline, _THRESHOLDS)
@@ -269,6 +285,7 @@ def test_compare_flags_policy_gap_for_an_unknown_backend() -> None:
 
 
 def test_compare_flags_measured_row_with_non_finite_p50() -> None:
+    """A measured row with a non-finite median is a missing metric."""
     baseline = _artifact(_single_cell(10.0))
     report = _artifact(_single_cell(10.0))
     report["results"][0]["rows"][0]["stats"]["p50_us"] = float("nan")
@@ -280,6 +297,7 @@ def test_compare_flags_measured_row_with_non_finite_p50() -> None:
 
 
 def test_compare_handles_measured_rows_with_malformed_stats() -> None:
+    """Measured rows with malformed statistics are reported, not compared."""
     baseline = _artifact(_single_cell(10.0))
     report = _artifact(_single_cell(10.0))
     report["results"][0]["rows"][0]["stats"] = None
@@ -295,6 +313,7 @@ def test_compare_handles_measured_rows_with_malformed_stats() -> None:
 
 
 def test_compare_ignores_unmeasured_baseline_rows() -> None:
+    """Unmeasured baseline rows are ignored."""
     baseline = _artifact(
         [
             _result(
@@ -311,6 +330,7 @@ def test_compare_ignores_unmeasured_baseline_rows() -> None:
 
 
 def test_gate_passes_and_stamps_a_verdict() -> None:
+    """A passing gate stamps its verdict."""
     baseline = _artifact(_single_cell(10.0))
     report = _artifact(_single_cell(12.0), commit="def456")
     verdict = gate_mod.gate(report, baseline, _THRESHOLDS, generated_utc="2026-07-07T00:00:00Z")
@@ -323,6 +343,7 @@ def test_gate_passes_and_stamps_a_verdict() -> None:
 
 
 def test_gate_stops_at_validation_findings_without_comparing() -> None:
+    """Validation findings stop the gate before any comparison."""
     baseline = _artifact(_single_cell(10.0))
     tampered = _artifact(_single_cell(10.0))
     tampered["results"][0]["rows"][0]["stats"]["p50_us"] = 1.0
@@ -333,6 +354,7 @@ def test_gate_stops_at_validation_findings_without_comparing() -> None:
 
 
 def test_gate_reports_baseline_invalid_separately() -> None:
+    """An invalid baseline is reported on its own."""
     baseline = _artifact(_single_cell(10.0))
     del baseline["payload_sha256"]
     report = _artifact(_single_cell(10.0))
@@ -341,6 +363,7 @@ def test_gate_reports_baseline_invalid_separately() -> None:
 
 
 def test_gate_combines_mismatch_and_cell_findings() -> None:
+    """Mismatches and cell findings are combined."""
     baseline = _artifact(_single_cell(10.0), environment="ci", cpu="CPU-A")
     report = _artifact(_single_cell(30.0), environment="local", cpu="CPU-B")
     verdict = gate_mod.gate(report, baseline, _THRESHOLDS, generated_utc="")
@@ -349,6 +372,7 @@ def test_gate_combines_mismatch_and_cell_findings() -> None:
 
 
 def test_annotation_lines_cap_and_level() -> None:
+    """Annotations are capped, with a truncation note."""
     findings = [
         {
             "kind": "regression",
@@ -385,6 +409,7 @@ def _write_thresholds(path: Path) -> Path:
 def test_main_passes_writes_verdict_and_returns_zero(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command passes, writes its verdict and returns zero."""
     report = _write_json(tmp_path / "report.json", _artifact(_single_cell(12.0)))
     baseline = _write_json(tmp_path / "baseline.json", _artifact(_single_cell(10.0)))
     thresholds = _write_thresholds(tmp_path / "thresholds.toml")
@@ -415,6 +440,7 @@ def test_main_passes_writes_verdict_and_returns_zero(
 def test_main_fails_on_regression_without_evidence_only(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """A regression fails the command outside evidence-only mode."""
     report = _write_json(tmp_path / "report.json", _artifact(_single_cell(30.0)))
     baseline = _write_json(tmp_path / "baseline.json", _artifact(_single_cell(10.0)))
     thresholds = _write_thresholds(tmp_path / "thresholds.toml")
@@ -431,6 +457,7 @@ def test_main_fails_on_regression_without_evidence_only(
 def test_main_evidence_only_reports_but_returns_zero(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Evidence-only mode reports but returns zero."""
     report = _write_json(tmp_path / "report.json", _artifact(_single_cell(30.0)))
     baseline = _write_json(tmp_path / "baseline.json", _artifact(_single_cell(10.0)))
     thresholds = _write_thresholds(tmp_path / "thresholds.toml")
@@ -454,6 +481,7 @@ def test_main_evidence_only_reports_but_returns_zero(
 def test_main_fails_closed_when_report_or_baseline_is_missing(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """A missing report or baseline fails closed."""
     baseline = _write_json(tmp_path / "baseline.json", _artifact(_single_cell(10.0)))
     code = gate_mod.main(["--report", str(tmp_path / "absent.json"), "--baseline", str(baseline)])
     assert code == 1

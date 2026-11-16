@@ -33,7 +33,7 @@ from oscillatools.accel.kuramoto_delayed_mean_field import (
 
 
 def _uniform_history(delay_steps: int, count: int, drift: float, dt: float) -> np.ndarray:
-    """A history on ``[-τ, 0]`` winding at constant frequency ``drift`` with a tiny scatter."""
+    """Build a history on ``[-τ, 0]`` winding at constant frequency ``drift`` with a tiny scatter."""
     base = np.linspace(0.0, 0.1, count)
     rows = [base + drift * (-(delay_steps - s) * dt) for s in range(delay_steps + 1)]
     return np.asarray(rows, dtype=np.float64)
@@ -43,6 +43,7 @@ def _uniform_history(delay_steps: int, count: int, drift: float, dt: float) -> n
 
 
 def test_delayed_mean_field_force_matches_hand_sum() -> None:
+    """The delayed mean-field force matches a hand-written sum."""
     current = np.array([0.0, 1.0, 2.0])
     delayed = np.array([0.5, 0.5, 0.5])
     coupling = 1.7
@@ -54,6 +55,7 @@ def test_delayed_mean_field_force_matches_hand_sum() -> None:
 def test_delayed_mean_field_force_reads_lagged_not_current() -> None:
     # With current == delayed the all-to-all force is the instantaneous mean-field force; swapping
     # the delayed vector changes the result, proving the force reads the lagged phases.
+    """The delayed force reads the lagged phases, not the current ones."""
     current = np.array([0.0, 0.7, 1.3])
     same = delayed_mean_field_force(current, current, 2.0)
     lagged = delayed_mean_field_force(current, current + 0.4, 2.0)
@@ -61,6 +63,7 @@ def test_delayed_mean_field_force_reads_lagged_not_current() -> None:
 
 
 def test_delayed_networked_force_matches_loop() -> None:
+    """The delayed networked force matches an explicit loop."""
     current = np.array([0.1, 0.6, 1.1, 1.9])
     delayed = np.array([0.2, 0.9, 1.4, 2.3])
     rng = np.random.default_rng(3)
@@ -73,6 +76,7 @@ def test_delayed_networked_force_matches_loop() -> None:
 
 
 def test_networked_force_reduces_to_mean_field_for_uniform_coupling() -> None:
+    """Uniform coupling reduces the networked force to the mean field."""
     current = np.array([0.0, 0.5, 1.5, 2.0])
     delayed = np.array([0.3, 0.8, 1.1, 2.4])
     strength = 1.3
@@ -83,21 +87,25 @@ def test_networked_force_reduces_to_mean_field_for_uniform_coupling() -> None:
 
 
 def test_mean_field_force_rejects_non_vector_current() -> None:
+    """Current phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         delayed_mean_field_force(np.zeros((2, 2)), np.zeros(4), 1.0)
 
 
 def test_mean_field_force_rejects_empty_current() -> None:
+    """Empty current phases are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         delayed_mean_field_force(np.empty(0), np.empty(0), 1.0)
 
 
 def test_mean_field_force_rejects_mismatched_delayed() -> None:
+    """Delayed phases of the wrong shape are refused."""
     with pytest.raises(ValueError, match="delayed_phases must have shape"):
         delayed_mean_field_force(np.zeros(3), np.zeros(4), 1.0)
 
 
 def test_networked_force_rejects_wrong_coupling_shape() -> None:
+    """A coupling of the wrong shape is refused."""
     with pytest.raises(ValueError, match="coupling_matrix must have shape"):
         delayed_networked_force(np.zeros(3), np.zeros(3), np.zeros((3, 4)))
 
@@ -106,6 +114,7 @@ def test_networked_force_rejects_wrong_coupling_shape() -> None:
 
 
 def test_trajectory_terminal_phases_is_last_row() -> None:
+    """The terminal phases are the last row."""
     phases = np.arange(12.0).reshape(4, 3)
     traj = DelayedTrajectory(
         times=np.arange(4.0),
@@ -118,6 +127,7 @@ def test_trajectory_terminal_phases_is_last_row() -> None:
 
 
 def test_collective_frequency_recovers_linear_slope() -> None:
+    """The collective frequency recovers a linear slope."""
     times = np.linspace(0.0, 1.0, 50)
     slope = 2.3
     phases = (slope * times)[:, None] + np.array([0.0, 0.5, 1.0])
@@ -127,6 +137,7 @@ def test_collective_frequency_recovers_linear_slope() -> None:
 
 @pytest.mark.parametrize("fraction", [0.0, -0.1, 1.5])
 def test_collective_frequency_rejects_bad_fraction(fraction: float) -> None:
+    """A window fraction outside its range is refused."""
     traj = DelayedTrajectory(
         np.arange(4.0), np.zeros((4, 2)), np.ones(4), delay=1.0, delay_steps=3
     )
@@ -135,6 +146,7 @@ def test_collective_frequency_rejects_bad_fraction(fraction: float) -> None:
 
 
 def test_collective_frequency_rejects_degenerate_single_sample() -> None:
+    """A window of one sample is refused as too short."""
     traj = DelayedTrajectory(
         np.array([0.0]), np.zeros((1, 2)), np.ones(1), delay=1.0, delay_steps=1
     )
@@ -143,6 +155,7 @@ def test_collective_frequency_rejects_degenerate_single_sample() -> None:
 
 
 def test_collective_frequency_full_window_matches_quarter() -> None:
+    """The full window gives the same frequency as the default quarter."""
     times = np.linspace(0.0, 2.0, 80)
     phases = (1.4 * times)[:, None] + np.zeros((80, 3))
     traj = DelayedTrajectory(times, phases, np.ones(80), delay=0.5, delay_steps=5)
@@ -153,6 +166,7 @@ def test_collective_frequency_full_window_matches_quarter() -> None:
 
 
 def test_integrate_rejects_non_positive_dt() -> None:
+    """A non-positive step is refused."""
     with pytest.raises(ValueError, match="dt must be positive"):
         integrate_delayed_kuramoto(
             np.zeros((6, 2)), np.zeros(2), lambda c, d: np.zeros(2), delay=0.5, dt=0.0, n_steps=1
@@ -160,6 +174,7 @@ def test_integrate_rejects_non_positive_dt() -> None:
 
 
 def test_integrate_rejects_non_positive_delay() -> None:
+    """A non-positive delay is refused."""
     with pytest.raises(ValueError, match="delay must be positive"):
         integrate_delayed_kuramoto(
             np.zeros((6, 2)), np.zeros(2), lambda c, d: np.zeros(2), delay=0.0, dt=0.1, n_steps=1
@@ -167,6 +182,7 @@ def test_integrate_rejects_non_positive_delay() -> None:
 
 
 def test_integrate_rejects_non_positive_n_steps() -> None:
+    """A non-positive step count is refused."""
     with pytest.raises(ValueError, match="n_steps must be positive"):
         integrate_delayed_kuramoto(
             np.zeros((6, 2)), np.zeros(2), lambda c, d: np.zeros(2), delay=0.5, dt=0.1, n_steps=0
@@ -175,6 +191,7 @@ def test_integrate_rejects_non_positive_n_steps() -> None:
 
 def test_integrate_rejects_delay_below_one_step() -> None:
     # delay/dt = 0.4 rounds to zero steps.
+    """A delay shorter than one step is refused."""
     with pytest.raises(ValueError, match="integer multiple of dt"):
         integrate_delayed_kuramoto(
             np.zeros((1, 2)), np.zeros(2), lambda c, d: np.zeros(2), delay=0.04, dt=0.1, n_steps=1
@@ -183,6 +200,7 @@ def test_integrate_rejects_delay_below_one_step() -> None:
 
 def test_integrate_rejects_non_integer_delay_multiple() -> None:
     # delay/dt = 1.5 is not an integer number of steps.
+    """A delay that is not a multiple of the step is refused."""
     with pytest.raises(ValueError, match="integer multiple of dt"):
         integrate_delayed_kuramoto(
             np.zeros((3, 2)), np.zeros(2), lambda c, d: np.zeros(2), delay=0.15, dt=0.1, n_steps=1
@@ -190,6 +208,7 @@ def test_integrate_rejects_non_integer_delay_multiple() -> None:
 
 
 def test_integrate_rejects_non_vector_omega() -> None:
+    """Frequencies that are not a non-empty vector are refused."""
     with pytest.raises(ValueError, match="omega must be a non-empty"):
         integrate_delayed_kuramoto(
             np.zeros((6, 2)),
@@ -203,6 +222,7 @@ def test_integrate_rejects_non_vector_omega() -> None:
 
 def test_integrate_rejects_wrong_history_shape() -> None:
     # delay/dt = 5 needs a (6, N) history; a (4, N) history is rejected.
+    """A history of the wrong shape is refused."""
     with pytest.raises(ValueError, match="initial_history must have shape"):
         integrate_delayed_kuramoto(
             np.zeros((4, 2)), np.zeros(2), lambda c, d: np.zeros(2), delay=0.5, dt=0.1, n_steps=1
@@ -214,6 +234,7 @@ def test_integrate_rejects_wrong_history_shape() -> None:
 
 def test_zero_coupling_is_exact_drift() -> None:
     # With zero coupling the right-hand side is the constant ω, for which RK4 is exact.
+    """Without coupling the phases drift exactly at their frequencies."""
     dt, delay = 0.05, 0.25
     delay_steps = round(delay / dt)
     omega = np.array([0.3, -0.7, 1.1])
@@ -239,6 +260,7 @@ def test_zero_coupling_is_exact_drift() -> None:
 
 def test_single_oscillator_settles_to_self_consistency_root() -> None:
     # One oscillator: θ̇ = ω₀ + K sin(θ(t−τ) − θ(t)) → Ω = ω₀ − K sin(Ω τ).
+    """A single delayed oscillator settles on a self-consistency root."""
     omega0, coupling, delay, dt = 1.0, 2.0, 1.0, 0.01
     delay_steps = round(delay / dt)
     history = _uniform_history(delay_steps, 1, drift=omega0, dt=dt)
@@ -255,6 +277,7 @@ def test_single_oscillator_settles_to_self_consistency_root() -> None:
 
 
 def test_identical_oscillators_synchronise_to_unit_order_parameter() -> None:
+    """Identical oscillators synchronise to order parameter one."""
     omega0, coupling, delay, dt = 0.5, 1.0, 0.8, 0.01
     delay_steps = round(delay / dt)
     history = _uniform_history(delay_steps, 12, drift=omega0, dt=dt)
@@ -272,6 +295,7 @@ def test_identical_oscillators_synchronise_to_unit_order_parameter() -> None:
 def test_delay_induced_multistability_selects_branch_from_history() -> None:
     # Roadmap acceptance: at large K·τ several stable collective frequencies coexist, and which
     # one the run settles onto is set by the initial history (delay-induced multistability).
+    """In the multistable regime the initial history selects the branch."""
     omega0, coupling, delay, dt = 1.0, 5.0, 1.5, 0.01
     delay_steps = round(delay / dt)
     stable = stable_synchronised_frequencies(omega0, coupling, delay)
@@ -299,6 +323,7 @@ def test_delay_induced_multistability_selects_branch_from_history() -> None:
 
 def test_branch_frequency_refines_towards_root_as_step_shrinks() -> None:
     # Halving dt drives the settled collective frequency closer to the exact self-consistency root.
+    """A smaller step brings the branch frequency closer to the root."""
     omega0, coupling, delay = 1.0, 3.0, 1.2
 
     def settled_residual(dt: float) -> float:
@@ -323,6 +348,7 @@ def test_branch_frequency_refines_towards_root_as_step_shrinks() -> None:
 
 
 def test_run_is_deterministic() -> None:
+    """Two runs are identical."""
     omega0, coupling, delay, dt = 0.7, 1.5, 0.5, 0.02
     delay_steps = round(delay / dt)
     history = _uniform_history(delay_steps, 5, drift=0.6, dt=dt)
@@ -341,6 +367,7 @@ def test_run_is_deterministic() -> None:
 
 def test_settled_branch_is_linearly_stable() -> None:
     # The realised branch satisfies the Yeung–Strogatz stability condition 1 + K·τ·cos(Ω·τ) > 0.
+    """The settled branch is linearly stable."""
     from oscillatools.accel.kuramoto_delayed_mean_field import (
         synchronised_branch_stability,
     )
