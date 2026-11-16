@@ -4,9 +4,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
-- The Studio API reference builds without warnings again. The capability
-  list, benchmark databank inspector and evidence view now document their
-  `props` argument before its fields, as TypeDoc requires.
+- The Studio API reference builds without warnings again.
+  - The capability list, benchmark databank inspector and evidence view now
+    document their `props` argument before its fields, as TypeDoc requires.
+  - The local job panel's state and actions have an explicit, documented
+    `LocalJobs` interface. TypeDoc reported its 20 inferred members as
+    undocumented.
+  - The fields of `CallOutcome` and `EnvelopeCheck` carry their own
+    comments; the formatter had moved those comments off the fields.
 
 - The Program AD captured-state coverage gate now runs the exception-rule
   and structural-metadata tests.

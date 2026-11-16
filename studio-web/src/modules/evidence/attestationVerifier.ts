@@ -205,11 +205,15 @@ export const maxEnvelopeBytes = 1024 * 1024;
 /** Result of checking one envelope file: a verdict, or the reason none was reached. */
 export type EnvelopeCheck =
   | {
-      /** A verdict was reached. */ readonly ok: true /** The verdict. */;
+      /** A verdict was reached. */
+      readonly ok: true;
+      /** The verdict. */
       readonly verdict: AttestationVerdict;
     }
   | {
-      /** The file was refused before a verdict. */ readonly ok: false /** Why. */;
+      /** The file was refused before a verdict. */
+      readonly ok: false;
+      /** Why. */
       readonly reason: string;
     };
 

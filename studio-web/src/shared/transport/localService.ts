@@ -16,10 +16,16 @@ export type LocalServiceStatus = "not-connected" | "connected" | "refused";
 
 /** The outcome of one call, as far as the connection is concerned. */
 export type CallOutcome =
-  | { /** The service answered. */ readonly ok: true }
   | {
-      /** It did not. */ readonly ok: false /** Refusal code. */;
-      readonly code: string /** Why. */;
+      /** The service answered. */
+      readonly ok: true;
+    }
+  | {
+      /** It did not. */
+      readonly ok: false;
+      /** Refusal code. */
+      readonly code: string;
+      /** Why. */
       readonly message: string;
     };
 

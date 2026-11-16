@@ -7,6 +7,7 @@
 // SCPN Quantum Control — state, actions and event polling of the local job panel
 
 import { useEffect, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { LocalJobClient, appendEvents, cursorOf } from "../../shared/transport/localJobs";
 import type {
   AttemptView,
@@ -47,9 +48,56 @@ export interface Refusal {
   /** Human-readable reason. */ readonly message: string;
 }
 
-interface Following {
+/** The attempt the panel follows and the client that polls it. */
+export interface Following {
+  /** Identifier of the followed attempt. */
   readonly attemptId: string;
+  /** Client that polls the attempt and its events. */
   readonly service: LocalJobClient;
+}
+
+/** The panel's state, its setters and its four actions. */
+export interface LocalJobs {
+  /** Editable JSON text of the job request. */
+  readonly requestText: string;
+  /** Attempt identifier typed for reconnecting. */
+  readonly attemptText: string;
+  /** The attempt as the service last reported it. */
+  readonly attempt: AttemptView | null;
+  /** Every event of the followed attempt, in order. */
+  readonly events: readonly JobEvent[];
+  /** The plan the service returned for a preview. */
+  readonly plan: Readonly<Record<string, unknown>> | null;
+  /** Digest of the result record once the attempt is terminal. */
+  readonly recordDigest: string | null;
+  /** The last refusal, shown until the next action. */
+  readonly refusal: Refusal | null;
+  /** The attempt being polled, if any. */
+  readonly following: Following | null;
+  /** Replace the request text. */
+  readonly setRequestText: Dispatch<SetStateAction<string>>;
+  /** Replace the attempt identifier text. */
+  readonly setAttemptText: Dispatch<SetStateAction<string>>;
+  /** Replace the shown attempt. */
+  readonly setAttempt: Dispatch<SetStateAction<AttemptView | null>>;
+  /** Replace the shown events. */
+  readonly setEvents: Dispatch<SetStateAction<readonly JobEvent[]>>;
+  /** Replace the shown plan. */
+  readonly setPlan: Dispatch<SetStateAction<Readonly<Record<string, unknown>> | null>>;
+  /** Replace the result record digest. */
+  readonly setRecordDigest: Dispatch<SetStateAction<string | null>>;
+  /** Show or clear a refusal. */
+  readonly setRefusal: Dispatch<SetStateAction<Refusal | null>>;
+  /** Start or stop following an attempt. */
+  readonly setFollowing: Dispatch<SetStateAction<Following | null>>;
+  /** Ask the service for the plan of the current request without running it. */
+  readonly preview: () => Promise<void>;
+  /** Submit the current request and follow the new attempt. */
+  readonly run: () => Promise<void>;
+  /** Follow the attempt named in the attempt text again. */
+  readonly reconnect: () => Promise<void>;
+  /** Ask the service to cancel one attempt. */
+  readonly cancel: (attemptId: string) => Promise<void>;
 }
 
 function useJobState() {
@@ -199,11 +247,8 @@ function useAttemptPolling(connection: LocalServiceConnection, state: JobState):
  * @param fetcher - Fetch implementation; the browser's own when omitted.
  * @returns State, setters and the preview, run, reconnect and cancel actions.
  */
-export function useLocalJobs(connection: LocalServiceConnection, fetcher?: Fetch) {
+export function useLocalJobs(connection: LocalServiceConnection, fetcher?: Fetch): LocalJobs {
   const state = useJobState();
   useAttemptPolling(connection, state);
   return { ...state, ...panelActions(connection, fetcher, state) };
 }
-
-/** The panel's state and actions. */
-export type LocalJobs = ReturnType<typeof useLocalJobs>;
