@@ -5,6 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Rust FFI Boundary Validation Tests
+"""Check what the native engine accepts and refuses at its Python boundary."""
 
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ def _require_engine_symbol(name: str) -> Any:
 
 
 def test_feedback_policy_batch_rejects_non_contiguous_r_values() -> None:
+    """The batched feedback policy refuses non-contiguous order parameters."""
     r_values = np.linspace(0.1, 0.9, 8, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match=r_values_error_pattern()):
@@ -38,6 +40,7 @@ def test_feedback_policy_batch_rejects_non_contiguous_r_values() -> None:
 
 
 def test_feedback_policy_batch_accepts_contiguous_r_values() -> None:
+    """Contiguous order parameters give the expected actions, gains and errors."""
     r_values = np.ascontiguousarray([0.2, 0.8, 0.95], dtype=np.float64)
 
     actions, gains, errors = engine.feedback_policy_batch(
@@ -56,6 +59,7 @@ def test_feedback_policy_batch_accepts_contiguous_r_values() -> None:
 
 
 def test_run_realtime_feedback_loop_rejects_non_contiguous_theta0() -> None:
+    """The real-time feedback loop refuses non-contiguous initial phases."""
     run_realtime_feedback_loop = _require_engine_symbol("run_realtime_feedback_loop")
     theta0 = np.linspace(0.0, 0.3, 8, dtype=np.float64)[::2]
     omega = np.ascontiguousarray(np.linspace(0.1, 0.4, 4, dtype=np.float64))
@@ -65,6 +69,7 @@ def test_run_realtime_feedback_loop_rejects_non_contiguous_theta0() -> None:
 
 
 def test_run_realtime_feedback_loop_accepts_contiguous_inputs() -> None:
+    """Contiguous inputs run the loop and return seven outputs with non-negative tick times."""
     run_realtime_feedback_loop = _require_engine_symbol("run_realtime_feedback_loop")
     theta0 = np.ascontiguousarray(np.linspace(0.0, 0.3, 4, dtype=np.float64))
     omega = np.ascontiguousarray(np.linspace(0.1, 0.4, 4, dtype=np.float64))
@@ -87,6 +92,7 @@ def test_run_realtime_feedback_loop_accepts_contiguous_inputs() -> None:
 
 
 def test_guess_extrapolate_batch_rejects_non_contiguous_symmetry_values() -> None:
+    """Batched GUESS extrapolation refuses non-contiguous symmetry values."""
     target = np.ascontiguousarray([0.5, 0.6, 0.7], dtype=np.float64)
     symmetry = np.linspace(4.0, 2.0, 6, dtype=np.float64)[::2]
 
@@ -95,6 +101,7 @@ def test_guess_extrapolate_batch_rejects_non_contiguous_symmetry_values() -> Non
 
 
 def test_guess_extrapolate_batch_rejects_length_mismatch() -> None:
+    """Batched GUESS extrapolation refuses targets and symmetry values of different lengths."""
     target = np.ascontiguousarray([0.5, 0.6], dtype=np.float64)
     symmetry = np.ascontiguousarray([4.0, 3.0, 2.0], dtype=np.float64)
 
@@ -103,6 +110,7 @@ def test_guess_extrapolate_batch_rejects_length_mismatch() -> None:
 
 
 def test_guess_extrapolate_batch_rejects_non_finite_alpha() -> None:
+    """Batched GUESS extrapolation refuses a non-finite decay rate."""
     target = np.ascontiguousarray([0.5], dtype=np.float64)
     symmetry = np.ascontiguousarray([4.0], dtype=np.float64)
 
@@ -111,6 +119,7 @@ def test_guess_extrapolate_batch_rejects_non_finite_alpha() -> None:
 
 
 def test_guess_extrapolate_batch_preserves_zero_symmetry_fallback() -> None:
+    """A zero symmetry value leaves its target unmitigated."""
     target = np.ascontiguousarray([0.5, 0.6], dtype=np.float64)
     symmetry = np.ascontiguousarray([4.0, 0.0], dtype=np.float64)
 
@@ -120,6 +129,7 @@ def test_guess_extrapolate_batch_preserves_zero_symmetry_fallback() -> None:
 
 
 def test_fit_symmetry_decay_rejects_non_contiguous_noise_scales() -> None:
+    """The symmetry-decay fit refuses non-contiguous noise scales."""
     noisy = np.ascontiguousarray([4.0, 3.2, 2.56], dtype=np.float64)
     scales = np.linspace(1.0, 5.0, 6, dtype=np.float64)[::2]
 
@@ -128,6 +138,7 @@ def test_fit_symmetry_decay_rejects_non_contiguous_noise_scales() -> None:
 
 
 def test_fit_symmetry_decay_rejects_too_few_points() -> None:
+    """The symmetry-decay fit refuses fewer than two points."""
     noisy = np.ascontiguousarray([4.0], dtype=np.float64)
     scales = np.ascontiguousarray([1.0], dtype=np.float64)
 
@@ -136,6 +147,7 @@ def test_fit_symmetry_decay_rejects_too_few_points() -> None:
 
 
 def test_fit_symmetry_decay_recovers_exact_exponential() -> None:
+    """An exact exponential decay is recovered with zero residual."""
     s_ideal = 4.0
     alpha_true = 0.15
     scales = np.ascontiguousarray([1.0, 3.0, 5.0, 7.0], dtype=np.float64)
@@ -151,6 +163,7 @@ def test_fit_symmetry_decay_recovers_exact_exponential() -> None:
 
 
 def test_concatenated_logical_rate_rejects_non_contiguous_distances() -> None:
+    """The concatenated logical rate refuses non-contiguous distances."""
     distances = np.arange(1, 8, dtype=np.int64)[::2]
 
     with pytest.raises(ValueError, match="distances must be a C-contiguous NumPy array"):
@@ -158,6 +171,7 @@ def test_concatenated_logical_rate_rejects_non_contiguous_distances() -> None:
 
 
 def test_concatenated_logical_rate_rejects_non_positive_distances() -> None:
+    """The concatenated logical rate refuses a distance below 1."""
     distances = np.ascontiguousarray([3, 0, 5], dtype=np.int64)
 
     with pytest.raises(ValueError, match=r"distances\[1\] must be at least 1"):
@@ -165,6 +179,7 @@ def test_concatenated_logical_rate_rejects_non_positive_distances() -> None:
 
 
 def test_concatenated_logical_rate_accepts_d1_contract() -> None:
+    """Distance 1 gives the threshold-scaled physical rate."""
     distances = np.ascontiguousarray([1], dtype=np.int64)
 
     rates = engine.concatenated_logical_rate_rust(0.003, distances, 0.01, 0.1)
@@ -173,6 +188,7 @@ def test_concatenated_logical_rate_accepts_d1_contract() -> None:
 
 
 def test_concatenated_logical_rate_matches_two_level_reference() -> None:
+    """Two levels match the concatenation formula."""
     distances = np.ascontiguousarray([3, 5], dtype=np.int64)
 
     rates = np.asarray(engine.concatenated_logical_rate_rust(0.003, distances, 0.01, 0.1))
@@ -183,6 +199,7 @@ def test_concatenated_logical_rate_matches_two_level_reference() -> None:
 
 
 def test_score_regions_batch_rejects_non_contiguous_gate_errors() -> None:
+    """Batched region scoring refuses non-contiguous gate errors."""
     gate_errors = np.linspace(0.0, 0.03, 32, dtype=np.float64)[::2]
     offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
     qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
@@ -192,6 +209,7 @@ def test_score_regions_batch_rejects_non_contiguous_gate_errors() -> None:
 
 
 def test_score_regions_batch_rejects_wrong_gate_error_shape() -> None:
+    """Batched region scoring refuses a gate-error matrix of the wrong size."""
     gate_errors = np.ascontiguousarray(np.zeros(15, dtype=np.float64))
     offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
     qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
@@ -201,6 +219,7 @@ def test_score_regions_batch_rejects_wrong_gate_error_shape() -> None:
 
 
 def test_score_regions_batch_rejects_invalid_gate_error_value() -> None:
+    """Batched region scoring refuses a gate error outside [0, 1]."""
     gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
     gate_errors[1] = 1.2
     offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
@@ -211,6 +230,7 @@ def test_score_regions_batch_rejects_invalid_gate_error_value() -> None:
 
 
 def test_score_regions_batch_rejects_odd_region_offsets() -> None:
+    """Batched region scoring refuses region offsets of odd length."""
     gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
     offsets = np.ascontiguousarray([0, 4, 4], dtype=np.int64)
     qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
@@ -220,6 +240,7 @@ def test_score_regions_batch_rejects_odd_region_offsets() -> None:
 
 
 def test_score_regions_batch_rejects_offset_beyond_qubit_buffer() -> None:
+    """Batched region scoring refuses an offset beyond the qubit buffer."""
     gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
     offsets = np.ascontiguousarray([0, 5], dtype=np.int64)
     qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
@@ -229,6 +250,7 @@ def test_score_regions_batch_rejects_offset_beyond_qubit_buffer() -> None:
 
 
 def test_score_regions_batch_rejects_out_of_range_qubit() -> None:
+    """Batched region scoring refuses a qubit index out of range."""
     gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
     offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
     qubits = np.ascontiguousarray([0, 1, 2, 4], dtype=np.int64)
@@ -238,6 +260,7 @@ def test_score_regions_batch_rejects_out_of_range_qubit() -> None:
 
 
 def test_score_regions_batch_accepts_complete_graph_scores() -> None:
+    """A complete four-qubit region scores full connectivity and its fidelity."""
     n_qubits = 4
     gate_errors = np.zeros((n_qubits, n_qubits), dtype=np.float64)
     gate_errors[~np.eye(n_qubits, dtype=bool)] = 0.01
@@ -257,6 +280,7 @@ def test_score_regions_batch_accepts_complete_graph_scores() -> None:
 
 
 def test_mc_xy_simulate_rejects_non_contiguous_couplings() -> None:
+    """The XY Monte Carlo refuses non-contiguous couplings."""
     k_flat = np.linspace(0.0, 1.0, 32, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
@@ -264,6 +288,7 @@ def test_mc_xy_simulate_rejects_non_contiguous_couplings() -> None:
 
 
 def test_mc_xy_simulate_rejects_wrong_coupling_shape() -> None:
+    """The XY Monte Carlo refuses a coupling matrix of the wrong size."""
     k_flat = np.ascontiguousarray(np.zeros(15, dtype=np.float64))
 
     with pytest.raises(ValueError, match="k_flat length 15 != 4² = 16"):
@@ -271,6 +296,7 @@ def test_mc_xy_simulate_rejects_wrong_coupling_shape() -> None:
 
 
 def test_mc_xy_simulate_rejects_non_finite_coupling() -> None:
+    """The XY Monte Carlo refuses a non-finite coupling."""
     k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
     k_flat[3] = np.inf
 
@@ -279,6 +305,7 @@ def test_mc_xy_simulate_rejects_non_finite_coupling() -> None:
 
 
 def test_mc_xy_simulate_rejects_negative_coupling() -> None:
+    """The XY Monte Carlo refuses a negative coupling."""
     k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
     k_flat[1] = -0.2
 
@@ -287,6 +314,7 @@ def test_mc_xy_simulate_rejects_negative_coupling() -> None:
 
 
 def test_mc_xy_simulate_rejects_zero_measurements() -> None:
+    """The XY Monte Carlo refuses zero measurement sweeps."""
     k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
 
     with pytest.raises(ValueError, match="n_measure must be > 0"):
@@ -294,6 +322,7 @@ def test_mc_xy_simulate_rejects_zero_measurements() -> None:
 
 
 def test_mc_xy_simulate_accepts_zero_coupling_reference() -> None:
+    """Zero coupling gives zero energy and helicity and R in [0, 1]."""
     k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
 
     energy, order, helicity = engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 3, 42)
@@ -304,6 +333,7 @@ def test_mc_xy_simulate_accepts_zero_coupling_reference() -> None:
 
 
 def test_hierarchical_prediction_error_rejects_non_contiguous_observations() -> None:
+    """The hierarchical prediction error refuses non-contiguous observations."""
     observations = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
     beliefs = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
@@ -313,6 +343,7 @@ def test_hierarchical_prediction_error_rejects_non_contiguous_observations() -> 
 
 
 def test_hierarchical_prediction_error_rejects_length_mismatch() -> None:
+    """The hierarchical prediction error refuses beliefs and observations of different lengths."""
     observations = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     beliefs = np.ascontiguousarray(np.zeros(3, dtype=np.float64))
     k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
@@ -322,6 +353,7 @@ def test_hierarchical_prediction_error_rejects_length_mismatch() -> None:
 
 
 def test_hierarchical_prediction_error_rejects_wrong_k_shape() -> None:
+    """The hierarchical prediction error refuses a coupling matrix of the wrong shape."""
     observations = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     beliefs = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     k = np.ascontiguousarray(np.zeros((4, 3), dtype=np.float64))
@@ -331,6 +363,7 @@ def test_hierarchical_prediction_error_rejects_wrong_k_shape() -> None:
 
 
 def test_hierarchical_prediction_error_rejects_non_finite_belief() -> None:
+    """The hierarchical prediction error refuses a non-finite belief."""
     observations = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     beliefs = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     beliefs[2] = np.nan
@@ -341,6 +374,7 @@ def test_hierarchical_prediction_error_rejects_non_finite_belief() -> None:
 
 
 def test_hierarchical_prediction_error_matches_isolated_and_coupled_rows() -> None:
+    """Isolated and coupled rows give the expected prediction errors."""
     observations = np.ascontiguousarray([1.0, 2.0], dtype=np.float64)
     beliefs = np.ascontiguousarray([0.5, 1.0], dtype=np.float64)
     k = np.ascontiguousarray([[0.0, 0.0], [2.0, 0.0]], dtype=np.float64)
@@ -351,6 +385,7 @@ def test_hierarchical_prediction_error_matches_isolated_and_coupled_rows() -> No
 
 
 def test_brute_mpc_rejects_non_contiguous_b_matrix() -> None:
+    """Brute-force MPC refuses a non-contiguous control matrix."""
     b_flat = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
     target = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
 
@@ -359,6 +394,7 @@ def test_brute_mpc_rejects_non_contiguous_b_matrix() -> None:
 
 
 def test_brute_mpc_rejects_wrong_b_matrix_shape() -> None:
+    """Brute-force MPC refuses a control matrix of the wrong size."""
     b_flat = np.ascontiguousarray(np.zeros(5, dtype=np.float64))
     target = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
 
@@ -367,6 +403,7 @@ def test_brute_mpc_rejects_wrong_b_matrix_shape() -> None:
 
 
 def test_brute_mpc_rejects_wrong_target_length() -> None:
+    """Brute-force MPC refuses a target of the wrong length."""
     b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     target = np.ascontiguousarray([1.0, 0.0, 0.0], dtype=np.float64)
 
@@ -375,6 +412,7 @@ def test_brute_mpc_rejects_wrong_target_length() -> None:
 
 
 def test_brute_mpc_rejects_non_finite_target() -> None:
+    """Brute-force MPC refuses a non-finite target."""
     b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     target = np.ascontiguousarray([1.0, np.nan], dtype=np.float64)
 
@@ -389,6 +427,7 @@ def test_brute_mpc_matches_two_dimensional_reference() -> None:
     # because the installed extension predated the repair. The costs below come
     # from enumerating the same eight action sequences in NumPy, independently
     # of the kernel.
+    """A two-dimensional problem matches costs enumerated independently in NumPy."""
     b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     target = np.ascontiguousarray([0.8, 0.6], dtype=np.float64)
 
@@ -416,6 +455,7 @@ def test_brute_mpc_matches_two_dimensional_reference() -> None:
 
 
 def test_analog_coupling_terms_rejects_non_contiguous_couplings() -> None:
+    """The analog coupling-term builder refuses non-contiguous couplings."""
     k_flat = np.linspace(0.0, 1.0, 32, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
@@ -423,6 +463,7 @@ def test_analog_coupling_terms_rejects_non_contiguous_couplings() -> None:
 
 
 def test_analog_coupling_terms_rejects_wrong_coupling_shape() -> None:
+    """The analog coupling-term builder refuses a coupling matrix of the wrong size."""
     k_flat = np.ascontiguousarray(np.zeros(15, dtype=np.float64))
 
     with pytest.raises(ValueError, match="k_flat length 15 != 4² = 16"):
@@ -430,6 +471,7 @@ def test_analog_coupling_terms_rejects_wrong_coupling_shape() -> None:
 
 
 def test_analog_coupling_terms_preserves_signed_neutral_atom_edges() -> None:
+    """Analog terms keep each edge and the sign of its coupling."""
     k_matrix = np.ascontiguousarray(
         [
             [0.0, 0.5, -0.25],
@@ -456,6 +498,7 @@ def test_analog_coupling_terms_preserves_signed_neutral_atom_edges() -> None:
 
 
 def test_hybrid_coupling_partition_rejects_non_contiguous_couplings() -> None:
+    """The hybrid coupling partition refuses non-contiguous couplings."""
     k_flat = np.linspace(0.0, 1.0, 32, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
@@ -463,6 +506,7 @@ def test_hybrid_coupling_partition_rejects_non_contiguous_couplings() -> None:
 
 
 def test_hybrid_coupling_partition_selects_budgeted_tie_break_edge() -> None:
+    """The partition puts the budgeted tie-break edge on the analog side."""
     k_matrix = np.ascontiguousarray(
         [
             [0.0, 0.75, 0.75],
@@ -494,6 +538,7 @@ def test_hybrid_coupling_partition_selects_budgeted_tie_break_edge() -> None:
 
 
 def test_state_order_param_sparse_rejects_non_contiguous_state_real_part() -> None:
+    """The sparse statevector order parameter refuses a non-contiguous real part of the state."""
     psi_re = np.linspace(0.0, 1.0, 4, dtype=np.float64)[::2]
     psi_im = np.ascontiguousarray(np.zeros(2, dtype=np.float64))
 
@@ -502,6 +547,7 @@ def test_state_order_param_sparse_rejects_non_contiguous_state_real_part() -> No
 
 
 def test_all_xy_expectations_rejects_statevector_length_mismatch() -> None:
+    """The all-XY expectation kernel refuses real and imaginary parts of different lengths."""
     psi_re = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     psi_im = np.ascontiguousarray(np.zeros(3, dtype=np.float64))
 
@@ -510,6 +556,7 @@ def test_all_xy_expectations_rejects_statevector_length_mismatch() -> None:
 
 
 def test_expectation_pauli_fast_rejects_invalid_pauli_selector() -> None:
+    """The fast Pauli expectation refuses a Pauli selector other than X, Y or Z."""
     psi_re = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
     psi_im = np.ascontiguousarray([0.0, 0.0], dtype=np.float64)
 
@@ -520,6 +567,7 @@ def test_expectation_pauli_fast_rejects_invalid_pauli_selector() -> None:
 
 
 def test_expectation_pauli_fast_rejects_qubit_outside_state_register() -> None:
+    """The fast Pauli expectation refuses a qubit outside the register."""
     psi_re = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
     psi_im = np.ascontiguousarray([0.0, 0.0], dtype=np.float64)
 
@@ -528,6 +576,7 @@ def test_expectation_pauli_fast_rejects_qubit_outside_state_register() -> None:
 
 
 def test_expectation_pauli_fast_matches_y_positive_eigenstate() -> None:
+    """The +1 Y eigenstate gives a Y expectation of one."""
     scale = 1.0 / np.sqrt(2.0)
     psi_re = np.ascontiguousarray([scale, 0.0], dtype=np.float64)
     psi_im = np.ascontiguousarray([0.0, scale], dtype=np.float64)
@@ -538,6 +587,7 @@ def test_expectation_pauli_fast_matches_y_positive_eigenstate() -> None:
 
 
 def test_build_xy_hamiltonian_dense_rejects_non_contiguous_couplings() -> None:
+    """The dense XY Hamiltonian builder refuses non-contiguous couplings."""
     k_flat = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
     omega = np.ascontiguousarray([0.1, -0.2], dtype=np.float64)
 
@@ -546,6 +596,7 @@ def test_build_xy_hamiltonian_dense_rejects_non_contiguous_couplings() -> None:
 
 
 def test_build_sparse_xy_hamiltonian_rejects_non_contiguous_frequencies() -> None:
+    """The sparse XY Hamiltonian builder refuses non-contiguous frequencies."""
     k_flat = np.ascontiguousarray(np.zeros((2, 2), dtype=np.float64).ravel())
     omega = np.linspace(0.0, 1.0, 4, dtype=np.float64)[::2]
 
@@ -554,6 +605,7 @@ def test_build_sparse_xy_hamiltonian_rejects_non_contiguous_frequencies() -> Non
 
 
 def test_build_xy_hamiltonian_dense_rejects_wrong_frequency_length() -> None:
+    """The dense XY Hamiltonian builder refuses frequencies of the wrong length."""
     k_flat = np.ascontiguousarray(np.zeros((3, 3), dtype=np.float64).ravel())
     omega = np.ascontiguousarray([0.1, -0.2], dtype=np.float64)
 
@@ -562,6 +614,7 @@ def test_build_xy_hamiltonian_dense_rejects_wrong_frequency_length() -> None:
 
 
 def test_build_sparse_xy_hamiltonian_rejects_non_finite_coupling() -> None:
+    """The sparse XY Hamiltonian builder refuses a non-finite coupling."""
     k_flat = np.ascontiguousarray(np.zeros((2, 2), dtype=np.float64).ravel())
     k_flat[1] = np.nan
     omega = np.ascontiguousarray([0.1, -0.2], dtype=np.float64)
@@ -571,6 +624,7 @@ def test_build_sparse_xy_hamiltonian_rejects_non_finite_coupling() -> None:
 
 
 def test_build_sparse_xy_hamiltonian_matches_dense_reference() -> None:
+    """The sparse Hamiltonian matches the dense one."""
     k_matrix = np.ascontiguousarray([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
     omega = np.ascontiguousarray([0.1, -0.2], dtype=np.float64)
 
@@ -589,6 +643,7 @@ def test_build_sparse_xy_hamiltonian_matches_dense_reference() -> None:
 
 
 def test_order_param_from_statevector_rejects_non_contiguous_imaginary_part() -> None:
+    """The statevector order parameter refuses a non-contiguous imaginary part."""
     psi_re = np.ascontiguousarray(np.zeros(2, dtype=np.float64))
     psi_im = np.linspace(0.0, 1.0, 4, dtype=np.float64)[::2]
 
@@ -597,6 +652,7 @@ def test_order_param_from_statevector_rejects_non_contiguous_imaginary_part() ->
 
 
 def test_correlation_matrix_xy_rejects_statevector_length_mismatch() -> None:
+    """The XY correlation matrix refuses real and imaginary parts of different lengths."""
     psi_re = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     psi_im = np.ascontiguousarray(np.zeros(3, dtype=np.float64))
 
@@ -605,6 +661,7 @@ def test_correlation_matrix_xy_rejects_statevector_length_mismatch() -> None:
 
 
 def test_order_param_from_statevector_rejects_non_finite_amplitude() -> None:
+    """The statevector order parameter refuses a non-finite amplitude."""
     psi_re = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
     psi_im = np.ascontiguousarray([0.0, np.nan], dtype=np.float64)
 
@@ -613,6 +670,7 @@ def test_order_param_from_statevector_rejects_non_finite_amplitude() -> None:
 
 
 def test_parity_filter_mask_rejects_non_contiguous_bitstrings() -> None:
+    """The parity filter refuses non-contiguous bitstrings."""
     bitstrings = np.arange(8, dtype=np.uint64)[::2]
 
     with pytest.raises(ValueError, match="bitstrings must be a C-contiguous NumPy array"):
@@ -620,6 +678,7 @@ def test_parity_filter_mask_rejects_non_contiguous_bitstrings() -> None:
 
 
 def test_correlation_matrix_xy_matches_flipflop_coherence() -> None:
+    """A flip-flop superposition gives the expected XY correlations."""
     scale = 1.0 / np.sqrt(2.0)
     psi_re = np.ascontiguousarray([0.0, scale, scale, 0.0], dtype=np.float64)
     psi_im = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
@@ -630,6 +689,7 @@ def test_correlation_matrix_xy_matches_flipflop_coherence() -> None:
 
 
 def test_dla_dimension_rejects_non_contiguous_generators() -> None:
+    """The DLA dimension refuses non-contiguous generators."""
     generators = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="generators_flat must be a C-contiguous NumPy array"):
@@ -637,6 +697,7 @@ def test_dla_dimension_rejects_non_contiguous_generators() -> None:
 
 
 def test_dla_dimension_rejects_non_finite_generator() -> None:
+    """The DLA dimension refuses a non-finite generator entry."""
     generators = np.ascontiguousarray([0.0, 1.0, np.inf, 0.0], dtype=np.float64)
 
     with pytest.raises(ValueError, match=r"generators_flat\[2\] is not finite"):
@@ -644,6 +705,7 @@ def test_dla_dimension_rejects_non_finite_generator() -> None:
 
 
 def test_dla_protected_memory_metrics_rejects_non_contiguous_probabilities() -> None:
+    """The DLA protected-memory kernel refuses non-contiguous probabilities."""
     probabilities = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="probabilities must be a C-contiguous NumPy array"):
@@ -651,6 +713,7 @@ def test_dla_protected_memory_metrics_rejects_non_contiguous_probabilities() -> 
 
 
 def test_dla_protected_memory_metrics_accepts_normalised_code_state() -> None:
+    """A normalised code state gives full protection and no opposite weight."""
     probabilities = np.ascontiguousarray([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
 
     protected, code, target, opposite, total = engine.dla_protected_memory_metrics(
@@ -668,6 +731,7 @@ def test_dla_protected_memory_metrics_accepts_normalised_code_state() -> None:
 
 
 def test_hypergeometric_envelope_batch_rejects_non_contiguous_times() -> None:
+    """The batched hypergeometric envelope refuses non-contiguous times."""
     times = np.linspace(-1.0, 1.0, 8, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="times must be a C-contiguous NumPy array"):
@@ -675,6 +739,7 @@ def test_hypergeometric_envelope_batch_rejects_non_contiguous_times() -> None:
 
 
 def test_ici_mixing_angle_batch_rejects_non_finite_times() -> None:
+    """The batched ICI mixing angle refuses non-finite times."""
     times = np.ascontiguousarray([0.0, np.nan, 1.0], dtype=np.float64)
 
     with pytest.raises(ValueError, match=r"times\[1\] is not finite"):
@@ -682,6 +747,7 @@ def test_ici_mixing_angle_batch_rejects_non_finite_times() -> None:
 
 
 def test_ici_three_level_evolution_rejects_non_contiguous_pump_pulse() -> None:
+    """The ICI three-level evolution refuses a non-contiguous pump pulse."""
     times = np.ascontiguousarray([0.0, 0.5, 1.0, 1.5], dtype=np.float64)
     omega_p = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
     omega_s = np.ascontiguousarray(np.ones(4, dtype=np.float64))
@@ -691,6 +757,7 @@ def test_ici_three_level_evolution_rejects_non_contiguous_pump_pulse() -> None:
 
 
 def test_ici_three_level_evolution_rejects_negative_decay_rate() -> None:
+    """The ICI three-level evolution refuses a negative decay rate."""
     times = np.ascontiguousarray([0.0, 0.5], dtype=np.float64)
     omega_p = np.ascontiguousarray([0.0, 1.0], dtype=np.float64)
     omega_s = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
@@ -700,6 +767,7 @@ def test_ici_three_level_evolution_rejects_negative_decay_rate() -> None:
 
 
 def test_lindblad_jump_ops_rejects_non_contiguous_couplings() -> None:
+    """The Lindblad jump-operator builder refuses non-contiguous couplings."""
     k_flat = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
@@ -707,6 +775,7 @@ def test_lindblad_jump_ops_rejects_non_contiguous_couplings() -> None:
 
 
 def test_lindblad_anti_hermitian_rejects_wrong_coupling_shape() -> None:
+    """The anti-Hermitian Lindblad diagonal refuses a coupling matrix of the wrong size."""
     k_flat = np.ascontiguousarray(np.zeros(3, dtype=np.float64))
 
     with pytest.raises(ValueError, match="k_flat length 3 != 2² = 4"):
@@ -714,6 +783,7 @@ def test_lindblad_anti_hermitian_rejects_wrong_coupling_shape() -> None:
 
 
 def test_lindblad_jump_ops_rejects_non_finite_coupling() -> None:
+    """The Lindblad jump-operator builder refuses a non-finite coupling."""
     k_flat = np.ascontiguousarray([0.0, 1.0, np.nan, 0.0], dtype=np.float64)
 
     with pytest.raises(ValueError, match=r"k_flat\[2\] is not finite"):
@@ -721,6 +791,7 @@ def test_lindblad_jump_ops_rejects_non_finite_coupling() -> None:
 
 
 def test_lindblad_anti_hermitian_matches_two_qubit_transfer_channels() -> None:
+    """Two coupled qubits give the expected transfer-channel diagonal."""
     k_flat = np.ascontiguousarray([0.0, 1.0, 1.0, 0.0], dtype=np.float64)
 
     diag = engine.lindblad_anti_hermitian_diag(k_flat, 2, 1e-12)
@@ -729,6 +800,7 @@ def test_lindblad_anti_hermitian_matches_two_qubit_transfer_channels() -> None:
 
 
 def test_koopman_generator_rejects_non_contiguous_coupling_matrix() -> None:
+    """The Koopman generator refuses a non-contiguous coupling matrix."""
     k = np.ascontiguousarray(np.arange(4, dtype=np.float64).reshape(2, 2)).T
     omega = np.ascontiguousarray([1.0, 1.5], dtype=np.float64)
     theta_ref = np.ascontiguousarray([0.1, -0.2], dtype=np.float64)
@@ -738,6 +810,7 @@ def test_koopman_generator_rejects_non_contiguous_coupling_matrix() -> None:
 
 
 def test_koopman_generator_rejects_non_contiguous_frequency_vector() -> None:
+    """The Koopman generator refuses a non-contiguous frequency vector."""
     k = np.ascontiguousarray(np.zeros((2, 2), dtype=np.float64))
     omega = np.linspace(1.0, 2.0, 4, dtype=np.float64)[::2]
     theta_ref = np.ascontiguousarray([0.1, -0.2], dtype=np.float64)
@@ -747,6 +820,7 @@ def test_koopman_generator_rejects_non_contiguous_frequency_vector() -> None:
 
 
 def test_koopman_generator_rejects_non_finite_reference_phase() -> None:
+    """The Koopman generator refuses a non-finite reference phase."""
     k = np.ascontiguousarray(np.zeros((2, 2), dtype=np.float64))
     omega = np.ascontiguousarray([1.0, 1.5], dtype=np.float64)
     theta_ref = np.ascontiguousarray([0.1, np.nan], dtype=np.float64)
@@ -756,6 +830,7 @@ def test_koopman_generator_rejects_non_finite_reference_phase() -> None:
 
 
 def test_lanczos_b_coefficients_rejects_non_contiguous_hamiltonian_real_part() -> None:
+    """The Lanczos coefficient kernel refuses a non-contiguous real part of the Hamiltonian."""
     h_re = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
     h_im = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     o_re = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
@@ -766,6 +841,7 @@ def test_lanczos_b_coefficients_rejects_non_contiguous_hamiltonian_real_part() -
 
 
 def test_lanczos_b_coefficients_rejects_operator_imaginary_length_mismatch() -> None:
+    """The Lanczos coefficient kernel refuses an operator imaginary part of the wrong length."""
     h_re = np.ascontiguousarray(np.diag([1.0, -1.0]).ravel())
     h_im = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     o_re = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
@@ -776,6 +852,7 @@ def test_lanczos_b_coefficients_rejects_operator_imaginary_length_mismatch() -> 
 
 
 def test_lanczos_b_coefficients_rejects_non_finite_operator_real_part() -> None:
+    """The Lanczos coefficient kernel refuses a non-finite operator entry."""
     h_re = np.ascontiguousarray(np.diag([1.0, -1.0]).ravel())
     h_im = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
     o_re = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
@@ -787,6 +864,7 @@ def test_lanczos_b_coefficients_rejects_non_finite_operator_real_part() -> None:
 
 
 def test_otoc_from_eigendecomp_rejects_non_contiguous_eigenvalues() -> None:
+    """The OTOC from an eigendecomposition refuses non-contiguous eigenvalues."""
     eigenvalues = np.linspace(0.0, 1.0, 4, dtype=np.float64)[::2]
     identity = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     zero = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
@@ -811,6 +889,7 @@ def test_otoc_from_eigendecomp_rejects_non_contiguous_eigenvalues() -> None:
 
 
 def test_otoc_from_eigendecomp_rejects_statevector_length_mismatch() -> None:
+    """The OTOC from an eigendecomposition refuses a state of the wrong length."""
     eigenvalues = np.ascontiguousarray([0.0, 1.0], dtype=np.float64)
     identity = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     zero = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
@@ -835,6 +914,7 @@ def test_otoc_from_eigendecomp_rejects_statevector_length_mismatch() -> None:
 
 
 def test_otoc_from_eigendecomp_rejects_non_finite_times() -> None:
+    """The OTOC from an eigendecomposition refuses non-finite times."""
     eigenvalues = np.ascontiguousarray([0.0, 1.0], dtype=np.float64)
     identity = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     zero = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
@@ -859,6 +939,7 @@ def test_otoc_from_eigendecomp_rejects_non_finite_times() -> None:
 
 
 def test_plaquette_action_rejects_non_contiguous_links() -> None:
+    """The plaquette action refuses non-contiguous links."""
     links = np.linspace(0.0, 1.0, 6, dtype=np.float64)[::2]
     triangles = np.ascontiguousarray([0, 1, 2], dtype=np.int64)
     signs = np.ascontiguousarray([1.0, 1.0, -1.0], dtype=np.float64)
@@ -868,6 +949,7 @@ def test_plaquette_action_rejects_non_contiguous_links() -> None:
 
 
 def test_gauge_force_rejects_triangle_index_outside_links() -> None:
+    """The gauge force refuses a triangle index outside the links."""
     links = np.ascontiguousarray([0.0, 0.1], dtype=np.float64)
     triangles = np.ascontiguousarray([0, 1, 2], dtype=np.int64)
     signs = np.ascontiguousarray([1.0, 1.0, -1.0], dtype=np.float64)
@@ -877,6 +959,7 @@ def test_gauge_force_rejects_triangle_index_outside_links() -> None:
 
 
 def test_gauge_covariant_kinetic_rejects_field_length_mismatch() -> None:
+    """The gauge-covariant kinetic term refuses field parts of different lengths."""
     phi_re = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
     phi_im = np.ascontiguousarray([0.0], dtype=np.float64)
     links = np.ascontiguousarray([0.0], dtype=np.float64)
@@ -887,6 +970,7 @@ def test_gauge_covariant_kinetic_rejects_field_length_mismatch() -> None:
 
 
 def test_topological_charge_rejects_non_finite_sign() -> None:
+    """The topological charge refuses a non-finite triangle sign."""
     links = np.ascontiguousarray([0.0, 0.1, 0.2], dtype=np.float64)
     triangles = np.ascontiguousarray([0, 1, 2], dtype=np.int64)
     signs = np.ascontiguousarray([1.0, np.nan, -1.0], dtype=np.float64)
@@ -896,6 +980,7 @@ def test_topological_charge_rejects_non_finite_sign() -> None:
 
 
 def test_order_parameter_rejects_non_contiguous_phase_array() -> None:
+    """The native order parameter refuses a non-contiguous phase array."""
     theta = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
 
     with pytest.raises(ValueError, match="theta must be a C-contiguous NumPy array"):
@@ -903,6 +988,7 @@ def test_order_parameter_rejects_non_contiguous_phase_array() -> None:
 
 
 def test_kuramoto_trajectory_rejects_frequency_length_mismatch() -> None:
+    """The native Kuramoto trajectory refuses frequencies of the wrong length."""
     theta0 = np.ascontiguousarray([0.0, 0.1], dtype=np.float64)
     omega = np.ascontiguousarray([0.0], dtype=np.float64)
     k = np.ascontiguousarray(np.zeros((2, 2), dtype=np.float64))
@@ -912,6 +998,7 @@ def test_kuramoto_trajectory_rejects_frequency_length_mismatch() -> None:
 
 
 def test_higher_order_kuramoto_rejects_non_contiguous_hyper_weights() -> None:
+    """The higher-order Kuramoto step refuses non-contiguous hyperedge weights."""
     theta0 = np.ascontiguousarray([0.0, 0.1, 0.2], dtype=np.float64)
     omega = np.ascontiguousarray([0.0, 0.0, 0.0], dtype=np.float64)
     k = np.ascontiguousarray(np.zeros((3, 3), dtype=np.float64))
@@ -925,6 +1012,7 @@ def test_higher_order_kuramoto_rejects_non_contiguous_hyper_weights() -> None:
 
 
 def test_kuramoto_witness_candidate_features_rejects_non_finite_candidate() -> None:
+    """The witness candidate-feature kernel refuses a non-finite candidate."""
     theta0 = np.ascontiguousarray([0.0, 0.1], dtype=np.float64)
     omega = np.ascontiguousarray([0.0, 0.0], dtype=np.float64)
     k = np.ascontiguousarray(np.zeros((2, 2), dtype=np.float64))
@@ -935,6 +1023,7 @@ def test_kuramoto_witness_candidate_features_rejects_non_finite_candidate() -> N
 
 
 def r_values_error_pattern() -> str:
+    """Return the error pattern for non-contiguous order parameters."""
     return r"r_values must be a C-contiguous NumPy array"
 
 
@@ -956,6 +1045,7 @@ def _fep_domain_contract_exports() -> tuple[Any, Any]:
     -------
     tuple
         ``(free_energy_gradient_rust, variational_free_energy_rust)``.
+
     """
     return (
         _require_engine_symbol("free_energy_gradient_rust"),
@@ -981,6 +1071,7 @@ def _fep_domain_contract_reference_gradient(
     -------
     numpy.ndarray
         The expected gradient.
+
     """
     ridged = np.asarray(k_precision, dtype=np.float64) + ridge * np.eye(mu.size)
     gamma = np.asarray(sensory_precision, dtype=np.float64)
@@ -1012,6 +1103,7 @@ def _fep_domain_contract_reference_free_energy(
     -------
     tuple
         ``(free_energy, complexity, accuracy)``.
+
     """
     n = mu.size
     ridged = np.asarray(k_precision, dtype=np.float64) + ridge * np.eye(n)
@@ -1112,6 +1204,7 @@ def test_fep_domain_contract_gradient_rejects_non_finite(argument: str, expected
         Name of the argument made non-finite.
     expected
         Regular expression the refusal message must match.
+
     """
     gradient, _ = _fep_domain_contract_exports()
     arguments: dict[str, object] = {
@@ -1242,6 +1335,7 @@ def test_fep_domain_contract_free_energy_rejects_non_finite(argument: str, expec
         Name of the argument made non-finite.
     expected
         Regular expression the refusal message must match.
+
     """
     _, free_energy = _fep_domain_contract_exports()
     arguments: dict[str, object] = {

@@ -1109,6 +1109,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     them as well and ran nothing.
   - `docs/pipeline_performance.md` and `docs/test_infrastructure.md` no
     longer quote a stale count of 155 tests, and state where the file runs.
+
+- Both test suites (`tests/` and `oscillatools/tests/`) are now fully
+  documented.
+  - Every test, fixture, helper and test class has a docstring that states
+    what it establishes, written from its assertions.
+  - The test documentation ceiling is empty: 0 findings in 0 files. It
+    recorded 7,384 findings in 594 files when it was introduced.
+  - With no rows left, the ceiling gate refuses any test file that has a
+    documentation finding, so new or changed tests must arrive documented.
   - Only `tests/test_perf_regression.py`, whose speed-up floors depend on
     the host, keeps the classification. A new test pins it as the only
     performance gate and checks that the default lane still excludes the

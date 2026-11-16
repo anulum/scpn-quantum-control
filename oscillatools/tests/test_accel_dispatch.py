@@ -53,15 +53,21 @@ _GLOBAL_SETTINGS = settings(
 
 
 class TestDispatcherMechanics:
+    """The multi-language dispatcher."""
+
     def test_chain_rejects_empty(self) -> None:
+        """An empty chain is refused."""
         with pytest.raises(ValueError, match="chain must be non-empty"):
             d.MultiLangDispatcher([])
 
     def test_chain_requires_python_floor_last(self) -> None:
+        """A chain must end with the Python floor."""
         with pytest.raises(ValueError, match="python floor"):
             d.MultiLangDispatcher([("rust", lambda x: x)])
 
     def test_fallback_when_tier_raises_importerror(self) -> None:
+        """A tier raising ImportError falls through to the floor."""
+
         def _bad_tier(_: int) -> int:
             raise ImportError("simulated missing binding")
 
@@ -73,6 +79,8 @@ class TestDispatcherMechanics:
         assert disp.last_tier == "python"
 
     def test_fallback_when_tier_raises_runtimeerror(self) -> None:
+        """A tier raising RuntimeError falls through to the floor."""
+
         def _bad_tier(_: int) -> int:
             raise RuntimeError("simulated")
 
@@ -84,6 +92,8 @@ class TestDispatcherMechanics:
         assert disp.last_tier == "python"
 
     def test_does_not_swallow_unrelated_exception(self) -> None:
+        """An unrelated exception is not swallowed."""
+
         def _bad_tier(_: int) -> int:
             raise ValueError("bug in implementation")
 
@@ -95,10 +105,12 @@ class TestDispatcherMechanics:
             disp(1)
 
     def test_tiers_returns_order(self) -> None:
+        """The tier list lists the chain in order."""
         disp = d.MultiLangDispatcher([("python", lambda x: x)])
         assert disp.tiers() == ["python"]
 
     def test_chain_exposes_read_only_copy_with_callables(self) -> None:
+        """The chain is exposed as a read-only tuple of named callables."""
         floor = lambda x: x  # noqa: E731 — terse stand-in tier for the test.
         disp = d.MultiLangDispatcher([("rust", lambda x: x), ("python", floor)])
         chain = disp.chain
@@ -115,14 +127,19 @@ class TestDispatcherMechanics:
 
 
 class TestRegistry:
+    """The dispatcher registry."""
+
     def test_registry_contains_order_parameter(self) -> None:
+        """The registry dispatches the order parameter."""
         assert d.dispatch("order_parameter", np.zeros(4)) == pytest.approx(1.0)
 
     def test_registry_rejects_unknown(self) -> None:
+        """An unknown name is refused."""
         with pytest.raises(KeyError, match="no dispatcher"):
             d.dispatch("no_such_thing", None)
 
     def test_registered_dispatchers_returns_independent_copy(self) -> None:
+        """The registry listing is an independent copy."""
         registry = d.registered_dispatchers()
         assert "order_parameter" in registry
         assert isinstance(registry["order_parameter"], d.MultiLangDispatcher)
@@ -134,12 +151,16 @@ class TestRegistry:
         # After a fresh module-import + at least one call via another
         # test, this may already be set — we only assert it's either
         # None or one of the known tier names.
+        """Before any call the last tier is unset or a known tier."""
         value = op_obs.last_tier_used()
         assert value is None or value in {"rust", "julia", "python"}
 
 
 class TestAccelerationPackageContracts:
+    """Helper contracts of the acceleration package."""
+
     def test_random_state_seed_is_normalised_and_reproducible(self) -> None:
+        """A seeded random state is normalised, complex and reproducible."""
         from oscillatools.accel import rust_random_state
 
         first = rust_random_state(3, seed=123)
@@ -153,6 +174,7 @@ class TestAccelerationPackageContracts:
         assert not np.allclose(first, different_seed)
 
     def test_feedback_correction_scales_matrix_without_mutating_input(self) -> None:
+        """The feedback correction scales the coupling and leaves the input unchanged."""
         from oscillatools.accel.rust_kuramoto_classical import apply_feedback_correction
 
         K_nm = np.array([[0.0, 0.2], [0.2, 0.0]])
@@ -162,6 +184,7 @@ class TestAccelerationPackageContracts:
         np.testing.assert_allclose(K_nm, np.array([[0.0, 0.2], [0.2, 0.0]]))
 
     def test_large_n_proxy_records_inputs_and_sync_response(self) -> None:
+        """The large-N proxy records its inputs, and feedback raises synchrony."""
         from oscillatools.accel.rust_kuramoto_classical import run_large_n
 
         inactive = run_large_n(N=64, K=0.3, lambda_fim=0.0, delta=0.1, steps=20)
@@ -178,11 +201,15 @@ class TestAccelerationPackageContracts:
 
 
 class TestPythonFloor:
+    """The Python floor of the order parameter."""
+
     def test_zero_vector_has_R_one(self) -> None:
         # All phases aligned at 0 → perfectly coherent.
+        """Equal phases give R = 1."""
         assert op_obs._python_order_parameter(np.zeros(8)) == pytest.approx(1.0)
 
     def test_antipodal_pair_has_R_zero(self) -> None:
+        """An antipodal pair gives R = 0."""
         theta = np.array([0.0, math.pi])
         assert op_obs._python_order_parameter(theta) == pytest.approx(0.0, abs=1e-12)
 
@@ -192,6 +219,7 @@ class TestPythonFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_python_floor_in_unit_interval(self, n: int, seed: int) -> None:
+        """R lies in [0, 1]."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
         r = op_obs._python_order_parameter(theta)
@@ -204,7 +232,10 @@ class TestPythonFloor:
 
 
 class TestRustTier:
+    """The native order-parameter tier."""
+
     def test_optional_rust_engine_absence_is_optional(self) -> None:
+        """A missing engine is reported as absent."""
         from oscillatools.accel.rust_import import optional_rust_engine
 
         with patch.dict(sys.modules, {"scpn_quantum_engine": None}):
@@ -213,6 +244,7 @@ class TestRustTier:
     def test_optional_rust_engine_broken_dependency_propagates(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A broken native dependency is raised, not hidden."""
         from oscillatools.accel.rust_import import optional_rust_engine
 
         real_import = __import__
@@ -227,6 +259,7 @@ class TestRustTier:
             optional_rust_engine()
 
     def test_rust_probe_propagates_broken_engine(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The probe raises for a broken installed engine."""
         real_optional = d.optional_rust_engine
 
         def broken_engine() -> object:
@@ -245,7 +278,8 @@ class TestRustTier:
         Python floor (covered below). When it is missing — minimal
         install, Docker without the wheel, a CI image without maturin —
         or present without this symbol, the probe must cleanly say False
-        and the dispatcher must fall through to the next tier."""
+        and the dispatcher must fall through to the next tier.
+        """
         try:
             import scpn_quantum_engine
         except Exception:
@@ -259,6 +293,8 @@ class TestRustTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -278,6 +314,7 @@ class TestRustTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "order_parameter", None)):
             pytest.skip("scpn_quantum_engine.order_parameter unavailable")
@@ -294,9 +331,10 @@ class TestRustTier:
 
 
 class TestJuliaTier:
+    """The Julia order-parameter tier."""
+
     def test_julia_probe_reflects_juliacall(self) -> None:
-        """Probe should return True iff juliacall is importable; it
-        MUST NOT boot the Julia runtime itself."""
+        """The probe is True iff juliacall imports, and it must not boot the Julia runtime."""
         try:
             import juliacall  # noqa: F401
         except Exception:
@@ -305,6 +343,7 @@ class TestJuliaTier:
             assert d._julia_available() is True
 
     def test_julia_order_parameter_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             order_parameter as julia_op,
@@ -320,8 +359,7 @@ class TestJuliaTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        """With Rust forced unavailable, the dispatcher must pick Julia
-        (when it is installed) before the Python floor."""
+        """With Rust unavailable, the dispatcher picks an installed Julia before the Python floor."""
         pytest.importorskip("juliacall")
 
         def _sim_rust_gone(_theta: np.ndarray) -> float:
@@ -347,12 +385,15 @@ class TestJuliaTier:
 
 
 class TestCrossTierAgreement:
+    """Agreement across the order-parameter tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=32),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         reference = op_obs._python_order_parameter(theta)
@@ -370,9 +411,12 @@ class TestCrossTierAgreement:
 
 
 class TestAvailableTiersProbe:
+    """The tier availability probe."""
+
     def test_probe_does_not_boot_julia(self) -> None:
-        """``available_tiers`` must only do import-level checks; booting
-        Julia on every probe would make the registry unusable for
+        """``available_tiers`` must only do import-level checks.
+
+        Booting Julia on every probe would make the registry unusable for
         fast-path dispatch decisions.
 
         The probe table in ``dispatcher.py`` binds the probe callables
@@ -407,13 +451,17 @@ class TestAvailableTiersProbe:
 
 
 class TestPipelineAccel:
+    """The public order-parameter entry point."""
+
     def test_order_parameter_public_api(self) -> None:
+        """The public function gives R = 1 for equal phases."""
         from oscillatools.accel import order_parameter
 
         theta = np.zeros(16)
         assert order_parameter(theta) == pytest.approx(1.0)
 
     def test_pipeline_picks_first_available_tier(self) -> None:
+        """Dispatch uses the first available tier and records it."""
         from oscillatools.accel import last_tier_used, order_parameter
 
         rng = np.random.default_rng(1234)
@@ -431,10 +479,13 @@ class TestPipelineAccel:
 
 
 class TestProbeNegativePaths:
+    """Probes when imports fail."""
+
     def test_rust_probe_false_when_import_fails(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """The native probe is False when the import fails."""
         import builtins
 
         real_import = builtins.__import__
@@ -451,6 +502,7 @@ class TestProbeNegativePaths:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """The Julia probe is False when the import fails."""
         import builtins
 
         real_import = builtins.__import__
@@ -464,9 +516,10 @@ class TestProbeNegativePaths:
         assert d._julia_available() is False
 
     def test_dispatcher_raises_when_every_tier_fails(self) -> None:
-        """The 'python floor unreachable' branch is exercised by
-        constructing a chain whose floor itself raises ImportError.
-        This is the documented-as-unreachable path."""
+        """A chain whose floor itself raises ImportError exercises the unreachable branch.
+
+        This is the path documented as unreachable.
+        """
 
         def _raise_import(*_: object, **__: object) -> object:
             raise ImportError("simulated floor failure")
@@ -482,10 +535,13 @@ class TestProbeNegativePaths:
 
 
 class TestJuliaNegativePaths:
+    """The Julia tier without juliacall."""
+
     def test_julia_load_raises_when_juliacall_missing(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Loading Julia without juliacall raises ImportError."""
         import builtins
 
         from oscillatools.accel import julia as jl_mod
@@ -508,6 +564,7 @@ class TestJuliaNegativePaths:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Julia is reported unavailable without juliacall."""
         import builtins
 
         from oscillatools.accel import julia as jl_mod
@@ -525,8 +582,7 @@ class TestJuliaNegativePaths:
         assert jl_mod.is_available() is False
 
     def test_order_parameters_batch_delegates_through_load(self) -> None:
-        """The batched variant shares the same lazy-load path — run it
-        once to cover the batch line."""
+        """The batched variant shares the lazy-load path; one run covers the batch line."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import order_parameters_batch
 
@@ -541,7 +597,7 @@ class TestJuliaNegativePaths:
 
 
 def _order_parameter_value(theta: np.ndarray) -> float:
-    """Reference scalar order parameter ``R = |<exp(i theta)>|``."""
+    """Return the reference scalar order parameter ``R = |<exp(i theta)>|``."""
     return float(abs(np.mean(np.exp(1j * np.asarray(theta, dtype=np.float64)))))
 
 
@@ -558,7 +614,10 @@ def _finite_difference_gradient(theta: np.ndarray, step: float = 1e-6) -> np.nda
 
 
 class TestPythonGradientFloor:
+    """The Python floor of the order-parameter gradient."""
+
     def test_matches_synchronisation_force_identity(self) -> None:
+        """The gradient matches the synchronisation-force identity."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=17)
         grad = op_obs._python_order_parameter_gradient(theta)
@@ -574,6 +633,7 @@ class TestPythonGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference(self, n: int, seed: int) -> None:
+        """The gradient agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-3:
@@ -588,6 +648,7 @@ class TestPythonGradientFloor:
     )
     def test_gradient_sums_to_zero(self, n: int, seed: int) -> None:
         # A global phase shift leaves R invariant, so the gradient sums to zero.
+        """The gradient sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         assert abs(float(np.sum(op_obs._python_order_parameter_gradient(theta)))) < 1e-12
@@ -600,27 +661,32 @@ class TestPythonGradientFloor:
     def test_gradient_is_bounded_by_inverse_n(self, n: int, seed: int) -> None:
         # |partial R / partial theta_j| = |sin(psi - theta_j)| / N <= 1/N everywhere,
         # including arbitrarily close to the incoherent state.
+        """Each gradient entry is at most 1/N in size."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         grad = op_obs._python_order_parameter_gradient(theta)
         assert np.all(np.abs(grad) <= 1.0 / n + 1e-12)
 
     def test_aligned_state_has_zero_gradient(self) -> None:
+        """An aligned state has zero gradient."""
         grad = op_obs._python_order_parameter_gradient(np.full(8, 0.7))
         np.testing.assert_allclose(grad, np.zeros(8), atol=1e-15)
 
     def test_single_oscillator_has_zero_gradient(self) -> None:
+        """One oscillator has zero gradient."""
         grad = op_obs._python_order_parameter_gradient(np.array([2.7]))
         assert grad.shape == (1,)
         assert abs(float(grad[0])) < 1e-15
 
     def test_empty_input_returns_empty(self) -> None:
+        """No oscillators give an empty gradient."""
         assert op_obs._python_order_parameter_gradient(np.array([])).shape == (0,)
 
     def test_exact_incoherent_state_returns_zero_subgradient(self) -> None:
         # [0, pi, 0, -pi] gives C = S = 0 exactly (cos(+-pi) = -1; sin(pi), sin(-pi)
         # are IEEE-exact negatives that cancel), so R = 0 and the zero subgradient
         # is returned rather than a 0/0 NaN.
+        """An exactly incoherent state has a zero subgradient."""
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         assert float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta)))) == 0.0
         grad = op_obs._python_order_parameter_gradient(theta)
@@ -628,12 +694,15 @@ class TestPythonGradientFloor:
 
 
 class TestRustGradientTier:
+    """The native gradient tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=64),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "order_parameter_gradient", None)):
             pytest.skip("scpn_quantum_engine.order_parameter_gradient unavailable")
@@ -647,6 +716,8 @@ class TestRustGradientTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -665,13 +736,17 @@ class TestRustGradientTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Without the engine the native tier raises ModuleNotFoundError."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             op_obs._rust_order_parameter_gradient(np.zeros(3))
 
 
 class TestJuliaGradientTier:
+    """The Julia gradient tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import order_parameter_gradient as julia_grad
 
@@ -687,6 +762,7 @@ class TestJuliaGradientTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """With the native tier disabled, dispatch reaches Julia and matches the floor."""
         pytest.importorskip("juliacall")
 
         def _sim_rust_gone(_theta: np.ndarray) -> np.ndarray:
@@ -707,12 +783,15 @@ class TestJuliaGradientTier:
 
 
 class TestGradientCrossTierAndDispatch:
+    """Gradient agreement and dispatch."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=32),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         reference = op_obs._python_order_parameter_gradient(theta)
@@ -724,10 +803,12 @@ class TestGradientCrossTierAndDispatch:
             np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=f"tier {name!r}")
 
     def test_registry_contains_gradient(self) -> None:
+        """The registry dispatches the gradient."""
         out = d.dispatch("order_parameter_gradient", np.full(4, 0.3))
         np.testing.assert_allclose(out, np.zeros(4), atol=1e-15)
 
     def test_public_api_and_last_gradient_tier(self) -> None:
+        """The public gradient has one entry per oscillator and records its tier."""
         from oscillatools.accel import (
             last_gradient_tier_used,
             order_parameter_gradient,
@@ -740,16 +821,20 @@ class TestGradientCrossTierAndDispatch:
         assert last_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_gradient_chain_ends_with_python_floor(self) -> None:
+        """The gradient chain ends with the Python floor."""
         assert op_obs._ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
 
 
 class TestRustValueTierAbsence:
+    """The native value tier without the engine."""
+
     def test_rust_order_parameter_absence_raises_module_not_found(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         # Mirrors the gradient-tier absence test so both Rust entry points cover
         # the engine-missing branch deterministically on an engine-present host.
+        """Without the engine the native tier raises ModuleNotFoundError."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             op_obs._rust_order_parameter(np.zeros(3))
@@ -777,7 +862,10 @@ def _finite_difference_hessian(theta: np.ndarray, step: float = 1e-6) -> np.ndar
 
 
 class TestPythonHessianFloor:
+    """The Python floor of the order-parameter Hessian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Hessian matches its closed form."""
         rng = np.random.default_rng(13)
         theta = rng.uniform(-math.pi, math.pi, size=11)
         cos_mean = float(np.mean(np.cos(theta)))
@@ -797,6 +885,7 @@ class TestPythonHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_is_symmetric(self, n: int, seed: int) -> None:
+        """The Hessian is symmetric."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         hessian = op_obs._python_order_parameter_hessian(theta)
@@ -809,6 +898,7 @@ class TestPythonHessianFloor:
     )
     def test_rows_sum_to_zero(self, n: int, seed: int) -> None:
         # A global phase shift leaves r invariant, so each Hessian row sums to zero.
+        """Each Hessian row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         hessian = op_obs._python_order_parameter_hessian(theta)
@@ -820,6 +910,7 @@ class TestPythonHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference_of_gradient(self, n: int, seed: int) -> None:
+        """The Hessian agrees with finite differences of the gradient."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-2:
@@ -830,6 +921,7 @@ class TestPythonHessianFloor:
     def test_fully_synchronised_curvature(self) -> None:
         # r = 1: the gradient is zero but the Hessian is 11^T/N^2 - I/N (negative
         # semidefinite, since perfect synchronisation is the maximum of r).
+        """Full synchrony has the expected negative semidefinite curvature."""
         n = 6
         hessian = op_obs._python_order_parameter_hessian(np.full(n, 0.4))
         expected = np.full((n, n), 1.0 / n**2) - np.eye(n) / n
@@ -838,14 +930,17 @@ class TestPythonHessianFloor:
         assert np.all(eigenvalues <= 1e-12)
 
     def test_single_oscillator_is_zero(self) -> None:
+        """One oscillator has a zero 1-by-1 Hessian."""
         hessian = op_obs._python_order_parameter_hessian(np.array([2.7]))
         assert hessian.shape == (1, 1)
         assert abs(float(hessian[0, 0])) < 1e-15
 
     def test_empty_input_returns_empty_matrix(self) -> None:
+        """No oscillators give an empty Hessian."""
         assert op_obs._python_order_parameter_hessian(np.array([])).shape == (0, 0)
 
     def test_exact_incoherent_returns_zero_matrix(self) -> None:
+        """An exactly incoherent state has a zero Hessian."""
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         assert float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta)))) == 0.0
         np.testing.assert_array_equal(
@@ -854,12 +949,15 @@ class TestPythonHessianFloor:
 
 
 class TestRustHessianTier:
+    """The native Hessian tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=48),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "order_parameter_hessian", None)):
             pytest.skip("scpn_quantum_engine.order_parameter_hessian unavailable")
@@ -875,6 +973,7 @@ class TestRustHessianTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Without the engine the native tier raises ModuleNotFoundError."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             op_obs._rust_order_parameter_hessian(np.zeros(3))
@@ -883,6 +982,8 @@ class TestRustHessianTier:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -901,7 +1002,10 @@ class TestRustHessianTier:
 
 
 class TestJuliaHessianTier:
+    """The Julia Hessian tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import order_parameter_hessian as julia_hessian
 
@@ -915,12 +1019,15 @@ class TestJuliaHessianTier:
 
 
 class TestHessianCrossTierAndDispatch:
+    """Hessian agreement and dispatch."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=24),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         reference = op_obs._python_order_parameter_hessian(theta)
@@ -932,10 +1039,12 @@ class TestHessianCrossTierAndDispatch:
             np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=f"tier {name!r}")
 
     def test_registry_contains_hessian(self) -> None:
+        """The registry dispatches the Hessian."""
         out = d.dispatch("order_parameter_hessian", np.full(4, 0.3))
         assert out.shape == (4, 4)
 
     def test_public_api_and_last_hessian_tier(self) -> None:
+        """The public Hessian has the right shape and records its tier."""
         from oscillatools.accel import last_hessian_tier_used, order_parameter_hessian
 
         rng = np.random.default_rng(77)
@@ -945,4 +1054,5 @@ class TestHessianCrossTierAndDispatch:
         assert last_hessian_tier_used() in {"rust", "julia", "python"}
 
     def test_hessian_chain_ends_with_python_floor(self) -> None:
+        """The Hessian chain ends with the Python floor."""
         assert op_obs._ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"
