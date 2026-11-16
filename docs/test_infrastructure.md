@@ -689,23 +689,29 @@ an uncheckable state.
 
 ### Differentiable external-validation manifests
 
-The external-validation environment lock and its dependent artefact bundle are
-checked before the Python test matrix. Run the typed gate in read-only mode to
-detect stale file digests, sizes, line counts, or bundle membership:
+The external-validation environment lock, the dependency map and the artefact
+bundle are checked before the Python test matrix. The environment pair pins the
+lockfiles and `pyproject.toml`; the dependency map pins the environment pair,
+`docs/differentiable_api.md` and further sources; the bundle pins the map. Run
+the typed gate in read-only mode to detect stale file digests, sizes, line
+counts, bundle membership, or a committed map that differs from the live one:
 
 ```bash
 python tools/check_differentiable_external_validation.py
 ```
 
 When a pinned input changes intentionally, refresh the environment JSON and
-Markdown first, then the bundle that hashes that pair, with:
+Markdown first, then the dependency map, then the bundle that hashes both, with:
 
 ```bash
 python tools/check_differentiable_external_validation.py --write
 ```
 
-CI and local preflight execute the read-only form. This keeps an unrelated
-matrix job from being the first place where manifest drift is discovered.
+CI, local preflight and the `differentiable-external-validation` commit hook
+execute the read-only form. The hook uses the standard library only and runs on
+every commit, so a commit that changes a pinned file without its manifests is
+refused before it lands, and an unrelated matrix job is never the first place
+where manifest drift is discovered.
 
 ### Lock-faithful CI build environment
 

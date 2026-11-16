@@ -456,6 +456,39 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   rises from 84.19% to 100%. Three older docstrings are fixed, so the test
   documentation ceiling falls to 6988 findings in 549 files.
 
+- **Fixed: a change to a file pinned by the differentiable dependency map
+  went unnoticed until the test matrix.** `tools/check_differentiable_external_validation.py`
+  checked the environment manifest and the artefact bundle, but not the
+  dependency map between them. The map pins `docs/differentiable_api.md` and
+  other sources that neither pair covers. An edit to the API page therefore
+  passed the gate, and only `test_dependency_environment_committed_artifacts_match_live_lock_evidence`
+  failed later. `--write` did not refresh the map either, so it had to be
+  edited by hand before the bundle could be refreshed.
+
+  The gate now also compares the committed map JSON and Markdown with the
+  live map, and reports drift as `dependency map: ...` between the
+  environment and bundle findings. `--write` refreshes the environment pair,
+  then the map, then the bundle that hashes both. On the current tree the
+  refresh is byte-identical.
+
+  A new `differentiable-external-validation` pre-commit hook runs the
+  read-only gate on every commit. It needs only the standard library, so it
+  also runs in the hosted pre-commit workflow. The import order of the tool
+  no longer needs its `E402` suppression. With an unrefreshed line appended
+  to the API page, the hook refuses the commit and names the map.
+
+  `docs/test_infrastructure.md` describes the chain and the hook. Tests
+  cover:
+  - the refresh order: the map is built only after the environment pair is
+    written, and the bundle only after the map;
+  - the written map matching the committed bytes;
+  - stale JSON and stale Markdown, each reported separately;
+  - the prefix order;
+  - the hook's contract;
+  - a pass under `python -I -S`.
+
+  The tool has 100% branch coverage, and 7 of 7 planted mutants are killed.
+
 - **Fixed: whole-program AD refused the static shape, rank and size of a
   traced array in integer uses, and `round()` of any number.** Effect
   admission marked every attribute of a traced array, and the result of

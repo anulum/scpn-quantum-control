@@ -10,12 +10,20 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from dataclasses import replace
 from pathlib import Path
 from typing import cast
 
 import pytest
+import yaml
 
+from scpn_quantum_control.differentiable_dependency_environment_map import (
+    DifferentiableDependencyEnvironmentMap,
+    render_differentiable_dependency_environment_map_markdown,
+    run_differentiable_dependency_environment_map,
+)
 from scpn_quantum_control.differentiable_external_validation import (
     EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID,
     EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA,
@@ -327,7 +335,7 @@ def test_external_validation_manifest_gate_prefixes_both_failure_classes(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """The gate must distinguish environment drift from bundle drift."""
+    """The gate must distinguish environment, dependency-map and bundle drift, in that order."""
     environment_failure = ExternalValidationEnvironmentLockValidation(
         passed=False,
         errors=("environment drift",),
@@ -354,15 +362,18 @@ def test_external_validation_manifest_gate_prefixes_both_failure_classes(
         "validate_external_validation_artifact_bundle",
         lambda bundle, repo_root: bundle_failure,
     )
+    monkeypatch.setattr(_manifest_gate, "audit_dependency_map", lambda: ("map drift",))
 
     assert _manifest_gate.audit_manifests() == (
         "environment: environment drift",
+        "dependency map: map drift",
         "bundle: bundle drift",
     )
     assert _manifest_gate.main([]) == 1
     output = capsys.readouterr().out
     assert "manifest gate: FAIL" in output
     assert "environment: environment drift" in output
+    assert "dependency map: map drift" in output
     assert "bundle: bundle drift" in output
 
 
@@ -370,8 +381,10 @@ def test_external_validation_manifest_gate_refreshes_dependency_order(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Refresh the environment pair before building its dependent bundle."""
+    """Refresh the environment pair, then the dependency map, then the bundle that hashes both."""
     environment_path = tmp_path / "environment.json"
+    map_path = tmp_path / "map.json"
+    map_markdown_path = tmp_path / "map.md"
     environment_markdown_path = tmp_path / "environment.md"
     bundle_path = tmp_path / "bundle.json"
     bundle_markdown_path = tmp_path / "bundle.md"
@@ -400,16 +413,30 @@ def test_external_validation_manifest_gate_refreshes_dependency_order(
     )
     monkeypatch.setattr(_manifest_gate, "BUNDLE_PATH", bundle_path)
     monkeypatch.setattr(_manifest_gate, "BUNDLE_MARKDOWN_PATH", bundle_markdown_path)
+    monkeypatch.setattr(_manifest_gate, "MAP_PATH", map_path)
+    monkeypatch.setattr(_manifest_gate, "MAP_MARKDOWN_PATH", map_markdown_path)
     monkeypatch.setattr(
         _manifest_gate,
         "build_external_validation_environment_lock",
         lambda repo_root: environment,
     )
+    environment_map = run_differentiable_dependency_environment_map()
+
+    def build_map() -> DifferentiableDependencyEnvironmentMap:
+        """Require the environment pair on disk before the map that pins it is built."""
+        assert environment_path.is_file()
+        assert environment_markdown_path.is_file()
+        assert not bundle_path.exists()
+        return environment_map
+
+    monkeypatch.setattr(_manifest_gate, "run_differentiable_dependency_environment_map", build_map)
 
     def build_bundle(*, repo_root: Path) -> ExternalValidationArtifactBundle:
         assert repo_root == tmp_path
         assert environment_path.is_file()
         assert environment_markdown_path.is_file()
+        assert map_path.is_file()
+        assert map_markdown_path.is_file()
         return bundle
 
     monkeypatch.setattr(
@@ -436,6 +463,73 @@ def test_external_validation_manifest_gate_refreshes_dependency_order(
     assert json.loads(bundle_path.read_text(encoding="utf-8"))["artifact_id"] == "bundle"
     assert environment_markdown_path.read_text(encoding="utf-8") == "environment markdown\n"
     assert bundle_markdown_path.read_text(encoding="utf-8") == "bundle markdown\n"
+    assert json.loads(map_path.read_text(encoding="utf-8")) == environment_map.to_dict()
+    assert map_markdown_path.read_text(
+        encoding="utf-8"
+    ) == render_differentiable_dependency_environment_map_markdown(environment_map)
+    committed = Path(
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json"
+    )
+    assert map_path.read_bytes() == committed.read_bytes()
+
+
+def test_external_validation_manifest_gate_detects_a_stale_dependency_map(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A map that no longer matches its pinned sources fails the gate, JSON and Markdown alike."""
+    committed_json = Path(
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json"
+    )
+    map_path = tmp_path / committed_json.name
+    map_markdown_path = map_path.with_suffix(".md")
+    map_path.write_bytes(committed_json.read_bytes())
+    map_markdown_path.write_bytes(committed_json.with_suffix(".md").read_bytes())
+    monkeypatch.setattr(_manifest_gate, "MAP_PATH", map_path)
+    monkeypatch.setattr(_manifest_gate, "MAP_MARKDOWN_PATH", map_markdown_path)
+    assert _manifest_gate.audit_dependency_map() == ()
+
+    stale = json.loads(map_path.read_text(encoding="utf-8"))
+    record = stale["evidence_records"][0]
+    record["evidence_sha256"] = ["0" * 64, *record["evidence_sha256"][1:]]
+    map_path.write_text(json.dumps(stale, indent=2) + "\n", encoding="utf-8")
+    assert _manifest_gate.audit_dependency_map() == (
+        f"committed JSON differs from the live map: {map_path.name}",
+    )
+    assert "dependency map: committed JSON differs from the live map: " + map_path.name in (
+        _manifest_gate.audit_manifests()
+    )
+
+    map_path.write_bytes(committed_json.read_bytes())
+    map_markdown_path.write_text("stale summary\n", encoding="utf-8")
+    assert _manifest_gate.audit_dependency_map() == (
+        f"committed Markdown differs from the live map: {map_markdown_path.name}",
+    )
+    assert _manifest_gate.main([]) == 1
+
+
+def test_commit_hook_runs_the_manifest_gate_on_every_commit() -> None:
+    """A commit that leaves a pinned file and its manifests apart is refused before it lands."""
+    config = yaml.safe_load(Path(".pre-commit-config.yaml").read_text(encoding="utf-8"))
+    hooks = [hook for repo in config["repos"] for hook in repo["hooks"]]
+    (hook,) = [hook for hook in hooks if hook["id"] == "differentiable-external-validation"]
+    assert hook["entry"] == "python tools/check_differentiable_external_validation.py"
+    assert hook["language"] == "python" and "additional_dependencies" not in hook
+    assert hook["always_run"] is True and hook["pass_filenames"] is False
+    assert "stages" not in hook
+
+
+def test_manifest_gate_needs_only_the_standard_library() -> None:
+    """The hook's environment has no project dependencies, so the gate must pass without them."""
+    completed = subprocess.run(
+        [sys.executable, "-I", "-S", "tools/check_differentiable_external_validation.py"],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "differentiable external-validation manifest gate: PASS"
 
 
 def test_external_validation_manifest_gate_write_mode_refreshes_then_checks(
