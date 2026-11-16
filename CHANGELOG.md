@@ -4,6 +4,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The reproduction image now carries the topology and cross-validation locks
+  and their inputs. The supply-chain and workflow-environment contracts read
+  those files, and they failed inside the image because the Dockerfile never
+  copied them when the locks were added.
+
 - The Studio API reference builds without warnings again.
   - The capability list, benchmark databank inspector and evidence view now
     document their `props` argument before its fields, as TypeDoc requires.

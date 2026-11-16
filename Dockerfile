@@ -90,6 +90,9 @@ COPY requirements-ci-julia-tier.txt requirements-integration-sc-neurocore.txt re
 # The workflow environment audit reads the lock of every tool a job installs;
 # the shell-lint, licence-lint and mutation tools are not installed here.
 COPY requirements-ci-shell-lint.txt requirements-ci-licence-lint.txt requirements-ci-mutation.txt ./
+# The supply-chain contracts read the topology and cross-validation locks and their inputs.
+COPY requirements-ci-topology-py313-linux.in requirements-ci-topology-py313-linux.txt ./
+COPY requirements-ci-xvalidate-py312-linux.in requirements-ci-xvalidate-py312-linux.txt ./
 COPY src/ src/
 COPY experimental_workers/ experimental_workers/
 COPY oscillatools/src/ oscillatools/src/
