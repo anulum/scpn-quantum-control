@@ -36,6 +36,7 @@ def _load_module() -> ModuleType:
 
 
 def test_pauli_expectation_from_counts_uses_non_identity_parity() -> None:
+    """A Pauli expectation is the parity over its non-identity qubits."""
     module = _load_module()
 
     assert module.pauli_expectation_from_counts({"0000": 10}, "ZZII") == 1.0
@@ -44,6 +45,7 @@ def test_pauli_expectation_from_counts_uses_non_identity_parity() -> None:
 
 
 def test_single_qubit_readout_matrices_are_estimated_from_calibration_marginals() -> None:
+    """Single-qubit readout matrices come from the calibration marginals."""
     module = _load_module()
 
     matrices = module.estimate_single_qubit_readout_matrices(
@@ -68,6 +70,7 @@ def test_single_qubit_readout_matrices_are_estimated_from_calibration_marginals(
 
 
 def test_readout_calibration_reverses_prepared_metadata_into_count_key_order() -> None:
+    """Calibration maps prepared states into the count-key order."""
     module = _load_module()
 
     matrices = module.estimate_single_qubit_readout_matrices(
@@ -89,6 +92,7 @@ def test_readout_calibration_reverses_prepared_metadata_into_count_key_order() -
 
 
 def test_readout_mitigated_pauli_expectation_inverts_independent_assignment_errors() -> None:
+    """Mitigation inverts independent assignment errors."""
     module = _load_module()
     matrices = [
         {
@@ -111,6 +115,7 @@ def test_readout_mitigated_pauli_expectation_inverts_independent_assignment_erro
 
 
 def test_correlated_readout_mitigation_uses_full_calibration_matrix() -> None:
+    """Correlated mitigation uses the full calibration matrix."""
     module = _load_module()
     readout = [
         {
@@ -128,6 +133,7 @@ def test_correlated_readout_mitigation_uses_full_calibration_matrix() -> None:
 
 
 def test_analyse_counts_artifact_groups_repetitions_against_reference(tmp_path: Path) -> None:
+    """The analysis groups repetitions against the reference and names its jobs."""
     module = _load_module()
     counts_path = tmp_path / "counts.json"
     refs_path = tmp_path / "refs.csv"
@@ -235,6 +241,7 @@ def test_analyse_counts_artifact_groups_repetitions_against_reference(tmp_path: 
 
 
 def test_write_outputs_accepts_backend_specific_result_tag(tmp_path: Path) -> None:
+    """Output files carry the backend-specific result tag."""
     module = _load_module()
 
     json_path, csv_path, md_path = module.write_outputs(

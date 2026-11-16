@@ -30,7 +30,6 @@ FloatVector = npt.NDArray[np.float64]
 
 def _factorisation_matrix_values(size: int, *, shift: float) -> FloatVector:
     """Return a deterministic diagonally dominant dense matrix vector."""
-
     matrix_2d = np.arange(1.0, size * size + 1.0, dtype=np.float64).reshape(size, size)
     matrix_2d /= float(size * size)
     matrix_2d += np.eye(size, dtype=np.float64) * (float(size) + 1.5 + shift)
@@ -39,7 +38,6 @@ def _factorisation_matrix_values(size: int, *, shift: float) -> FloatVector:
 
 def _factorisation_vector_solve_values(size: int, *, shift: float) -> FloatVector:
     """Return flattened matrix and vector-RHS values for native solve tests."""
-
     matrix = _factorisation_matrix_values(size, shift=shift)
     rhs = np.linspace(0.25 + shift, 1.05 + shift, size, dtype=np.float64)
     return np.concatenate([matrix, rhs])
@@ -47,7 +45,6 @@ def _factorisation_vector_solve_values(size: int, *, shift: float) -> FloatVecto
 
 def _factorisation_matrix_solve_values(size: int, rhs_cols: int, *, shift: float) -> FloatVector:
     """Return flattened matrix and matrix-RHS values for native solve tests."""
-
     matrix = _factorisation_matrix_values(size, shift=shift)
     rhs = np.linspace(
         0.2 + shift,
@@ -60,7 +57,6 @@ def _factorisation_matrix_solve_values(size: int, rhs_cols: int, *, shift: float
 
 def test_native_linalg_support_metadata_lifts_7x7_factorisation_boundary() -> None:
     """Support metadata should advertise bounded 7x7 quotient-linalg lowering."""
-
     support = native_whole_program_ad_linalg_support()
 
     assert support["inverse_sizes"] == (2, 3, 4, 5, 6, 7)
@@ -75,7 +71,6 @@ def test_native_linalg_support_metadata_lifts_7x7_factorisation_boundary() -> No
 
 def test_native_llvm_jit_lowers_7x7_full_output_inverse_trace() -> None:
     """The public native compiler should execute 7x7 full-output inverse traces."""
-
     size = 7
     weights = np.linspace(0.04, 0.92, size * size, dtype=np.float64).reshape(size, size)
 
@@ -117,7 +112,6 @@ def test_native_llvm_jit_lowers_7x7_full_output_inverse_trace() -> None:
 
 def test_native_llvm_jit_lowers_7x7_full_output_vector_solve_trace() -> None:
     """The public native compiler should execute 7x7 vector solve traces."""
-
     size = 7
     weights = np.linspace(0.1, 0.7, size, dtype=np.float64)
 
@@ -159,7 +153,6 @@ def test_native_llvm_jit_lowers_7x7_full_output_vector_solve_trace() -> None:
 
 def test_native_llvm_jit_lowers_7x7_full_output_matrix_solve_trace() -> None:
     """The public native compiler should execute 7x7 matrix-RHS solve traces."""
-
     size = 7
     rhs_cols = 2
     weights = np.linspace(0.05, 0.85, size * rhs_cols, dtype=np.float64).reshape(

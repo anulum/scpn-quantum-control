@@ -52,6 +52,7 @@ def _steady(detuning: float, drive: float) -> np.ndarray[Any, Any]:
 
 
 def test_free_oscillator_is_a_phase_symmetric_limit_cycle() -> None:
+    """A free oscillator is a populated limit cycle without phase preference."""
     state = _steady(0.0, 0.0)
     # excited onto the limit cycle but with no phase preference (rotational symmetry)
     assert mean_photon_number(state) > 0.5
@@ -60,6 +61,7 @@ def test_free_oscillator_is_a_phase_symmetric_limit_cycle() -> None:
 
 
 def test_drive_phase_locks_the_oscillator() -> None:
+    """A drive locks the oscillator's phase."""
     free = _steady(0.0, 0.0)
     driven = _steady(0.0, 2.0)
     assert abs(coherent_amplitude(driven)) > 1.0
@@ -68,6 +70,7 @@ def test_drive_phase_locks_the_oscillator() -> None:
 
 
 def test_synchronisation_follows_the_arnold_tongue() -> None:
+    """Synchronisation weakens with detuning, as the Arnold tongue predicts."""
     syncs = [phase_synchronisation(_steady(detuning, 2.0)) for detuning in (0.0, 1.0, 3.0, 6.0)]
     # synchronisation is maximal on resonance and decreases monotonically with detuning
     assert np.all(np.diff(syncs) < 0.0)
@@ -75,6 +78,7 @@ def test_synchronisation_follows_the_arnold_tongue() -> None:
 
 
 def test_evolution_preserves_trace_and_hermiticity() -> None:
+    """Evolution preserves the trace and Hermiticity of the state."""
     trajectory = integrate_quantum_vanderpol(
         vacuum_state(_DIM),
         0.01,
@@ -94,6 +98,7 @@ def test_evolution_preserves_trace_and_hermiticity() -> None:
 
 
 def test_observables_and_phase_distribution_on_known_states() -> None:
+    """The observables give the expected values on known states."""
     vacuum = vacuum_state(4)
     assert vacuum[0, 0] == 1.0
     assert mean_photon_number(vacuum) == pytest.approx(0.0)
@@ -140,6 +145,7 @@ def test_observables_and_phase_distribution_on_known_states() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         if call == "vacuum":
             vacuum_state(kwargs["fock_dimension"])
@@ -170,6 +176,7 @@ def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> N
 
 
 def test_non_hermitian_density_matrix_is_rejected() -> None:
+    """A non-Hermitian density matrix is refused."""
     non_hermitian = np.zeros((3, 3), dtype=np.complex128)
     np.fill_diagonal(non_hermitian, 1.0 / 3.0)
     non_hermitian[0, 1] = 0.5

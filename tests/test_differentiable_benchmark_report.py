@@ -49,7 +49,6 @@ def _require_torch_backend() -> None:
 
 def test_differentiable_benchmark_report_validates_required_payload_keys() -> None:
     """Report rows fail closed when a benchmark evidence key is missing."""
-
     with pytest.raises(ValueError, match="payload missing"):
         DifferentiableBenchmarkReport(
             supported=True,
@@ -71,7 +70,6 @@ def test_differentiable_benchmark_report_rejects_invalid_claim_metadata(
     match: str,
 ) -> None:
     """Report construction should reject malformed claim-boundary metadata."""
-
     params: dict[str, object] = {
         "supported": True,
         "method": DIFFERENTIABLE_BENCHMARK_REPORT_METHOD,
@@ -92,7 +90,6 @@ def test_differentiable_benchmark_report_rejects_invalid_claim_metadata(
 
 def test_differentiable_benchmark_report_to_dict_preserves_payload() -> None:
     """Report dictionaries should preserve the bounded evidence envelope."""
-
     report = DifferentiableBenchmarkReport(
         supported=True,
         method=DIFFERENTIABLE_BENCHMARK_REPORT_METHOD,
@@ -115,7 +112,6 @@ def test_differentiable_benchmark_report_to_dict_preserves_payload() -> None:
 
 def test_build_differentiable_benchmark_report_is_non_performance_evidence() -> None:
     """The extracted builder preserves local conformance semantics and boundaries."""
-
     _require_torch_backend()
 
     report = build_differentiable_benchmark_report()
@@ -149,7 +145,6 @@ def test_build_differentiable_benchmark_report_is_non_performance_evidence() -> 
 
 def test_unified_api_wraps_extracted_benchmark_report() -> None:
     """The compatibility facade delegates to the extracted report builder."""
-
     _require_torch_backend()
 
     report = differentiable_benchmark_report()
@@ -172,7 +167,6 @@ def test_builder_serializes_nested_dataclass_payloads(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The public builder should serialize arrays, tuples, lists, and mappings."""
-
     program_row = _ControlledBenchmarkRow(
         case_id="controlled_program_row",
         values=np.array([1.0, 2.0], dtype=np.float64),
@@ -225,7 +219,6 @@ def test_builder_rejects_non_dataclass_benchmark_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The public builder should fail closed if a suite returns non-dataclass rows."""
-
     monkeypatch.setattr(
         benchmark_report_module,
         "run_differentiable_programming_benchmark_suite",

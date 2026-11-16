@@ -28,6 +28,8 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestXXZHamiltonian:
+    """The XXZ Hamiltonian across anisotropies."""
+
     def test_delta_zero_equals_xy(self) -> None:
         """Δ=0 should reproduce the standard XY Hamiltonian exactly."""
         K = 2.0 * _ring(3)
@@ -75,6 +77,7 @@ class TestXXZHamiltonian:
         assert not np.allclose(E_xy, E_heis)
 
     def test_gap_varies_with_delta(self) -> None:
+        """The spectral gap differs between the XY and Heisenberg points."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         E0 = np.linalg.eigvalsh(knm_to_xxz_hamiltonian(K, omega, 0.0).to_matrix())
@@ -91,6 +94,7 @@ class TestXXZHamiltonian:
         assert H.to_matrix().shape == (4, 4)
 
     def test_4qubit(self) -> None:
+        """The four-qubit Hamiltonian is a 16-by-16 matrix."""
         K = _ring(4)
         omega = OMEGA_N_16[:4]
         H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
@@ -98,6 +102,7 @@ class TestXXZHamiltonian:
 
 
 def test_xxz_hermitian() -> None:
+    """The Hamiltonian matrix is Hermitian."""
     K = _ring(3)
     omega = OMEGA_N_16[:3]
     H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
@@ -108,6 +113,7 @@ def test_xxz_hermitian() -> None:
 
 
 def test_xxz_traceless() -> None:
+    """The Hamiltonian matrix is traceless."""
     K = _ring(3)
     omega = OMEGA_N_16[:3]
     H = knm_to_xxz_hamiltonian(K, omega, delta=0.0)
@@ -118,6 +124,7 @@ def test_xxz_traceless() -> None:
 
 
 def test_xxz_2q_spectrum() -> None:
+    """The two-qubit spectrum is finite."""
     K = _ring(2)
     omega = OMEGA_N_16[:2]
     H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
@@ -127,6 +134,7 @@ def test_xxz_2q_spectrum() -> None:
 
 @pytest.mark.parametrize("delta", [0.0, 0.5, 1.0, 2.0])
 def test_xxz_various_deltas(delta: float) -> None:
+    """The Hamiltonian has three qubits for every anisotropy tried."""
     K = _ring(3)
     omega = OMEGA_N_16[:3]
     H = knm_to_xxz_hamiltonian(K, omega, delta=delta)

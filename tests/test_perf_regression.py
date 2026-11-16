@@ -91,7 +91,10 @@ def _assert_above_floor(label: str, observed: float) -> None:
 
 
 class TestBuildKnmSpeedup:
+    """Native coupling-matrix construction against Python."""
+
     def test_build_knm_16(self) -> None:
+        """The native sixteen-oscillator coupling matrix is built at least twice as fast as in Python."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
         n = 16
@@ -105,7 +108,10 @@ class TestBuildKnmSpeedup:
 
 
 class TestKuramotoEulerSpeedup:
+    """Native Kuramoto Euler integration against Python."""
+
     def test_kuramoto_euler_8_1000(self) -> None:
+        """Native Euler integration of eight oscillators runs at least twice as fast as Python."""
         from scpn_quantum_control.hardware.classical import (
             classical_kuramoto_reference,
         )
@@ -125,6 +131,8 @@ class TestKuramotoEulerSpeedup:
 
 
 class TestCorrelationMatrixXYSpeedup:
+    """Native XY correlation matrix against Python."""
+
     def test_correlation_matrix_xy_n4(self) -> None:
         """Use n=4 (not n=3) so Python overhead does not dominate.
 
@@ -172,6 +180,8 @@ class TestCorrelationMatrixXYSpeedup:
 
 
 class TestLindbladJumpOpsCOOSpeedup:
+    """Native sparse Lindblad jump operators against Python."""
+
     def test_lindblad_jump_ops_coo_n4(self) -> None:
         """Use n=4 so the inner loop is long enough to measure."""
         n = 4
@@ -206,6 +216,8 @@ class TestLindbladJumpOpsCOOSpeedup:
 
 
 class TestLindbladAntiHermitianDiagSpeedup:
+    """Native anti-Hermitian Lindblad diagonal against Python."""
+
     def test_lindblad_anti_hermitian_diag_n4(self) -> None:
         """Use n=4 so the inner loop dominates."""
         n = 4

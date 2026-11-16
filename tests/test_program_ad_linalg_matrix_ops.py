@@ -26,13 +26,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_linalg_matrix_power_matches_exact_differential() -> None:
     """Program AD matrix_power should compose exact matrix products and inverses."""
-
     weights_square = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
     weights_inverse = np.array([[1.0, -0.5], [0.25, 1.5]], dtype=np.float64)
     weights_identity = np.array([[0.75, -0.25], [1.25, 0.5]], dtype=np.float64)
@@ -67,7 +65,6 @@ def test_program_ad_linalg_matrix_power_matches_exact_differential() -> None:
 
 def test_program_ad_linalg_matrix_power_uses_primitive_adjoint_replay_ir() -> None:
     """Program AD matrix_power should emit compact primitive nodes for adjoint replay."""
-
     weights_square = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
     weights_inverse = np.array([[1.0, -0.5], [0.25, 1.5]], dtype=np.float64)
     weights_identity = np.array([[0.75, -0.25], [1.25, 0.5]], dtype=np.float64)
@@ -123,7 +120,6 @@ def test_program_ad_linalg_matrix_power_uses_primitive_adjoint_replay_ir() -> No
 
 def test_program_ad_linalg_matrix_power_fails_closed_invalid_contracts() -> None:
     """Program AD matrix_power should reject invalid matrices and powers."""
-
     with pytest.raises(ValueError, match="shape rule requires a rank-2 matrix"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.matrix_power(values, 2)),
@@ -150,7 +146,6 @@ def test_program_ad_linalg_matrix_power_fails_closed_invalid_contracts() -> None
 
 def test_program_ad_linalg_multi_dot_matches_exact_chain_differential() -> None:
     """Program AD multi_dot should compose exact static matrix-chain semantics."""
-
     matrix_weights = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
     scalar_weight = 1.75
 
@@ -211,7 +206,6 @@ def test_program_ad_linalg_multi_dot_matches_exact_chain_differential() -> None:
 
 def test_program_ad_linalg_multi_dot_uses_primitive_adjoint_replay_ir() -> None:
     """Program AD multi_dot should emit compact primitive nodes for adjoint replay."""
-
     matrix_weights = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
     scalar_weight = 1.75
 
@@ -287,7 +281,6 @@ def test_program_ad_linalg_multi_dot_uses_primitive_adjoint_replay_ir() -> None:
 
 def test_program_ad_linalg_multi_dot_fails_closed_invalid_contracts() -> None:
     """Program AD multi_dot should reject dynamic or invalid matrix-chain contracts."""
-
     with pytest.raises(ValueError, match="requires at least two operands"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.multi_dot((values,))),

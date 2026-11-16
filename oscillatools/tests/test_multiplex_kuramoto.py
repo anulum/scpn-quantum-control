@@ -55,6 +55,7 @@ def _problem(seed: int = 0) -> dict[str, Any]:
 
 
 def test_decoupled_layers_are_independent_kuramoto() -> None:
+    """Without interlayer coupling each layer is an independent Kuramoto network."""
     problem = _problem()
     field = multiplex_field(
         problem["phases"], problem["omega"], problem["intra"], np.zeros((_L, _L))
@@ -70,6 +71,7 @@ def test_decoupled_layers_are_independent_kuramoto() -> None:
 
 
 def test_single_layer_reduces_to_networked_kuramoto() -> None:
+    """A single layer reduces to the networked Kuramoto model."""
     problem = _problem(1)
     field = multiplex_field(
         problem["phases"][:1], problem["omega"][:1], problem["intra"][:1], np.zeros((1, 1))
@@ -81,6 +83,7 @@ def test_single_layer_reduces_to_networked_kuramoto() -> None:
 
 
 def test_jacobian_matches_finite_differences() -> None:
+    """The Jacobian agrees with finite differences."""
     problem = _problem(2)
     jacobian = multiplex_jacobian(
         problem["phases"], problem["omega"], problem["intra"], problem["inter"]
@@ -104,6 +107,7 @@ def test_jacobian_matches_finite_differences() -> None:
 
 
 def test_strong_interlayer_coupling_locks_the_replicas() -> None:
+    """Strong interlayer coupling locks the replicas together."""
     problem = _problem(3)
     strong_inter = 5.0 * np.ones((_L, _L))
     np.fill_diagonal(strong_inter, 0.0)
@@ -116,6 +120,7 @@ def test_strong_interlayer_coupling_locks_the_replicas() -> None:
 
 def test_order_parameter_diagnostics_on_constructed_states() -> None:
     # every layer identical → the replicas are perfectly inter-layer synchronised
+    """The diagnostics give the expected values on constructed states."""
     single_layer = np.linspace(0.0, 1.0, _N, dtype=np.float64)
     stacked = np.repeat(single_layer[None, :], _L, axis=0)
     assert interlayer_synchronisation(stacked) == pytest.approx(1.0)
@@ -125,6 +130,7 @@ def test_order_parameter_diagnostics_on_constructed_states() -> None:
 
 
 def test_trajectory_container() -> None:
+    """The trajectory records one phase array and time per step."""
     problem = _problem(4)
     trajectory = integrate_multiplex(
         problem["phases"], problem["omega"], problem["intra"], problem["inter"], 0.05, 8
@@ -152,6 +158,7 @@ def test_trajectory_container() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     problem = _problem()
     with pytest.raises(ValueError, match=message):
         if call == "field":

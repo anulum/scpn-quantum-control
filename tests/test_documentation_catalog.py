@@ -87,6 +87,7 @@ def _fixture_repo(repo: Path) -> None:
 
 
 def test_collectors_cover_modules_notebooks_and_public_pages(tmp_path: Path) -> None:
+    """The collectors cover modules, notebooks and public pages."""
     tool = _load_tool()
     _fixture_repo(tmp_path)
 
@@ -117,6 +118,7 @@ def test_collectors_cover_modules_notebooks_and_public_pages(tmp_path: Path) -> 
 
 
 def test_renderers_escape_free_text_and_state_boundaries(tmp_path: Path) -> None:
+    """The renderers escape free text and state the claim boundary."""
     tool = _load_tool()
     _fixture_repo(tmp_path)
 
@@ -132,6 +134,7 @@ def test_renderers_escape_free_text_and_state_boundaries(tmp_path: Path) -> None
 
 
 def test_page_summary_ignores_embedded_licensing_headers() -> None:
+    """Page summaries skip embedded licence headers."""
     tool = _load_tool()
     text = (
         "# Guide\n\n"
@@ -146,6 +149,7 @@ def test_page_summary_ignores_embedded_licensing_headers() -> None:
 
 
 def test_refresh_writes_then_detects_missing_and_stale_outputs(tmp_path: Path) -> None:
+    """A refresh writes the outputs and the check detects missing or stale ones."""
     tool = _load_tool()
     _fixture_repo(tmp_path)
 
@@ -170,6 +174,7 @@ def test_refresh_writes_then_detects_missing_and_stale_outputs(tmp_path: Path) -
 
 
 def test_collect_notebooks_rejects_invalid_payload(tmp_path: Path) -> None:
+    """An invalid notebook payload is refused."""
     tool = _load_tool()
     (tmp_path / "notebooks").mkdir()
     (tmp_path / "notebooks/broken.ipynb").write_text("[]", encoding="utf-8")
@@ -179,6 +184,7 @@ def test_collect_notebooks_rejects_invalid_payload(tmp_path: Path) -> None:
 
 
 def test_public_exports_fail_closed_on_nonliteral_or_missing_all(tmp_path: Path) -> None:
+    """A non-literal or missing __all__ is refused."""
     tool = _load_tool()
     package = tmp_path / "src/scpn_quantum_control"
     package.mkdir(parents=True)
@@ -194,5 +200,6 @@ def test_public_exports_fail_closed_on_nonliteral_or_missing_all(tmp_path: Path)
 
 
 def test_committed_documentation_catalogs_are_current() -> None:
+    """The committed catalogues match the current sources."""
     result = _load_tool().refresh(_repo_root(), check=True)
     assert result is None

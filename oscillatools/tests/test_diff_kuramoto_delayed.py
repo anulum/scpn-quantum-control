@@ -81,6 +81,7 @@ def _central_difference(base: NDArray[np.float64], scalar_loss: Any) -> NDArray[
 
 
 def test_sensitivity_reproduces_forward_trajectory() -> None:
+    """The sensitivity pass reproduces the forward trajectory exactly."""
     problem = _problem()
     theta_n, _ = delayed_phase_sensitivity(
         problem["history"],
@@ -95,6 +96,7 @@ def test_sensitivity_reproduces_forward_trajectory() -> None:
 
 
 def test_gradient_matches_finite_difference_on_every_channel() -> None:
+    """The gradient agrees with finite differences on every input channel."""
     problem = _problem()
 
     def objective(theta: NDArray[np.float64]) -> float:
@@ -132,6 +134,7 @@ def test_gradient_matches_finite_difference_on_every_channel() -> None:
 
 
 def test_phase_sensitivity_shape() -> None:
+    """The phase sensitivity has one column per history, frequency and coupling entry."""
     problem = _problem(n=4, seed=1)
     theta_n, sensitivity = delayed_phase_sensitivity(
         problem["history"],
@@ -147,6 +150,7 @@ def test_phase_sensitivity_shape() -> None:
 
 
 def test_gradients_are_deterministic() -> None:
+    """Two gradient evaluations are identical."""
     problem = _problem(seed=7)
     kwargs: dict[str, Any] = dict(
         delay=_TAU,
@@ -166,6 +170,7 @@ def test_gradients_are_deterministic() -> None:
 
 
 def test_returns_delayed_gradients_type() -> None:
+    """The gradients come back as a delayed-gradient record."""
     problem = _problem()
     _, grads = delayed_terminal_value_and_grad(
         problem["history"],
@@ -181,6 +186,7 @@ def test_returns_delayed_gradients_type() -> None:
 
 
 def test_objective_grad_wrong_shape_raises() -> None:
+    """An objective gradient of the wrong shape is refused."""
     problem = _problem()
     with pytest.raises(ValueError, match="objective_grad must return"):
         delayed_terminal_value_and_grad(
@@ -208,6 +214,7 @@ def test_objective_grad_wrong_shape_raises() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     problem = _problem()
     call: dict[str, Any] = {
         "history": problem["history"],

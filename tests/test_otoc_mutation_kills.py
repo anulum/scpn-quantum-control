@@ -49,6 +49,7 @@ class TestPauliMatricesAreCorrect:
 
     @pytest.mark.parametrize("qubit,n", [(0, 1), (0, 2), (1, 3)])
     def test_x_matrix_has_correct_entries(self, qubit: int, n: int) -> None:
+        """The X operator is traceless and squares to the identity."""
         p = _pauli_matrix("X", qubit, n)
         # X is anti-diagonal with ones on the off-diagonal — the
         # tensor lift only permutes rows and columns, so the trace
@@ -60,6 +61,7 @@ class TestPauliMatricesAreCorrect:
 
     def test_y_matrix_has_correct_diagonal_zeros(self) -> None:
         # Mutant 10 would put a 1 on the (0, 0) entry of Y.
+        """The Y operator is traceless with a zero diagonal."""
         p = _pauli_matrix("Y", 0, 1)
         # Y is Hermitian with a zero diagonal. trace(Y) == 0 strictly.
         assert np.trace(p) == pytest.approx(0.0, abs=1e-12)
@@ -68,6 +70,7 @@ class TestPauliMatricesAreCorrect:
 
     def test_z_matrix_has_correct_off_diagonal_zeros(self) -> None:
         # Mutant 17 would set Z[0, 1] = 1 instead of 0.
+        """The Z operator is diagonal with entries plus and minus one."""
         p = _pauli_matrix("Z", 0, 1)
         assert p[0, 1] == pytest.approx(0.0, abs=1e-12)
         assert p[1, 0] == pytest.approx(0.0, abs=1e-12)
@@ -78,6 +81,7 @@ class TestPauliMatricesAreCorrect:
     def test_y_squared_is_identity(self) -> None:
         # Y · Y = I: any mutation that breaks Y would likely
         # break this identity.
+        """The Y operator squares to the identity."""
         p = _pauli_matrix("Y", 0, 2)
         dim = 4
         np.testing.assert_allclose(p @ p, np.eye(dim, dtype=complex), atol=1e-12)
@@ -93,6 +97,7 @@ class TestScramblingTimeFirstCrossing:
         #  0.19, 0.10]. First value strictly below 1/e is index 8
         # (0.28). Mutant 113 would return times[1] off that below
         # array, i.e. times[9] (= 9.0), a full step late.
+        """The scrambling time is the first crossing below F0/e."""
         times = np.linspace(0.0, 10.0, 11)
         otoc = np.linspace(1.0, 0.1, 11)
         t_star = _estimate_scrambling_time(times, otoc)
@@ -109,6 +114,7 @@ class TestLyapunovSmallInput:
         # 3 positive-time points is the minimum count the
         # lyapunov fit accepts. The boundary mutation would
         # reject it.
+        """Three points are enough for a Lyapunov estimate."""
         times = np.array([0.0, 1.0, 2.0, 3.0])
         otoc = np.array([1.0, 0.9, 0.7, 0.3])
         lam = _estimate_lyapunov(times, otoc)
@@ -123,6 +129,7 @@ class TestScramblingTimeBoundary:
 
     def test_f0_exactly_zero_returns_none(self) -> None:
         # f0 = otoc[0] = 0 → estimator cannot normalise → returns None.
+        """A zero initial value gives no scrambling time or Lyapunov estimate."""
         times = np.array([0.0, 1.0, 2.0])
         otoc = np.array([0.0, 0.0, 0.0])
         assert _estimate_scrambling_time(times, otoc) is None

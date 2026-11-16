@@ -28,6 +28,7 @@ def _load_module() -> object:
 
 
 def test_discarded_weight_is_zero_when_bond_covers_spectrum() -> None:
+    """Nothing is discarded when the bond covers the whole spectrum."""
     module = _load_module()
     singular_values = np.array([0.8, 0.6])
 
@@ -35,6 +36,7 @@ def test_discarded_weight_is_zero_when_bond_covers_spectrum() -> None:
 
 
 def test_discarded_weight_keeps_squared_tail() -> None:
+    """The discarded weight is the sum of the squared truncated values."""
     module = _load_module()
     singular_values = np.array([0.8, 0.5, 0.3])
 
@@ -42,6 +44,7 @@ def test_discarded_weight_keeps_squared_tail() -> None:
 
 
 def test_schmidt_values_for_product_state() -> None:
+    """A product state has a single non-zero Schmidt value."""
     module = _load_module()
     state = np.zeros(4, dtype=np.complex128)
     state[0] = 1.0
@@ -52,6 +55,7 @@ def test_schmidt_values_for_product_state() -> None:
 
 
 def test_mps_rows_mark_large_n_skipped() -> None:
+    """Sizes above the limit are marked skipped."""
     module = _load_module()
 
     rows = module.mps_truncation_rows([4], [4], exact_max_qubits=2, sparse_max_qubits=3)  # type: ignore[attr-defined]
@@ -74,6 +78,7 @@ def test_mps_rows_mark_large_n_skipped() -> None:
 
 
 def test_mps_rows_use_sparse_solver_above_dense_limit() -> None:
+    """Above the dense limit the sparse solver is used."""
     module = _load_module()
 
     rows = module.mps_truncation_rows([4], [4], exact_max_qubits=2, sparse_max_qubits=4)  # type: ignore[attr-defined]
@@ -85,6 +90,7 @@ def test_mps_rows_use_sparse_solver_above_dense_limit() -> None:
 
 
 def test_reference_comparison_marks_missing_vqe_reference_skipped(tmp_path: Path) -> None:
+    """A missing VQE reference marks the comparison skipped."""
     module = _load_module()
     tn_rows = [
         {
@@ -106,6 +112,7 @@ def test_reference_comparison_marks_missing_vqe_reference_skipped(tmp_path: Path
 
 
 def test_reference_comparison_uses_best_committed_vqe_aggregate(tmp_path: Path) -> None:
+    """The comparison uses the best committed VQE aggregate."""
     module = _load_module()
     summary_path = tmp_path / "vqe.json"
     summary_path.write_text(

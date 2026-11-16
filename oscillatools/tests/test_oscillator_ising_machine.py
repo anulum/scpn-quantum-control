@@ -57,6 +57,7 @@ def _coupling(seed: int = 0) -> NDArray[np.float64]:
 
 
 def test_field_is_the_negative_energy_gradient() -> None:
+    """The vector field is the negative energy gradient."""
     coupling = _coupling()
     phases = np.random.default_rng(1).uniform(0.0, 2.0 * np.pi, size=_N)
     shil = 0.7
@@ -76,6 +77,7 @@ def test_field_is_the_negative_energy_gradient() -> None:
 
 
 def test_energy_descends_monotonically_at_fixed_shil() -> None:
+    """At a fixed locking strength the energy never increases."""
     coupling = _coupling(2)
     phases = np.random.default_rng(3).uniform(0.0, 2.0 * np.pi, size=_N)
     shil = 0.7
@@ -96,6 +98,7 @@ def test_energy_descends_monotonically_at_fixed_shil() -> None:
 
 
 def test_ising_hamiltonian_matches_continuous_energy_at_binary_phases() -> None:
+    """At binary phases the Ising energy equals the continuous energy."""
     coupling = _coupling(4)
     spins = np.array([1, -1, 1, 1, -1, -1])
     phases = np.where(spins == 1, 0.0, np.pi)
@@ -105,6 +108,7 @@ def test_ising_hamiltonian_matches_continuous_energy_at_binary_phases() -> None:
 
 
 def test_machine_finds_the_maximum_cut() -> None:
+    """The machine finds the maximum cut that brute force finds."""
     brute_force = max(
         cut_value(np.array(configuration), _ADJACENCY)
         for configuration in itertools.product([-1, 1], repeat=_N)
@@ -120,6 +124,7 @@ def test_machine_finds_the_maximum_cut() -> None:
 
 
 def test_spin_and_cut_readout() -> None:
+    """Spins, cut value and Ising energy are read out correctly."""
     phases = np.array([0.1, np.pi - 0.1, 0.0, np.pi + 0.2])
     spins = ising_spins(phases)
     assert spins.tolist() == [1, -1, 1, -1]
@@ -133,6 +138,7 @@ def test_spin_and_cut_readout() -> None:
 
 
 def test_trajectory_container() -> None:
+    """The trajectory records phases and energy per step."""
     coupling = _coupling(5)
     phases = np.zeros(_N)
     trajectory = integrate_oscillator_ising_machine(
@@ -163,6 +169,7 @@ def test_trajectory_container() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     coupling = _coupling()
     with pytest.raises(ValueError, match=message):
         if call == "field":

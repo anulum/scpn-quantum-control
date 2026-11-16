@@ -33,6 +33,7 @@ main = _MODULE.main
 
 
 def test_behaviour_audit_counts_assertions_raises_and_parametrisation(tmp_path: Path) -> None:
+    """The audit counts tests, assertions, raises contracts and parametrisation."""
     module = tmp_path / "test_sample.py"
     module.write_text(
         "\n".join(
@@ -61,6 +62,7 @@ def test_behaviour_audit_counts_assertions_raises_and_parametrisation(tmp_path: 
 
 
 def test_behaviour_audit_counts_assertion_helper_calls(tmp_path: Path) -> None:
+    """Assertion helper calls count as assertions."""
     module = tmp_path / "test_helpers.py"
     module.write_text(
         "\n".join(
@@ -88,6 +90,7 @@ def test_behaviour_audit_counts_assertion_helper_calls(tmp_path: Path) -> None:
 
 
 def test_behaviour_audit_counts_test_class_methods(tmp_path: Path) -> None:
+    """Test-class methods count as tests."""
     module = tmp_path / "test_classes.py"
     module.write_text(
         "\n".join(
@@ -112,6 +115,7 @@ def test_behaviour_audit_counts_test_class_methods(tmp_path: Path) -> None:
 
 
 def test_behaviour_audit_flags_smoke_only_tests(tmp_path: Path) -> None:
+    """A test without assertions is flagged as smoke-only."""
     module = tmp_path / "test_smoke.py"
     module.write_text(
         "\n".join(
@@ -130,6 +134,7 @@ def test_behaviour_audit_flags_smoke_only_tests(tmp_path: Path) -> None:
 
 
 def test_behaviour_audit_json_is_machine_readable(tmp_path: Path) -> None:
+    """The JSON output carries the counts per module."""
     module = tmp_path / "test_json.py"
     module.write_text("def test_value():\n    assert 1 == 1\n", encoding="utf-8")
 
@@ -141,6 +146,7 @@ def test_behaviour_audit_json_is_machine_readable(tmp_path: Path) -> None:
 
 
 def test_behaviour_audit_tree_and_summary_cover_multiple_modules(tmp_path: Path) -> None:
+    """A tree audit and its summary cover every module."""
     (tmp_path / "test_a.py").write_text("def test_a():\n    assert True\n", encoding="utf-8")
     (tmp_path / "test_b.py").write_text("def test_b():\n    pass\n", encoding="utf-8")
     (tmp_path / "helper.py").write_text("def test_not_collected():\n    pass\n", encoding="utf-8")
@@ -157,6 +163,7 @@ def test_behaviour_audit_tree_and_summary_cover_multiple_modules(tmp_path: Path)
 def test_behaviour_audit_cli_json_and_smoke_gate(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails on smoke-only tests only when asked to."""
     (tmp_path / "test_a.py").write_text("def test_a():\n    pass\n", encoding="utf-8")
 
     assert main(["--tests-root", str(tmp_path), "--json"]) == 0

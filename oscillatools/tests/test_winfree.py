@@ -40,6 +40,7 @@ def _problem(seed: int = 0) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_kuramoto_endpoint_q_zero() -> None:
+    """At q = 0 the field is the Kuramoto field."""
     phases, omega = _problem()
     coupling = _EPS / _N * np.ones((_N, _N))
     np.fill_diagonal(coupling, 0.0)
@@ -48,12 +49,14 @@ def test_kuramoto_endpoint_q_zero() -> None:
 
 
 def test_winfree_endpoint_q_one() -> None:
+    """At q = 1 the field is the Winfree field."""
     phases, omega = _problem()
     analytic = omega - _EPS * np.sin(phases) * (1.0 + np.mean(np.cos(phases)))
     assert winfree_field(phases, omega, _EPS, 1.0) == pytest.approx(analytic, abs=1e-12)
 
 
 def test_field_is_affine_in_the_interpolation() -> None:
+    """The field is affine in the interpolation parameter."""
     phases, omega = _problem(1)
     endpoint_kuramoto = winfree_field(phases, omega, _EPS, 0.0)
     endpoint_winfree = winfree_field(phases, omega, _EPS, 1.0)
@@ -64,6 +67,7 @@ def test_field_is_affine_in_the_interpolation() -> None:
 
 @pytest.mark.parametrize("q", [0.0, 0.6, 1.0])
 def test_jacobian_matches_finite_differences(q: float) -> None:
+    """The Jacobian agrees with finite differences."""
     phases, omega = _problem(2)
     jacobian = winfree_jacobian(phases, omega, _EPS, q)
     eps = 1e-6
@@ -80,6 +84,7 @@ def test_jacobian_matches_finite_differences(q: float) -> None:
 
 
 def test_winfree_limit_reaches_oscillation_death() -> None:
+    """In the Winfree limit the oscillators stop at a common phase."""
     phases = np.random.default_rng(3).uniform(-1.0, 1.0, size=_N)
     trajectory = integrate_winfree(phases, np.zeros(_N), 3.0, 1.0, 0.01, 15000)
     assert isinstance(trajectory, WinfreeTrajectory)
@@ -91,6 +96,7 @@ def test_winfree_limit_reaches_oscillation_death() -> None:
 
 
 def test_trajectory_container() -> None:
+    """The trajectory records one phase array and time per step."""
     phases, omega = _problem(4)
     trajectory = integrate_winfree(phases, omega, 1.0, 0.5, 0.05, 12)
     assert trajectory.phases.shape == (13, _N)
@@ -116,6 +122,7 @@ def test_trajectory_container() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     phases, omega = _problem()
     with pytest.raises(ValueError, match=message):
         if call == "field":

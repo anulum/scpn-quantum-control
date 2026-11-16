@@ -14,7 +14,7 @@ from numpy.typing import NDArray
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -32,6 +32,7 @@ class TestParamShift:
     """Tests for parameter-shift gradient rule and VQE."""
 
     def test_gradient_of_quadratic(self) -> None:
+        """The parameter-shift gradient of a quadratic is close to its derivative."""
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
         def quadratic(x: NDArray[np.float64]) -> float:
@@ -55,6 +56,7 @@ class TestParamShift:
         np.testing.assert_allclose(grad, expected, atol=1e-10)
 
     def test_gradient_zero_at_minimum(self) -> None:
+        """The gradient is near zero at the minimum."""
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
         def cost(x: NDArray[np.float64]) -> float:
@@ -65,6 +67,7 @@ class TestParamShift:
         assert abs(grad[0]) < 0.01
 
     def test_gradient_shape_matches_params(self) -> None:
+        """The gradient has one entry per parameter."""
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
         for n_params in [1, 3, 5, 10]:
@@ -76,6 +79,7 @@ class TestParamShift:
             assert grad.shape == (n_params,)
 
     def test_vqe_converges_to_minimum(self) -> None:
+        """The VQE loop converges near the minimum."""
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
         def cost(params: NDArray[np.float64]) -> float:
@@ -106,6 +110,7 @@ class TestParamShift:
         assert result.energies[0] > result.energies[-1]
 
     def test_vqe_output_keys_and_types(self) -> None:
+        """The VQE result has its documented keys and types."""
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
         result = vqe_with_param_shift(
@@ -132,6 +137,7 @@ class TestParamShift:
         assert len(grad_norms) >= 5
 
     def test_vqe_reproducible_with_seed(self) -> None:
+        """Two VQE runs with the same seed give identical parameters."""
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
         cost = lambda x: float(sum(x**2))  # noqa: E731

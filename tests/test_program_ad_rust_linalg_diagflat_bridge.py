@@ -34,19 +34,16 @@ _MATRIX_SOURCE_WEIGHTS = np.arange(1.0, 17.0, dtype=np.float64).reshape(4, 4) / 
 
 def _weighted_main_diagonal_objective(values: Any) -> Any:
     """Return a scalar weighted main-diagonal construction for a 3-vector."""
-
     return np.sum(np.diagflat(values) * _MAIN_DIAGONAL_WEIGHTS)
 
 
 def _weighted_offset_diagonal_objective(values: Any) -> Any:
     """Return a scalar weighted super-diagonal construction for a 2-vector."""
-
     return np.sum(np.diagflat(values, k=1) * _OFFSET_DIAGONAL_WEIGHTS)
 
 
 def _weighted_matrix_source_objective(values: Any) -> Any:
     """Return a scalar weighted diagonal construction for a flattened 2x2 source."""
-
     matrix = np.reshape(values, (2, 2))
     return np.sum(np.diagflat(matrix) * _MATRIX_SOURCE_WEIGHTS)
 
@@ -57,7 +54,6 @@ def _rust_parity_probe(
     expected_ops: set[str],
 ) -> set[str]:
     """Assert bit-tight Rust replay parity for one diagflat objective."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -83,7 +79,6 @@ def _rust_parity_probe(
 
 def test_rust_bridge_replays_program_ad_main_diagonal_diagflat() -> None:
     """Rust Program AD replay should match Python adjoints for np.diagflat."""
-
     expected_ops = {
         "linalg:diagflat:3:offset:0:construct:0",
         "linalg:diagflat:3:offset:0:construct:1",
@@ -99,7 +94,6 @@ def test_rust_bridge_replays_program_ad_main_diagonal_diagflat() -> None:
 
 def test_rust_bridge_replays_program_ad_offset_diagonal_diagflat() -> None:
     """Rust Program AD replay should match Python adjoints for offset diagonals."""
-
     expected_ops = {
         "linalg:diagflat:2:offset:1:construct:0",
         "linalg:diagflat:2:offset:1:construct:1",
@@ -114,7 +108,6 @@ def test_rust_bridge_replays_program_ad_offset_diagonal_diagflat() -> None:
 
 def test_rust_bridge_replays_program_ad_matrix_source_diagflat() -> None:
     """Rust Program AD replay should flatten matrix sources exactly like NumPy."""
-
     expected_ops = {
         "linalg:diagflat:2x2:offset:0:construct:0",
         "linalg:diagflat:2x2:offset:0:construct:1",

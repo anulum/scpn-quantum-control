@@ -60,6 +60,7 @@ def _direct_identical_kuramoto(
 
 
 def test_reconstruction_matches_direct_integration() -> None:
+    """The reconstructed phases match direct integration."""
     rng = np.random.default_rng(1)
     initial_phases = rng.uniform(0.0, 2.0 * np.pi, size=12)
     trajectory = integrate_watanabe_strogatz(
@@ -71,6 +72,7 @@ def test_reconstruction_matches_direct_integration() -> None:
 
 
 def test_su11_invariant_is_conserved() -> None:
+    """The SU(1,1) invariant is conserved along the trajectory."""
     rng = np.random.default_rng(2)
     initial_phases = rng.uniform(0.0, 2.0 * np.pi, size=8)
     trajectory = integrate_watanabe_strogatz(
@@ -84,6 +86,7 @@ def test_su11_invariant_is_conserved() -> None:
 
 
 def test_constants_are_the_initial_points() -> None:
+    """The constants of motion are the initial points on the circle."""
     initial_phases = np.array([0.1, 1.3, -2.0, 2.5], dtype=np.float64)
     constants = watanabe_strogatz_constants(initial_phases)
     assert constants == pytest.approx(np.exp(1j * initial_phases))
@@ -95,6 +98,7 @@ def test_constants_are_the_initial_points() -> None:
 
 
 def test_order_parameter_helper_and_initial_value() -> None:
+    """The order-parameter helper matches the initial order parameter."""
     initial_phases = np.array([0.0, np.pi / 2, np.pi, 3 * np.pi / 2], dtype=np.float64)
     constants = watanabe_strogatz_constants(initial_phases)
     # four symmetric points have a vanishing order parameter
@@ -104,6 +108,7 @@ def test_order_parameter_helper_and_initial_value() -> None:
 
 
 def test_trajectory_shapes_and_terminal_properties() -> None:
+    """The trajectory has the documented shapes and terminal properties."""
     rng = np.random.default_rng(3)
     initial_phases = rng.uniform(0.0, 2.0 * np.pi, size=6)
     trajectory = integrate_watanabe_strogatz(
@@ -119,6 +124,7 @@ def test_trajectory_shapes_and_terminal_properties() -> None:
 
 
 def test_thermodynamic_limit_matches_ott_antonsen() -> None:
+    """For many oscillators the reduction approaches the Ott-Antonsen order parameter."""
     rng = np.random.default_rng(4)
     n_oscillators = 20000
     # a partially coherent initial state
@@ -157,6 +163,7 @@ def test_thermodynamic_limit_matches_ott_antonsen() -> None:
     ],
 )
 def test_validation_errors(kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "initial_phases": np.array([0.1, 0.2, 0.3]),
         "omega": _OMEGA,

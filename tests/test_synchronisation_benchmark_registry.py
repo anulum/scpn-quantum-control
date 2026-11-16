@@ -19,7 +19,6 @@ from scpn_quantum_control.benchmark_harness.synchronisation import (
 
 def test_registry_contains_required_canonical_instances() -> None:
     """The registry exposes stable starter instances and replay rows."""
-
     rows = list_synchronisation_benchmarks()
     ids = {row.benchmark_id for row in rows}
 
@@ -31,7 +30,6 @@ def test_registry_contains_required_canonical_instances() -> None:
 
 def test_registry_filters_planned_rows() -> None:
     """Planned rows are visible by default but removable for implemented-only views."""
-
     rows = list_synchronisation_benchmarks(include_planned=False)
 
     assert rows
@@ -40,7 +38,6 @@ def test_registry_filters_planned_rows() -> None:
 
 def test_registry_payload_has_result_schema_and_counts() -> None:
     """The exported payload carries the result schema and deterministic counts."""
-
     payload = synchronisation_benchmark_registry_payload()
 
     assert payload["schema"] == "synchronisation_benchmark_registry_v1"
@@ -52,7 +49,6 @@ def test_registry_payload_has_result_schema_and_counts() -> None:
 
 def test_kuramoto_ring_runner_emits_schema_compatible_rows() -> None:
     """The first no-QPU runner emits rows matching required schema fields."""
-
     from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
         run_kuramoto_ring_n4_linear_omega,
     )
@@ -71,7 +67,6 @@ def test_kuramoto_ring_runner_emits_schema_compatible_rows() -> None:
 
 def test_kuramoto_ring_references_are_finite_and_bounded() -> None:
     """Reference rows must remain physical for the canonical n=4 smoke case."""
-
     import math
 
     from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
@@ -92,7 +87,6 @@ def test_kuramoto_ring_references_are_finite_and_bounded() -> None:
 
 def test_kuramoto_chain_n8_runner_emits_schema_compatible_rows() -> None:
     """The n=8 decaying-chain runner emits finite no-QPU reference rows."""
-
     from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
         run_kuramoto_chain_n8_decay_omega,
     )
@@ -111,7 +105,6 @@ def test_kuramoto_chain_n8_runner_emits_schema_compatible_rows() -> None:
 
 def test_kuramoto_chain_n8_references_are_finite_and_bounded() -> None:
     """The n=8 decaying-chain reference values stay physically bounded."""
-
     import math
 
     from scpn_quantum_control.benchmark_harness.synchronisation_runner import (

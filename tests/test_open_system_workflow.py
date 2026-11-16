@@ -14,7 +14,7 @@ from numpy.typing import NDArray
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -33,8 +33,7 @@ def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[n
 
 
 class TestOpenSystemPipeline:
-    """Lindblad density matrix and MCWF quantum jumps should agree on R(t)
-    within statistical error for the same physical parameters."""
+    """Lindblad and quantum-jump evolution agree on R(t) within statistical error."""
 
     def test_lindblad_mcwf_agreement_2q(self) -> None:
         """At n=2, MCWF ensemble R(T) should match Lindblad R(T) within 0.3.
@@ -141,8 +140,7 @@ class TestOpenSystemPipeline:
         assert mcwf["total_jumps"] == 0, "No jumps expected at zero damping"
 
     def test_ancilla_circuit_consistent_with_lindblad(self) -> None:
-        """Ancilla Lindblad circuit should produce a valid circuit for the
-        same physical parameters used by the Lindblad solver."""
+        """The ancilla Lindblad circuit is valid for the Lindblad solver's parameters."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             ancilla_circuit_stats,
             build_ancilla_lindblad_circuit,
@@ -221,8 +219,7 @@ class TestHardwareReadyPipeline:
         assert len(qasm_str) > 100
 
     def test_open_system_methods_all_run(self) -> None:
-        """All three open-system methods should produce valid output
-        for the same physical system."""
+        """All three open-system methods produce valid output for the same system."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )

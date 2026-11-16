@@ -40,6 +40,7 @@ ibm_validation = _load_script_module("submit_methods_ansatz_ibm_validation")
 
 
 def test_timing_summary_reports_uncertainty_metrics() -> None:
+    """The timing summary reports mean, median and spread."""
     stats = vqe_methods.timing_summary([1.0, 2.0, 3.0])
 
     assert stats["mean_ms"] == pytest.approx(2.0)
@@ -50,6 +51,7 @@ def test_timing_summary_reports_uncertainty_metrics() -> None:
 
 
 def test_vqe_error_summary_aggregates_seed_spread() -> None:
+    """The error summary aggregates the spread across seeds."""
     rows = [
         {
             "ansatz": "knm_informed",
@@ -77,6 +79,7 @@ def test_vqe_error_summary_aggregates_seed_spread() -> None:
 
 
 def test_pauli_expectation_uses_qiskit_qubit_order() -> None:
+    """Pauli expectations follow Qiskit's qubit order."""
     counts = {"00": 5, "01": 5}
 
     assert ibm_validation.expectation_from_counts(counts, "IZ") == pytest.approx(0.0)
@@ -84,6 +87,7 @@ def test_pauli_expectation_uses_qiskit_qubit_order() -> None:
 
 
 def test_pauli_terms_group_into_global_xyz_bases() -> None:
+    """Pauli terms group into global X, Y and Z bases."""
     groups = ibm_validation.pauli_terms_by_basis(4)
 
     assert sorted(groups) == ["X", "Y", "Z"]
@@ -93,6 +97,7 @@ def test_pauli_terms_group_into_global_xyz_bases() -> None:
 
 
 def test_energy_reducer_combines_grouped_basis_counts() -> None:
+    """The energy combines the grouped basis counts."""
     groups = {
         "Z": [{"label": "IIIZ", "coefficient": -1.0}],
         "X": [{"label": "IIXX", "coefficient": -0.5}],
@@ -108,6 +113,7 @@ def test_energy_reducer_combines_grouped_basis_counts() -> None:
 
 
 def test_full_readout_identity_mitigation_preserves_distribution() -> None:
+    """Identity readout mitigation leaves the distribution unchanged."""
     calibration_rows = [
         {"calibration_state": "00", "counts": {"00": 10}},
         {"calibration_state": "01", "counts": {"01": 10}},
@@ -130,6 +136,7 @@ def test_full_readout_identity_mitigation_preserves_distribution() -> None:
 
 
 def test_methods_readiness_uses_configured_budget_and_dynamic_claim_boundary() -> None:
+    """Readiness uses the configured budget and a size-specific claim boundary."""
     args = ibm_validation._parse_args(
         [
             "--backend",

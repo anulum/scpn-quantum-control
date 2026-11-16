@@ -25,7 +25,6 @@ from scpn_quantum_control.hardware.hal_pennylane import (
 
 def test_pennylane_adapter_executes_native_gate_workload() -> None:
     """A Bell-state workload should execute through a PennyLane device."""
-
     pytest.importorskip("pennylane")
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
@@ -55,7 +54,6 @@ def test_pennylane_adapter_executes_native_gate_workload() -> None:
 
 def test_pennylane_adapter_fails_closed_on_unknown_gate() -> None:
     """Unsupported PennyLane gate payloads must fail before execution."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
     workload = QuantumWorkload(
@@ -89,7 +87,6 @@ def test_pennylane_gate_workload_rejects_malformed_native_instructions(
     match: str,
 ) -> None:
     """Native PennyLane gate payloads must preserve exact gate semantics."""
-
     with pytest.raises(ValueError, match=match):
         pennylane_gate_workload(
             [instruction],
@@ -142,6 +139,7 @@ def test_pennylane_adapter_rejects_malformed_payloads_before_plugin_dispatch(
 
 
 def test_pennylane_local_lineage_is_unique_per_submission() -> None:
+    """Each local PennyLane submission gets its own job lineage."""
     pytest.importorskip("pennylane")
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
@@ -244,7 +242,6 @@ def test_pennylane_device_name_is_canonical_before_dispatch(
 @pytest.mark.parametrize("device_name", ["", "   ", "default.qubit\nbad", "default.qubit\x7fbad"])
 def test_pennylane_device_name_rejects_empty_or_control_strings(device_name: str) -> None:
     """HAL PennyLane plugin names must fail closed before execution."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
 
     with pytest.raises(ValueError, match="PennyLane device name"):
@@ -255,7 +252,6 @@ def test_pennylane_provider_job_id_uses_strict_validator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """PennyLane lineage IDs must pass through strict provider-id validation."""
-
     seen: dict[str, str] = {}
 
     def _fake_strict_provider_job_id(value: object, *, field_name: str) -> str:
@@ -305,7 +301,6 @@ def test_pennylane_provider_job_id_rejects_control_characters(
 
 def test_pennylane_provider_job_id_trims_padding() -> None:
     """PennyLane provider identifiers should be canonicalised by trimming padding."""
-
     provider_job_id = pennylane_mod._provider_job_id(
         QuantumWorkload(
             workload_id="pl_trim",

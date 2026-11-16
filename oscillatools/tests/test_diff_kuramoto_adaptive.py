@@ -86,6 +86,7 @@ def _central_difference(base: NDArray[np.float64], scalar_loss: Any) -> NDArray[
 
 
 def test_linear_objective_matches_finite_difference_on_every_channel() -> None:
+    """A linear objective's gradient agrees with finite differences on every input channel."""
     problem = _problem()
     rng = np.random.default_rng(99)
     weight_phase = rng.standard_normal(4)
@@ -142,6 +143,7 @@ def test_linear_objective_matches_finite_difference_on_every_channel() -> None:
 
 
 def test_order_parameter_objective_matches_finite_difference() -> None:
+    """The order-parameter objective's gradient agrees with finite differences."""
     problem = _problem(seed=3)
 
     def objective(theta: NDArray[np.float64], coupling: NDArray[np.float64]) -> float:
@@ -172,6 +174,7 @@ def test_order_parameter_objective_matches_finite_difference() -> None:
 
 
 def test_state_sensitivity_shapes_and_terminal_match() -> None:
+    """The state sensitivity has the documented shapes and matches the terminal state."""
     problem = _problem(n=5, seed=1)
     theta_n, coupling_n, sensitivity = adaptive_state_sensitivity(
         problem["phases"],
@@ -193,6 +196,7 @@ def test_state_sensitivity_shapes_and_terminal_match() -> None:
 
 
 def test_gradients_are_deterministic() -> None:
+    """Two gradient evaluations are identical."""
     problem = _problem(seed=7)
     kwargs: dict[str, Any] = dict(
         plasticity_rate=_EPS,
@@ -212,6 +216,7 @@ def test_gradients_are_deterministic() -> None:
 
 
 def test_returns_adaptive_gradients_type() -> None:
+    """The gradients come back as an adaptive-gradient record."""
     problem = _problem()
     _, grads = adaptive_terminal_value_and_grad(
         problem["phases"],
@@ -227,6 +232,7 @@ def test_returns_adaptive_gradients_type() -> None:
 
 
 def test_objective_grad_wrong_shape_raises() -> None:
+    """An objective gradient of the wrong shape is refused."""
     problem = _problem()
 
     def bad_grad(
@@ -259,6 +265,7 @@ def test_objective_grad_wrong_shape_raises() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     problem = _problem()
     call: dict[str, Any] = {
         "phases": problem["phases"],

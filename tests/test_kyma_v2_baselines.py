@@ -37,18 +37,21 @@ def _test_slice(batch: task.TrialBatchV2) -> task.TrialBatchV2:
 
 
 def test_deep_mlp_param_count_matches_init() -> None:
+    """The deep MLP's stated parameter count matches its initialisation."""
     params = baselines.deep_mlp_init(0, 24, 4)
     counted = sum(int(np.asarray(v).size) for v in params.values())
     assert counted == baselines.deep_mlp_param_count(24, 4)
 
 
 def test_gnn_param_count_matches_init() -> None:
+    """The GNN's stated parameter count matches its initialisation."""
     params = baselines.gnn_init(0, 8, 4)
     counted = sum(int(np.asarray(v).size) for v in params.values())
     assert counted == baselines.gnn_param_count(8, 4)
 
 
 def test_deep_mlp_logits_shape() -> None:
+    """The deep MLP returns one logit per bin for each trial."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, 0)
     feats = models._mlp_features(batch.theta0, batch.code)
@@ -58,6 +61,7 @@ def test_deep_mlp_logits_shape() -> None:
 
 
 def test_gnn_adjacency_is_code_conditioned() -> None:
+    """The GNN adjacency depends on the code."""
     import jax.numpy as jnp
 
     from scpn_quantum_control.benchmarks.kyma_v2 import coupling
@@ -74,6 +78,7 @@ def test_gnn_adjacency_is_code_conditioned() -> None:
 
 
 def test_deep_mlp_trains_and_predicts_in_range() -> None:
+    """The deep MLP trains and predicts one in-range bin per test trial."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, 0)
     labels = teacher.label_batch(batch, cfg)
@@ -84,6 +89,7 @@ def test_deep_mlp_trains_and_predicts_in_range() -> None:
 
 
 def test_gnn_trains_and_predicts_in_range() -> None:
+    """The GNN trains and predicts one in-range bin per test trial."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, 0)
     labels = teacher.label_batch(batch, cfg)
@@ -94,6 +100,7 @@ def test_gnn_trains_and_predicts_in_range() -> None:
 
 
 def test_softmax_cross_entropy_matches_manual() -> None:
+    """The softmax cross-entropy equals a manual computation."""
     import jax.numpy as jnp
 
     logits = jnp.asarray([[2.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 3.0]])

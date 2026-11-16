@@ -34,13 +34,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -57,7 +55,6 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
 
 def test_program_ad_elementwise_binary_derivative_rule_is_extracted_identity() -> None:
     """The facade should re-export the extracted binary elementwise factory."""
-
     assert (
         program_ad_elementwise_binary_derivative_rule
         is elementwise_primitives.program_ad_elementwise_binary_derivative_rule
@@ -66,7 +63,6 @@ def test_program_ad_elementwise_binary_derivative_rule_is_extracted_identity() -
 
 def test_program_ad_binary_elementwise_primitives_are_registry_policy_gated() -> None:
     """Binary elementwise math should expose broadcast-aware primitive contracts."""
-
     left = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     right = np.array([1.0, 2.0, 3.0], dtype=np.float64)
     for name in ("add", "subtract", "multiply", "divide", "power", "maximum", "minimum"):
@@ -87,7 +83,6 @@ def test_program_ad_binary_elementwise_primitives_are_registry_policy_gated() ->
 
 def test_program_ad_binary_elementwise_primitives_expose_direct_value_jvp_kernels() -> None:
     """Binary elementwise primitive contracts should expose exact direct value/JVP rules."""
-
     left = np.array([3.0, 1.5, 4.0], dtype=np.float64)
     right = np.array([2.0, 5.0, 0.5], dtype=np.float64)
     tangent_left = np.array([0.25, -0.5, 1.25], dtype=np.float64)
@@ -167,7 +162,6 @@ def test_program_ad_binary_elementwise_primitives_expose_direct_value_jvp_kernel
 
 def test_program_ad_binary_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported binary elementwise primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
         for name in ("add", "multiply", "divide", "power", "maximum", "minimum")
@@ -268,7 +262,6 @@ def test_program_ad_binary_elementwise_primitives_validate_registry_rules_at_dis
 
 def test_program_ad_elementwise_binary_static_factory_supports_broadcasting() -> None:
     """Static binary elementwise factories should expose exact broadcast-aware VJPs."""
-
     left = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], dtype=np.float64)
     right = np.array([0.5, -1.5, 2.0], dtype=np.float64)
     tangent_left = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
