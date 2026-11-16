@@ -61,7 +61,12 @@ def _labels(labels: object, classes: int, rows: int) -> _IntArray:
 def fit_logistic(
     features: object, labels: object, *, classes: int, l2: float, max_iter: int = 2000
 ) -> LogisticReadout:
-    """Minimise mean cross-entropy plus l2/2 * ||weights||^2 with L-BFGS and an analytic gradient."""
+    """Minimise mean cross-entropy plus l2/2 * ||weights||^2 with L-BFGS and an analytic gradient.
+
+    L-BFGS-B stops when the projected gradient falls below 1e-8, or when the loss no longer changes in
+    floating point. Its default stop on a small relative change of the loss is switched off, because it
+    ends the fit with a gradient near 1e-5 while still reporting convergence.
+    """
     from scipy.optimize import minimize
 
     matrix = np.asarray(features, dtype=np.float64)
@@ -85,7 +90,11 @@ def fit_logistic(
 
     start = np.zeros(width * classes + classes)
     result = minimize(
-        objective, start, jac=True, method="L-BFGS-B", options={"maxiter": max_iter, "gtol": 1e-8}
+        objective,
+        start,
+        jac=True,
+        method="L-BFGS-B",
+        options={"maxiter": max_iter, "gtol": 1e-8, "ftol": 0.0},
     )
     flat = np.asarray(result.x, dtype=np.float64)
     return LogisticReadout(

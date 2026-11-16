@@ -31,7 +31,10 @@ from scpn_quantum_control.experimental.llm_qpu.learning.logistic_readout import 
     mean_log_loss,
 )
 
-_RNG = np.random.default_rng(20261116)
+
+def _rng() -> np.random.Generator:
+    """Return a fresh seeded generator, so each test draws the same data in any order or shard."""
+    return np.random.default_rng(20261116)
 
 
 def _observables(
@@ -57,7 +60,7 @@ def _observables(
 
 def test_the_trig_product_basis_spans_every_single_encoding_observable() -> None:
     """A least-squares fit on the 81 products recovers every coupled expectation; sin/cos alone does not."""
-    angles = _RNG.uniform(-math.pi, math.pi, size=(300, 4))
+    angles = _rng().uniform(-math.pi, math.pi, size=(300, 4))
     targets = _observables(angles)
     basis = trig_product_basis(angles)
     assert basis.shape == (300, 81)
@@ -89,7 +92,7 @@ def test_standardiser_random_features_and_input_refusals() -> None:
     for bad in (np.zeros(3), np.zeros((0, 2)), np.array([[np.nan, 1.0]])):
         with pytest.raises(ValueError, match="must be a nonempty finite matrix$"):
             fit_standardiser(bad)
-    inputs = _RNG.normal(size=(5, 4))
+    inputs = _rng().normal(size=(5, 4))
     first = random_fourier_features(inputs, dimension=21, bandwidth=1.0, seed=3)
     assert first.shape == (5, 21)
     assert np.array_equal(
@@ -114,8 +117,12 @@ def test_standardiser_random_features_and_input_refusals() -> None:
 
 
 def test_the_readout_reaches_the_penalised_optimum_and_its_limits() -> None:
-    """The analytic gradient vanishes at the fit; separable data nears zero loss; heavy l2 nears uniform."""
-    features = _RNG.normal(size=(60, 3))
+    """The analytic gradient vanishes at the fit; separable data nears zero loss.
+
+    Heavy l2 drives every weight to zero, and the unpenalised intercepts then fit the class
+    frequencies, so the loss equals the entropy of the label distribution.
+    """
+    features = _rng().normal(size=(60, 3))
     labels = (features[:, 0] > 0).astype(np.int64) + 2 * (features[:, 1] > 0).astype(np.int64)
     readout = fit_logistic(features, labels, classes=4, l2=0.05)
     assert readout.converged and readout.parameter_count == 3 * 4 + 4
@@ -129,7 +136,11 @@ def test_the_readout_reaches_the_penalised_optimum_and_its_limits() -> None:
     sharp = fit_logistic(features * 20.0, labels, classes=4, l2=1e-6)
     assert mean_log_loss(sharp, features * 20.0, labels) < 0.05
     flat = fit_logistic(features, labels, classes=4, l2=1e6)
-    assert abs(mean_log_loss(flat, features, labels) - math.log(4)) < 0.05
+    priors = np.bincount(labels, minlength=4) / len(labels)
+    assert flat.converged and np.abs(flat.weights).max() < 1e-5
+    assert mean_log_loss(flat, features, labels) == pytest.approx(
+        float(-(priors * np.log(priors)).sum()), abs=1e-5
+    )
     with pytest.raises(ValueError, match="^features do not have the fitted width$"):
         readout.log_probabilities(np.zeros((2, 2)))
     huge = LogisticReadout(np.array([[1000.0, 0.0]]), np.zeros(2), 0.0, True, 0)

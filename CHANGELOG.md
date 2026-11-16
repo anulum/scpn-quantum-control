@@ -4,6 +4,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- **Fixed: the experimental logistic readout reported convergence before its
+  gradient vanished.**
+  - `fit_logistic` uses L-BFGS-B with a gradient tolerance of 1e-8. Its
+    default stop on a small relative change of the loss ended fits with a
+    gradient between 1e-6 and 1e-5 while still reporting `converged`.
+  - That stop is now off. On ten seeded problems the fit reaches a gradient
+    near 1e-9 in 15 to 19 iterations. Readouts and the classical baselines
+    built on them change at that level.
+  - The test passed only when other tests had drawn from a shared random
+    generator first, so it failed alone and in the CI shards. Each test now
+    has its own seeded generator.
+  - The heavy-penalty case now checks the correct limit. The weights go to
+    zero and the unpenalised intercepts fit the class frequencies, so the loss
+    equals the entropy of the labels (to 1e-5), not log 4.
+
 - **Breaking (1.4.0 line): Python 3.12 or newer is required.**
   `requires-python` is now `>=3.12` for the package, oscillatools and the
   engine.
