@@ -36,6 +36,7 @@ def _record(doi: str, *, active: bool = True, state: str = "findable") -> dict[s
 
 
 def test_extract_zenodo_dois_normalizes_supported_urls() -> None:
+    """Supported Zenodo URLs are normalised to DOIs."""
     text = """
     https://doi.org/10.5281/zenodo.20382000
     https://zenodo.org/doi/10.5281/ZENODO.20382000
@@ -50,6 +51,7 @@ def test_extract_zenodo_dois_normalizes_supported_urls() -> None:
 
 
 def test_collect_zenodo_dois_skips_non_link_checked_directories(tmp_path: Path) -> None:
+    """Directories outside the link check are skipped."""
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "index.md").write_text(
         "https://doi.org/10.5281/zenodo.20382000", encoding="utf-8"
@@ -74,6 +76,7 @@ def test_collect_zenodo_dois_skips_non_link_checked_directories(tmp_path: Path) 
     ],
 )
 def test_validate_datacite_record_fails_closed(payload: dict[str, Any], message: str) -> None:
+    """An invalid registry record is refused with its reason."""
     with pytest.raises(ValueError, match=message):
         validate_datacite_record("10.5281/zenodo.1", payload)
 
@@ -81,6 +84,7 @@ def test_validate_datacite_record_fails_closed(payload: dict[str, Any], message:
 def test_main_reports_successful_registry_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command reports each DOI the registry finds."""
     (tmp_path / "README.md").write_text(
         "https://doi.org/10.5281/zenodo.20382000", encoding="utf-8"
     )
@@ -99,6 +103,7 @@ def test_main_reports_successful_registry_checks(
 def test_main_returns_nonzero_for_unfindable_registry_record(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails for a DOI that is not findable."""
     (tmp_path / "README.md").write_text(
         "https://doi.org/10.5281/zenodo.20382000", encoding="utf-8"
     )

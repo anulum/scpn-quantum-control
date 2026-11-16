@@ -35,6 +35,7 @@ class TestContractionOptimiser:
     """Tensor contraction path optimiser tests."""
 
     def test_contract_matches_einsum_matmul(self) -> None:
+        """A contraction equals the einsum matrix product."""
         from scpn_quantum_control.phase.contraction_optimiser import contract
 
         rng = np.random.default_rng(42)
@@ -65,6 +66,7 @@ class TestContractionOptimiser:
         np.testing.assert_allclose(result, np.trace(A), atol=1e-10)
 
     def test_contract_outer_product(self) -> None:
+        """An outer-product contraction equals the direct outer product."""
         from scpn_quantum_control.phase.contraction_optimiser import contract
 
         a = np.array([1.0, 2.0, 3.0])
@@ -74,6 +76,7 @@ class TestContractionOptimiser:
         np.testing.assert_allclose(result, expected, atol=1e-14)
 
     def test_optimal_path_returns_valid_info(self) -> None:
+        """The path search returns a path and names its method."""
         from scpn_quantum_control.phase.contraction_optimiser import (
             optimal_contraction_path,
         )
@@ -85,6 +88,7 @@ class TestContractionOptimiser:
         assert isinstance(path, list)
 
     def test_benchmark_returns_valid_results(self) -> None:
+        """The benchmark reports positive naive and optimised times and a speed-up."""
         from scpn_quantum_control.phase.contraction_optimiser import (
             benchmark_contraction,
         )
@@ -98,6 +102,7 @@ class TestContractionOptimiser:
         assert np.isfinite(result["speedup"])
 
     def test_cotengra_availability_is_bool(self) -> None:
+        """The cotengra availability check returns a boolean."""
         from scpn_quantum_control.phase.contraction_optimiser import (
             is_cotengra_available,
         )

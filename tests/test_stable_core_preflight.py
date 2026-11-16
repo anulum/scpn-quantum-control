@@ -39,7 +39,6 @@ def _problem() -> Problem:
 
 def test_preflight_is_eligible_when_capabilities_and_dependencies_pass() -> None:
     """Preflight result is eligible when checks are satisfied."""
-
     backend = qutip_backend()
     availability = {name: True for name in stable_core_backend_dependencies(backend.backend_id)}
     experiment = build_experiment(
@@ -62,7 +61,6 @@ def test_preflight_is_eligible_when_capabilities_and_dependencies_pass() -> None
 
 def test_preflight_blocks_missing_backend_capability() -> None:
     """Missing required capability blocks the preflight."""
-
     backend = build_backend(
         backend_id="classical-limited",
         kind="classical_reference",
@@ -85,7 +83,6 @@ def test_preflight_blocks_missing_backend_capability() -> None:
 
 def test_preflight_blocks_missing_preregistration_metadata() -> None:
     """Hardware-submission experiments require preregistration metadata."""
-
     backend = qiskit_backend(hardware_submission_allowed=True)
     availability = {"qiskit_ibm_runtime": True}
     experiment = build_experiment(
@@ -105,7 +102,6 @@ def test_preflight_blocks_missing_preregistration_metadata() -> None:
 
 def test_preflight_blocks_missing_optional_dependency() -> None:
     """Missing optional dependencies are reported as blockers."""
-
     backend = qutip_backend()
     availability = {name: False for name in stable_core_backend_dependencies(backend.backend_id)}
     experiment = build_experiment(
@@ -123,7 +119,6 @@ def test_preflight_blocks_missing_optional_dependency() -> None:
 
 def test_preflight_payload_is_json_serializable() -> None:
     """Preflight payload round-trips through JSON."""
-
     backend = qutip_backend()
     availability = {name: True for name in stable_core_backend_dependencies(backend.backend_id)}
     experiment = build_experiment(

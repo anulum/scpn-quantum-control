@@ -45,6 +45,7 @@ def _write_json(path: Path, payload: dict[str, object]) -> Path:
 
 
 def test_classify_advantage_status_keeps_broad_advantage_open() -> None:
+    """Only an exact-simulation crossover is supported; broad advantage stays open."""
     status = classify_advantage_status(
         crossover_qubits=11.6,
         max_hardware_n=16,
@@ -59,6 +60,7 @@ def test_classify_advantage_status_keeps_broad_advantage_open() -> None:
 
 
 def test_build_audit_payload_records_committed_sources_and_guardrails() -> None:
+    """The audit payload records its sources and keeps broad advantage unsupported."""
     payload = build_audit_payload(command=["python", "scripts/run_quantum_advantage_gap_audit.py"])
 
     assert payload["audit"] == "quantum_advantage_gap"
@@ -74,6 +76,7 @@ def test_build_audit_payload_records_committed_sources_and_guardrails() -> None:
 
 
 def test_s2_matrix_readiness_blocks_incomplete_no_qpu_progress(tmp_path: Path) -> None:
+    """An incomplete scaling matrix blocks a hardware advantage run and names missing sizes."""
     protocol = _write_json(
         tmp_path / "protocol.json",
         {
@@ -114,6 +117,7 @@ def test_s2_matrix_readiness_blocks_incomplete_no_qpu_progress(tmp_path: Path) -
 
 
 def test_s2_matrix_readiness_accepts_complete_preregistered_matrix(tmp_path: Path) -> None:
+    """A complete preregistered matrix allows the advantage run with no blockers."""
     protocol = _write_json(
         tmp_path / "protocol.json",
         {
@@ -150,6 +154,7 @@ def test_s2_matrix_readiness_accepts_complete_preregistered_matrix(tmp_path: Pat
 
 
 def test_s2_matrix_readiness_reports_missing_artifacts(tmp_path: Path) -> None:
+    """Missing matrix artefacts block the run."""
     readiness = evaluate_s2_matrix_readiness(
         protocol_path=tmp_path / "missing_protocol.json",
         progress_path=tmp_path / "missing_progress.json",

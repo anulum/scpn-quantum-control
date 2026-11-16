@@ -40,25 +40,31 @@ def test_finite_size_power_fit_few_points() -> None:
 
 
 class TestFiniteSizeScalingEdge:
+    """Finite-size scaling fits at their minimum data."""
+
     def test_fit_bkt_ansatz_single_point(self) -> None:
+        """A BKT fit to a single point returns None."""
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_bkt_ansatz
 
         result = _fit_bkt_ansatz([4], [1.0])
         assert result is None
 
     def test_fit_power_ansatz_single_point(self) -> None:
+        """A power-law fit to a single point returns None."""
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_power_ansatz
 
         result = _fit_power_ansatz([4], [1.0])
         assert result is None
 
     def test_fit_bkt_ansatz_valid(self) -> None:
+        """A BKT fit to enough points returns a result."""
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_bkt_ansatz
 
         result = _fit_bkt_ansatz([4, 8, 16], [2.0, 1.8, 1.6])
         assert result is not None
 
     def test_fit_power_ansatz_valid(self) -> None:
+        """A power-law fit to enough points returns a result."""
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_power_ansatz
 
         result = _fit_power_ansatz([4, 8, 16], [2.0, 1.8, 1.6])

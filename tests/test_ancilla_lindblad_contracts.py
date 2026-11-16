@@ -17,7 +17,7 @@ from numpy.typing import NDArray
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -36,6 +36,7 @@ class TestAncillaLindblad:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_circuit_has_correct_qubit_count(self, n: int) -> None:
+        """The circuit has the system qubits plus one ancilla."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )
@@ -52,6 +53,7 @@ class TestAncillaLindblad:
 
     @pytest.mark.parametrize("n_steps", [1, 2, 3, 5])
     def test_reset_count_scales_with_steps(self, n_steps: int) -> None:
+        """The ancilla is reset once per system qubit and dissipation step."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )
@@ -68,6 +70,7 @@ class TestAncillaLindblad:
         assert reset_count == 3 * n_steps  # n_system * n_dissipation_steps
 
     def test_circuit_stats_all_keys(self) -> None:
+        """The circuit statistics report the qubit split."""
         from scpn_quantum_control.phase.ancilla_lindblad import ancilla_circuit_stats
 
         _, K, omega = _system(4)
@@ -80,6 +83,7 @@ class TestAncillaLindblad:
         assert stats["total_gates"] > 0
 
     def test_circuit_has_measurements(self) -> None:
+        """The circuit contains measurements."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )

@@ -6,6 +6,8 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — IBM latency probe helper tests
 
+"""Timestamp parsing and provider timing windows of the IBM latency probe."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -17,6 +19,7 @@ from scpn_quantum_control.hardware.ibm_latency_probe import (
 
 
 def test_parse_timestamp_supports_z_suffix() -> None:
+    """A timestamp with a Z suffix parses as timezone-aware."""
     ts = parse_timestamp("2026-05-22T00:00:01Z")
     assert ts is not None
     assert ts.tzinfo is not None
@@ -24,6 +27,7 @@ def test_parse_timestamp_supports_z_suffix() -> None:
 
 
 def test_parse_timestamp_normalises_naive_datetime_to_utc() -> None:
+    """A naive timestamp is read as UTC."""
     raw = datetime(2026, 5, 22, 0, 0, 1)
     parsed = parse_timestamp(raw)
     assert parsed is not None
@@ -31,6 +35,7 @@ def test_parse_timestamp_normalises_naive_datetime_to_utc() -> None:
 
 
 def test_derive_timing_windows_from_provider_fields() -> None:
+    """Queue, run and total windows come from the provider's timing fields."""
     telemetry = {
         "creation_date": "2026-05-22T00:00:00Z",
         "queued": "2026-05-22T00:00:10Z",
@@ -44,6 +49,7 @@ def test_derive_timing_windows_from_provider_fields() -> None:
 
 
 def test_derive_timing_windows_accepts_metrics_fallback_keys() -> None:
+    """The metrics keys are used when the timing fields are absent."""
     telemetry = {
         "creation_date": "2026-05-22T00:00:00Z",
         "metrics_queued": "2026-05-22T00:00:05Z",

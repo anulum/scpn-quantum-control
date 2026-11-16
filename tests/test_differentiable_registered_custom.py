@@ -31,13 +31,11 @@ from scpn_quantum_control.program_ad_registry import (
 
 def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy closeness across registered custom derivative payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected)
 
 
 def _registry_with_rule() -> tuple[CustomDerivativeRegistry, PrimitiveIdentity]:
     """Return a private registry with one exact quadratic-vector rule."""
-
     identity = PrimitiveIdentity("scpn.test.registered_custom", "quadratic_vector")
     registry = CustomDerivativeRegistry()
     registry.register(
@@ -68,7 +66,6 @@ def _registry_with_rule() -> tuple[CustomDerivativeRegistry, PrimitiveIdentity]:
 
 def test_facade_and_package_root_reuse_extracted_registered_wrappers() -> None:
     """Facade and package-root exports should point at the extracted wrappers."""
-
     assert differentiable.registered_custom_jvp is registered_custom_jvp
     assert differentiable.registered_custom_vjp is registered_custom_vjp
     assert differentiable.registered_custom_jacobian is registered_custom_jacobian
@@ -79,7 +76,6 @@ def test_facade_and_package_root_reuse_extracted_registered_wrappers() -> None:
 
 def test_registered_custom_wrappers_resolve_private_registry_rules() -> None:
     """Registered wrappers should route through registry-resolved exact rules."""
-
     registry, identity = _registry_with_rule()
 
     jvp = registered_custom_jvp(
@@ -106,7 +102,6 @@ def test_registered_custom_wrappers_resolve_private_registry_rules() -> None:
 
 def test_registered_custom_wrappers_fail_closed_for_missing_identity() -> None:
     """Registered wrappers should preserve registry missing-rule diagnostics."""
-
     missing = PrimitiveIdentity("scpn.test.registered_custom", "missing")
     registry = CustomDerivativeRegistry()
 

@@ -35,13 +35,11 @@ _EXTRACT_WEIGHTS = np.array([1.25, -0.5], dtype=np.float64)
 
 def _weighted_diag_construct_objective(values: Any) -> Any:
     """Return a scalar weighted offset-diagonal construction objective."""
-
     return np.sum(np.diag(values, k=1) * _CONSTRUCT_WEIGHTS)
 
 
 def _weighted_diag_extract_objective(values: Any) -> Any:
     """Return a scalar weighted offset-diagonal extraction objective."""
-
     matrix = np.reshape(values, (3, 2))
     return np.sum(np.diag(matrix, k=-1) * _EXTRACT_WEIGHTS)
 
@@ -52,7 +50,6 @@ def _rust_parity_probe(
     expected_ops: set[str],
 ) -> set[str]:
     """Assert bit-tight Rust replay parity for one diag objective."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -79,7 +76,6 @@ def _rust_parity_probe(
 
 def test_rust_bridge_replays_program_ad_diag_construct_nodes() -> None:
     """Rust Program AD replay should match Python adjoints for vector-to-matrix diag."""
-
     expected_ops = {
         "linalg:diag:3:offset:1:construct:0",
         "linalg:diag:3:offset:1:construct:1",
@@ -95,7 +91,6 @@ def test_rust_bridge_replays_program_ad_diag_construct_nodes() -> None:
 
 def test_rust_bridge_replays_program_ad_diag_extract_nodes() -> None:
     """Rust Program AD replay should match Python adjoints for matrix-to-vector diag."""
-
     expected_ops = {
         "linalg:diag:3x2:offset:-1:extract:0",
         "linalg:diag:3x2:offset:-1:extract:1",

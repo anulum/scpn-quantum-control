@@ -26,13 +26,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_sort_routes_strict_static_order_adjoint_semantics() -> None:
     """Program AD np.sort should route adjoints through strict sorted order."""
-
     weights_flat = np.array([1.5, -2.0, 0.25, 3.0], dtype=np.float64)
     weights_axis = np.array(
         [[0.5, -1.0, 2.0], [1.25, -0.75, 3.5]],
@@ -78,7 +76,6 @@ def test_program_ad_sort_routes_strict_static_order_adjoint_semantics() -> None:
 
 def test_program_ad_sort_fails_closed_on_nondifferentiable_boundaries() -> None:
     """Program AD np.sort should reject ties, invalid axes, and integer policies."""
-
     sort = cast(Any, np.sort)
     with pytest.raises(ValueError, match="strictly ordered"):
         whole_program_value_and_grad(
@@ -107,7 +104,6 @@ def test_program_ad_sort_fails_closed_on_nondifferentiable_boundaries() -> None:
 
 def test_program_ad_order_statistic_reductions_match_selection_adjoint() -> None:
     """Program AD order-statistic reductions should route exact strict-order adjoints."""
-
     quantile_weights = np.array([1.2, -0.4], dtype=np.float64)
     percentile_weights = np.array([0.75, -1.1, 0.5], dtype=np.float64)
 
@@ -155,7 +151,6 @@ def test_program_ad_order_statistic_reductions_match_selection_adjoint() -> None
 
 def test_program_ad_order_statistic_reductions_fail_closed_on_boundaries() -> None:
     """Program AD order-statistic reductions should reject unstable selection contracts."""
-
     quantile = cast(Any, np.quantile)
     percentile = cast(Any, np.percentile)
     with pytest.raises(ValueError, match="strictly ordered"):

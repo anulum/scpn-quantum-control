@@ -45,6 +45,7 @@ def _random_state(seed: int, scale: float = 0.3) -> NDArray[np.complex128]:
 
 @pytest.mark.parametrize("lam", [1.0, 4.0])
 def test_uncoupled_relaxes_to_limit_cycle_radius_sqrt_lambda(lam: float) -> None:
+    """Uncoupled oscillators relax to the limit-cycle radius sqrt(lambda)."""
     trajectory = integrate_stuart_landau(_random_state(0), lam, _OMEGA, 0.0, 1, 0.02, 4000)
     assert isinstance(trajectory, StuartLandauTrajectory)
     final = amplitudes(trajectory.terminal_state)
@@ -52,6 +53,7 @@ def test_uncoupled_relaxes_to_limit_cycle_radius_sqrt_lambda(lam: float) -> None
 
 
 def test_jacobian_matches_finite_differences() -> None:
+    """The Jacobian agrees with finite differences."""
     lam, coupling, radius = 1.0, 3.0, 3
     state = _random_state(1, scale=1.0)
     jacobian = stuart_landau_jacobian(state, lam, _OMEGA, coupling, radius)
@@ -75,6 +77,7 @@ def test_jacobian_matches_finite_differences() -> None:
 
 
 def test_strong_coupling_reaches_inhomogeneous_oscillation_death() -> None:
+    """Strong coupling reaches an inhomogeneous oscillation-death state."""
     lam, coupling, radius = 1.0, 24.0, 6
     trajectory = integrate_stuart_landau(
         _random_state(3, scale=1.5), lam, _OMEGA, coupling, radius, 0.01, 12000
@@ -90,6 +93,7 @@ def test_strong_coupling_reaches_inhomogeneous_oscillation_death() -> None:
 
 
 def test_order_parameter_and_amplitudes() -> None:
+    """The order parameter and amplitudes match synchronous and mixed states."""
     synchronous = np.full(_N, 0.7 + 0.7j, dtype=np.complex128)
     assert abs(stuart_landau_order_parameter(synchronous)) == pytest.approx(1.0)
     assert amplitudes(synchronous) == pytest.approx(np.full(_N, np.hypot(0.7, 0.7)))
@@ -113,6 +117,7 @@ def test_order_parameter_and_amplitudes() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     state = _random_state(0)
     with pytest.raises(ValueError, match=message):
         if call == "field":

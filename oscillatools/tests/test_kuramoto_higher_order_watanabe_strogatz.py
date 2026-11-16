@@ -62,6 +62,7 @@ def _direct_harmonic_field(
 
 
 def test_first_harmonic_is_the_classical_reduction() -> None:
+    """The first harmonic reproduces the classical Watanabe-Strogatz reduction."""
     initial = _initial()
     higher = integrate_higher_order_watanabe_strogatz(
         initial, omega=0.5, coupling=1.5, harmonic=1, dt=_DT, n_steps=_STEPS
@@ -77,6 +78,7 @@ def test_first_harmonic_is_the_classical_reduction() -> None:
 
 @pytest.mark.parametrize("harmonic", [2, 3])
 def test_reduction_reproduces_direct_integration(harmonic: int) -> None:
+    """The reduced dynamics reproduce direct integration of the oscillators."""
     initial = _initial()
     reduced = integrate_higher_order_watanabe_strogatz(
         initial, omega=0.5, coupling=1.5, harmonic=harmonic, dt=_DT, n_steps=_STEPS
@@ -92,6 +94,7 @@ def test_reduction_reproduces_direct_integration(harmonic: int) -> None:
 def test_invariant_conserved_in_a_bounded_regime(harmonic: int) -> None:
     # repulsive coupling desynchronises, so the Möbius parameters stay bounded and the SU(1,1)
     # invariant is conserved to machine precision (no synchronisation coordinate divergence)
+    """In a bounded regime the invariant is conserved and the order stays low."""
     reduced = integrate_higher_order_watanabe_strogatz(
         _initial(), omega=0.5, coupling=-1.0, harmonic=harmonic, dt=_DT, n_steps=_STEPS
     )
@@ -101,6 +104,7 @@ def test_invariant_conserved_in_a_bounded_regime(harmonic: int) -> None:
 
 
 def test_trajectory_container() -> None:
+    """The reduced trajectory records its harmonic and per-step arrays."""
     initial = _initial(2)
     reduced = integrate_higher_order_watanabe_strogatz(
         initial, omega=0.0, coupling=1.0, harmonic=2, dt=0.05, n_steps=10
@@ -126,6 +130,7 @@ def test_trajectory_container() -> None:
     ],
 )
 def test_validation_errors(kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "initial_phases": _initial(),
         "omega": 0.5,

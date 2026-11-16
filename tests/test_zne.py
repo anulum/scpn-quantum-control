@@ -49,6 +49,7 @@ def test_scale_3_triples_unitary_depth() -> None:
 
 
 def test_even_scale_raises() -> None:
+    """An even noise scale is refused."""
     qc = QuantumCircuit(1)
     qc.h(0)
     with pytest.raises(ValueError, match="odd positive"):
@@ -56,6 +57,7 @@ def test_even_scale_raises() -> None:
 
 
 def test_zero_scale_raises() -> None:
+    """A zero noise scale is refused."""
     qc = QuantumCircuit(1)
     qc.h(0)
     with pytest.raises(ValueError):
@@ -109,6 +111,7 @@ def test_quadratic_extrapolation() -> None:
 
 
 def test_zne_result_fields() -> None:
+    """The result records the scales, the values and a finite residual."""
     scales = [1, 3]
     values = [0.8, 0.6]
     result = zne_extrapolate(scales, values, order=1)
@@ -142,6 +145,7 @@ def test_zne_insufficient_data_points() -> None:
 def test_zne_extrapolate_rejects_invalid_fit_inputs(
     scales: list[int], values: list[float], order: int, match: str
 ) -> None:
+    """Invalid extrapolation inputs are refused with their reasons."""
     with pytest.raises(ValueError, match=match):
         zne_extrapolate(scales, values, order=order)
 
@@ -220,6 +224,7 @@ def test_fit_residual_nonnegative() -> None:
 
 def test_pipeline_knm_to_zne() -> None:
     """Full pipeline: Knm → Trotter → fold → extrapolate → mitigated R.
+
     Verifies ZNE is wired end-to-end, not decorative.
     """
     import time

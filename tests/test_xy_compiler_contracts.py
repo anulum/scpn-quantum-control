@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -34,6 +34,7 @@ class TestXYCompiler:
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
     def test_compile_returns_correct_qubit_count(self, n: int) -> None:
+        """The compiled circuit has one qubit per oscillator."""
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
 
         _, K, omega = _system(n)
@@ -41,6 +42,7 @@ class TestXYCompiler:
         assert qc.num_qubits == n
 
     def test_order2_deeper_than_order1(self) -> None:
+        """Second-order Trotterisation is at least as deep as first order."""
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
 
         _, K, omega = _system(4)
@@ -50,6 +52,7 @@ class TestXYCompiler:
         assert qc2.size() >= qc1.size()
 
     def test_depth_comparison_values(self) -> None:
+        """The depth comparison reports positive depths and a reduction."""
         from scpn_quantum_control.phase.xy_compiler import depth_comparison
 
         _, K, omega = _system(4)
@@ -85,6 +88,7 @@ class TestXYCompiler:
         np.testing.assert_allclose(np.abs(op.data), np.eye(4), atol=1e-10)
 
     def test_reps_increases_depth(self) -> None:
+        """More repetitions do not reduce depth."""
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
 
         _, K, omega = _system(3)

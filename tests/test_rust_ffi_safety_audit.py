@@ -49,6 +49,7 @@ def _write_rust_fixture(tmp_path: Path, lib_rs: str, module_rs: str) -> Path:
 
 
 def test_rust_ffi_safety_audit_inventory_safe_pyo3_fixture(tmp_path: Path) -> None:
+    """A safe binding crate passes with no unsafe code and its functions counted."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="\n".join(
@@ -85,6 +86,7 @@ def test_rust_ffi_safety_audit_inventory_safe_pyo3_fixture(tmp_path: Path) -> No
 
 
 def test_rust_ffi_safety_audit_fails_on_unsafe_token(tmp_path: Path) -> None:
+    """An unsafe block fails the audit and is located."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="#[pymodule]\nfn m(_m: &Bound<'_, PyModule>) -> PyResult<()> { Ok(()) }\n",
@@ -108,6 +110,7 @@ def test_rust_ffi_safety_audit_fails_on_unsafe_token(tmp_path: Path) -> None:
 
 
 def test_rust_ffi_safety_json_output_is_deterministic(tmp_path: Path) -> None:
+    """The JSON output has its fixed keys and schema."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="#[pymodule]\nfn m(_m: &Bound<'_, PyModule>) -> PyResult<()> { Ok(()) }\n",
@@ -135,6 +138,7 @@ def test_rust_ffi_safety_json_output_is_deterministic(tmp_path: Path) -> None:
 def test_rust_ffi_safety_cli_writes_json_and_returns_status(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command writes JSON and returns the audit status."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="#[pymodule]\nfn m(_m: &Bound<'_, PyModule>) -> PyResult<()> { Ok(()) }\n",
@@ -148,6 +152,7 @@ def test_rust_ffi_safety_cli_writes_json_and_returns_status(
 
 
 def test_live_rust_crate_has_no_unsafe_and_inventories_pyo3_boundary() -> None:
+    """The engine crate has no unsafe code and exposes its binding functions."""
     crate = Path(__file__).resolve().parents[1] / "scpn_quantum_engine"
 
     audit = scan_crate(crate)

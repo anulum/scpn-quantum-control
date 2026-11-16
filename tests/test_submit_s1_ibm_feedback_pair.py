@@ -22,10 +22,12 @@ from scripts.submit_s1_ibm_feedback_pair import (
 
 
 def test_parse_physical_qubits_accepts_four_distinct_indices() -> None:
+    """Four distinct qubit indices are accepted in order."""
     assert _parse_physical_qubits("7,17,6,8") == (7, 17, 6, 8)
 
 
 def test_parse_physical_qubits_rejects_wrong_length_and_duplicates() -> None:
+    """The wrong number of qubits or a duplicate is refused."""
     with pytest.raises(ValueError, match="exactly four"):
         _parse_physical_qubits("7,17,6")
 
@@ -34,6 +36,7 @@ def test_parse_physical_qubits_rejects_wrong_length_and_duplicates() -> None:
 
 
 def test_selected_layout_payload_records_logical_order() -> None:
+    """The layout payload records the logical order of the qubits."""
     payload = _selected_layout_payload((7, 17, 6, 8))
 
     assert payload == {
@@ -45,6 +48,7 @@ def test_selected_layout_payload_records_logical_order() -> None:
 
 
 def test_repeat_args_are_explicit_without_submit() -> None:
+    """Repeat arguments are explicit and do not submit."""
     args = _parse_args(
         [
             "--backend",
@@ -63,6 +67,7 @@ def test_repeat_args_are_explicit_without_submit() -> None:
 
 
 def test_readiness_document_exposes_layout_and_repeat_label_without_private_keys() -> None:
+    """Readiness exposes the layout and repeat label and no private keys."""
     arms = (
         {
             "label": "feedback",

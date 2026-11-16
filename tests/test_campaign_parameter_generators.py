@@ -53,6 +53,7 @@ def test_legacy_campaign_generators_fail_closed_without_synthetic_opt_in(
     expected_file: str,
     tmp_path: Path,
 ) -> None:
+    """Without an explicit opt-in the generators refuse synthetic data and write nothing."""
     module = _load_generator(relative_path)
 
     with pytest.raises(RuntimeError, match="Refusing silent synthetic fallback"):
@@ -88,6 +89,7 @@ def test_legacy_campaign_generators_emit_labelled_synthetic_smoke_cache(
     expected_file: str,
     tmp_path: Path,
 ) -> None:
+    """With the opt-in the generators write a synthetic cache labelled in its provenance."""
     module = _load_generator(relative_path)
 
     output_path = module.generate_all_params(
@@ -114,6 +116,7 @@ def test_legacy_campaign_generators_emit_labelled_synthetic_smoke_cache(
     ],
 )
 def test_legacy_launchers_do_not_generate_parameters_blindly(relative_path: str) -> None:
+    """The launchers check provenance instead of regenerating parameters."""
     text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
 
     assert "params/PARAMETER_PROVENANCE.json" in text
@@ -121,6 +124,7 @@ def test_legacy_launchers_do_not_generate_parameters_blindly(relative_path: str)
 
 
 def test_legacy_campaign_scripts_use_campaign_local_paths() -> None:
+    """Every campaign script uses paths local to its campaign."""
     campaign_dirs = [
         REPO_ROOT / "scripts" / "primary_campaign_2026",
         REPO_ROOT / "scripts" / "hardware_campaign_2026",
@@ -140,6 +144,7 @@ def test_legacy_campaign_scripts_use_campaign_local_paths() -> None:
 
 
 def test_legacy_campaign_scripts_keep_license_headers_near_top() -> None:
+    """Every campaign script keeps its licence header at the top."""
     campaign_dirs = [
         REPO_ROOT / "scripts" / "primary_campaign_2026",
         REPO_ROOT / "scripts" / "hardware_campaign_2026",

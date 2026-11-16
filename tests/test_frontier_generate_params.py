@@ -6,6 +6,8 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — frontier generate params tests
 
+"""Frontier parameter generation refuses silent synthetic data and records provenance."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -128,6 +130,7 @@ def test_generator_refuses_missing_sources_without_explicit_synthetic_opt_in(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Missing sources without an opt-in are refused and nothing is written."""
     module = _load_generate_params_module(monkeypatch, mode="missing")
 
     with pytest.raises(RuntimeError, match="Refusing silent synthetic fallback"):
@@ -140,6 +143,7 @@ def test_generator_refuses_synthetic_omega_without_explicit_opt_in(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Synthetic frequencies without an opt-in are refused and nothing is written."""
     module = _load_generate_params_module(monkeypatch, mode="matrix-only")
 
     with pytest.raises(RuntimeError, match="did not provide omega"):
@@ -152,6 +156,7 @@ def test_generator_can_emit_labelled_synthetic_smoke_parameters(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """With the opt-in the generator writes synthetic parameters labelled in their provenance."""
     module = _load_generate_params_module(monkeypatch, mode="missing")
 
     module.generate_all_params(str(tmp_path), allow_synthetic=True, seed=7)
@@ -171,6 +176,7 @@ def test_source_backed_generation_emits_full_t1_scale_manifest(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Source-backed generation labels every file as bridge-derived and adds no synthetic data."""
     module = _load_generate_params_module(monkeypatch, mode="with-omega")
 
     module.generate_all_params(str(tmp_path))

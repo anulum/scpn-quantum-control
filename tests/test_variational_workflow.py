@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -37,8 +37,7 @@ def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[n
 
 
 class TestVariationalPipeline:
-    """Multiple variational methods should converge toward the exact ground
-    state energy, with NQS and param-shift giving consistent results."""
+    """Variational methods converge towards the exact ground energy and agree with each other."""
 
     def test_nqs_approaches_exact(self) -> None:
         """RBM VMC energy should be within 20% of exact ground state."""
@@ -94,8 +93,10 @@ class TestVariationalPipeline:
         )
 
     def test_nqs_and_sparse_agree_on_ground(self) -> None:
-        """NQS VMC and sparse eigsh should find comparable ground energies.
-        NQS is variational (upper bound) so E_nqs >= E_exact."""
+        """NQS VMC and sparse eigsh find comparable ground energies.
+
+        NQS is variational (an upper bound), so E_nqs >= E_exact.
+        """
         from scpn_quantum_control.bridge.sparse_hamiltonian import sparse_eigsh
         from scpn_quantum_control.phase.nqs_ansatz import vmc_ground_state
 

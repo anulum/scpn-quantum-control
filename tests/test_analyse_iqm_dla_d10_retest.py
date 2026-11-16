@@ -32,6 +32,7 @@ _COMMITTED = _DATA / "iqm_dla_d10_retest_primary_analysis_2026-07-22.json"
 def test_command_surface_reproduces_committed_d10_retest(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command reproduces the committed depth-ten retest exactly."""
     output = tmp_path / "analysis.json"
     monkeypatch.setattr(
         sys,
@@ -61,6 +62,7 @@ def test_command_surface_reproduces_committed_d10_retest(
 
 
 def test_incomplete_matrix_stays_nonpromotional(tmp_path: Path) -> None:
+    """An incomplete matrix names its missing labels and promotes nothing."""
     payload = json.loads(_COUNTS.read_text(encoding="utf-8"))
     payload["counts"].pop("main_d10_even_rep1")
     partial = tmp_path / "partial.json"
@@ -89,6 +91,7 @@ def test_incomplete_matrix_stays_nonpromotional(tmp_path: Path) -> None:
 
 
 def test_invalid_layout_and_scalar_boundaries_fail_closed(tmp_path: Path) -> None:
+    """Disagreeing layouts, empty count blocks and empty samples are refused."""
     prior = tmp_path / "prior.json"
     prior.write_text(json.dumps({"counts": {}, "layout": [1]}), encoding="utf-8")
 
@@ -112,6 +115,7 @@ def test_invalid_layout_and_scalar_boundaries_fail_closed(tmp_path: Path) -> Non
 
 
 def test_missing_current_or_prior_sector_fails_closed(tmp_path: Path) -> None:
+    """A retest or prior window without a sector is refused."""
     empty = tmp_path / "empty.json"
     empty.write_text(json.dumps({"counts": {}, "layout": [2, 7, 12, 13]}), encoding="utf-8")
 
@@ -152,6 +156,7 @@ def _deterministic_counts(*, even_leaks: bool, odd_leaks: bool) -> dict[str, dic
 
 
 def test_degenerate_primary_and_cross_window_variances_fail_closed(tmp_path: Path) -> None:
+    """Degenerate pooled and cross-window variances are refused."""
     layout = [2, 7, 12, 13]
     no_leaks = tmp_path / "no-leaks.json"
     no_leaks.write_text(

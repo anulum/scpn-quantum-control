@@ -41,6 +41,7 @@ main = _audit_test_behaviour.main
 
 
 def test_behaviour_audit_counts_functions_classes_and_contracts(tmp_path: Path) -> None:
+    """The audit counts tests, parametrisations and assertions."""
     path = tmp_path / "test_contracts.py"
     path.write_text(
         "\n".join(
@@ -76,6 +77,7 @@ def test_behaviour_audit_counts_functions_classes_and_contracts(tmp_path: Path) 
 
 
 def test_behaviour_tree_json_and_summary_are_deterministic(tmp_path: Path) -> None:
+    """Auditing a tree gives the same result in JSON and in the summary."""
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_one.py").write_text(
@@ -101,6 +103,7 @@ def test_behaviour_tree_json_and_summary_are_deterministic(tmp_path: Path) -> No
 
 
 def test_behaviour_quality_gate_blocks_low_contract_density(tmp_path: Path) -> None:
+    """Low assertion and raises density fails the quality gate."""
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_mixed.py").write_text(
@@ -135,6 +138,7 @@ def test_behaviour_quality_gate_blocks_low_contract_density(tmp_path: Path) -> N
 def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails on a smoke-only test and names it."""
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_smoke.py").write_text(
@@ -152,6 +156,7 @@ def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(
 def test_behaviour_cli_quality_gate_json_and_exit_status(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command reports the failing quality gate in JSON and its exit status."""
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_contract.py").write_text(

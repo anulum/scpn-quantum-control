@@ -37,7 +37,7 @@ _N = 12
 
 
 def _second_eigenvalue(jacobian: NDArray[np.float64]) -> float:
-    """The leading non-Goldstone (second-largest real-part) eigenvalue of a phase Jacobian."""
+    """Return the leading non-Goldstone (second-largest real-part) eigenvalue of a phase Jacobian."""
     eigenvalues = np.sort(np.linalg.eigvals(jacobian).real)[::-1]
     return float(eigenvalues[1])
 
@@ -51,6 +51,7 @@ def _higher_order_force(theta: NDArray[np.float64]) -> NDArray[np.float64]:
 
 
 def test_higher_order_linear_vs_basin_divergence() -> None:
+    """Higher-order coupling is linearly more stable than pairwise coupling, yet its basin differs."""
     omega = np.zeros(_N)
     synced = np.zeros(_N)
 
@@ -91,6 +92,7 @@ def test_higher_order_linear_vs_basin_divergence() -> None:
 
 
 def test_standard_error_shrinks_with_sample_count() -> None:
+    """More samples shrink the standard error to its binomial value without moving the estimate."""
     omega = np.zeros(_N)
     synced = np.zeros(_N)
     shared: dict[str, Any] = dict(n_perturbed_nodes=_N, dt=0.05, n_steps=200, seed=1)
@@ -106,6 +108,7 @@ def test_standard_error_shrinks_with_sample_count() -> None:
 
 
 def test_single_node_perturbation_supported() -> None:
+    """Perturbing a single node gives a valid basin fraction and consistent counts."""
     omega = np.zeros(_N)
     synced = np.zeros(_N)
     estimate = synchronisation_basin_stability(
@@ -140,6 +143,7 @@ def test_single_node_perturbation_supported() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "omega": np.zeros(_N),
         "synchronised_state": np.zeros(_N),

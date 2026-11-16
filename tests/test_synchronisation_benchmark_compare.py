@@ -27,7 +27,6 @@ def _payload() -> dict[str, object]:
 
 def test_compare_payloads_accepts_identical_reference() -> None:
     """Identical committed/regenerated rows pass."""
-
     payload = _payload()
 
     result = compare_payloads(payload, copy.deepcopy(payload))
@@ -39,7 +38,6 @@ def test_compare_payloads_accepts_identical_reference() -> None:
 
 def test_compare_payloads_rejects_tolerance_drift() -> None:
     """Observable drift beyond tolerance fails closed."""
-
     expected = _payload()
     actual = copy.deepcopy(expected)
     rows = actual["rows"]
@@ -54,7 +52,6 @@ def test_compare_payloads_rejects_tolerance_drift() -> None:
 
 def test_compare_payloads_rejects_schema_drift() -> None:
     """Schema drift is a hard error, not a soft comparison failure."""
-
     expected = _payload()
     actual = copy.deepcopy(expected)
     actual["result_schema"] = {"schema": "different"}
@@ -65,7 +62,6 @@ def test_compare_payloads_rejects_schema_drift() -> None:
 
 def test_compare_payloads_rejects_hardware_submission_rows() -> None:
     """The synchronisation gate remains no-QPU by default."""
-
     expected = _payload()
     actual = copy.deepcopy(expected)
     rows = actual["rows"]
@@ -78,7 +74,6 @@ def test_compare_payloads_rejects_hardware_submission_rows() -> None:
 
 def test_compare_default_artifacts_checks_all_committed_paths(tmp_path: Path) -> None:
     """The multi-instance gate reports every configured benchmark artefact."""
-
     import json
 
     from scpn_quantum_control.benchmark_harness import synchronisation_compare

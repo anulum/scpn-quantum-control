@@ -22,6 +22,7 @@ def _build_net() -> QuantumPetriNet:
 
 
 def test_step_report_payload_and_bounds() -> None:
+    """A step reports output markings within [0, 1]."""
     net = _build_net()
     report = net.step_report(np.array([0.6, 0.4], dtype=float))
     payload = report.to_payload()
@@ -37,6 +38,7 @@ def test_step_report_payload_and_bounds() -> None:
 
 
 def test_step_with_shots_is_finite_and_bounded() -> None:
+    """A sampled step gives finite markings within bounds."""
     net = _build_net()
     sampled = net.step(np.array([0.5, 0.5], dtype=float), shots=2000)
     assert sampled.shape == (2,)
@@ -46,12 +48,14 @@ def test_step_with_shots_is_finite_and_bounded() -> None:
 
 
 def test_step_with_invalid_shots_raises() -> None:
+    """A non-positive shot count is refused."""
     net = _build_net()
     with pytest.raises(ValueError, match="positive integer"):
         net.step(np.array([0.5, 0.5], dtype=float), shots=0)
 
 
 def test_campaign_report_aggregates() -> None:
+    """A campaign report aggregates its steps' markings and activity."""
     net = _build_net()
     markings = np.array([[0.2, 0.7], [0.7, 0.3], [0.4, 0.4]], dtype=float)
     report = net.run_campaign(markings)
@@ -63,6 +67,7 @@ def test_campaign_report_aggregates() -> None:
 
 
 def test_campaign_rust_aggregate_matches_numpy_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The native campaign aggregate equals the NumPy fallback."""
     net = _build_net()
     markings = np.array([[0.2, 0.7], [0.7, 0.3], [0.4, 0.4], [0.1, 0.9]], dtype=float)
 

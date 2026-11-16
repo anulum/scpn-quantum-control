@@ -38,6 +38,7 @@ _Z0 = 0.6 + 0.1j
 
 
 def test_zero_forcing_reproduces_autonomous_ott_antonsen() -> None:
+    """Zero forcing reproduces the autonomous Ott-Antonsen order parameter."""
     n_steps = 40
     trajectory = integrate_forced_collective(
         _Z0, np.zeros(n_steps, dtype=np.complex128), _K, _DELTA, _DT, centre=_CENTRE
@@ -47,6 +48,7 @@ def test_zero_forcing_reproduces_autonomous_ott_antonsen() -> None:
 
 
 def test_adjoint_gradient_matches_finite_differences() -> None:
+    """The adjoint forcing gradient agrees with finite differences."""
     rng = np.random.default_rng(0)
     n_steps = 30
     forcing: NDArray[np.complex128] = np.asarray(
@@ -77,6 +79,7 @@ def test_adjoint_gradient_matches_finite_differences() -> None:
 
 
 def test_gradient_descent_desynchronises_with_monotone_cost() -> None:
+    """Gradient descent lowers the terminal order parameter with a non-increasing cost."""
     n_steps = 30
     forcing, history = optimise_collective_forcing(
         _Z0,
@@ -102,6 +105,7 @@ def test_gradient_descent_desynchronises_with_monotone_cost() -> None:
 
 
 def test_trajectory_container() -> None:
+    """The forced trajectory has one order-parameter value and time per step."""
     n_steps = 12
     trajectory = integrate_forced_collective(
         _Z0, np.full(n_steps, 0.05 + 0.0j), _K, _DELTA, _DT, centre=_CENTRE
@@ -129,6 +133,7 @@ def test_trajectory_container() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     base_integrate: dict[str, Any] = {
         "z0": _Z0,
         "forcing": np.zeros(5, dtype=np.complex128),

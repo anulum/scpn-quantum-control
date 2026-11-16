@@ -38,6 +38,7 @@ fim_zne = _load_script_module("submit_fim_replication_zne_ibm")
 
 
 def test_local_folding_preserves_measurement_count_and_scales_unitaries() -> None:
+    """Folding triples the unitaries and keeps the measurements."""
     qc = QuantumCircuit(2, 2)
     qc.rx(0.2, 0)
     qc.rzz(0.3, 0, 1)
@@ -52,6 +53,7 @@ def test_local_folding_preserves_measurement_count_and_scales_unitaries() -> Non
 
 
 def test_build_entries_includes_main_scales_and_full_readout_calibration() -> None:
+    """The entries include both noise scales and a full readout calibration."""
     entries = fim_zne.build_entries(
         states=["0000"],
         depths=[2],
@@ -69,6 +71,7 @@ def test_build_entries_includes_main_scales_and_full_readout_calibration() -> No
 
 
 def test_build_entries_supports_larger_n_full_readout_lane() -> None:
+    """The larger lane calibrates every six-qubit basis state."""
     entries = fim_zne.build_entries(
         states=["000001"],
         depths=[2],
@@ -89,6 +92,7 @@ def test_build_entries_supports_larger_n_full_readout_lane() -> None:
 
 
 def test_readiness_payload_uses_dynamic_qubit_width_and_budget() -> None:
+    """Readiness uses the actual width and the readout budget it implies."""
     args = fim_zne._parse_args(
         [
             "--backend",
@@ -139,6 +143,7 @@ def test_readiness_payload_uses_dynamic_qubit_width_and_budget() -> None:
 
 
 def test_summarise_synthetic_rows_reports_zne_delta() -> None:
+    """The summary reports scale-one and extrapolated deltas."""
     rows = []
     metadata_index = 0
     for state in fim_zne.computational_basis_labels(4):

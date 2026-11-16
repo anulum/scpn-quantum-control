@@ -36,6 +36,7 @@ class TestGPUBatchVQE:
     """Parallel VQE evaluation tests."""
 
     def test_batch_energy_numpy_shape_and_finiteness(self) -> None:
+        """Batched energies have one finite value per parameter set."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
         from scpn_quantum_control.phase.gpu_batch_vqe import batch_energy_numpy
 
@@ -76,6 +77,7 @@ class TestGPUBatchVQE:
 
     @pytest.mark.parametrize("n_samples", [5, 20, 50, 100])
     def test_batch_vqe_scan_shape(self, n_samples: int) -> None:
+        """A batched scan returns one energy per sample."""
         from scpn_quantum_control.phase.gpu_batch_vqe import batch_vqe_scan
 
         K, omega = _system(2)
@@ -96,6 +98,7 @@ class TestGPUBatchVQE:
         )
 
     def test_batch_vqe_output_keys(self) -> None:
+        """A batched scan returns exactly its documented keys."""
         from scpn_quantum_control.phase.gpu_batch_vqe import batch_vqe_scan
 
         K, omega = _system(2)
@@ -113,6 +116,7 @@ class TestGPUBatchVQE:
         }
 
     def test_batch_vqe_reproducible(self) -> None:
+        """Two batched scans with the same inputs give identical energies."""
         from scpn_quantum_control.phase.gpu_batch_vqe import batch_vqe_scan
 
         K, omega = _system(2)
@@ -122,6 +126,7 @@ class TestGPUBatchVQE:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_batch_vqe_multiple_sizes(self, n: int) -> None:
+        """Batched scans give finite energies at every tested size."""
         from scpn_quantum_control.phase.gpu_batch_vqe import batch_vqe_scan
 
         K, omega = _system(n)

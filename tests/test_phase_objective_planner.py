@@ -22,6 +22,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_objective_planner_routes_pure_periodic_objective_to_parameter_shift() -> None:
+    """A purely periodic objective is routed to parameter-shift descent."""
     objective = build_phase_control_objective(
         2,
         energy_weight=1.0,
@@ -43,6 +44,7 @@ def test_objective_planner_routes_pure_periodic_objective_to_parameter_shift() -
 
 
 def test_objective_planner_routes_hybrid_objective_to_term_gradient() -> None:
+    """A hybrid objective is routed to the term-gradient trainer."""
     objective = build_phase_control_objective(
         2,
         energy_weight=1.0,
@@ -61,6 +63,7 @@ def test_objective_planner_routes_hybrid_objective_to_term_gradient() -> None:
 
 
 def test_objective_planner_fails_closed_for_forced_parameter_shift_and_hardware() -> None:
+    """Forcing parameter shift on analytic terms, or hardware, is refused with reasons."""
     objective = build_phase_control_objective(
         2,
         energy_weight=1.0,
@@ -81,6 +84,7 @@ def test_objective_planner_fails_closed_for_forced_parameter_shift_and_hardware(
 
 
 def test_objective_planner_audit_records_supported_and_blocked_routes() -> None:
+    """The planner audit records the supported and the blocked routes."""
     audit = run_composed_objective_planner_audit()
     payload = audit.to_dict()
 
@@ -97,6 +101,7 @@ def test_objective_planner_audit_records_supported_and_blocked_routes() -> None:
 
 
 def test_objective_planner_rejects_empty_backend() -> None:
+    """An empty backend name is refused."""
     objective = build_phase_control_objective(1)
 
     with pytest.raises(ValueError, match="backend"):

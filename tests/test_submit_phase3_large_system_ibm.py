@@ -35,6 +35,7 @@ phase3_large = _load_script_module("submit_phase3_large_system_ibm")
 
 
 def test_source_specs_generalise_phase3_scope_to_larger_n() -> None:
+    """The source specifications extend the scope to six qubits."""
     specs = phase3_large.source_specs(6)
 
     assert [spec.label for spec in specs] == [
@@ -52,6 +53,7 @@ def test_source_specs_generalise_phase3_scope_to_larger_n() -> None:
 
 
 def test_observable_settings_cover_left_middle_and_right_transverse_edges() -> None:
+    """The observables cover the left, middle and right transverse edges."""
     assert phase3_large.phase3_observables(8) == (
         "XXIIIIII",
         "YYIIIIII",
@@ -63,6 +65,7 @@ def test_observable_settings_cover_left_middle_and_right_transverse_edges() -> N
 
 
 def test_build_entries_has_expected_zne_and_full_readout_counts() -> None:
+    """The entries have the expected extrapolation and readout counts at six qubits."""
     entries = phase3_large.build_entries(
         n_qubits=6,
         repetitions=3,
@@ -80,6 +83,7 @@ def test_build_entries_has_expected_zne_and_full_readout_counts() -> None:
 
 
 def test_readiness_payload_is_budget_and_width_aware() -> None:
+    """Readiness reports the width and circuit budget."""
     args = phase3_large._parse_args(
         [
             "--backend",
@@ -121,6 +125,7 @@ def test_readiness_payload_is_budget_and_width_aware() -> None:
 
 
 def test_default_layouts_include_kingston_larger_width_replicates() -> None:
+    """The default layouts include larger-width replicates on one backend."""
     assert phase3_large.DEFAULT_LAYOUTS[("ibm_kingston", 6)] == (
         141,
         142,

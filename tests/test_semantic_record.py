@@ -533,6 +533,10 @@ class TestProducerObservation:
 
         Parameters
         ----------
+        raw_record
+            Unchanged raw stable-core experiment the corpus describes.
+        companion
+            Positive companion base document.
         key
             The source-binding key removed for this case.
 
@@ -827,6 +831,8 @@ class TestScientificSemantics:
 
         Parameters
         ----------
+        companion
+            Positive companion base document.
         missing
             The structurally required key removed for this case.
 
@@ -860,6 +866,8 @@ class TestQualification:
 
         Parameters
         ----------
+        raw_record
+            Unchanged raw stable-core experiment the corpus describes.
         case_id
             Frozen corpus fixture expected to qualify.
 
@@ -881,6 +889,8 @@ class TestQualification:
 
         Parameters
         ----------
+        raw_record
+            Unchanged raw stable-core experiment the corpus describes.
         case_id
             Frozen corpus fixture carrying exactly one fault.
         code
@@ -975,6 +985,10 @@ class TestQualification:
 
         Parameters
         ----------
+        raw_record
+            Unchanged raw stable-core experiment the corpus describes.
+        companion
+            Positive companion base document.
         damage
             Independent malformed body or unsupported raw schema.
 

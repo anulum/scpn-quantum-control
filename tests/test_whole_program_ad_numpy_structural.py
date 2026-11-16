@@ -27,13 +27,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
     """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
-
     with pytest.raises(ValueError, match="output labels must appear"):
         whole_program_value_and_grad(
             lambda values: np.einsum("i->j", values),
@@ -103,7 +101,6 @@ def test_whole_program_ad_handles_numpy_broadcasting_semantics() -> None:
 
 def test_whole_program_ad_broadcasting_rejects_incompatible_shapes() -> None:
     """Program AD broadcasting should fail closed on incompatible NumPy shapes."""
-
     with pytest.raises(ValueError, match="broadcasting rules"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.reshape(values[:4], (2, 2)) + values[4:7]),
@@ -113,7 +110,6 @@ def test_whole_program_ad_broadcasting_rejects_incompatible_shapes() -> None:
 
 def test_whole_program_ad_handles_rank_n_reductions_and_transpose() -> None:
     """Program AD should support rank-N reductions and explicit transpose axes."""
-
     weights_axis0 = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     weights_axis1 = np.array([[2.0, -1.0], [0.25, 1.5]], dtype=np.float64)
     weights_transpose = np.array(
@@ -164,7 +160,6 @@ def test_whole_program_ad_handles_rank_n_reductions_and_transpose() -> None:
 
 def test_whole_program_ad_rank_n_axis_validation_paths() -> None:
     """Rank-N program AD array operations should reject invalid axes explicitly."""
-
     with pytest.raises(ValueError, match="axis"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.reshape(values, (2, 2)), axis=3),

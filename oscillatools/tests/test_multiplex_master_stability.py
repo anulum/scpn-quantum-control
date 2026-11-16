@@ -45,6 +45,7 @@ def _graphs(seed: int = 0) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_master_stability_function_returns_max_real_eigenvalue() -> None:
+    """The master stability function returns the largest real eigenvalue part."""
     node = np.zeros((2, 2), dtype=np.float64)
     coupling = np.array([[-1.0, 0.0], [0.0, -2.0]], dtype=np.float64)
     # spec(0 + alpha * diag(-1, -2)) = {-alpha, -2 alpha}; the max real part is -alpha
@@ -53,6 +54,7 @@ def test_master_stability_function_returns_max_real_eigenvalue() -> None:
 
 
 def test_decomposition_reproduces_the_full_multiplex_spectrum() -> None:
+    """The decomposition reproduces the full multiplex spectrum."""
     intra, inter = _graphs()
     result = multiplex_synchronisation_stability(intra, inter)
     assert isinstance(result, MultiplexSynchronisationStability)
@@ -67,6 +69,7 @@ def test_decomposition_reproduces_the_full_multiplex_spectrum() -> None:
 
 
 def test_attractive_coupling_is_stable_repulsive_is_not() -> None:
+    """Attractive coupling synchronises stably; repulsive coupling does not."""
     intra, inter = _graphs(1)
     attractive = multiplex_synchronisation_stability(intra, inter)
     assert attractive.is_stable
@@ -77,6 +80,7 @@ def test_attractive_coupling_is_stable_repulsive_is_not() -> None:
 
 
 def test_transverse_decay_drops_only_the_global_zero_mode() -> None:
+    """The transverse decay rate excludes only the global zero mode."""
     intra, inter = _graphs(2)
     result = multiplex_synchronisation_stability(intra, inter)
     ordered = np.sort(result.spectrum.real)
@@ -99,6 +103,7 @@ def test_transverse_decay_drops_only_the_global_zero_mode() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     intra, inter = _graphs()
     with pytest.raises(ValueError, match=message):
         if call == "msf":

@@ -41,7 +41,10 @@ def _canned_artifact() -> DecisiveRunArtifact:
 
 
 class TestPreregistrationMode:
+    """Preregistration mode of the advantage benchmark command."""
+
     def test_manifest_written(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """Preregistration writes one manifest with the protocol."""
         code = script.main(["--out-dir", str(tmp_path)])
         assert code == 0
         manifests = list(tmp_path.glob("*.manifest.json"))
@@ -53,12 +56,15 @@ class TestPreregistrationMode:
 
 
 class TestRunMode:
+    """Run mode of the advantage benchmark command."""
+
     def test_run_writes_artifact_and_reports_decision(
         self,
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """A run passes its options through, writes the artefact and reports the decision."""
         captured: dict[str, Any] = {}
 
         def _fake_run(protocol: Any, config: Any) -> DecisiveRunArtifact:
@@ -84,6 +90,7 @@ class TestRunMode:
     def test_run_defaults_enable_mps(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A run includes the MPS baseline by default."""
         captured: dict[str, Any] = {}
 
         def _fake_run(protocol: Any, config: Any) -> DecisiveRunArtifact:

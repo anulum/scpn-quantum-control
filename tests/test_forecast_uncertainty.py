@@ -52,6 +52,7 @@ def _dataset() -> SyntheticMultimodalDataset:
 
 
 def test_calibration_and_test_coverage_are_deterministic_and_disjoint() -> None:
+    """Calibration is deterministic and uses data disjoint from the test split."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     calibration_forecast = model.predict(dataset.calibration)
@@ -81,6 +82,7 @@ def test_calibration_and_test_coverage_are_deterministic_and_disjoint() -> None:
 
 
 def test_calibrator_refuses_wrong_split_digest_custody_alpha_and_empty_sample() -> None:
+    """The calibrator refuses the wrong split, digest, custody, alpha or an empty sample."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     forecast = model.predict(dataset.calibration)
@@ -113,6 +115,7 @@ def test_calibrator_refuses_wrong_split_digest_custody_alpha_and_empty_sample() 
 
 
 def test_apply_interval_and_interval_contract_refuse_digest_or_shape_drift() -> None:
+    """Applying an interval refuses digest or shape drift."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     calibrator = fit_residual_interval_calibrator(
@@ -209,6 +212,7 @@ def test_coverage_skips_domain_tags_absent_from_a_test_batch() -> None:
 
 
 def test_coverage_refuses_wrong_test_and_digest_chains_and_leakage() -> None:
+    """Coverage refuses the wrong test split, broken digest chains and leakage."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     calibrator = fit_residual_interval_calibrator(
@@ -263,6 +267,7 @@ def test_coverage_refuses_wrong_test_and_digest_chains_and_leakage() -> None:
 
 
 def test_calibrator_record_refuses_invalid_fields_and_leakage() -> None:
+    """A calibrator record refuses invalid fields and leakage."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     calibrator = fit_residual_interval_calibrator(

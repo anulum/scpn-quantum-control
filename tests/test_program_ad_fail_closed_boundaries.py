@@ -25,7 +25,6 @@ FloatArray = NDArray[np.float64]
 
 def test_program_ad_advanced_indexing_fails_closed() -> None:
     """Program AD array indexing should reject dynamic advanced index selectors."""
-
     with pytest.raises(ValueError, match="static integer or boolean"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.reshape(values, (2, 2))[[values[0], values[1]]]),
@@ -51,7 +50,6 @@ def test_program_ad_advanced_indexing_fails_closed() -> None:
 
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
-
     with pytest.raises(
         ValueError, match="registered nondifferentiable integer selection primitives"
     ):
@@ -77,7 +75,6 @@ def test_program_ad_index_selection_primitives_fail_closed() -> None:
 
 def test_program_ad_extreme_reductions_fail_closed_on_ties() -> None:
     """Program AD max/min reductions should reject nondifferentiable tied selectors."""
-
     with pytest.raises(ValueError, match="np.max.*ties"):
         whole_program_value_and_grad(
             lambda values: np.max(values),
@@ -151,7 +148,6 @@ def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_
     None
 ):
     """Selection primitives should reject boundary points with ambiguous derivatives."""
-
     with pytest.raises(ValueError, match="maximum is non-differentiable"):
         whole_program_value_and_grad(
             lambda values: np.maximum(values[0], values[1]),
@@ -186,7 +182,6 @@ def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_
 
 def test_whole_program_ad_abs_fails_closed_at_zero_cusp() -> None:
     """Python and NumPy absolute-value syntax should share the zero-cusp policy."""
-
     result = whole_program_value_and_grad(
         lambda values: abs(values[0]) + np.abs(values[1]),
         np.array([-2.0, 3.0], dtype=np.float64),

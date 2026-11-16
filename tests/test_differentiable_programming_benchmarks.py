@@ -32,7 +32,6 @@ from scpn_quantum_control.benchmarks import differentiable_programming as dp_ben
 
 def test_differentiable_programming_benchmark_suite_matches_analytic_references() -> None:
     """Benchmark rows should compare implemented program AD against analytic references."""
-
     results = run_differentiable_programming_benchmark_suite()
 
     assert [row.case_id for row in results] == [
@@ -297,7 +296,6 @@ def test_differentiable_programming_external_reference_suite_fails_closed_when_u
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """External-reference rows should be optional and explicit about backend availability."""
-
     monkeypatch.setattr(dp_benchmarks, "is_jax_autodiff_available", lambda: False)
 
     assert run_differentiable_programming_external_reference_suite() == ()
@@ -307,7 +305,6 @@ def test_differentiable_programming_external_reference_suite_uses_all_jax_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """External-reference suite should include every optional JAX conformance row."""
-
     gradient = np.array([1.0], dtype=np.float64)
 
     def row(case_id: str) -> DifferentiableProgrammingExternalReferenceResult:
@@ -338,7 +335,6 @@ def test_differentiable_programming_jax_reference_rows_use_contract_shims(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Optional JAX rows should construct explicit diagnostic records under backend shims."""
-
     fake_jnp: Any = ModuleType("jax.numpy")
     fake_jnp.asarray = np.asarray
     fake_jnp.diag = np.diag
@@ -415,7 +411,6 @@ def test_differentiable_programming_jax_reference_rows_use_contract_shims(
 
 def test_differentiable_programming_benchmark_exports_from_package_root() -> None:
     """Benchmark suite API should be stable from the package root."""
-
     import scpn_quantum_control as scpn
 
     assert (

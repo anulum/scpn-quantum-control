@@ -49,6 +49,7 @@ def _problem(seed: int = 0) -> dict[str, Any]:
 
 
 def test_feedback_drives_the_network_onto_the_target() -> None:
+    """State-dependent feedback drives the network onto its target phases."""
     problem = _problem()
     start = problem["target"] + problem["rng"].standard_normal(_N) * 0.8
     trajectory = integrate_sdre_controlled_kuramoto(
@@ -66,6 +67,7 @@ def test_feedback_drives_the_network_onto_the_target() -> None:
 
 
 def test_gain_reduces_to_lqr_at_the_target() -> None:
+    """At the target the feedback gain equals the LQR gain."""
     problem = _problem(1)
     gain = kuramoto_sdre_gain(
         problem["target"],
@@ -81,6 +83,7 @@ def test_gain_reduces_to_lqr_at_the_target() -> None:
 
 
 def test_closed_loop_is_hurwitz_at_the_target() -> None:
+    """At the target the closed loop has only eigenvalues with negative real part."""
     problem = _problem(2)
     gain = kuramoto_sdre_gain(
         problem["target"],
@@ -95,6 +98,7 @@ def test_closed_loop_is_hurwitz_at_the_target() -> None:
 
 
 def test_control_at_the_target_is_the_feed_forward_and_holds() -> None:
+    """At the target the control is the feed-forward term and holds the state."""
     problem = _problem(3)
     control = sdre_control_input(
         problem["target"],
@@ -141,6 +145,7 @@ def test_control_at_the_target_is_the_feed_forward_and_holds() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     problem = _problem()
     base: dict[str, Any] = {
         "phases": problem["target"],

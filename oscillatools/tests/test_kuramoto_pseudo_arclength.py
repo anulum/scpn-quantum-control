@@ -44,6 +44,7 @@ def _parabola_parameter_derivative(
 
 
 def test_traces_through_the_textbook_fold() -> None:
+    """Continuation follows the textbook branch through its fold."""
     branch = pseudo_arclength_continuation(
         _parabola_residual,
         _parabola_state_jacobian,
@@ -65,6 +66,7 @@ def test_traces_through_the_textbook_fold() -> None:
 
 
 def test_traces_through_the_kuramoto_locking_saddle_node() -> None:
+    """Continuation follows the locking branch through its saddle-node at the detuning."""
     detuning = 1.0
 
     def residual(state: NDArray[np.float64], coupling: float) -> NDArray[np.float64]:
@@ -96,6 +98,7 @@ def test_traces_through_the_kuramoto_locking_saddle_node() -> None:
 
 
 def test_branch_container() -> None:
+    """The branch records one state and parameter per step."""
     branch = pseudo_arclength_continuation(
         _parabola_residual,
         _parabola_state_jacobian,
@@ -114,6 +117,7 @@ def test_branch_container() -> None:
 
 def test_corrector_failure_raises() -> None:
     # one Newton iteration is not enough to correct a large step on the nonlinear parabola
+    """A corrector that does not converge raises RuntimeError."""
     with pytest.raises(RuntimeError, match="corrector failed to converge"):
         pseudo_arclength_continuation(
             _parabola_residual,
@@ -137,6 +141,7 @@ def test_corrector_failure_raises() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "initial_state": np.array([1.0]),
         "initial_parameter": -1.0,

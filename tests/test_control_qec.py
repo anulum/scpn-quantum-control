@@ -15,6 +15,7 @@ from scpn_quantum_control.qec.control_qec import ControlQEC, MWPMDecoder, Surfac
 
 
 def test_surface_code_dimensions() -> None:
+    """A distance-3 code has 18 data qubits and 9-by-18 check matrices."""
     code = SurfaceCode(distance=3)
     assert code.num_data == 18  # 2*3^2
     assert code.Hx.shape == (9, 18)
@@ -31,6 +32,7 @@ def test_stabilizer_weight() -> None:
 
 
 def test_no_errors_no_syndrome() -> None:
+    """Without errors both syndromes are zero."""
     qec = ControlQEC(distance=3)
     err_x = np.zeros(18, dtype=np.int8)
     err_z = np.zeros(18, dtype=np.int8)
@@ -50,6 +52,7 @@ def test_single_error_produces_syndrome() -> None:
 
 
 def test_simulate_errors_shape() -> None:
+    """Simulated X and Z errors cover every data qubit."""
     qec = ControlQEC(distance=3)
     err_x, err_z = qec.simulate_errors(0.1, rng=np.random.default_rng(0))
     assert err_x.shape == (18,)
@@ -58,7 +61,6 @@ def test_simulate_errors_shape() -> None:
 
 def test_simulate_errors_uses_default_rng(monkeypatch: pytest.MonkeyPatch) -> None:
     """Omitted RNG uses NumPy default_rng and preserves binary int8 output."""
-
     calls = []
 
     class FakeRng:
@@ -89,6 +91,7 @@ def test_decode_returns_correction() -> None:
 
 
 def test_no_defects_empty_correction() -> None:
+    """Without defects the correction is empty."""
     decoder = MWPMDecoder(distance=3)
     syndrome = np.zeros(9, dtype=np.int8)
     corr = decoder.decode(syndrome)

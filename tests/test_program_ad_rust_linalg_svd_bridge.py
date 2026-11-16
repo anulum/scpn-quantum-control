@@ -25,19 +25,16 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 
 def _svdvals_3x2_sample() -> NDArray[np.float64]:
     """Return a full-rank rectangular sample with distinct singular values."""
-
     return np.array([3.0, 0.5, -1.0, 2.0, 0.25, -0.75], dtype=np.float64)
 
 
 def _svdvals_2x3_sample() -> NDArray[np.float64]:
     """Return a wide full-rank sample with distinct singular values."""
-
     return np.array([2.0, -0.5, 1.25, 0.75, 3.0, -1.5], dtype=np.float64)
 
 
 def _svdvals_3x2_weighted_objective(values: Any) -> Any:
     """Return a scalar objective over static 3x2 singular values."""
-
     matrix = np.reshape(values, (3, 2))
     weights = np.array([0.7, -1.2], dtype=np.float64)
     return np.sum(np.linalg.svd(matrix, compute_uv=False) * weights)
@@ -45,7 +42,6 @@ def _svdvals_3x2_weighted_objective(values: Any) -> Any:
 
 def _svdvals_2x3_weighted_objective(values: Any) -> Any:
     """Return a scalar objective over static 2x3 singular values."""
-
     matrix = np.reshape(values, (2, 3))
     weights = np.array([-0.4, 1.1], dtype=np.float64)
     return np.sum(np.linalg.svd(matrix, compute_uv=False) * weights)
@@ -64,7 +60,6 @@ def test_rust_bridge_replays_program_ad_rectangular_svdvals_nodes(
     shape_label: str,
 ) -> None:
     """The PyO3 bridge should replay rectangular svdvals nodes end to end."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     result = whole_program_value_and_grad(

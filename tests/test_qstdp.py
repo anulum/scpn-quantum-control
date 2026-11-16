@@ -14,6 +14,7 @@ from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 
 def test_no_update_without_pre_spike() -> None:
+    """Without a presynaptic spike the weight does not change."""
     syn = QuantumSynapse(0.5)
     stdp = QuantumSTDP(learning_rate=0.1)
     original = syn.weight
@@ -22,6 +23,7 @@ def test_no_update_without_pre_spike() -> None:
 
 
 def test_update_changes_weight() -> None:
+    """A spike pair changes the weight."""
     syn = QuantumSynapse(0.5)
     stdp = QuantumSTDP(learning_rate=0.1)
     original = syn.weight
@@ -30,12 +32,14 @@ def test_update_changes_weight() -> None:
 
 
 def test_gradient_is_finite() -> None:
+    """The plasticity expectation is finite."""
     stdp = QuantumSTDP()
     exp = stdp._expectation_z(np.pi / 4)
     assert np.isfinite(exp)
 
 
 def test_weight_stays_bounded() -> None:
+    """The weight stays within [0, 1]."""
     syn = QuantumSynapse(0.5, w_min=0.0, w_max=1.0)
     stdp = QuantumSTDP(learning_rate=0.5)
     for _ in range(20):
@@ -99,6 +103,7 @@ def test_stdp_weight_stays_bounded() -> None:
 
 
 def test_stdp_expectation_z_range() -> None:
+    """The Z expectation stays within [-1, 1]."""
     stdp = QuantumSTDP()
     for theta in np.linspace(0, 2 * np.pi, 20):
         z = stdp._expectation_z(theta)
