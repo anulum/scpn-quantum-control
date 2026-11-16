@@ -48,6 +48,7 @@ def _witness(
 
 
 def test_wilson_interval_matches_known_closed_form() -> None:
+    """The Wilson interval matches a known closed form."""
     interval = wilson_score_interval(5, 10, z=1.959963984540054)
 
     assert interval.estimate == 0.5
@@ -71,11 +72,13 @@ def test_wilson_interval_matches_known_closed_form() -> None:
 def test_wilson_interval_rejects_invalid_inputs(
     events: int, shots: int, z: float, message: str
 ) -> None:
+    """Invalid interval inputs are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         wilson_score_interval(events, shots, z=z)
 
 
 def test_count_witness_round_trip_and_disjoint_contract() -> None:
+    """A count witness round-trips and keeps its disjoint-count contract."""
     witness = _witness()
 
     assert witness.count_bound is True
@@ -149,17 +152,20 @@ def test_count_witness_round_trip_and_disjoint_contract() -> None:
     ],
 )
 def test_witness_validation(kwargs: dict[str, Any], message: str) -> None:
+    """Invalid witnesses are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         FIMWitness(**kwargs)
 
 
 @pytest.mark.parametrize("shots", [0, True])
 def test_witness_factory_rejects_invalid_shots(shots: int) -> None:
+    """The witness factory refuses invalid shots."""
     with pytest.raises(ValueError, match="shots"):
         FIMWitness.from_counts(leakage_events=0, retention_events=0, shots=shots)
 
 
 def test_count_aware_leakage_decrease_uses_conservative_bound_and_delta_cap() -> None:
+    """A leakage decrease uses the conservative bound and the step cap."""
     config = AdaptiveFIMConfig(
         target_leakage=0.05,
         step_gain=100.0,
@@ -177,6 +183,7 @@ def test_count_aware_leakage_decrease_uses_conservative_bound_and_delta_cap() ->
 
 
 def test_count_aware_boundary_and_missing_counts_hold() -> None:
+    """A boundary case or missing counts hold."""
     config = AdaptiveFIMConfig(target_leakage=0.05, min_shots=256)
     boundary = propose_count_aware_lambda(2.0, _witness(25, 430, 512), config)
     missing = propose_count_aware_lambda(
@@ -194,6 +201,7 @@ def test_count_aware_boundary_and_missing_counts_hold() -> None:
 
 
 def test_retention_recovery_uses_upper_bound_and_never_increases() -> None:
+    """Retention recovery uses the upper bound and never increases."""
     config = AdaptiveFIMConfig(
         mode="retention_recovery",
         target_retention=0.95,
@@ -210,6 +218,7 @@ def test_retention_recovery_uses_upper_bound_and_never_increases() -> None:
 
 
 def test_zero_gain_and_lambda_floor_hold() -> None:
+    """Zero gain and the lambda floor hold."""
     witness = _witness(120, 700)
     zero_gain = propose_count_aware_lambda(
         2.0,
@@ -228,6 +237,7 @@ def test_zero_gain_and_lambda_floor_hold() -> None:
 
 
 def test_count_schedule_threads_only_qualified_decreases() -> None:
+    """The schedule threads only qualified decreases from step to step."""
     config = AdaptiveFIMConfig(target_leakage=0.05, step_gain=4.0, min_shots=256)
     steps = adaptive_count_aware_schedule(
         2.0,
@@ -242,6 +252,7 @@ def test_count_schedule_threads_only_qualified_decreases() -> None:
 
 
 def test_hardware_safe_budget_precedes_schedule_and_observer_generation() -> None:
+    """A hardware-safe budget is checked before the schedule and observer are built."""
     witnesses = (_witness(), _witness())
     allowed = plan_adaptive_fim_schedule(
         4.0,
@@ -268,6 +279,7 @@ def test_hardware_safe_budget_precedes_schedule_and_observer_generation() -> Non
 
 
 def test_hardware_request_refuses_before_schedule() -> None:
+    """A hardware request is refused before any schedule is built."""
     plan = plan_adaptive_fim_schedule(
         4.0,
         (_witness(),),
@@ -282,6 +294,7 @@ def test_hardware_request_refuses_before_schedule() -> None:
 
 
 def test_plan_and_observer_contract_reject_invalid_states() -> None:
+    """The plan and observer refuse invalid states."""
     with pytest.raises(ValueError, match="non-empty"):
         plan_adaptive_fim_schedule(
             1.0,
@@ -323,6 +336,7 @@ def test_plan_and_observer_contract_reject_invalid_states() -> None:
 
 
 def test_step_and_plan_invariants_fail_closed() -> None:
+    """Step and plan invariants fail closed."""
     witness = _witness()
     step = propose_count_aware_lambda(1.0, witness, AdaptiveFIMConfig(target_leakage=0.05))
     with pytest.raises(ValueError, match="unknown adaptive FIM feedback schema"):
@@ -362,6 +376,7 @@ def test_step_and_plan_invariants_fail_closed() -> None:
 
 
 def test_legacy_point_estimate_route_is_preserved_but_unqualified() -> None:
+    """The legacy point-estimate route remains but is not count-qualified."""
     config = AdaptiveFIMConfig(step_gain=2.0, target_leakage=0.05)
     step = propose_next_lambda(4.0, FIMWitness(leakage=0.15, retention=0.8), config)
     schedule = adaptive_lambda_schedule(
@@ -403,12 +418,14 @@ def test_legacy_point_estimate_route_is_preserved_but_unqualified() -> None:
     ],
 )
 def test_config_validation(changes: dict[str, object], message: str) -> None:
+    """Invalid configurations are refused with their reasons."""
     config_factory = cast(Callable[..., AdaptiveFIMConfig], AdaptiveFIMConfig)
     with pytest.raises(ValueError, match=message):
         config_factory(**changes)
 
 
 def test_invalid_current_lambda_is_rejected() -> None:
+    """A negative or non-finite current lambda is refused."""
     witness = _witness()
     with pytest.raises(ValueError, match="non-negative"):
         propose_count_aware_lambda(-1.0, witness)
@@ -417,6 +434,7 @@ def test_invalid_current_lambda_is_rejected() -> None:
 
 
 def test_direct_invalid_step_and_refused_plan_contracts() -> None:
+    """A step that breaks the hold contract, or a refused plan without blockers, is refused."""
     witness = _witness()
     with pytest.raises(ValueError, match="hold decisions"):
         AdaptiveFIMStep(
@@ -442,6 +460,7 @@ def test_direct_invalid_step_and_refused_plan_contracts() -> None:
 
 
 def test_observer_rejects_blank_identity() -> None:
+    """An observer with a blank identity is refused."""
     with pytest.raises(ValueError, match="non-empty"):
         AdaptiveFIMObserverRecord(
             "",

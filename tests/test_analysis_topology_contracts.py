@@ -60,7 +60,6 @@ def _fake_ripser(
 @pytest.fixture()
 def mock_ripser(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """Patch ripser as available and provide a fake ripser function."""
-
     monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", True)
     monkeypatch.setattr(gts_mod, "_RIPSER_AVAILABLE", True)
     fake_ripser_mod = MagicMock(ripser=_fake_ripser)
@@ -121,6 +120,7 @@ def test_sff_level_spacing_few_spacings() -> None:
 
 
 def test_compute_persistence(mock_ripser: None) -> None:
+    """Persistence of eight oscillators returns a result with H0 features."""
     del mock_ripser
     theta = np.linspace(0, 2 * np.pi, 8, endpoint=False, dtype=np.float64)
     result = ph_mod.compute_persistence(theta, persistence_threshold=0.05)
@@ -132,12 +132,14 @@ def test_compute_persistence(mock_ripser: None) -> None:
 
 
 def test_compute_persistence_raises_without_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without ripser persistence raises ImportError."""
     monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser"):
         ph_mod.compute_persistence(np.zeros(4, dtype=np.float64))
 
 
 def test_phase_distance_matrix() -> None:
+    """The phase distance matrix is symmetric with a zero diagonal."""
     theta = np.array([0.0, np.pi / 2, np.pi], dtype=np.float64)
     D = ph_mod.phase_distance_matrix(theta)
     assert D.shape == (3, 3)
@@ -146,6 +148,7 @@ def test_phase_distance_matrix() -> None:
 
 
 def test_p_h1_vs_temperature(mock_ripser: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The temperature scan returns one mean persistence per temperature."""
     del mock_ripser, monkeypatch
     K = np.array([[0.0, 0.5, 0.2], [0.5, 0.0, 0.3], [0.2, 0.3, 0.0]], dtype=np.float64)
     result = ph_mod.p_h1_vs_temperature(
@@ -163,24 +166,28 @@ def test_p_h1_vs_temperature(mock_ripser: None, monkeypatch: pytest.MonkeyPatch)
 
 
 def test_p_h1_vs_temperature_raises_without_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without ripser the temperature scan raises ImportError."""
     monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser"):
         ph_mod.p_h1_vs_temperature(np.eye(3, dtype=np.float64))
 
 
 def test_erdos_renyi_coupling() -> None:
+    """The Erdos-Renyi coupling is square and symmetric."""
     K = gts_mod._erdos_renyi_coupling(8, 0.5, strength=0.4, seed=42)
     assert K.shape == (8, 8)
     np.testing.assert_allclose(K, K.T)
 
 
 def test_watts_strogatz_coupling() -> None:
+    """The Watts-Strogatz coupling is square and symmetric."""
     K = gts_mod._watts_strogatz_coupling(8, k=4, beta=0.3, seed=42)
     assert K.shape == (8, 8)
     np.testing.assert_allclose(K, K.T)
 
 
 def test_ring_coupling() -> None:
+    """The ring coupling links each node to its 2k neighbours symmetrically."""
     K = gts_mod._ring_coupling(8, k=2, strength=0.5)
     assert K.shape == (8, 8)
     np.testing.assert_allclose(K, K.T)
@@ -188,6 +195,7 @@ def test_ring_coupling() -> None:
 
 
 def test_measure_p_h1_at_transition(mock_ripser: None) -> None:
+    """The measurement at the transition returns a float mean and spread."""
     del mock_ripser
     K = np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
     mean, std = gts_mod._measure_p_h1_at_transition(
@@ -201,12 +209,14 @@ def test_measure_p_h1_at_transition(mock_ripser: None) -> None:
 
 
 def test_scan_graph_topologies_raises_without_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without ripser the topology scan raises ImportError."""
     monkeypatch.setattr(gts_mod, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser"):
         gts_mod.scan_graph_topologies()
 
 
 def test_scan_graph_topologies(mock_ripser: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The topology scan returns results for eight nodes."""
     del mock_ripser
 
     # Mock _measure_p_h1_at_transition to avoid slow MC simulation
@@ -231,7 +241,10 @@ def test_scan_graph_topologies(mock_ripser: None, monkeypatch: pytest.MonkeyPatc
 
 
 class TestSFFDefaults:
+    """Default arguments of the spectral form factor scan."""
+
     def test_default_k_range(self) -> None:
+        """The default coupling range has 15 points."""
         from scpn_quantum_control.analysis.spectral_form_factor import sff_vs_coupling
 
         result = sff_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -251,7 +264,10 @@ class TestSFFDefaults:
 
 
 class TestFSSDefaults:
+    """Default arguments of the finite-size scaling scan."""
+
     def test_default_system_sizes(self) -> None:
+        """The default system sizes are the documented ones, including 2."""
         from scpn_quantum_control.analysis.finite_size_scaling import (
             DEFAULT_FSS_SYSTEM_SIZES,
             finite_size_scaling,
@@ -262,6 +278,7 @@ class TestFSSDefaults:
         assert 2 in DEFAULT_FSS_SYSTEM_SIZES
 
     def test_default_k_range(self) -> None:
+        """The default range gives one critical coupling."""
         from scpn_quantum_control.analysis.finite_size_scaling import finite_size_scaling
 
         result = finite_size_scaling(system_sizes=[2])
@@ -269,7 +286,10 @@ class TestFSSDefaults:
 
 
 class TestPersistentHomology:
+    """The persistent-homology helpers."""
+
     def test_phase_distance_matrix(self) -> None:
+        """The phase distance matrix is symmetric with a zero diagonal."""
         from scpn_quantum_control.analysis.persistent_homology import phase_distance_matrix
 
         theta = np.array([0.0, 1.0, 2.0, 3.0], dtype=np.float64)

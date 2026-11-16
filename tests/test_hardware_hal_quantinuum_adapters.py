@@ -114,7 +114,6 @@ class _FakeStatusName:
 
 def test_quantinuum_adapter_submits_status_results_and_cancel() -> None:
     """Quantinuum adapter should compile, submit, track handle, and normalise counts."""
-
     backend = _FakeQuantinuumBackend()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -163,7 +162,6 @@ def test_quantinuum_adapter_submits_status_results_and_cancel() -> None:
 
 def test_quantinuum_adapter_rejects_non_tket_payloads() -> None:
     """Direct Quantinuum execution should fail closed until translation into pytket is explicit."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
         QuantinuumCloudHALAdapter(
@@ -186,7 +184,6 @@ def test_quantinuum_adapter_rejects_non_tket_payloads() -> None:
 
 def test_quantinuum_adapter_rejects_wrong_profile() -> None:
     """The concrete adapter must not attach to a non-Quantinuum profile."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("local_statevector")
 
     with pytest.raises(ValueError, match="quantinuum_cloud"):
@@ -195,7 +192,6 @@ def test_quantinuum_adapter_rejects_wrong_profile() -> None:
 
 def test_quantinuum_default_lazy_route(monkeypatch: pytest.MonkeyPatch) -> None:
     """Default route should load pytket factories lazily and construct circuits from JSON."""
-
     fake_quantinuum = _FakeQuantinuumModule()
 
     def fake_import(name: str) -> object:
@@ -234,7 +230,6 @@ def test_quantinuum_default_lazy_route(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_quantinuum_workload_accepts_circuit_objects() -> None:
     """Circuit objects should be serialised through their pytket-style to_dict method."""
-
     workload = quantinuum_tket_workload(
         _FakeCircuitObject(),
         workload_id="quantinuum_object",
@@ -247,7 +242,6 @@ def test_quantinuum_workload_accepts_circuit_objects() -> None:
 
 def test_quantinuum_adapter_can_submit_precompiled_payloads() -> None:
     """compile_circuit=False should forward already compiled provider payloads."""
-
     backend = _FakeNoCompileQuantinuumBackend()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -288,7 +282,6 @@ def test_quantinuum_adapter_can_submit_precompiled_payloads() -> None:
 
 def test_quantinuum_adapter_rejects_missing_compile_when_enabled() -> None:
     """Compilation remains explicit because Quantinuum expects compiled circuits."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
         QuantinuumCloudHALAdapter(
@@ -313,7 +306,6 @@ def test_quantinuum_adapter_rejects_missing_compile_when_enabled() -> None:
 
 def test_quantinuum_adapter_rejects_unknown_jobs() -> None:
     """Unknown job handles should not fabricate provider state."""
-
     adapter = QuantinuumCloudHALAdapter(
         HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud"),
         backend=_FakeQuantinuumBackend(),
@@ -335,7 +327,6 @@ def test_quantinuum_adapter_rejects_unknown_jobs() -> None:
 
 def test_quantinuum_adapter_rejects_shot_mismatch() -> None:
     """Quantinuum result decoding must fail closed when counts disagree with expected shots."""
-
     backend = _FakeQuantinuumBackend()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     adapter = QuantinuumCloudHALAdapter(
@@ -477,14 +468,12 @@ def test_quantinuum_count_validation_rejects_malformed_provider_results(
     raw_counts: dict[object, int], message: str
 ) -> None:
     """Malformed provider counts should fail before HAL results are reported."""
-
     with pytest.raises(ValueError, match=message):
         quantinuum_mod._normalise_counts(raw_counts)
 
 
 def test_quantinuum_counts_accept_provider_key_variants() -> None:
-    """pytket tuple, string, and to_list keys should normalise into bitstrings."""
-
+    """The pytket tuple, string, and to_list keys should normalise into bitstrings."""
     counts = quantinuum_mod._normalise_counts({(0, 1): 1, "11": 2, _FakeOutcomeKey(): 3})
 
     assert counts == {"01": 1, "11": 2, "10": 3}
@@ -492,7 +481,6 @@ def test_quantinuum_counts_accept_provider_key_variants() -> None:
 
 def test_quantinuum_status_normalisation_accepts_enum_names() -> None:
     """Provider status objects should be reduced to HAL-safe status tokens."""
-
     assert quantinuum_mod._normalise_status(_FakeStatusName()) == "queued"
     assert quantinuum_mod._normalise_status("SUCCEEDED") == "completed"
     assert quantinuum_mod._normalise_status("CANCELED") == "cancelled"
@@ -507,7 +495,6 @@ def test_quantinuum_status_normalisation_accepts_enum_names() -> None:
 
 def test_quantinuum_provider_job_id_rejects_control_characters() -> None:
     """Quantinuum provider identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_quantinuum as quantinuum_mod
 
     class BadHandle:
@@ -519,7 +506,6 @@ def test_quantinuum_provider_job_id_rejects_control_characters() -> None:
 
 def test_quantinuum_provider_job_id_trims_padding() -> None:
     """Quantinuum provider identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_quantinuum as quantinuum_mod
 
     class PaddedHandle:
@@ -530,7 +516,6 @@ def test_quantinuum_provider_job_id_trims_padding() -> None:
 
 def test_quantinuum_machine_rejects_control_characters() -> None:
     """Quantinuum machine identifiers must reject control-character payloads."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud")
     with pytest.raises(ValueError, match="Quantinuum machine"):
         QuantinuumCloudHALAdapter(profile, machine="H1-\n1E")
@@ -538,7 +523,6 @@ def test_quantinuum_machine_rejects_control_characters() -> None:
 
 def test_quantinuum_machine_trims_padding() -> None:
     """Quantinuum machine identifiers should be canonicalised by trimming padding."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud")
     adapter = QuantinuumCloudHALAdapter(profile, machine="  H1-1E  ")
     assert adapter._machine == "H1-1E"
@@ -583,7 +567,6 @@ def test_quantinuum_default_dependency_errors_are_actionable(
 
 def test_quantinuum_default_circuit_factory_rejects_malformed_payloads() -> None:
     """Malformed tket payloads should fail before provider submission."""
-
     with pytest.raises(ValueError, match="valid JSON"):
         quantinuum_mod._default_circuit_factory(
             QuantumWorkload(
@@ -618,7 +601,6 @@ def test_quantinuum_default_circuit_factory_rejects_malformed_payloads() -> None
 
 def test_quantinuum_adapter_requires_execution_route() -> None:
     """Construction should fail closed without an injected backend or machine name."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud")
 
     with pytest.raises(ValueError, match="backend or machine"):

@@ -42,6 +42,7 @@ def _load_module() -> object:
 
 @pytest.fixture(scope="module")
 def cli() -> object:
+    """Return the suite command module, loaded from its script."""
     return _load_module()
 
 
@@ -63,7 +64,10 @@ needs_real_data = pytest.mark.skipif(
 
 
 class TestArgParsing:
+    """Command-line parsing."""
+
     def test_default(self, cli: object) -> None:
+        """Defaults leave the data directory, integrity check and summary unset."""
         ns = cli._parse_args([])  # type: ignore[attr-defined]
         assert ns.data_dir is None
         assert ns.verify_integrity is False
@@ -72,29 +76,36 @@ class TestArgParsing:
         assert ns.json is False
 
     def test_verify_integrity_flag(self, cli: object) -> None:
+        """The integrity flag is parsed."""
         ns = cli._parse_args(["--verify-integrity"])  # type: ignore[attr-defined]
         assert ns.verify_integrity is True
 
     def test_json_flag(self, cli: object) -> None:
+        """The JSON flag is parsed."""
         ns = cli._parse_args(["--json"])  # type: ignore[attr-defined]
         assert ns.json is True
 
     def test_backend_choice(self, cli: object) -> None:
+        """The backend choice is parsed."""
         ns = cli._parse_args(["--backend", "numpy"])  # type: ignore[attr-defined]
         assert ns.backend == "numpy"
 
     def test_data_dir_path(self, cli: object, tmp_path: Path) -> None:
+        """The data directory is parsed as a path."""
         ns = cli._parse_args(["--data-dir", str(tmp_path)])  # type: ignore[attr-defined]
         assert ns.data_dir == tmp_path
 
 
 @needs_real_data
 class TestMainEndToEnd:
+    """The command end to end."""
+
     def test_happy_path_prints_summary(
         self,
         cli: object,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A normal run prints the suite summary."""
         rc = cli.main([])  # type: ignore[attr-defined]
         captured = capsys.readouterr()
         assert rc == 0
@@ -106,6 +117,7 @@ class TestMainEndToEnd:
         cli: object,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """JSON mode emits a parseable payload for 342 circuits on one backend."""
         rc = cli.main(["--json"])  # type: ignore[attr-defined]
         captured = capsys.readouterr()
         assert rc == 0
@@ -118,12 +130,15 @@ class TestMainEndToEnd:
 
 
 class TestMainFailurePaths:
+    """Failure exit codes of the command."""
+
     def test_missing_data_dir_exits_3(
         self,
         cli: object,
         capsys: pytest.CaptureFixture[str],
         tmp_path: Path,
     ) -> None:
+        """A missing data directory exits with 3."""
         missing = tmp_path / "does_not_exist"
         rc = cli.main(["--data-dir", str(missing)])  # type: ignore[attr-defined]
         captured = capsys.readouterr()
@@ -138,6 +153,7 @@ class TestMainFailurePaths:
         tmp_path: Path,
     ) -> None:
         # Tamper the published summary so fisher.chi2 mismatches.
+        """A reproducer breach exits with 2."""
         from scpn_quantum_control.dla_parity.reproduce import DEFAULT_PUBLISHED_SUMMARY
 
         with Path(DEFAULT_PUBLISHED_SUMMARY).open("r", encoding="utf-8") as fh:
@@ -154,6 +170,7 @@ class TestMainFailurePaths:
 
 def test_script_is_executable_with_main_guard() -> None:
     # Import as __main__ does SystemExit — use runpy-style check on source.
+    """The script has a main guard that exits with main's status."""
     src = SCRIPT_PATH.read_text(encoding="utf-8")
     assert 'if __name__ == "__main__":' in src
     assert "raise SystemExit(main())" in src
@@ -161,6 +178,7 @@ def test_script_is_executable_with_main_guard() -> None:
 
 def test_script_runs_from_command_line_help() -> None:
     # Smoke: the script can be invoked with --help and exits 0.
+    """The script prints its help from the command line."""
     import subprocess
 
     completed = subprocess.run(
@@ -175,12 +193,14 @@ def test_script_runs_from_command_line_help() -> None:
 
 def test_unknown_backend_rejected(cli: object) -> None:
     # argparse exits on invalid choice.
+    """An unknown backend is refused."""
     with pytest.raises(SystemExit):
         cli._parse_args(["--backend", "magic"])  # type: ignore[attr-defined]
 
 
 @needs_real_data
 def test_emit_table_covers_formatting(cli: object, capsys: pytest.CaptureFixture[str]) -> None:
+    """The table names the checked claims and the classical reference."""
     from scpn_quantum_control.dla_parity import run_full_harness
 
     result = run_full_harness()
@@ -192,6 +212,7 @@ def test_emit_table_covers_formatting(cli: object, capsys: pytest.CaptureFixture
 
 @needs_real_data
 def test_emit_json_payload_matches(cli: object, capsys: pytest.CaptureFixture[str]) -> None:
+    """The JSON payload reports the dataset's circuit count."""
     from scpn_quantum_control.dla_parity import run_full_harness
 
     result = run_full_harness()
@@ -205,6 +226,7 @@ def test_main_respects_baseline_backend_flag(
     cli: object,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """The baseline backend flag selects the classical reference backend."""
     if not _has_real_data():
         pytest.skip("real data not present")
     rc = cli.main(["--backend", "numpy", "--json"])  # type: ignore[attr-defined]

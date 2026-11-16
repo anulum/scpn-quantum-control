@@ -60,6 +60,7 @@ def _problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def test_importing_oscillatools_does_not_import_optional_tensor_backends() -> None:
+    """Importing oscillatools loads none of the optional tensor backends."""
     script = (
         "import sys; import oscillatools; "
         "print('torch' in sys.modules, 'jax' in sys.modules, 'jax.numpy' in sys.modules)"
@@ -75,7 +76,10 @@ def test_importing_oscillatools_does_not_import_optional_tensor_backends() -> No
 
 
 class TestTorchTensorIO:
+    """Torch tensors in, torch tensors out."""
+
     def test_networked_force_and_jacobian_return_torch_tensors(self) -> None:
+        """Torch inputs give a float64 torch force and Jacobian."""
         torch = pytest.importorskip("torch")
         theta, _, coupling = _problem()
         theta_t = torch.tensor(theta, dtype=torch.float64)
@@ -100,6 +104,7 @@ class TestTorchTensorIO:
         )
 
     def test_trajectories_and_vjp_return_torch_tensors(self) -> None:
+        """Torch inputs give torch trajectories and VJP channels."""
         torch = pytest.importorskip("torch")
         theta, omega, coupling = _problem()
         theta_t = torch.tensor(theta, dtype=torch.float64)
@@ -118,6 +123,7 @@ class TestTorchTensorIO:
         assert gradients[2].shape == (4, 4)
 
     def test_energy_derivatives_return_torch_tensors_but_scalar_stays_float(self) -> None:
+        """Torch inputs give a torch gradient and Hessian, while the energy stays a float."""
         torch = pytest.importorskip("torch")
         theta, _, coupling = _problem()
         theta_t = torch.tensor(theta, dtype=torch.float64)
@@ -135,7 +141,10 @@ class TestTorchTensorIO:
 
 
 class TestJaxTensorIO:
+    """JAX arrays in, JAX arrays out."""
+
     def test_networked_force_and_jacobian_return_jax_arrays(self) -> None:
+        """JAX inputs give a JAX force and Jacobian."""
         jax = pytest.importorskip("jax")
         jax.config.update("jax_enable_x64", True)
         jnp = pytest.importorskip("jax.numpy")
@@ -157,6 +166,7 @@ class TestJaxTensorIO:
         )
 
     def test_euler_trajectory_and_vjp_return_jax_arrays(self) -> None:
+        """JAX inputs give a JAX Euler trajectory and VJP."""
         jax = pytest.importorskip("jax")
         jax.config.update("jax_enable_x64", True)
         jnp = pytest.importorskip("jax.numpy")
@@ -179,6 +189,7 @@ class TestJaxTensorIO:
         assert gradients[2].shape == (4, 4)
 
     def test_energy_derivatives_return_jax_arrays_but_scalar_stays_float(self) -> None:
+        """JAX inputs give a JAX gradient and Hessian, while the energy stays a float."""
         jax = pytest.importorskip("jax")
         jax.config.update("jax_enable_x64", True)
         jnp = pytest.importorskip("jax.numpy")
@@ -198,7 +209,10 @@ class TestJaxTensorIO:
 
 
 class TestTensorAdapterBranches:
+    """Branches of the tensor adapter."""
+
     def test_tensor_template_detects_torch_and_jax_like_inputs(self) -> None:
+        """Torch-like and JAX-like inputs get matching templates."""
         torch_like = _TorchLikeTensor(np.array([1.0, 2.0]))
         jax_like = _JaxLikeTensor()
 
@@ -209,6 +223,7 @@ class TestTensorAdapterBranches:
         assert jax_template == tensor_io.TensorTemplate(kind="jax", source=jax_like)
 
     def test_as_float64_array_converts_torch_like_numpy_chain(self) -> None:
+        """A torch-like value converts to float64 through its numpy chain."""
         torch_like = _TorchLikeTensor(np.array([1, 2], dtype=np.int64))
 
         converted = tensor_io.as_float64_array(torch_like)
@@ -217,6 +232,7 @@ class TestTensorAdapterBranches:
         np.testing.assert_array_equal(converted, np.array([1.0, 2.0]))
 
     def test_torch_like_value_without_numpy_returns_none(self) -> None:
+        """A torch-like value without numpy converts to None."""
         torch_like = type("TorchLike", (), {"__module__": "torch.fake"})()
 
         assert tensor_io._torch_tensor_to_numpy(torch_like) is None
@@ -224,6 +240,7 @@ class TestTensorAdapterBranches:
     def test_restore_array_uses_torch_template_device(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Restoring to a torch template keeps its dtype and device."""
         calls: list[dict[str, object]] = []
 
         def as_tensor(value: object, **kwargs: object) -> tuple[object, dict[str, object]]:
@@ -247,6 +264,7 @@ class TestTensorAdapterBranches:
     def test_restore_torch_without_device_uses_dtype_only(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A torch template without a device restores with the dtype only."""
         calls: list[dict[str, object]] = []
 
         def as_tensor(value: object, **kwargs: object) -> tuple[object, dict[str, object]]:
@@ -267,6 +285,7 @@ class TestTensorAdapterBranches:
         assert calls == [{"dtype": "float32"}]
 
     def test_restore_torch_requires_as_tensor(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Restoring to torch needs torch.as_tensor."""
         monkeypatch.setattr(
             tensor_io.importlib,
             "import_module",
@@ -277,6 +296,7 @@ class TestTensorAdapterBranches:
             tensor_io._restore_torch(np.zeros(2), object())
 
     def test_restore_jax_requires_asarray(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Restoring to JAX needs jax.numpy.asarray."""
         monkeypatch.setattr(
             tensor_io.importlib,
             "import_module",
@@ -287,6 +307,7 @@ class TestTensorAdapterBranches:
             tensor_io._restore_jax(np.zeros(2))
 
     def test_restore_array_uses_jax_template(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Restoring to a JAX template keeps its dtype."""
         calls: list[dict[str, object]] = []
 
         def asarray(value: object, **kwargs: object) -> tuple[object, dict[str, object]]:
@@ -307,6 +328,7 @@ class TestTensorAdapterBranches:
         assert calls == [{"dtype": "float64"}]
 
     def test_call_method_returns_value_when_method_is_absent(self) -> None:
+        """Calling an absent method returns the value unchanged."""
         value = object()
 
         assert tensor_io._call_method(value, "missing") is value

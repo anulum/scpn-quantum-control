@@ -31,6 +31,7 @@ from oscillatools.accel.kuramoto_delayed_mean_field import (
 
 
 def test_residual_matches_definition() -> None:
+    """The residual matches its definition."""
     omega0, coupling, delay, frequency = 1.0, 2.0, 1.5, 0.4
     expected = omega0 - coupling * np.sin(frequency * delay) - frequency
     assert synchronised_frequency_residual(frequency, omega0, coupling, delay) == pytest.approx(
@@ -39,6 +40,7 @@ def test_residual_matches_definition() -> None:
 
 
 def test_residual_vanishes_at_a_root() -> None:
+    """The residual vanishes at a root."""
     omega0, coupling, delay = 1.0, 3.0, 1.2
     for root in synchronised_frequency_roots(omega0, coupling, delay):
         assert abs(synchronised_frequency_residual(root, omega0, coupling, delay)) < 1e-9
@@ -48,6 +50,7 @@ def test_residual_vanishes_at_a_root() -> None:
 
 
 def test_zero_coupling_has_single_root_at_natural_frequency() -> None:
+    """Without coupling the only root is the natural frequency."""
     roots = synchronised_frequency_roots(2.5, 0.0, 1.0)
     assert roots.shape == (1,)
     assert roots[0] == pytest.approx(2.5)
@@ -55,17 +58,20 @@ def test_zero_coupling_has_single_root_at_natural_frequency() -> None:
 
 def test_weak_coupling_has_a_single_root() -> None:
     # K·τ = 0.45 < 1: the self-consistency is monotone, one branch.
+    """Weak coupling has a single root."""
     roots = synchronised_frequency_roots(1.0, 0.3, 1.5)
     assert roots.shape == (1,)
 
 
 def test_strong_coupling_is_multistable() -> None:
     # K·τ = 7.5 ≫ 1: several coexisting branches.
+    """Strong coupling has at least three roots."""
     roots = synchronised_frequency_roots(1.0, 5.0, 1.5)
     assert roots.size >= 3
 
 
 def test_root_count_grows_with_delay_coupling_product() -> None:
+    """The root count grows with the delay-coupling product."""
     counts = [synchronised_frequency_roots(1.0, k, 1.5).size for k in (0.3, 1.0, 3.0, 5.0)]
     assert counts == sorted(counts)
     assert counts[0] == 1
@@ -73,6 +79,7 @@ def test_root_count_grows_with_delay_coupling_product() -> None:
 
 
 def test_all_roots_lie_in_the_analytic_band() -> None:
+    """Every root lies within the coupling of the natural frequency."""
     omega0, coupling, delay = 0.5, 4.0, 2.0
     roots = synchronised_frequency_roots(omega0, coupling, delay)
     assert np.all(roots >= omega0 - abs(coupling) - 1e-9)
@@ -80,11 +87,13 @@ def test_all_roots_lie_in_the_analytic_band() -> None:
 
 
 def test_roots_are_sorted_and_distinct() -> None:
+    """Roots are sorted and distinct."""
     roots = synchronised_frequency_roots(1.0, 5.0, 1.5)
     assert np.all(np.diff(roots) > 0.0)
 
 
 def test_negative_coupling_is_handled() -> None:
+    """Negative coupling gives valid roots."""
     omega0, coupling, delay = 1.0, -5.0, 1.5
     roots = synchronised_frequency_roots(omega0, coupling, delay)
     assert roots.size >= 3
@@ -93,11 +102,13 @@ def test_negative_coupling_is_handled() -> None:
 
 
 def test_roots_reject_non_positive_delay() -> None:
+    """A non-positive delay is refused."""
     with pytest.raises(ValueError, match="delay must be positive"):
         synchronised_frequency_roots(1.0, 2.0, 0.0)
 
 
 def test_roots_reject_too_few_scan_points() -> None:
+    """Fewer than two scan points are refused."""
     with pytest.raises(ValueError, match="scan_points must be at least 2"):
         synchronised_frequency_roots(1.0, 2.0, 1.5, scan_points=1)
 
@@ -106,12 +117,14 @@ def test_roots_reject_too_few_scan_points() -> None:
 
 
 def test_stability_indicator_matches_definition() -> None:
+    """The stability indicator matches its definition."""
     coupling, delay, frequency = 5.0, 1.5, 0.2
     expected = 1.0 + coupling * delay * np.cos(frequency * delay)
     assert synchronised_branch_stability(frequency, coupling, delay) == pytest.approx(expected)
 
 
 def test_is_stable_agrees_with_indicator_sign() -> None:
+    """Stability follows the sign of the indicator."""
     coupling, delay = 5.0, 1.5
     for frequency in np.linspace(-4.0, 4.0, 17):
         indicator = synchronised_branch_stability(frequency, coupling, delay)
@@ -120,6 +133,7 @@ def test_is_stable_agrees_with_indicator_sign() -> None:
 
 def test_weak_coupling_single_root_is_stable() -> None:
     # For K·τ < 1 the stability indicator 1 + K·τ·cos(Ω·τ) ≥ 1 − K·τ > 0 on every branch.
+    """The single root under weak coupling is stable."""
     omega0, coupling, delay = 1.0, 0.3, 1.5
     (root,) = synchronised_frequency_roots(omega0, coupling, delay)
     assert is_synchronised_branch_stable(root, coupling, delay)
@@ -129,6 +143,7 @@ def test_weak_coupling_single_root_is_stable() -> None:
 
 
 def test_stable_branches_are_a_subset_of_all_roots() -> None:
+    """Stable branches are among the roots and are stable."""
     omega0, coupling, delay = 1.0, 5.0, 1.5
     roots = synchronised_frequency_roots(omega0, coupling, delay)
     stable = stable_synchronised_frequencies(omega0, coupling, delay)
@@ -138,11 +153,13 @@ def test_stable_branches_are_a_subset_of_all_roots() -> None:
 
 
 def test_multistable_regime_has_several_stable_branches() -> None:
+    """The multistable regime has at least two stable branches."""
     stable = stable_synchronised_frequencies(1.0, 5.0, 1.5)
     assert stable.size >= 2
 
 
 def test_stable_and_unstable_branches_interleave() -> None:
+    """Stable and unstable branches alternate."""
     omega0, coupling, delay = 1.0, 5.0, 1.5
     roots = synchronised_frequency_roots(omega0, coupling, delay)
     flags = [is_synchronised_branch_stable(r, coupling, delay) for r in roots]
@@ -152,6 +169,7 @@ def test_stable_and_unstable_branches_interleave() -> None:
 
 def test_stable_branches_forward_scan_resolution() -> None:
     # A coarse scan still resolves the well-separated branches at this K·τ; the kwargs are wired.
+    """Stable branches take the scan resolution and remain roots."""
     stable = stable_synchronised_frequencies(1.0, 5.0, 1.5, scan_points=2001, root_tolerance=1e-10)
     assert stable.size >= 2
     for frequency in stable:
@@ -159,5 +177,6 @@ def test_stable_branches_forward_scan_resolution() -> None:
 
 
 def test_weak_coupling_single_stable_branch() -> None:
+    """Weak coupling has one stable branch."""
     stable = stable_synchronised_frequencies(1.0, 0.3, 1.5)
     assert stable.shape == (1,)

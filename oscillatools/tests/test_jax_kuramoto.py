@@ -53,6 +53,7 @@ def _network(
 
 @pytest.mark.parametrize("n", [6, 32, 64])
 def test_forward_matches_rust_tier_at_x64(n: int) -> None:
+    """At float64 the JAX forward pass matches the native tier."""
     theta0, omega, coupling = _network(n, seed=n)
     reference = kuramoto_rk4_trajectory(theta0, omega, coupling, _DT, _STEPS)
     jax_trajectory = jk.jax_kuramoto_rk4_trajectory(theta0, omega, coupling, _DT, _STEPS)
@@ -64,6 +65,7 @@ def test_forward_matches_rust_tier_at_x64(n: int) -> None:
 
 
 def test_euler_forward_matches_production_tier() -> None:
+    """The JAX Euler pass matches the production tier."""
     theta0, omega, coupling = _network(20, seed=41)
     reference = kuramoto_euler_trajectory(theta0, omega, coupling, _DT, 25)
     jax_trajectory = ji.jax_kuramoto_euler_trajectory(theta0, omega, coupling, _DT, 25)
@@ -72,6 +74,7 @@ def test_euler_forward_matches_production_tier() -> None:
 
 
 def test_dopri_forward_matches_production_python_grid() -> None:
+    """The JAX Dormand-Prince pass matches the production Python grid."""
     theta0, omega, coupling = _network(10, seed=42)
     reference = kuramoto_dopri_trajectory(
         theta0,
@@ -99,6 +102,7 @@ def test_dopri_forward_matches_production_python_grid() -> None:
 
 
 def test_networked_inertial_forward_matches_production_tier() -> None:
+    """The JAX networked inertial pass matches the production tier."""
     theta0, omega, coupling = _network(12, seed=43)
     velocities = np.asarray(np.linspace(-0.2, 0.2, theta0.size), dtype=np.float64)
     reference = networked_inertial_trajectory(
@@ -127,6 +131,7 @@ def test_networked_inertial_forward_matches_production_tier() -> None:
 
 
 def test_networked_symplectic_forward_matches_production_tier() -> None:
+    """The JAX networked symplectic pass matches the production tier."""
     theta0, omega, coupling = _network(12, seed=44)
     velocities = np.asarray(np.linspace(0.15, -0.15, theta0.size), dtype=np.float64)
     reference = networked_symplectic_inertial_trajectory(
@@ -155,6 +160,7 @@ def test_networked_symplectic_forward_matches_production_tier() -> None:
 
 
 def test_networked_noisy_forward_matches_production_tier_with_shared_seed() -> None:
+    """With a shared seed the JAX networked noisy pass matches the production tier."""
     theta0, omega, coupling = _network(14, seed=45)
     reference = networked_noisy_trajectory(
         theta0,
@@ -186,6 +192,7 @@ def test_networked_noisy_forward_matches_production_tier_with_shared_seed() -> N
 
 @pytest.mark.parametrize("n", [6, 32, 64])
 def test_gradient_matches_hand_derived_vjp(n: int) -> None:
+    """The autodiff gradient matches the hand-derived VJP."""
     theta0, omega, coupling = _network(n, seed=n + 100)
     trajectory = kuramoto_rk4_trajectory(theta0, omega, coupling, _DT, _STEPS)
     rng = np.random.default_rng(n)
@@ -198,6 +205,7 @@ def test_gradient_matches_hand_derived_vjp(n: int) -> None:
 
 
 def test_trajectory_runs_on_the_jax_default_device() -> None:
+    """The trajectory runs on JAX's default device."""
     import jax
 
     theta0, omega, coupling = _network(16, seed=7)
@@ -211,6 +219,7 @@ def test_trajectory_runs_on_the_jax_default_device() -> None:
 
 
 def test_n_steps_zero_returns_the_initial_state() -> None:
+    """Zero steps return the initial state."""
     theta0, omega, coupling = _network(8, seed=1)
     trajectory = jk.jax_kuramoto_rk4_trajectory(theta0, omega, coupling, _DT, 0)
     assert trajectory.shape == (1, 8)
@@ -218,6 +227,7 @@ def test_n_steps_zero_returns_the_initial_state() -> None:
 
 
 def test_forward_rejects_inconsistent_shapes() -> None:
+    """Inconsistent shapes are refused with their reasons."""
     theta0, omega, coupling = _network(6, seed=2)
     with pytest.raises(ValueError, match="omega"):
         jk.jax_kuramoto_rk4_trajectory(theta0, omega[:-1], coupling, _DT, _STEPS)
@@ -228,6 +238,7 @@ def test_forward_rejects_inconsistent_shapes() -> None:
 
 
 def test_new_integrators_reject_invalid_inputs() -> None:
+    """The new integrators refuse invalid inputs with their reasons."""
     theta0, omega, coupling = _network(6, seed=46)
     velocities = np.zeros_like(theta0)
     with pytest.raises(ValueError, match="omega"):
@@ -258,6 +269,7 @@ def test_new_integrators_reject_invalid_inputs() -> None:
 
 
 def test_gradient_rejects_non_positive_steps_and_bad_cotangent() -> None:
+    """A non-positive step count or a bad cotangent is refused."""
     theta0, omega, coupling = _network(6, seed=3)
     cotangent = np.ones(6, dtype=np.float64)
     with pytest.raises(ValueError, match="n_steps must be positive"):
@@ -267,6 +279,8 @@ def test_gradient_rejects_non_positive_steps_and_bad_cotangent() -> None:
 
 
 def test_missing_jax_raises_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX each entry point names the extra to install."""
+
     def _raise() -> tuple[object, object, object]:
         raise ImportError("the JAX Kuramoto tier requires JAX; install oscillatools[jax]")
 
@@ -281,6 +295,7 @@ def test_missing_jax_raises_import_error(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_forward_and_gradient_are_deterministic() -> None:
+    """The forward pass and the gradient are deterministic."""
     theta0, omega, coupling = _network(12, seed=5)
     first = jk.jax_kuramoto_rk4_trajectory(theta0, omega, coupling, _DT, _STEPS)
     second = jk.jax_kuramoto_rk4_trajectory(theta0, omega, coupling, _DT, _STEPS)
@@ -310,6 +325,7 @@ def _ensemble(
 
 
 def test_ensemble_forward_matches_each_single_member() -> None:
+    """Each ensemble member matches its single run."""
     batch, n = 6, 32
     theta0_batch, omega, coupling, _ = _ensemble(n, batch, seed=21)
     ensemble = jk.jax_kuramoto_rk4_ensemble(theta0_batch, omega, coupling, _DT, _STEPS)
@@ -321,6 +337,7 @@ def test_ensemble_forward_matches_each_single_member() -> None:
 
 
 def test_ensemble_gradient_matches_each_single_member() -> None:
+    """Ensemble gradients have per-member shapes and match each single member."""
     batch, n = 6, 32
     theta0_batch, omega, coupling, cotangent_batch = _ensemble(n, batch, seed=22)
     grad_theta0, grad_omega, grad_coupling = jk.jax_kuramoto_rk4_ensemble_gradient(
@@ -339,6 +356,7 @@ def test_ensemble_gradient_matches_each_single_member() -> None:
 
 
 def test_ensemble_runs_on_the_jax_default_device() -> None:
+    """The ensemble runs on JAX's default device."""
     import jax
 
     theta0_batch, omega, coupling, _ = _ensemble(16, 4, seed=23)
@@ -352,6 +370,7 @@ def test_ensemble_runs_on_the_jax_default_device() -> None:
 
 
 def test_ensemble_rejects_bad_shapes() -> None:
+    """Bad ensemble shapes are refused with their reasons."""
     theta0_batch, omega, coupling, cotangent_batch = _ensemble(6, 4, seed=24)
     with pytest.raises(ValueError, match="two-dimensional"):
         jk.jax_kuramoto_rk4_ensemble(theta0_batch[0], omega, coupling, _DT, _STEPS)
@@ -368,6 +387,7 @@ def test_ensemble_rejects_bad_shapes() -> None:
 
 
 def test_new_integrators_are_reexported_through_public_facades() -> None:
+    """The new integrators are re-exported through the public facades."""
     import oscillatools
     from oscillatools import accel
 

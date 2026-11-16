@@ -26,6 +26,8 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestComputeQSL:
+    """Quantum speed limits for one evolution."""
+
     def test_stationary_product_state_has_zero_speed_limit_branches(self) -> None:
         """A stationary zero-energy product state has zero MT and ML bounds."""
         result = compute_qsl(
@@ -40,6 +42,7 @@ class TestComputeQSL:
         assert result.tau_ML == 0.0
 
     def test_returns_result(self) -> None:
+        """The computation returns a result for three qubits."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=1.0)
@@ -47,18 +50,21 @@ class TestComputeQSL:
         assert result.n_qubits == 3
 
     def test_MT_bound_positive(self) -> None:
+        """The Mandelstam-Tamm bound is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.tau_MT >= 0.0
 
     def test_ML_bound_positive(self) -> None:
+        """The Margolus-Levitin bound is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.tau_ML >= 0.0
 
     def test_actual_exceeds_bounds(self) -> None:
+        """The actual time is not below the bounds."""
         K = build_knm_paper27(L=3) * 2.0
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K * 2, omega, t_target=2.0, R_threshold=0.3)
@@ -69,18 +75,21 @@ class TestComputeQSL:
             )  # small tolerance for dt discretization
 
     def test_overlap_bounded(self) -> None:
+        """The overlap lies in [0, 1]."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = compute_qsl(K, omega, t_target=1.0)
         assert 0.0 <= result.overlap <= 1.0
 
     def test_delta_E_nonneg(self) -> None:
+        """The energy spread is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=0.5)
         assert result.delta_E >= 0.0
 
     def test_two_qubit(self) -> None:
+        """The computation runs on two qubits."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = compute_qsl(K, omega, t_target=1.0)
@@ -89,6 +98,8 @@ class TestComputeQSL:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense evolution above the budget is refused before the Hamiltonian is built."""
+
         def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
@@ -102,6 +113,7 @@ class TestComputeQSL:
     def test_mt_arccos_branch_for_nonstationary_initial_state(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A non-stationary initial state takes the arccos branch of the bound."""
         import scpn_quantum_control.analysis.entanglement_enhanced_sync as sync_mod
 
         def fake_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
@@ -191,6 +203,7 @@ class TestComputeQSL:
     def test_invalid_qsl_time_grid_parameters_are_rejected(
         self, kwargs: dict[str, float], message: str
     ) -> None:
+        """Invalid time-grid parameters are refused with their reasons."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
 
@@ -199,7 +212,10 @@ class TestComputeQSL:
 
 
 class TestQSLvsCoupling:
+    """Speed limits across couplings."""
+
     def test_returns_lists(self) -> None:
+        """Each series has one value per coupling."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(K, omega, n_K_values=5, t_target=1.0)
@@ -209,6 +225,7 @@ class TestQSLvsCoupling:
         assert len(scan["tau_actual"]) == 5
 
     def test_stronger_coupling_faster_sync(self) -> None:
+        """The scan reports the actual synchronisation time per coupling."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(
@@ -223,6 +240,7 @@ class TestQSLvsCoupling:
         assert len(scan["tau_actual"]) == 2
 
     def test_R_final_values_finite(self) -> None:
+        """Every final order parameter lies in [0, 1]."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(
@@ -243,6 +261,8 @@ class TestQSLvsCoupling:
 
 
 class TestQSLPhysics:
+    """Physics of the speed-limit formulas."""
+
     def test_mt_bound_formula(self) -> None:
         """τ_MT = arccos(|⟨ψ(0)|ψ(t)⟩|) / ΔE. Must be non-negative."""
         K = build_knm_paper27(L=3)
@@ -265,8 +285,11 @@ class TestQSLPhysics:
 
 
 class TestQSLPipeline:
+    """The coupling-to-speed-limit pipeline."""
+
     def test_pipeline_knm_to_qsl(self) -> None:
         """Full pipeline: build_knm → compute_qsl → MT and ML bounds.
+
         Verifies QSL module is wired end-to-end.
         """
         import time
@@ -287,6 +310,8 @@ class TestQSLPipeline:
 
 
 class TestNonTrivialOverlap:
+    """Bounds for an initial state with non-trivial overlap."""
+
     def test_mt_bound_formula(self) -> None:
         """Verify the arccos branch formula directly.
 

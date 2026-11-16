@@ -20,35 +20,45 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 class TestHardwareRunnerInit:
+    """Hardware-runner defaults and overrides."""
+
     def test_default_resilience_level_is_2(self) -> None:
+        """The default resilience level is 2."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.resilience_level == 2
 
     def test_resilience_level_override_zero(self) -> None:
+        """Resilience level 0 can be set."""
         runner = HardwareRunner(use_simulator=True, resilience_level=0)
         assert runner.resilience_level == 0
 
     def test_resilience_level_override_one(self) -> None:
+        """Resilience level 1 can be set."""
         runner = HardwareRunner(use_simulator=True, resilience_level=1)
         assert runner.resilience_level == 1
 
     def test_default_optimization_level(self) -> None:
+        """The default optimisation level is 2."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.optimization_level == 2
 
     def test_default_use_fractional_gates(self) -> None:
+        """Fractional gates are used by default."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.use_fractional_gates is True
 
     def test_use_simulator_flag(self) -> None:
+        """The simulator flag is kept."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.use_simulator is True
 
     def test_backend_name_before_connect(self) -> None:
+        """Before connecting the backend name is not_connected."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.backend_name == "not_connected"
 
     def test_backend_none_before_connect(self) -> None:
+        """Before connecting there is no backend."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.backend is None
 
@@ -59,12 +69,16 @@ class TestHardwareRunnerInit:
 
 
 class TestSimulatorConnect:
+    """Connecting to the simulator."""
+
     def test_connect_simulator(self) -> None:
+        """Connecting sets a backend."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         assert runner.backend is not None
 
     def test_transpile_after_connect(self) -> None:
+        """Transpiling works after connecting."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         qc = QuantumCircuit(2)
@@ -75,6 +89,7 @@ class TestSimulatorConnect:
         assert isa.num_qubits >= 2
 
     def test_circuit_stats(self) -> None:
+        """Circuit statistics report depth, qubits and gates."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         qc = QuantumCircuit(2)
@@ -96,7 +111,10 @@ class TestSimulatorConnect:
 
 
 class TestJobResult:
+    """The job result record."""
+
     def test_to_dict_basic(self) -> None:
+        """A basic result converts to a dict without counts."""
         jr = JobResult(
             job_id="test_1",
             backend_name="aer_simulator",
@@ -109,6 +127,7 @@ class TestJobResult:
         assert "counts" not in d
 
     def test_to_dict_with_counts(self) -> None:
+        """Counts are included when present."""
         jr = JobResult(
             job_id="test_2",
             backend_name="aer",
@@ -119,6 +138,7 @@ class TestJobResult:
         assert d["counts"]["00"] == 500
 
     def test_to_dict_with_expectation_values(self) -> None:
+        """Expectation values are included when present."""
         evs = np.array([0.5, -0.3])
         jr = JobResult(
             job_id="test_3",
@@ -130,9 +150,11 @@ class TestJobResult:
         assert d["expectation_values"] == [0.5, -0.3]
 
     def test_default_metadata(self) -> None:
+        """Metadata defaults to empty."""
         jr = JobResult(job_id="x", backend_name="y", experiment_name="z")
         assert jr.metadata == {}
 
     def test_default_wall_time(self) -> None:
+        """Wall time defaults to zero."""
         jr = JobResult(job_id="x", backend_name="y", experiment_name="z")
         assert jr.wall_time_s == 0.0

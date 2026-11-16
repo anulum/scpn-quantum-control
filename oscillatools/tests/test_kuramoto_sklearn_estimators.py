@@ -44,7 +44,6 @@ def _kuramoto_dataset(
     Frequencies are kept well above a 0.05 sparsity threshold so the sparse
     estimator recovers the model exactly.
     """
-
     rng = np.random.default_rng(seed)
     coupling = _ring_coupling(size, coupling_strength)
     frequencies = rng.uniform(0.3, 0.9, size) * rng.choice([-1.0, 1.0], size)
@@ -60,7 +59,10 @@ def _kuramoto_dataset(
 # Shared protocol base
 # --------------------------------------------------------------------------- #
 class TestInferenceEstimatorBase:
+    """The shared scikit-learn estimator base."""
+
     def test_base_fit_and_predict_are_abstract(self) -> None:
+        """The base fit and predict are abstract."""
         base = _KuramotoInferenceEstimator()
         with pytest.raises(NotImplementedError, match="fit"):
             base.fit(np.zeros((2, 2)), np.zeros((2, 2)))
@@ -68,10 +70,12 @@ class TestInferenceEstimatorBase:
             base.predict(np.zeros((2, 2)))
 
     def test_set_params_rejects_unknown_name(self) -> None:
+        """An unknown parameter name is refused."""
         with pytest.raises(ValueError, match="unknown parameter"):
             SparseDynamicsEstimator().set_params(learning_rate=0.1)
 
     def test_get_set_params_round_trip(self) -> None:
+        """Parameters round-trip through get and set."""
         estimator = SparseDynamicsEstimator(n_harmonics=2, threshold=0.1, max_iterations=5)
         assert estimator.get_params() == {
             "n_harmonics": 2,
@@ -84,6 +88,8 @@ class TestInferenceEstimatorBase:
         assert estimator.n_harmonics == 3
 
     def test_score_handles_zero_variance_target(self) -> None:
+        """A zero-variance target scores one when matched and zero otherwise."""
+
         class _ConstantPredictor(_KuramotoInferenceEstimator):
             def predict(self, phases: np.ndarray) -> np.ndarray:
                 return np.full((phases.shape[0], phases.shape[1]), 5.0)
@@ -100,7 +106,10 @@ class TestInferenceEstimatorBase:
 # SparseDynamicsEstimator
 # --------------------------------------------------------------------------- #
 class TestSparseDynamicsEstimator:
+    """The sparse dynamics estimator."""
+
     def test_fit_returns_self_and_exposes_the_model(self) -> None:
+        """Fitting returns the estimator and exposes a model with active terms."""
         phases, derivatives, _, _ = _kuramoto_dataset()
         estimator = SparseDynamicsEstimator(n_harmonics=1, threshold=0.05)
         returned = estimator.fit(phases, derivatives)
@@ -108,6 +117,7 @@ class TestSparseDynamicsEstimator:
         assert estimator.discovered_model_.active_terms > 0
 
     def test_predict_recovers_the_velocities(self) -> None:
+        """Prediction recovers the velocities."""
         phases, derivatives, _, _ = _kuramoto_dataset()
         estimator = SparseDynamicsEstimator(n_harmonics=1, threshold=0.05).fit(phases, derivatives)
         prediction = estimator.predict(phases)
@@ -116,6 +126,7 @@ class TestSparseDynamicsEstimator:
         assert estimator.score(phases, derivatives) == pytest.approx(1.0, abs=1e-9)
 
     def test_predict_generalises_to_unseen_states(self) -> None:
+        """Prediction generalises to unseen states."""
         phases, derivatives, coupling, frequencies = _kuramoto_dataset()
         estimator = SparseDynamicsEstimator(n_harmonics=1, threshold=0.05).fit(phases, derivatives)
         rng = np.random.default_rng(99)
@@ -127,10 +138,12 @@ class TestSparseDynamicsEstimator:
         np.testing.assert_allclose(estimator.predict(held_out), expected, atol=1e-9)
 
     def test_predict_before_fit_raises(self) -> None:
+        """Predicting before fitting raises."""
         with pytest.raises(AttributeError, match="must be fitted"):
             SparseDynamicsEstimator().predict(np.zeros((3, 4)))
 
     def test_rejects_non_two_dimensional_input(self) -> None:
+        """Input that is not two-dimensional is refused."""
         with pytest.raises(ValueError, match="two-dimensional"):
             SparseDynamicsEstimator().fit(np.zeros(4), np.zeros(4))
 
@@ -139,7 +152,10 @@ class TestSparseDynamicsEstimator:
 # CouplingFunctionEstimator
 # --------------------------------------------------------------------------- #
 class TestCouplingFunctionEstimator:
+    """The coupling function estimator."""
+
     def test_fit_returns_self_and_exposes_the_estimate(self) -> None:
+        """Fitting returns the estimator and exposes one frequency per oscillator."""
         phases, derivatives, coupling, _ = _kuramoto_dataset()
         estimator = CouplingFunctionEstimator(coupling=coupling, n_harmonics=1)
         returned = estimator.fit(phases, derivatives)
@@ -147,6 +163,7 @@ class TestCouplingFunctionEstimator:
         assert estimator.estimate_.frequencies.shape == (coupling.shape[0],)
 
     def test_predict_reconstructs_the_velocities_exactly(self) -> None:
+        """Prediction reconstructs the velocities exactly."""
         phases, derivatives, coupling, _ = _kuramoto_dataset()
         estimator = CouplingFunctionEstimator(coupling=coupling, n_harmonics=1).fit(
             phases, derivatives
@@ -157,6 +174,7 @@ class TestCouplingFunctionEstimator:
         assert estimator.score(phases, derivatives) == pytest.approx(1.0, abs=1e-9)
 
     def test_get_params_includes_the_coupling(self) -> None:
+        """The parameters include the harmonics and the coupling."""
         coupling = _ring_coupling(3, 0.5)
         estimator = CouplingFunctionEstimator(coupling=coupling, n_harmonics=2)
         params = estimator.get_params()
@@ -164,6 +182,7 @@ class TestCouplingFunctionEstimator:
         np.testing.assert_array_equal(params["coupling"], coupling)
 
     def test_predict_before_fit_raises(self) -> None:
+        """Predicting before fitting raises."""
         with pytest.raises(AttributeError, match="must be fitted"):
             CouplingFunctionEstimator(coupling=_ring_coupling(3, 0.5)).predict(np.zeros((2, 3)))
 
@@ -172,6 +191,7 @@ class TestCouplingFunctionEstimator:
 # scikit-learn interoperability (skipped when scikit-learn is absent)
 # --------------------------------------------------------------------------- #
 def test_gridsearchcv_compatibility() -> None:
+    """The estimator works inside GridSearchCV."""
     model_selection = pytest.importorskip("sklearn.model_selection")
     phases, derivatives, _, _ = _kuramoto_dataset(samples=60)
     search = model_selection.GridSearchCV(
@@ -185,6 +205,7 @@ def test_gridsearchcv_compatibility() -> None:
 
 
 def test_clone_compatibility() -> None:
+    """The estimator clones with equal parameters."""
     base = pytest.importorskip("sklearn.base")
     original = SparseDynamicsEstimator(n_harmonics=2, threshold=0.3, max_iterations=7)
     cloned = base.clone(original)

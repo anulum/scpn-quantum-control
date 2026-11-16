@@ -25,26 +25,31 @@ from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 
 def test_qlif_rejects_equal_thresholds() -> None:
+    """A threshold that does not exceed the rest potential is refused."""
     with pytest.raises(ValueError, match="v_threshold.*must exceed.*v_rest"):
         QuantumLIFNeuron(v_rest=1.0, v_threshold=1.0)
 
 
 def test_qlif_rejects_zero_tau_mem() -> None:
+    """A zero membrane time constant is refused."""
     with pytest.raises(ValueError, match="tau_mem must be positive"):
         QuantumLIFNeuron(tau_mem=0.0)
 
 
 def test_qsynapse_rejects_equal_bounds() -> None:
+    """Equal synapse bounds are refused."""
     with pytest.raises(ValueError, match="w_max.*must exceed.*w_min"):
         QuantumSynapse(weight=0.5, w_min=1.0, w_max=1.0)
 
 
 def test_qstdp_rejects_zero_sin_shift() -> None:
+    """A shift whose sine is zero is refused."""
     with pytest.raises(ValueError, match="sin\\(shift\\)~0"):
         QuantumSTDP(shift=0.0)
 
 
 def test_vqe_solve_returns_exact_energy() -> None:
+    """The VQE solution includes the exact energy."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -55,6 +60,7 @@ def test_vqe_solve_returns_exact_energy() -> None:
 
 
 def test_vqe_solve_returns_energy_gap() -> None:
+    """The VQE solution includes a non-negative energy gap."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -73,11 +79,13 @@ def test_vqe_solve_returns_energy_gap() -> None:
 
 
 def test_qlif_rejects_zero_dt() -> None:
+    """A zero time step is refused."""
     with pytest.raises(ValueError, match="dt must be positive"):
         QuantumLIFNeuron(dt=0.0)
 
 
 def test_qlif_rejects_negative_nshots() -> None:
+    """A negative shot count is refused."""
     with pytest.raises(ValueError, match="n_shots must be >= 0"):
         QuantumLIFNeuron(n_shots=-1)
 
@@ -86,16 +94,19 @@ def test_qlif_rejects_negative_nshots() -> None:
 
 
 def test_qaoa_mpc_rejects_zero_horizon() -> None:
+    """A zero horizon is refused."""
     with pytest.raises(ValueError, match="horizon must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=0)
 
 
 def test_qaoa_mpc_rejects_negative_horizon() -> None:
+    """A negative horizon is refused."""
     with pytest.raises(ValueError, match="horizon must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=-3)
 
 
 def test_qaoa_mpc_rejects_zero_p_layers() -> None:
+    """Zero QAOA layers are refused."""
     with pytest.raises(ValueError, match="p_layers must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=2, p_layers=0)
 
@@ -104,16 +115,19 @@ def test_qaoa_mpc_rejects_zero_p_layers() -> None:
 
 
 def test_qpetri_rejects_zero_places() -> None:
+    """Zero places are refused."""
     with pytest.raises(ValueError, match="must be positive"):
         QuantumPetriNet(0, 1, np.zeros((1, 0)), np.zeros((0, 1)), np.array([1.0]))
 
 
 def test_qpetri_rejects_wrong_w_in_shape() -> None:
+    """An input weight matrix of the wrong shape is refused."""
     with pytest.raises(ValueError, match="W_in shape"):
         QuantumPetriNet(2, 1, np.zeros((2, 2)), np.zeros((2, 1)), np.array([1.0]))
 
 
 def test_qpetri_rejects_wrong_threshold_length() -> None:
+    """Thresholds of the wrong length are refused."""
     with pytest.raises(ValueError, match="thresholds length"):
         QuantumPetriNet(2, 1, np.zeros((1, 2)), np.zeros((2, 1)), np.array([1.0, 2.0]))
 
@@ -122,6 +136,7 @@ def test_qpetri_rejects_wrong_threshold_length() -> None:
 
 
 def test_bell_rejects_out_of_range_qubits() -> None:
+    """Out-of-range qubits are refused."""
     from qiskit.quantum_info import Statevector
 
     sv = Statevector.from_label("00")
@@ -133,12 +148,14 @@ def test_bell_rejects_out_of_range_qubits() -> None:
 
 
 def test_percolation_rejects_out_of_range_source() -> None:
+    """An out-of-range source is refused."""
     K = build_knm_paper27(L=4)
     with pytest.raises(ValueError, match="out of range"):
         best_entanglement_path(K, source=10, target=0)
 
 
 def test_percolation_rejects_negative_target() -> None:
+    """A negative target is refused."""
     K = build_knm_paper27(L=4)
     with pytest.raises(ValueError, match="out of range"):
         best_entanglement_path(K, source=0, target=-1)
@@ -148,10 +165,12 @@ def test_percolation_rejects_negative_target() -> None:
 
 
 def test_classical_kuramoto_rejects_zero_dt() -> None:
+    """A zero time step is refused."""
     with pytest.raises(ValueError, match="dt must be positive"):
         classical_kuramoto_reference(n_osc=4, t_max=1.0, dt=0.0)
 
 
 def test_classical_kuramoto_rejects_negative_tmax() -> None:
+    """A negative end time is refused."""
     with pytest.raises(ValueError, match="t_max must be non-negative"):
         classical_kuramoto_reference(n_osc=4, t_max=-1.0, dt=0.1)

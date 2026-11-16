@@ -26,7 +26,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestHalfChainEntropy:
+    """The half-chain entanglement entropy."""
+
     def test_non_negative(self) -> None:
+        """The entropy is non-negative."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         s = entanglement_entropy_half_chain(K, omega)
@@ -49,19 +52,24 @@ class TestHalfChainEntropy:
 
 
 class TestEntanglementSpectrum:
+    """The entanglement spectrum."""
+
     def test_eigenvalues_sum_to_one(self) -> None:
+        """The eigenvalues sum to one."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         spectrum = entanglement_spectrum_half_chain(K, omega)
         assert np.sum(spectrum) == pytest.approx(1.0, abs=1e-10)
 
     def test_eigenvalues_non_negative(self) -> None:
+        """The eigenvalues are non-negative."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         spectrum = entanglement_spectrum_half_chain(K, omega)
         assert np.all(spectrum >= -1e-12)
 
     def test_descending_order(self) -> None:
+        """The eigenvalues are in descending order."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         spectrum = entanglement_spectrum_half_chain(K, omega)
@@ -77,13 +85,17 @@ class TestEntanglementSpectrum:
 
 
 class TestEntropyVsSubsystemSize:
+    """Entropy against subsystem size."""
+
     def test_length(self) -> None:
+        """There is one entropy per subsystem size up to half the chain."""
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         s_vs_l = entropy_vs_subsystem_size(K, omega)
         assert len(s_vs_l) == 3  # 6//2 = 3
 
     def test_non_negative(self) -> None:
+        """Every entropy is non-negative."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         s_vs_l = entropy_vs_subsystem_size(K, omega)
@@ -92,11 +104,15 @@ class TestEntropyVsSubsystemSize:
 
 
 class TestFitCFTCentralCharge:
+    """Fitting the central charge."""
+
     def test_none_for_too_few_points(self) -> None:
+        """Too few points give no central charge."""
         c = fit_cft_central_charge(np.array([1.0, 2.0]), np.array([0.5, 0.7]), 4)
         assert c is None
 
     def test_returns_float(self) -> None:
+        """Enough points give a float central charge."""
         sizes = np.arange(1, 5, dtype=float)
         entropies = 0.3 * np.log(sizes) + 0.5
         c = fit_cft_central_charge(sizes, entropies, 8)
@@ -116,18 +132,23 @@ class TestFitCFTCentralCharge:
     def test_rejects_invalid_scaling_inputs(
         self, sizes: NDArray[np.float64], entropies: NDArray[np.float64], n_total: int, match: str
     ) -> None:
+        """Invalid scaling inputs are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             fit_cft_central_charge(sizes, entropies, n_total)
 
 
 class TestEntanglementAnalysis:
+    """The entanglement analysis."""
+
     def test_returns_result(self) -> None:
+        """The analysis returns a result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = entanglement_analysis(K, omega)
         assert isinstance(result, EntanglementResult)
 
     def test_n_qubits(self) -> None:
+        """The result records six qubits."""
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         result = entanglement_analysis(K, omega)
@@ -146,7 +167,10 @@ class TestEntanglementAnalysis:
 
 
 class TestEntropyVsCouplingScan:
+    """Scanning entropy across couplings."""
+
     def test_scan_returns_keys(self) -> None:
+        """The scan returns the couplings and one entropy per coupling."""
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 0.5, 1.0])
         results = entropy_vs_coupling_scan(omega, k_vals)
@@ -155,6 +179,7 @@ class TestEntropyVsCouplingScan:
         assert len(results["k_base"]) == 3
 
     def test_entropy_changes(self) -> None:
+        """The entropy changes across the scan."""
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.01, 3.0])
         results = entropy_vs_coupling_scan(omega, k_vals)
