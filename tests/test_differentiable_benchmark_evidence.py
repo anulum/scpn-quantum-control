@@ -32,6 +32,7 @@ from scpn_quantum_control.benchmarks.differentiable_evidence import (
 
 
 def test_github_hosted_benchmark_metadata_downgrades_to_functional_non_isolated() -> None:
+    """A GitHub-hosted run is classified as functional, not isolated."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {
             "GITHUB_RUN_ID": "12345",
@@ -61,6 +62,7 @@ def test_github_hosted_benchmark_metadata_downgrades_to_functional_non_isolated(
 
 
 def test_self_hosted_isolated_metadata_promotes_only_with_all_required_context() -> None:
+    """A self-hosted run counts as isolated only with all the required context."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {
             "GITHUB_RUN_ID": "67890",
@@ -94,6 +96,7 @@ def test_self_hosted_isolated_metadata_promotes_only_with_all_required_context()
 
 
 def test_self_hosted_isolated_metadata_requires_full_host_context() -> None:
+    """Missing host context makes a self-hosted run a hard gap."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {
             "GITHUB_RUN_ID": "67890",
@@ -119,6 +122,7 @@ def test_self_hosted_isolated_metadata_requires_full_host_context() -> None:
 
 
 def test_self_hosted_isolated_metadata_rejects_high_host_load() -> None:
+    """High host load makes a self-hosted run a hard gap."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {
             "GITHUB_RUN_ID": "67890",
@@ -150,6 +154,7 @@ def test_self_hosted_isolated_metadata_rejects_high_host_load() -> None:
 
 
 def test_self_hosted_isolated_metadata_rejects_heavy_jobs() -> None:
+    """Heavy concurrent jobs make a self-hosted run a hard gap."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {
             "GITHUB_RUN_ID": "67890",
@@ -181,6 +186,7 @@ def test_self_hosted_isolated_metadata_rejects_heavy_jobs() -> None:
 
 
 def test_requested_cuda_without_visible_device_is_hard_gap() -> None:
+    """Requesting CUDA without a visible device is a hard gap with a CPU fallback."""
     accelerator_metadata = capture_accelerator_metadata(
         {
             "SCPN_BENCH_ACCELERATOR_BACKEND": "cuda",
@@ -219,6 +225,7 @@ def test_requested_cuda_without_visible_device_is_hard_gap() -> None:
 
 
 def test_requested_cuda_with_visible_device_keeps_isolated_promotion() -> None:
+    """Requesting CUDA with a visible device keeps the isolated promotion."""
     accelerator_metadata = capture_accelerator_metadata(
         {
             "SCPN_BENCH_ACCELERATOR_BACKEND": "cuda",
@@ -256,6 +263,7 @@ def test_requested_cuda_with_visible_device_keeps_isolated_promotion() -> None:
 
 
 def test_requested_cuda_accepts_explicit_device_metadata() -> None:
+    """Explicit CUDA device metadata is accepted."""
     accelerator_metadata = capture_accelerator_metadata(
         {
             "SCPN_BENCH_ACCELERATOR_BACKEND": "cuda",
@@ -272,6 +280,7 @@ def test_requested_cuda_accepts_explicit_device_metadata() -> None:
 
 
 def test_requested_rocm_uses_visible_rocm_devices() -> None:
+    """Requesting ROCm uses the visible ROCm devices."""
     accelerator_metadata = capture_accelerator_metadata(
         {
             "SCPN_BENCH_ACCELERATOR_BACKEND": "hip",
@@ -289,6 +298,7 @@ def test_requested_rocm_uses_visible_rocm_devices() -> None:
 
 
 def test_detected_backend_uses_visible_accelerators_without_requested_backend() -> None:
+    """Without a requested backend the visible accelerators decide it."""
     cuda_metadata = capture_accelerator_metadata(
         {
             "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",
@@ -311,6 +321,7 @@ def test_detected_backend_uses_visible_accelerators_without_requested_backend() 
 def test_cuda_probe_without_jax_returns_empty_metadata(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Without JAX the CUDA probe returns nothing."""
     original_import = builtins.__import__
 
     def fake_import(
@@ -332,6 +343,7 @@ def test_cuda_probe_without_jax_returns_empty_metadata(
 def test_cuda_probe_records_runtime_versions_when_device_probe_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A failed device probe still records the runtime versions."""
     fake_jax = ModuleType("jax")
 
     def fake_devices(_kind: str) -> tuple[object, ...]:
@@ -347,6 +359,8 @@ def test_cuda_probe_records_runtime_versions_when_device_probe_fails(
 def test_public_accelerator_capture_records_discovered_jax_devices(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Accelerator capture records the JAX devices found."""
+
     class FakeDevice:
         def __str__(self) -> str:
             return "NVIDIA L40S"
@@ -377,6 +391,8 @@ def test_public_accelerator_capture_records_discovered_jax_devices(
 
 
 def test_jax_runtime_versions_skip_missing_packages(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Runtime versions skip packages that are not installed."""
+
     def fake_version(package: str) -> str:
         if package == "jax":
             return "1.2.3"
@@ -391,6 +407,7 @@ def test_jax_runtime_versions_skip_missing_packages(monkeypatch: pytest.MonkeyPa
 
 
 def test_evidence_bundle_serialises_accelerator_metadata(tmp_path: Path) -> None:
+    """The evidence bundle serialises the accelerator metadata."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {"GITHUB_RUN_ID": "12345", "GITHUB_SHA": "abc123", "RUNNER_ENVIRONMENT": "github-hosted"},
         command=("python", "scripts/run_differentiable_benchmark_evidence.py"),
@@ -418,6 +435,7 @@ def test_evidence_bundle_serialises_accelerator_metadata(tmp_path: Path) -> None
 def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_ids(
     tmp_path: Path,
 ) -> None:
+    """The bundle writes JSON, CSV and Markdown with artefact ids."""
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {"GITHUB_RUN_ID": "12345", "GITHUB_SHA": "abc123", "RUNNER_ENVIRONMENT": "github-hosted"},
         command=("python", "scripts/run_differentiable_benchmark_evidence.py"),
@@ -462,6 +480,7 @@ def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_id
 
 
 def test_heavy_job_inference_uses_cpu_scaled_load(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Heavy jobs are inferred from load scaled by the CPU count."""
     monkeypatch.setattr("os.cpu_count", lambda: 4)
 
     assert infer_heavy_jobs_running((4.0, 1.0, 1.0))
@@ -469,6 +488,7 @@ def test_heavy_job_inference_uses_cpu_scaled_load(monkeypatch: pytest.MonkeyPatc
 
 
 def test_capture_host_load_returns_float_tuple(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Host load is captured as three floats."""
     monkeypatch.setattr(os, "getloadavg", lambda: (1, 2, 3))
 
     assert capture_host_load() == (1.0, 2.0, 3.0)
@@ -477,6 +497,8 @@ def test_capture_host_load_returns_float_tuple(monkeypatch: pytest.MonkeyPatch) 
 def test_capture_host_load_returns_none_when_unavailable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Unavailable host load gives None."""
+
     def missing_load() -> tuple[float, float, float]:
         raise OSError("load unavailable")
 
@@ -508,6 +530,7 @@ def _fake_system_path_factory(files: dict[str, str]) -> type[_FakeSystemPath]:
 def test_read_cpu_governor_handles_present_empty_and_missing_sysfs(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The governor is read, or None when the sysfs entry is empty or missing."""
     files = {"/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "performance\n"}
     monkeypatch.setattr(_evidence, "Path", _fake_system_path_factory(files))
     assert read_cpu_governor() == "performance"
@@ -522,6 +545,7 @@ def test_read_cpu_governor_handles_present_empty_and_missing_sysfs(
 def test_read_cpu_frequency_prefers_sysfs_and_falls_back_to_cpuinfo(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The frequency comes from sysfs, else cpuinfo, else None."""
     files = {"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "3200000\n"}
     monkeypatch.setattr(_evidence, "Path", _fake_system_path_factory(files))
     assert read_cpu_frequency_mhz() == 3200.0
@@ -537,6 +561,7 @@ def test_read_cpu_frequency_prefers_sysfs_and_falls_back_to_cpuinfo(
 def test_read_cpu_frequency_ignores_empty_sysfs_before_cpuinfo(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """An empty sysfs entry falls back to cpuinfo."""
     files = {
         "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "\n",
         "/proc/cpuinfo": "cpu MHz\t\t: 1000.000\n",
@@ -549,6 +574,7 @@ def test_read_cpu_frequency_ignores_empty_sysfs_before_cpuinfo(
 def test_read_cpu_frequency_returns_none_when_cpuinfo_has_no_frequency(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A cpuinfo without a frequency gives None."""
     files = {
         "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "\n",
         "/proc/cpuinfo": "processor: 0\nmodel name: test\n",
@@ -559,6 +585,7 @@ def test_read_cpu_frequency_returns_none_when_cpuinfo_has_no_frequency(
 
 
 def test_runtime_version_metadata_ignores_incomplete_pairs() -> None:
+    """Incomplete runtime-version pairs are ignored."""
     metadata = capture_accelerator_metadata(
         {
             "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",

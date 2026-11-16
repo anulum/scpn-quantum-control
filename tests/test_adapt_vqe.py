@@ -41,34 +41,44 @@ def _exact_ground_energy(n: int, K: np.ndarray, omega: np.ndarray) -> float:
 
 
 class TestOperatorPool:
+    """The ADAPT-VQE operator pool."""
+
     def test_pool_non_empty(self) -> None:
+        """The pool is not empty."""
         K = build_knm_paper27(L=3)
         assert len(_build_operator_pool(K, 3)) > 0
 
     def test_pool_contains_exchange_and_local(self) -> None:
+        """The pool holds at least six exchange and local operators for three qubits."""
         K = build_knm_paper27(L=3)
         # 3 pairs + 3 single-qubit = 6 minimum
         assert len(_build_operator_pool(K, 3)) >= 6
 
     def test_pool_operators_are_sparse_pauli(self) -> None:
+        """Every pool operator is a SparsePauliOp."""
         K = build_knm_paper27(L=3)
         for op in _build_operator_pool(K, 3):
             assert isinstance(op, SparsePauliOp)
 
     def test_dense_generators_are_hermitian(self) -> None:
+        """Every dense generator is Hermitian."""
         K = build_knm_paper27(L=3)
         for generator in _pool_generators_dense(K, 3):
             assert np.allclose(generator, generator.conj().T, atol=1e-12)
 
 
 class TestAnsatzAction:
+    """The action of the ansatz on a state."""
+
     def test_plus_reference_is_normalised_uniform(self) -> None:
+        """The plus reference is a normalised uniform superposition."""
         ref = _plus_reference(3)
         assert ref.shape == (8,)
         assert np.allclose(np.abs(ref), 1.0 / np.sqrt(8))
         assert np.isclose(np.vdot(ref, ref), 1.0)
 
     def test_ansatz_zero_angles_is_identity(self) -> None:
+        """Zero angles leave the state unchanged."""
         K = build_knm_paper27(L=2)
         spectra: list[tuple[FloatArray, ComplexArray]] = [
             np.linalg.eigh(g) for g in _pool_generators_dense(K, 2)
@@ -78,6 +88,7 @@ class TestAnsatzAction:
         assert np.allclose(out, ref)
 
     def test_ansatz_preserves_norm(self) -> None:
+        """The ansatz preserves the norm."""
         K = build_knm_paper27(L=2)
         generators = _pool_generators_dense(K, 2)
         spectra: list[tuple[FloatArray, ComplexArray]] = [np.linalg.eigh(g) for g in generators]
@@ -88,12 +99,16 @@ class TestAnsatzAction:
 
 
 class TestGroundStateConvergence:
+    """Convergence to the ground state."""
+
     def test_returns_result(self) -> None:
+        """The solver returns a result record."""
         K = build_knm_paper27(L=2)
         result = adapt_vqe(K, OMEGA_N_16[:2], seed=42)
         assert isinstance(result, ADAPTResult)
 
     def test_reaches_exact_ground_state_2q(self) -> None:
+        """Two qubits reach the exact ground energy to 1e-6."""
         n = 2
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -102,6 +117,7 @@ class TestGroundStateConvergence:
         assert abs(result.energy - exact) < 1e-6
 
     def test_reaches_exact_ground_state_3q(self) -> None:
+        """Three qubits reach the exact ground energy to 1e-6."""
         n = 3
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -110,6 +126,7 @@ class TestGroundStateConvergence:
         assert abs(result.energy - exact) < 1e-6
 
     def test_matches_classical_exact_diag(self) -> None:
+        """The energy matches classical exact diagonalisation."""
         n = 3
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -118,6 +135,7 @@ class TestGroundStateConvergence:
         assert abs(result.energy - exact) < 1e-6
 
     def test_energy_below_reference(self) -> None:
+        """The final energy is below the reference energy."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = adapt_vqe(K, omega, seed=42)
@@ -128,6 +146,7 @@ class TestGroundStateConvergence:
         # Regression: the gradient-selection ADAPT terminated at 0 operators from the
         # |0...0> eigenstate and falsely reported convergence. The layered scheme must
         # build a real ansatz.
+        """The solver builds a non-empty ansatz."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = adapt_vqe(K, omega, seed=42)
@@ -136,6 +155,7 @@ class TestGroundStateConvergence:
         assert len(result.selected_operators) > 0
 
     def test_reproducible_for_fixed_seed(self) -> None:
+        """A fixed seed gives the same result."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         a = adapt_vqe(K, omega, seed=7)
@@ -144,17 +164,20 @@ class TestGroundStateConvergence:
         assert a.n_parameters == b.n_parameters
 
     def test_convergence_flag_set(self) -> None:
+        """The run reports convergence."""
         K = build_knm_paper27(L=2)
         result = adapt_vqe(K, OMEGA_N_16[:2], seed=42)
         assert result.converged
 
     def test_gradient_norms_tracked_per_layer(self) -> None:
+        """One non-negative gradient norm is recorded per iteration."""
         K = build_knm_paper27(L=2)
         result = adapt_vqe(K, OMEGA_N_16[:2], seed=42)
         assert len(result.gradient_norms) == result.n_iterations
         assert all(g >= 0.0 for g in result.gradient_norms)
 
     def test_energies_history_starts_at_reference(self) -> None:
+        """The energy history starts at the reference energy."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = adapt_vqe(K, omega, seed=42)
@@ -165,6 +188,7 @@ class TestGroundStateConvergence:
         assert len(result.energies) == result.n_iterations + 1
 
     def test_selected_operators_index_into_pool(self) -> None:
+        """Selected operators index into the pool."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         pool = _build_operator_pool(K, 3)
@@ -174,9 +198,12 @@ class TestGroundStateConvergence:
 
 
 class TestContracts:
+    """Input contracts of the solver."""
+
     def test_rejects_dense_budget_before_dense_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A statevector above the dense budget is refused before allocation."""
         adapt_module = importlib.import_module("scpn_quantum_control.phase.adapt_vqe")
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -190,6 +217,7 @@ class TestContracts:
             adapt_vqe(K, omega, max_iterations=1, seed=42, max_dense_gib=1e-12)
 
     def test_rejects_oversized_system(self) -> None:
+        """An oversized system is refused."""
         K = build_knm_paper27(L=11)
         omega = OMEGA_N_16[:11]
         with pytest.raises(ValueError, match="too large"):

@@ -34,43 +34,55 @@ def artifact() -> dict[str, object]:
 
 
 class TestPairCorrelator:
+    """The two-qubit correlator from counts."""
+
     def test_perfect_correlation(self) -> None:
+        """Perfectly correlated counts give E = 1."""
         e_value, total = script.pair_correlator({"00": 50, "11": 50}, (0, 1))
         assert e_value == pytest.approx(1.0)
         assert total == 100
 
     def test_perfect_anticorrelation(self) -> None:
+        """Perfectly anticorrelated counts give E = -1."""
         e_value, total = script.pair_correlator({"01": 30, "10": 70}, (0, 1))
         assert e_value == pytest.approx(-1.0)
         assert total == 100
 
     def test_mixed_counts(self) -> None:
+        """Mixed counts give the expected correlator."""
         e_value, total = script.pair_correlator({"00": 3, "01": 1, "10": 1, "11": 3}, (0, 1))
         assert e_value == pytest.approx(0.5)
         assert total == 8
 
     def test_little_endian_positions(self) -> None:
         # Qubit 2 and 3 live in the two LEFTMOST characters of a 4-bit string.
+        """Qubit positions are read little-endian."""
         e_value, _ = script.pair_correlator({"0011": 10}, (2, 3))
         assert e_value == pytest.approx(1.0)
         e_value, _ = script.pair_correlator({"0111": 10}, (2, 3))
         assert e_value == pytest.approx(-1.0)
 
     def test_bitstring_too_narrow_fails_closed(self) -> None:
+        """A bitstring narrower than the pair fails closed."""
         with pytest.raises(ValueError, match="narrower than qubit pair"):
             script.pair_correlator({"01": 5}, (2, 3))
 
     def test_zero_shots_fails_closed(self) -> None:
+        """Zero shots fail closed."""
         with pytest.raises(ValueError, match="no shots recorded"):
             script.pair_correlator({"00": 0, "11": 0}, (0, 1))
 
 
 class TestChshForPair:
+    """The CHSH value for one qubit pair."""
+
     def test_wrong_setting_count_fails_closed(self) -> None:
+        """A setting count other than four fails closed."""
         with pytest.raises(ValueError, match="expected 4 analyser settings"):
             script.chsh_for_pair([{"counts": {"00": 1}}], (0, 1))
 
     def test_missing_counts_fails_closed(self) -> None:
+        """A result without counts fails closed."""
         settings: list[dict[str, object]] = [
             {"counts": {"00": 1}},
             {"pub_index": 1},
@@ -82,6 +94,7 @@ class TestChshForPair:
 
     def test_tsirelson_style_synthetic_counts(self) -> None:
         # E = ±1/sqrt(2) per setting reproduces S = 2*sqrt(2) exactly.
+        """Tsirelson-style synthetic counts give the expected S and sigma."""
         plus = {"00": 8536, "01": 1464, "10": 1464, "11": 8536}
         minus = {"00": 1464, "01": 8536, "10": 8536, "11": 1464}
         stats = script.chsh_for_pair(
@@ -93,6 +106,7 @@ class TestChshForPair:
         assert stats.sigma == pytest.approx(expected_sigma, abs=1e-6)
 
     def test_zero_sigma_significance_is_signed_infinity(self) -> None:
+        """With zero sigma the significance is signed infinity."""
         above = script.PairStatistics(
             label="toy", settings_e=(1.0, -1.0, 1.0, 1.0), s_value=4.0, sigma=0.0
         )
@@ -103,12 +117,14 @@ class TestChshForPair:
         assert below.significance == -math.inf
 
     def test_zero_sigma_at_the_bound_is_zero(self) -> None:
+        """With zero sigma at the bound the significance is zero."""
         at_bound = script.PairStatistics(
             label="toy", settings_e=(1.0, 1.0, 1.0, 1.0), s_value=2.0, sigma=0.0
         )
         assert at_bound.significance == 0.0
 
     def test_minus_sign_sits_on_setting_one(self) -> None:
+        """The minus sign sits on setting index 1."""
         same = {"00": 10, "11": 10}
         stats = script.chsh_for_pair([{"counts": same}] * 4, (0, 1))
         # E = +1 everywhere -> S = 1 - 1 + 1 + 1 = 2.
@@ -120,6 +136,7 @@ class TestCommittedArtifactValues:
     """Pin the corrected public numbers to the committed raw counts."""
 
     def test_pair_q0q1(self, artifact: dict[str, object]) -> None:
+        """Pair q0q1 gives its recorded S and sigma."""
         pairs = script.recompute(artifact)
         stats = pairs[0]
         assert stats.label == "q0q1"
@@ -128,6 +145,7 @@ class TestCommittedArtifactValues:
         assert stats.significance == pytest.approx(7.54, abs=5e-3)
 
     def test_pair_q2q3(self, artifact: dict[str, object]) -> None:
+        """Pair q2q3 gives its recorded S and sigma."""
         pairs = script.recompute(artifact)
         stats = pairs[1]
         assert stats.label == "q2q3"
@@ -136,24 +154,30 @@ class TestCommittedArtifactValues:
         assert stats.significance == pytest.approx(8.94, abs=5e-3)
 
     def test_only_the_higher_pair_clears_eight_sigma(self, artifact: dict[str, object]) -> None:
+        """Only the higher pair clears eight sigma."""
         low, high = script.recompute(artifact)
         assert low.significance < 8.0 < high.significance
 
     def test_setting_one_anomaly_is_real(self, artifact: dict[str, object]) -> None:
+        """Setting index 1 has a markedly low correlator while the others exceed 0.75."""
         for stats in script.recompute(artifact):
             others = [e for i, e in enumerate(stats.settings_e) if i != 1]
             assert stats.settings_e[1] < 0.35
             assert min(others) > 0.75
 
     def test_artifact_without_results_fails_closed(self) -> None:
+        """An artefact without results fails closed."""
         with pytest.raises(ValueError, match="lacks a 'results' list"):
             script.recompute({"backend": "ibm_fez"})
 
 
 class TestReportAndCli:
+    """The report and the command."""
+
     def test_render_report_states_both_pairs_and_anomaly(
         self, artifact: dict[str, object]
     ) -> None:
+        """The report states both pairs and the anomaly."""
         report = script.render_report(script.recompute(artifact))
         assert "pair q0q1" in report
         assert "7.54 sigma" in report
@@ -162,12 +186,14 @@ class TestReportAndCli:
         assert "anomalous" in report
 
     def test_main_prints_report(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """The command prints the report."""
         assert script.main([]) == 0
         out = capsys.readouterr().out
         assert "S = 2.1650" in out
         assert "S = 2.1880" in out
 
     def test_main_writes_json(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """The command writes the JSON summary."""
         out_path = tmp_path / "chsh.json"
         assert script.main(["--json", str(out_path)]) == 0
         capsys.readouterr()
@@ -180,6 +206,7 @@ class TestReportAndCli:
     def test_main_custom_artifact(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """The command accepts a custom artefact."""
         same = {"0000": 10, "1111": 10}
         payload = {"results": [{"counts": same}] * 4}
         artifact_path = tmp_path / "toy.json"

@@ -44,6 +44,8 @@ if TYPE_CHECKING:
 
 
 class TestOrderParameterProperties:
+    """Properties of the order parameter."""
+
     @given(st_angles(min_n=2, max_n=8))
     @settings(max_examples=100)
     def test_R_bounded_01(self, theta: NDArray[np.float64]) -> None:
@@ -75,15 +77,19 @@ class TestOrderParameterProperties:
 
 
 class TestCouplingMatrixProperties:
+    """Properties of the coupling matrices."""
+
     @given(st.integers(min_value=2, max_value=16))
     @settings(max_examples=30)
     def test_paper27_symmetric(self, n: int) -> None:
+        """The paper-27 coupling is symmetric."""
         K = build_knm_paper27(L=n)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
     @given(st.integers(min_value=2, max_value=16))
     @settings(max_examples=30)
     def test_paper27_nonneg(self, n: int) -> None:
+        """The paper-27 coupling is non-negative."""
         K = build_knm_paper27(L=n)
         assert np.all(K >= -1e-14)
 
@@ -102,6 +108,7 @@ class TestCouplingMatrixProperties:
     )
     @settings(max_examples=30)
     def test_ring_symmetric(self, n: int, coupling: float) -> None:
+        """The ring coupling is symmetric."""
         K, _ = build_kuramoto_ring(n, coupling=coupling, rng_seed=0)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
@@ -126,9 +133,12 @@ class TestCouplingMatrixProperties:
 
 
 class TestHamiltonianProperties:
+    """Properties of the Hamiltonians."""
+
     @given(st.integers(min_value=2, max_value=6))
     @settings(max_examples=15)
     def test_hermiticity_paper27(self, n: int) -> None:
+        """The paper-27 Hamiltonian is Hermitian."""
         K = build_knm_paper27(L=n)
         omega = np.ones(n)
         H = knm_to_hamiltonian(K, omega)
@@ -138,6 +148,7 @@ class TestHamiltonianProperties:
     @given(st_coupling_matrix(n=3), st_frequencies(n=3))
     @settings(max_examples=30)
     def test_hermiticity_random(self, K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
+        """A random-coupling Hamiltonian is Hermitian."""
         H = knm_to_hamiltonian(K, omega)
         H_mat = np.array(H.to_matrix())
         np.testing.assert_allclose(H_mat, H_mat.conj().T, atol=1e-12)
@@ -151,6 +162,7 @@ class TestHamiltonianProperties:
     def test_xxz_hermiticity_random(
         self, K: NDArray[np.float64], omega: NDArray[np.float64], delta: float
     ) -> None:
+        """A random XXZ Hamiltonian is Hermitian."""
         H = knm_to_xxz_hamiltonian(K, omega, delta=delta)
         H_mat = np.array(H.to_matrix())
         np.testing.assert_allclose(H_mat, H_mat.conj().T, atol=1e-12)
@@ -178,6 +190,7 @@ class TestHamiltonianProperties:
     @given(st.integers(min_value=2, max_value=5))
     @settings(max_examples=10)
     def test_hamiltonian_dimension(self, n: int) -> None:
+        """The Hamiltonian acts on n qubits."""
         K = build_knm_paper27(L=n)
         omega = np.ones(n)
         H = knm_to_hamiltonian(K, omega)
@@ -192,9 +205,12 @@ class TestHamiltonianProperties:
 
 
 class TestStatePreparationProperties:
+    """Properties of state preparation."""
+
     @given(st.integers(min_value=1, max_value=8))
     @settings(max_examples=20)
     def test_normalised(self, n: int) -> None:
+        """The prepared state is normalised."""
         omega = np.ones(n) * 0.5
         psi = _build_initial_state(n, omega)
         np.testing.assert_allclose(np.linalg.norm(psi), 1.0, atol=1e-14)
@@ -202,6 +218,7 @@ class TestStatePreparationProperties:
     @given(st.integers(min_value=1, max_value=8))
     @settings(max_examples=20)
     def test_dimension(self, n: int) -> None:
+        """The prepared state has 2^n amplitudes."""
         omega = np.ones(n) * 0.5
         psi = _build_initial_state(n, omega)
         assert len(psi) == 2**n
@@ -209,6 +226,7 @@ class TestStatePreparationProperties:
     @given(st.integers(min_value=1, max_value=6), st_frequencies(n=None, min_n=1, max_n=1))
     @settings(max_examples=20)
     def test_deterministic(self, n: int, omega_base: NDArray[np.float64]) -> None:
+        """Preparation is deterministic."""
         omega = np.full(n, omega_base[0])
         psi1 = _build_initial_state(n, omega)
         psi2 = _build_initial_state(n, omega)
@@ -221,9 +239,12 @@ class TestStatePreparationProperties:
 
 
 class TestSparseVsDenseProperties:
+    """Sparse against dense order parameters."""
+
     @given(st_statevector(min_n=2, max_n=4))
     @settings(max_examples=50)
     def test_agreement(self, psi_n: tuple[NDArray[np.complex128], int]) -> None:
+        """Sparse and dense order parameters agree."""
         psi, n = psi_n
         R_dense = _state_order_param(psi, n)
         R_sparse = _state_order_param_sparse(psi, n)
@@ -232,6 +253,7 @@ class TestSparseVsDenseProperties:
     @given(st_statevector(min_n=2, max_n=4))
     @settings(max_examples=50)
     def test_both_bounded(self, psi_n: tuple[NDArray[np.complex128], int]) -> None:
+        """Both order parameters lie in [0, 1]."""
         psi, n = psi_n
         R_dense = _state_order_param(psi, n)
         R_sparse = _state_order_param_sparse(psi, n)
@@ -245,12 +267,15 @@ class TestSparseVsDenseProperties:
 
 
 class TestBruteMPCProperties:
+    """Properties of brute-force control."""
+
     @given(
         st.integers(min_value=1, max_value=5),
         st.integers(min_value=1, max_value=3),
     )
     @settings(max_examples=30)
     def test_enumerates_all(self, dim: int, horizon: int) -> None:
+        """Every action sequence is evaluated."""
         B = np.eye(dim)
         target = np.ones(dim)
         result = classical_brute_mpc(B, target, horizon)
@@ -263,6 +288,7 @@ class TestBruteMPCProperties:
     )
     @settings(max_examples=20)
     def test_optimal_is_minimum(self, dim: int, horizon: int) -> None:
+        """The optimal cost is the minimum."""
         B = np.eye(dim)
         target = np.ones(dim) * 0.5
         result = classical_brute_mpc(B, target, horizon)
@@ -271,6 +297,7 @@ class TestBruteMPCProperties:
     @given(st.integers(min_value=1, max_value=4))
     @settings(max_examples=10)
     def test_binary_actions(self, horizon: int) -> None:
+        """Optimal actions are binary."""
         B = np.eye(2)
         target = np.ones(2)
         result = classical_brute_mpc(B, target, horizon)
@@ -283,12 +310,15 @@ class TestBruteMPCProperties:
 
 
 class TestKuramotoSimulationProperties:
+    """Properties of the Kuramoto simulation."""
+
     @given(
         st.integers(min_value=2, max_value=6),
         st_dt(min_val=0.01, max_val=0.1),
     )
     @settings(max_examples=30)
     def test_R_bounded(self, n: int, dt: float) -> None:
+        """The order parameter lies in [0, 1]."""
         result = classical_kuramoto_reference(n, t_max=0.3, dt=dt)
         for r in result["R"]:
             assert -1e-10 <= r <= 1.0 + 1e-10
@@ -296,6 +326,7 @@ class TestKuramotoSimulationProperties:
     @given(st.integers(min_value=2, max_value=6))
     @settings(max_examples=15)
     def test_shapes_consistent(self, n: int) -> None:
+        """Times, phases and order parameter have one entry per step plus the start."""
         dt = 0.05
         result = classical_kuramoto_reference(n, t_max=0.5, dt=dt)
         n_steps = max(1, round(0.5 / dt))
