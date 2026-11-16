@@ -54,6 +54,7 @@ def _init_repo(path: Path) -> None:
 
 
 def test_ibm_audit_classifies_raw_job_id_values_as_private_only() -> None:
+    """Raw job ids are private-only, and raw counts need review."""
     findings = scan_text(
         Path("results/example.json"),
         f'{{"backend": "ibm_fez", "job_id": "{RAW_EXAMPLE_ID}", "counts": {{"0": 10}}}}',
@@ -68,6 +69,7 @@ def test_ibm_audit_classifies_raw_job_id_values_as_private_only() -> None:
 
 
 def test_ibm_audit_classifies_nonliteral_job_id_fields_as_hashable_identifier() -> None:
+    """Non-literal job-id fields are hashable identifiers or provenance, not private."""
     findings = scan_text(
         Path("docs/hardware_status_ledger.md"),
         "Backend: ibm_kingston\nJob ID: `<private-hash:abc123>`",
@@ -79,6 +81,7 @@ def test_ibm_audit_classifies_nonliteral_job_id_fields_as_hashable_identifier() 
 
 
 def test_ibm_audit_classifies_prose_job_id_fields_as_private_only() -> None:
+    """Job ids in prose are private-only."""
     findings = scan_text(
         Path("docs/hardware_status_ledger.md"),
         f"job_ids = {RAW_EXAMPLE_ID}",
@@ -90,6 +93,7 @@ def test_ibm_audit_classifies_prose_job_id_fields_as_private_only() -> None:
 
 
 def test_ibm_audit_does_not_double_count_job_fields_on_json_lines() -> None:
+    """A job field on a JSON line is counted once."""
     findings = scan_text(
         Path("results/example.json"),
         f'{{"job_id": "{RAW_EXAMPLE_ID}"}} Job ID: {RAW_FIM_ID}',
@@ -100,6 +104,7 @@ def test_ibm_audit_does_not_double_count_job_fields_on_json_lines() -> None:
 
 
 def test_ibm_audit_flags_runtime_instance_mapping_in_ibm_context() -> None:
+    """A runtime instance mapping in IBM context is flagged."""
     findings = scan_text(
         Path("notebooks/hardware.ipynb"),
         'QiskitRuntimeService(channel="ibm_cloud", instance="crn:v1:bluemix:public:quantum-computing:us-east:a/account::")',
@@ -112,6 +117,7 @@ def test_ibm_audit_flags_runtime_instance_mapping_in_ibm_context() -> None:
 
 
 def test_ibm_audit_accepts_env_var_runtime_instance_mapping() -> None:
+    """An instance taken from an environment variable is accepted."""
     findings = scan_text(
         Path("notebooks/hardware.ipynb"),
         'QiskitRuntimeService(channel="ibm_cloud", instance=ibm_crn, **{"token": ibm_token})',
@@ -121,6 +127,7 @@ def test_ibm_audit_accepts_env_var_runtime_instance_mapping() -> None:
 
 
 def test_ibm_audit_ignores_channel_operational_fields_and_args() -> None:
+    """Channel fields and arguments are ignored; only the backend name is reported."""
     findings = scan_text(
         Path("notebooks/hardware.ipynb"),
         '{"channel": "ibm_cloud", "backend": "ibm_kingston"}\n'
@@ -131,6 +138,7 @@ def test_ibm_audit_ignores_channel_operational_fields_and_args() -> None:
 
 
 def test_ibm_audit_ignores_unquoted_instance_args() -> None:
+    """Unquoted instance arguments are ignored."""
     findings = scan_text(
         Path("notebooks/hardware.ipynb"),
         "QiskitRuntimeService(instance=ibm_crn)",
@@ -141,6 +149,7 @@ def test_ibm_audit_ignores_unquoted_instance_args() -> None:
 
 
 def test_ibm_audit_ignores_quoted_operational_args_without_ibm_context() -> None:
+    """Quoted operational arguments outside IBM context are ignored."""
     findings = scan_text(
         Path("docs/service_notes.md"),
         'service_runner(instance="local-dev")',
@@ -150,6 +159,7 @@ def test_ibm_audit_ignores_quoted_operational_args_without_ibm_context() -> None
 
 
 def test_ibm_audit_does_not_flag_generic_project_fields_without_ibm_context() -> None:
+    """Generic project fields outside IBM context are not flagged."""
     findings = scan_text(
         Path("docs/project_notes.json"),
         '{"project": "documentation cleanup", "group": "maintainers"}',
@@ -159,6 +169,7 @@ def test_ibm_audit_does_not_flag_generic_project_fields_without_ibm_context() ->
 
 
 def test_ibm_audit_flags_retrieval_manifests_as_private_only() -> None:
+    """Retrieval manifests are private-only."""
     findings = scan_text(
         Path("data/example_manifest.json"),
         '{"retrieval_manifest": "data/phase/retrieval_manifest.json", "backend": "ibm_kingston"}',
@@ -169,6 +180,7 @@ def test_ibm_audit_flags_retrieval_manifests_as_private_only() -> None:
 
 
 def test_ibm_audit_flags_raw_ibm_ids_outside_job_fields() -> None:
+    """Raw IBM ids outside job fields are flagged."""
     findings = scan_text(
         Path("docs/publication.md"),
         f"The public paper cited {RAW_FIM_ID} before sanitisation.",
@@ -179,6 +191,7 @@ def test_ibm_audit_flags_raw_ibm_ids_outside_job_fields() -> None:
 
 
 def test_ibm_audit_flags_raw_ibm_ids_in_public_paths(tmp_path: Path) -> None:
+    """Raw IBM ids in public paths are flagged."""
     result_dir = tmp_path / "results"
     result_dir.mkdir()
     raw_path = result_dir / f"{RAW_FIM_ID}.json"
@@ -191,6 +204,7 @@ def test_ibm_audit_flags_raw_ibm_ids_in_public_paths(tmp_path: Path) -> None:
 
 
 def test_ibm_audit_flags_extended_operational_metadata() -> None:
+    """Extended operational metadata is flagged."""
     findings = scan_text(
         Path("data/scpn_fim_hamiltonian/example.json"),
         (
@@ -205,6 +219,7 @@ def test_ibm_audit_flags_extended_operational_metadata() -> None:
 
 
 def test_ibm_audit_candidate_files_exclude_internal_paths_by_default(tmp_path: Path) -> None:
+    """Internal paths are excluded by default."""
     (tmp_path / ".git").mkdir()
     private_docs = tmp_path / "docs" / "internal"
     private_docs.mkdir(parents=True)
@@ -221,6 +236,7 @@ def test_ibm_audit_candidate_files_exclude_internal_paths_by_default(tmp_path: P
 
 
 def test_ibm_audit_candidate_files_default_to_public_artifact_scope(tmp_path: Path) -> None:
+    """The default scope is the public artefacts, not source or tests."""
     (tmp_path / "src").mkdir()
     (tmp_path / "tests").mkdir()
     (tmp_path / "docs").mkdir()
@@ -236,6 +252,7 @@ def test_ibm_audit_candidate_files_default_to_public_artifact_scope(tmp_path: Pa
 
 
 def test_ibm_audit_candidate_files_can_scan_all_repo_text(tmp_path: Path) -> None:
+    """All repository text can be scanned."""
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "runner.py").write_text('"job_id": "fixture"\n', encoding="utf-8")
 
@@ -245,6 +262,7 @@ def test_ibm_audit_candidate_files_can_scan_all_repo_text(tmp_path: Path) -> Non
 
 
 def test_ibm_audit_candidate_files_skip_default_excluded_and_binary_paths(tmp_path: Path) -> None:
+    """Excluded and binary paths are skipped."""
     _write(tmp_path / "docs" / "hardware.md")
     _write(tmp_path / ".venv" / "docs" / "private.md")
     (tmp_path / "docs" / "plot.png").write_bytes(b"not really an image")
@@ -257,6 +275,7 @@ def test_ibm_audit_candidate_files_skip_default_excluded_and_binary_paths(tmp_pa
 
 
 def test_ibm_audit_candidate_files_can_include_internal_paths(tmp_path: Path) -> None:
+    """Internal paths can be included."""
     private_docs = tmp_path / "docs" / "internal"
     private_docs.mkdir(parents=True)
     (private_docs / "private.md").write_text(
@@ -272,12 +291,14 @@ def test_ibm_audit_candidate_files_can_include_internal_paths(tmp_path: Path) ->
 def test_ibm_audit_candidate_files_handles_empty_discovery(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """Nothing to discover gives no files."""
     monkeypatch.setattr(_MODULE, "_resolve_git_executable", lambda: None)
 
     assert candidate_files(tmp_path) == ()
 
 
 def test_ibm_audit_candidate_files_default_to_tracked_git_files(tmp_path: Path) -> None:
+    """By default only tracked files are scanned."""
     _init_repo(tmp_path)
     _write(tmp_path / "docs" / "tracked.md")
     _write(tmp_path / "docs" / "untracked.md")
@@ -292,6 +313,7 @@ def test_ibm_audit_candidate_files_default_to_tracked_git_files(tmp_path: Path) 
 def test_ibm_audit_candidate_files_fall_back_to_worktree_when_git_unavailable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """Without git the working tree is scanned."""
     _write(tmp_path / "docs" / "worktree.md")
     monkeypatch.setattr(_MODULE, "_resolve_git_executable", lambda: None)
 
@@ -303,6 +325,7 @@ def test_ibm_audit_candidate_files_fall_back_to_worktree_when_git_unavailable(
 def test_ibm_audit_candidate_files_fall_back_to_worktree_when_git_fails(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """When git fails the working tree is scanned."""
     _write(tmp_path / "docs" / "worktree.md")
     monkeypatch.setattr(_MODULE, "_resolve_git_executable", lambda: sys.executable)
 
@@ -319,6 +342,7 @@ def test_ibm_audit_candidate_files_fall_back_to_worktree_when_git_fails(
 def test_ibm_audit_resolver_rejects_missing_stale_and_non_executable_git(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """A missing, stale or non-executable git resolves to None."""
     monkeypatch.setattr(_MODULE.shutil, "which", lambda _name: None)
     assert _MODULE._resolve_git_executable() is None
 
@@ -334,6 +358,7 @@ def test_ibm_audit_resolver_rejects_missing_stale_and_non_executable_git(
 
 
 def test_ibm_audit_resolver_and_run_git_admit_current_git() -> None:
+    """The installed git resolves and runs."""
     git_executable = _MODULE._resolve_git_executable()
 
     assert git_executable is not None
@@ -342,6 +367,7 @@ def test_ibm_audit_resolver_and_run_git_admit_current_git() -> None:
 
 
 def test_ibm_audit_json_output_is_deterministic() -> None:
+    """JSON output is deterministic."""
     findings = scan_text(
         Path("results/example.json"),
         f'{{"job_id": "{RAW_EXAMPLE_ID}", "backend": "ibm_fez"}}',
@@ -362,6 +388,7 @@ def test_ibm_audit_json_output_is_deterministic() -> None:
 
 
 def test_ibm_audit_text_summary_reports_counts() -> None:
+    """The text summary reports counts per classification."""
     findings = scan_text(
         Path("results/example.json"),
         f'{{"job_id": "{RAW_EXAMPLE_ID}", "backend": "ibm_fez"}}',
@@ -374,6 +401,7 @@ def test_ibm_audit_text_summary_reports_counts() -> None:
 
 
 def test_ibm_audit_text_summary_can_limit_displayed_findings() -> None:
+    """The text summary can limit the findings shown."""
     raw_ids = ["d" + f"6h3e2f3o3rs73cagl{i:03d}" for i in range(3)]
     findings = scan_text(
         Path("results/example.json"),
@@ -387,12 +415,14 @@ def test_ibm_audit_text_summary_can_limit_displayed_findings() -> None:
 
 
 def test_ibm_audit_text_summary_reports_empty_findings() -> None:
+    """An empty summary says there are no findings."""
     summary = format_findings(())
 
     assert "Findings: none" in summary
 
 
 def test_ibm_audit_scan_files_skips_non_utf8_text(tmp_path: Path) -> None:
+    """Non-UTF-8 files are skipped."""
     broken = tmp_path / "docs" / "broken.md"
     broken.parent.mkdir(parents=True)
     broken.write_bytes(b"\xff\xfe\x00\x00")
@@ -403,6 +433,7 @@ def test_ibm_audit_scan_files_skips_non_utf8_text(tmp_path: Path) -> None:
 def test_ibm_audit_cli_fail_on_private_returns_nonzero(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """With fail-on-private a private finding fails the command."""
     fixture = tmp_path / "public.json"
     fixture.write_text(
         f'{{"backend": "ibm_fez", "job_id": "{RAW_EXAMPLE_ID}"}}',
@@ -419,6 +450,7 @@ def test_ibm_audit_cli_fail_on_private_returns_nonzero(
 def test_ibm_audit_cli_json_mode_returns_zero_without_private_findings(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """JSON mode passes without private findings."""
     fixture = tmp_path / "public.md"
     fixture.write_text("Backend: ibm_kingston\n", encoding="utf-8")
 
@@ -430,6 +462,7 @@ def test_ibm_audit_cli_json_mode_returns_zero_without_private_findings(
 def test_ibm_audit_cli_discovers_project_files_with_all_files(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The all-files option discovers project files."""
     _write(tmp_path / "docs" / "hardware.md", f'{{"job_id": "{RAW_EXAMPLE_ID}"}}\n')
 
     assert main(["--project-root", str(tmp_path), "--all-files", "--fail-on-private"]) == 1

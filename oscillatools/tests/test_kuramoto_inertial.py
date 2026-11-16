@@ -39,7 +39,7 @@ from oscillatools.accel import (
 
 
 def _symmetric_coupling(n: int, seed: int) -> np.ndarray:
-    """A symmetric zero-diagonal coupling matrix (a gradient force, so an energy exists)."""
+    """Build a symmetric zero-diagonal coupling matrix (a gradient force, so an energy exists)."""
     rng = np.random.default_rng(seed)
     matrix = rng.standard_normal((n, n))
     matrix = 0.5 * (matrix + matrix.T)
@@ -90,7 +90,10 @@ _SEED = 7
 
 
 class TestInertialVectorField:
+    """The inertial (swing-equation) vector field."""
+
     def test_matches_swing_equation_definition(self) -> None:
+        """The field matches the swing equation."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(_SEED)
         theta = rng.uniform(-np.pi, np.pi, _N)
@@ -108,6 +111,7 @@ class TestInertialVectorField:
         np.testing.assert_allclose(field[_N:], expected_acceleration)
 
     def test_default_damping_is_unit(self) -> None:
+        """The default damping is one."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(1)
         theta, velocity, omega = (
@@ -124,6 +128,7 @@ class TestInertialVectorField:
     def test_overdamped_velocity_slaving(self) -> None:
         # As m → 0 the acceleration block forces v → (ω + F)/γ; here at the slaved velocity the
         # acceleration is identically zero regardless of the (small) inertia.
+        """When the velocities equal the overdamped drift the acceleration vanishes."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(2)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
@@ -146,16 +151,19 @@ class TestInertialVectorField:
     def test_state_validation(
         self, phases: np.ndarray, velocities: np.ndarray, omega: np.ndarray, match: str
     ) -> None:
+        """Invalid states are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             inertial_vector_field(phases, velocities, omega, _bound_force(np.zeros((3, 3))), 1.0)
 
     def test_rejects_non_positive_mass(self) -> None:
+        """A non-positive mass is refused."""
         with pytest.raises(ValueError, match="mass must be positive"):
             inertial_vector_field(
                 np.zeros(3), np.zeros(3), np.zeros(3), _bound_force(np.zeros((3, 3))), 0.0
             )
 
     def test_rejects_negative_damping(self) -> None:
+        """A negative damping is refused."""
         with pytest.raises(ValueError, match="damping must be non-negative"):
             inertial_vector_field(
                 np.zeros(3),
@@ -168,7 +176,10 @@ class TestInertialVectorField:
 
 
 class TestInertialJacobian:
+    """The Jacobian of the inertial field."""
+
     def test_block_structure(self) -> None:
+        """The Jacobian has the swing equation's block structure."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(4)
         theta = rng.uniform(-np.pi, np.pi, _N)
@@ -183,6 +194,7 @@ class TestInertialJacobian:
         np.testing.assert_allclose(jacobian[_N:, _N:], -(damping / mass) * np.eye(_N))
 
     def test_matches_central_difference(self) -> None:
+        """The Jacobian agrees with central differences."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(5)
         theta = rng.uniform(-np.pi, np.pi, _N)
@@ -201,18 +213,23 @@ class TestInertialJacobian:
         np.testing.assert_allclose(numerical, analytic, atol=1e-7)
 
     def test_rejects_empty_phases(self) -> None:
+        """Empty phases are refused."""
         with pytest.raises(ValueError, match="non-empty one-dimensional"):
             inertial_jacobian(np.zeros(0), _bound_jacobian(np.zeros((0, 0))), 1.0)
 
     def test_rejects_non_positive_mass(self) -> None:
+        """A non-positive mass is refused."""
         with pytest.raises(ValueError, match="mass must be positive"):
             inertial_jacobian(np.zeros(3), _bound_jacobian(np.zeros((3, 3))), -1.0)
 
     def test_rejects_negative_damping(self) -> None:
+        """A negative damping is refused."""
         with pytest.raises(ValueError, match="damping must be non-negative"):
             inertial_jacobian(np.zeros(3), _bound_jacobian(np.zeros((3, 3))), 1.0, damping=-2.0)
 
     def test_rejects_mismatched_force_jacobian(self) -> None:
+        """A force Jacobian of the wrong shape is refused."""
+
         def wrong(theta: np.ndarray) -> np.ndarray:
             return np.zeros((theta.size + 1, theta.size))
 
@@ -221,7 +238,10 @@ class TestInertialJacobian:
 
 
 class TestIntegrateInertial:
+    """Integrating the inertial model."""
+
     def test_trajectory_shape_and_seed(self) -> None:
+        """The trajectory has one phase and velocity row per step plus the start."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(8)
         theta, velocity, omega = (
@@ -250,6 +270,7 @@ class TestIntegrateInertial:
         # timescale m/γ, so the explicit RK4 step is scaled with the inertia (dt = 0.2·m) to keep
         # that mode resolved while a fixed physical horizon is integrated; the terminal-phase
         # gap against the first-order flow then shrinks ~linearly in m.
+        """As inertia vanishes the solution approaches the first-order model."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(9)
         theta, omega = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
@@ -271,6 +292,7 @@ class TestIntegrateInertial:
         assert errors[-1] < 5e-3
 
     def test_undamped_flow_conserves_energy(self) -> None:
+        """Without damping the energy is conserved."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(10)
         theta, velocity = rng.uniform(-np.pi, np.pi, _N), 0.3 * rng.standard_normal(_N)
@@ -282,6 +304,7 @@ class TestIntegrateInertial:
         assert float(energy.max() - energy.min()) < 1e-4
 
     def test_reproducible(self) -> None:
+        """Two runs are identical."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(11)
         theta, velocity, omega = (
@@ -306,6 +329,7 @@ class TestIntegrateInertial:
         ],
     )
     def test_step_validation(self, kwargs: dict[str, float], match: str) -> None:
+        """Invalid step arguments are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             integrate_inertial(
                 np.zeros(3),
@@ -317,6 +341,7 @@ class TestIntegrateInertial:
             )
 
     def test_rejects_non_positive_mass(self) -> None:
+        """A non-positive mass is refused."""
         with pytest.raises(ValueError, match="mass must be positive"):
             integrate_inertial(
                 np.zeros(3),
@@ -329,6 +354,7 @@ class TestIntegrateInertial:
             )
 
     def test_rejects_negative_damping(self) -> None:
+        """A negative damping is refused."""
         with pytest.raises(ValueError, match="damping must be non-negative"):
             integrate_inertial(
                 np.zeros(3),
@@ -342,6 +368,7 @@ class TestIntegrateInertial:
             )
 
     def test_rejects_mismatched_state(self) -> None:
+        """Velocities of the wrong shape are refused."""
         with pytest.raises(ValueError, match="velocities must have shape"):
             integrate_inertial(
                 np.zeros(3),
@@ -355,7 +382,10 @@ class TestIntegrateInertial:
 
 
 class TestInertialEnergy:
+    """The mechanical energy of the inertial model."""
+
     def test_matches_mechanical_energy_definition(self) -> None:
+        """The energy matches its mechanical definition."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(12)
         theta, velocity, omega = (
@@ -375,6 +405,7 @@ class TestInertialEnergy:
     def test_lyapunov_dissipation_rate(self) -> None:
         # Along the damped flow dE/dt = −γ‖v‖²; compare a central difference of the energy
         # series to the closed-form rate.
+        """The energy decreases at the closed-form dissipation rate."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(13)
         theta, velocity = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
@@ -396,6 +427,7 @@ class TestInertialEnergy:
         np.testing.assert_allclose(numerical_rate, closed_form_rate, atol=5e-3)
 
     def test_monotone_relaxation_for_zero_frequencies(self) -> None:
+        """With zero frequencies the energy decreases and the motion stops."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(14)
         theta, velocity = rng.uniform(-np.pi, np.pi, _N), rng.standard_normal(_N)
@@ -415,6 +447,7 @@ class TestInertialEnergy:
         assert float(np.abs(trajectory.terminal_velocities).max()) < 1e-2
 
     def test_kinetic_energy_series(self) -> None:
+        """The kinetic energy series has one value per step plus the start."""
         coupling = _symmetric_coupling(_N, _SEED)
         rng = np.random.default_rng(15)
         theta, velocity, omega = (
@@ -440,10 +473,12 @@ class TestInertialEnergy:
     def test_state_validation(
         self, phases: np.ndarray, velocities: np.ndarray, omega: np.ndarray, match: str
     ) -> None:
+        """Invalid states are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             inertial_energy(phases, velocities, omega, _bound_potential(np.zeros((3, 3))), 1.0)
 
     def test_rejects_non_positive_mass(self) -> None:
+        """A non-positive mass is refused."""
         with pytest.raises(ValueError, match="mass must be positive"):
             inertial_energy(
                 np.zeros(3), np.zeros(3), np.zeros(3), _bound_potential(np.zeros((3, 3))), 0.0
@@ -453,6 +488,7 @@ class TestInertialEnergy:
 def test_mean_field_force_drives_inertial_field() -> None:
     # The vector field is agnostic to the Kuramoto model: the all-to-all mean-field force is a
     # valid PhaseForce too.
+    """The mean-field force can drive the inertial field."""
     rng = np.random.default_rng(16)
     theta, velocity, omega = (
         rng.uniform(-np.pi, np.pi, _N),
@@ -469,6 +505,7 @@ def test_mean_field_force_drives_inertial_field() -> None:
 
 
 def test_public_symbols_exported() -> None:
+    """The inertial symbols are exported from the accelerated package."""
     import oscillatools.accel as accel
 
     for symbol in (

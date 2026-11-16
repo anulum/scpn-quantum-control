@@ -46,7 +46,10 @@ def _write_config(path: Path) -> Path:
 
 
 class TestLoadClaims:
+    """Loading the retired-claims register."""
+
     def test_valid_register(self, tmp_path: Path) -> None:
+        """A valid register loads its claims and patterns."""
         claims = guard.load_claims(_write_config(tmp_path))
         assert len(claims) == 1
         assert claims[0].claim_id == "toy-claim"
@@ -54,24 +57,28 @@ class TestLoadClaims:
         assert claims[0].retired == "2026-01-01"
 
     def test_claims_not_a_list_fails_closed(self, tmp_path: Path) -> None:
+        """Claims that are not a list fail closed."""
         config_path = tmp_path / "bad.json"
         config_path.write_text(json.dumps({"claims": "nope"}), encoding="utf-8")
         with pytest.raises(ValueError, match="non-empty list"):
             guard.load_claims(config_path)
 
     def test_empty_claims_fails_closed(self, tmp_path: Path) -> None:
+        """An empty claim list fails closed."""
         config_path = tmp_path / "bad.json"
         config_path.write_text(json.dumps({"claims": []}), encoding="utf-8")
         with pytest.raises(ValueError, match="non-empty list"):
             guard.load_claims(config_path)
 
     def test_non_object_entry_fails_closed(self, tmp_path: Path) -> None:
+        """An entry that is not an object fails closed."""
         config_path = tmp_path / "bad.json"
         config_path.write_text(json.dumps({"claims": ["nope"]}), encoding="utf-8")
         with pytest.raises(ValueError, match="must be objects"):
             guard.load_claims(config_path)
 
     def test_missing_key_fails_closed(self, tmp_path: Path) -> None:
+        """An entry missing a key fails closed."""
         config_path = tmp_path / "bad.json"
         config_path.write_text(
             json.dumps({"claims": [{"id": "x", "pattern": "y"}]}), encoding="utf-8"
@@ -81,7 +88,10 @@ class TestLoadClaims:
 
 
 class TestIterSurfaceFiles:
+    """Listing the public surface files."""
+
     def test_inclusion_and_exclusion(self, tmp_path: Path) -> None:
+        """Surface files are included and other files excluded."""
         (tmp_path / "README.md").write_text("root", encoding="utf-8")
         (tmp_path / "setup.py").write_text("not a surface", encoding="utf-8")
         (tmp_path / "docs" / "sub").mkdir(parents=True)
@@ -101,11 +111,13 @@ class TestIterSurfaceFiles:
         }
 
     def test_missing_surface_dir_is_skipped(self, tmp_path: Path) -> None:
+        """A missing surface directory is skipped."""
         (tmp_path / "README.md").write_text("root", encoding="utf-8")
         found = list(guard.iter_surface_files(tmp_path))
         assert [p.name for p in found] == ["README.md"]
 
     def test_exempt_paths_are_skipped(self, tmp_path: Path) -> None:
+        """Exempt paths are skipped."""
         (tmp_path / "README.md").write_text("root", encoding="utf-8")
         (tmp_path / "docs").mkdir()
         (tmp_path / "docs" / "preprint.md").write_text("published", encoding="utf-8")
@@ -119,6 +131,7 @@ class TestIterSurfaceFiles:
         assert found == {"README.md", "docs/live.md"}
 
     def test_root_level_file_can_be_exempt(self, tmp_path: Path) -> None:
+        """A root-level file can be exempt."""
         (tmp_path / "README.md").write_text("root", encoding="utf-8")
         (tmp_path / "NOTES.md").write_text("kept", encoding="utf-8")
         found = {p.name for p in guard.iter_surface_files(tmp_path, ("README.md",))}
@@ -126,10 +139,14 @@ class TestIterSurfaceFiles:
 
 
 class TestLoadExemptPaths:
+    """Loading the exempt paths."""
+
     def test_absent_key_defaults_empty(self, tmp_path: Path) -> None:
+        """Without the key there are no exempt paths."""
         assert guard.load_exempt_paths(_write_config(tmp_path)) == ()
 
     def test_non_list_fails_closed(self, tmp_path: Path) -> None:
+        """Exempt paths that are not a list fail closed."""
         config_path = tmp_path / "bad.json"
         config_path.write_text(
             json.dumps({"claims": [], "exempt_paths": "nope"}), encoding="utf-8"
@@ -138,14 +155,18 @@ class TestLoadExemptPaths:
             guard.load_exempt_paths(config_path)
 
     def test_committed_register_exempts_published_records(self) -> None:
+        """The committed register exempts the published records."""
         exempt = guard.load_exempt_paths(REPO_ROOT / "data" / "retired_claims.json")
         assert "docs/preprint.md" in exempt
         assert "paper/" in exempt
 
 
 class TestContextWindow:
+    """The context window around a retired claim."""
+
     @pytest.fixture()
     def claim(self) -> guard.RetiredClaim:
+        """Return a toy retired claim."""
         return guard.RetiredClaim(
             claim_id="toy",
             pattern=re.compile("1000x"),
@@ -160,6 +181,7 @@ class TestContextWindow:
         return guard.scan_file(target, [claim], tmp_path)
 
     def test_bare_revival_is_a_finding(self, tmp_path: Path, claim: guard.RetiredClaim) -> None:
+        """A bare revival of the claim is a finding."""
         findings = self._scan(tmp_path, "now 1000x faster again\n", claim)
         assert len(findings) == 1
         assert findings[0].claim_id == "toy"
@@ -167,19 +189,23 @@ class TestContextWindow:
         assert findings[0].path.as_posix() == "page.md"
 
     def test_same_line_context_passes(self, tmp_path: Path, claim: guard.RetiredClaim) -> None:
+        """Context on the same line passes."""
         assert self._scan(tmp_path, "the 1000x figure [retracted 2026]\n", claim) == []
 
     def test_previous_line_context_passes(self, tmp_path: Path, claim: guard.RetiredClaim) -> None:
+        """Context on the previous line passes."""
         text = "[retracted 2026: cold start]\nthe old 1000x figure\n"
         assert self._scan(tmp_path, text, claim) == []
 
     def test_next_line_context_passes(self, tmp_path: Path, claim: guard.RetiredClaim) -> None:
+        """Context on the next line passes."""
         text = "the old 1000x figure\n[retracted 2026: cold start]\n"
         assert self._scan(tmp_path, text, claim) == []
 
     def test_context_two_lines_away_does_not_pass(
         self, tmp_path: Path, claim: guard.RetiredClaim
     ) -> None:
+        """Context two lines away does not pass."""
         text = "the old 1000x figure\nfiller line\n[retracted 2026]\n"
         assert len(self._scan(tmp_path, text, claim)) == 1
 
@@ -189,6 +215,7 @@ class TestCommittedRegister:
 
     @pytest.fixture(scope="class")
     def claims(self) -> dict[str, guard.RetiredClaim]:
+        """Return the committed claims by id."""
         loaded = guard.load_claims(REPO_ROOT / "data" / "retired_claims.json")
         return {claim.claim_id: claim for claim in loaded}
 
@@ -203,6 +230,7 @@ class TestCommittedRegister:
     def test_speedup_pattern_catches_spellings(
         self, claims: dict[str, guard.RetiredClaim], text: str
     ) -> None:
+        """The speed-up pattern catches its spellings."""
         assert claims["rust-5401x-speedup"].pattern.search(text)
 
     @pytest.mark.parametrize(
@@ -212,6 +240,7 @@ class TestCommittedRegister:
     def test_speedup_pattern_ignores_numeric_coincidences(
         self, claims: dict[str, guard.RetiredClaim], text: str
     ) -> None:
+        """The speed-up pattern ignores numeric coincidences."""
         assert not claims["rust-5401x-speedup"].pattern.search(text)
 
     @pytest.mark.parametrize(
@@ -227,6 +256,7 @@ class TestCommittedRegister:
     def test_sigma_pattern_catches_spellings(
         self, claims: dict[str, guard.RetiredClaim], text: str
     ) -> None:
+        """The sigma pattern catches its spellings."""
         assert claims["chsh-blanket-8sigma"].pattern.search(text)
 
     @pytest.mark.parametrize(
@@ -240,6 +270,7 @@ class TestCommittedRegister:
     def test_sigma_pattern_ignores_corrected_statements(
         self, claims: dict[str, guard.RetiredClaim], text: str
     ) -> None:
+        """The sigma pattern ignores corrected statements."""
         assert not claims["chsh-blanket-8sigma"].pattern.search(text)
 
     @pytest.mark.parametrize(
@@ -255,6 +286,7 @@ class TestCommittedRegister:
     def test_dual_protection_pattern_catches_hardware_spellings(
         self, claims: dict[str, guard.RetiredClaim], text: str
     ) -> None:
+        """The dual-protection pattern catches hardware claims."""
         assert claims["fim-dual-protection-hardware"].pattern.search(text)
 
     @pytest.mark.parametrize(
@@ -269,10 +301,13 @@ class TestCommittedRegister:
     def test_dual_protection_pattern_ignores_simulation_uses(
         self, claims: dict[str, guard.RetiredClaim], text: str
     ) -> None:
+        """The dual-protection pattern ignores simulation uses."""
         assert not claims["fim-dual-protection-hardware"].pattern.search(text)
 
 
 class TestCli:
+    """The guard command."""
+
     def _repo(self, tmp_path: Path, body: str) -> Path:
         root = tmp_path / "repo"
         (root / "data").mkdir(parents=True)
@@ -284,6 +319,7 @@ class TestCli:
     def test_clean_repo_exits_zero(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """A clean repository exits zero."""
         root = self._repo(tmp_path, "an honest page\n")
         assert guard.main(["--root", str(root)]) == 0
         assert "no findings" in capsys.readouterr().out
@@ -291,6 +327,7 @@ class TestCli:
     def test_finding_exits_one_with_location(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """A finding exits one and names its location."""
         root = self._repo(tmp_path, "still 1000x faster\n")
         assert guard.main(["--root", str(root)]) == 1
         out = capsys.readouterr().out
@@ -298,6 +335,7 @@ class TestCli:
         assert "toy-claim" in out
 
     def test_config_override(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """A config override is honoured."""
         root = tmp_path / "repo"
         root.mkdir()
         (root / "README.md").write_text("still 1000x faster\n", encoding="utf-8")

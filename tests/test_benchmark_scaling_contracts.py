@@ -16,7 +16,10 @@ import pytest
 
 
 class TestGPUBaseline:
+    """The GPU baseline estimate."""
+
     def test_crossover_n_at_least_4(self) -> None:
+        """The crossover lies at four qubits or more."""
         from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
 
         result = gpu_baseline_comparison(n=4)
@@ -24,6 +27,7 @@ class TestGPUBaseline:
 
     @pytest.mark.parametrize("n", [4, 8, 12])
     def test_comparison_returns_valid_result(self, n: int) -> None:
+        """The comparison returns a finite GPU time and a crossover."""
         from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
 
         result = gpu_baseline_comparison(n=n)
@@ -32,6 +36,7 @@ class TestGPUBaseline:
         assert np.isfinite(result.estimated_gpu_time_s)
 
     def test_scaling_comparison_shape(self) -> None:
+        """The scaling comparison has one finite time per size."""
         from scpn_quantum_control.benchmarks.gpu_baseline import scaling_comparison
 
         result = scaling_comparison(n_values=[4, 8])
@@ -39,6 +44,7 @@ class TestGPUBaseline:
         assert all(np.isfinite(result["gpu_time_s"]))
 
     def test_memory_increases_with_n(self) -> None:
+        """Memory grows with the qubit count."""
         from scpn_quantum_control.benchmarks.gpu_baseline import statevector_memory_gb
 
         m4 = statevector_memory_gb(4)
@@ -47,12 +53,14 @@ class TestGPUBaseline:
         assert m4 < m8 < m12
 
     def test_flops_positive(self) -> None:
+        """The flop count is positive."""
         from scpn_quantum_control.benchmarks.gpu_baseline import statevector_flops
 
         f4 = statevector_flops(n=4, n_gates=100)
         assert f4 > 0
 
     def test_gate_count_positive(self) -> None:
+        """The gate count is positive."""
         from scpn_quantum_control.benchmarks.gpu_baseline import gate_count_xy_trotter
 
         for n in [4, 8, 12]:
@@ -60,6 +68,7 @@ class TestGPUBaseline:
             assert g > 0
 
     def test_memory_gb_positive(self) -> None:
+        """The memory estimate is positive."""
         from scpn_quantum_control.benchmarks.gpu_baseline import statevector_memory_gb
 
         mem = statevector_memory_gb(8)
@@ -67,7 +76,10 @@ class TestGPUBaseline:
 
 
 class TestMPSBaseline:
+    """The MPS baseline estimate."""
+
     def test_low_entropy_returns_1000(self) -> None:
+        """Low entanglement gives the 1000-qubit cap."""
         from scpn_quantum_control.benchmarks.mps_baseline import quantum_advantage_n
 
         n = quantum_advantage_n(entropy_per_qubit=0.0)
@@ -75,12 +87,14 @@ class TestMPSBaseline:
 
     @pytest.mark.parametrize("entropy", [0.0, 0.1, 0.5, 1.0])
     def test_advantage_n_positive(self, entropy: float) -> None:
+        """The advantage size is positive."""
         from scpn_quantum_control.benchmarks.mps_baseline import quantum_advantage_n
 
         n = quantum_advantage_n(entropy_per_qubit=entropy)
         assert n > 0
 
     def test_mps_memory_positive(self) -> None:
+        """MPS memory is positive."""
         from scpn_quantum_control.benchmarks.mps_baseline import mps_memory
 
         for n in [8, 12, 16]:
@@ -88,6 +102,7 @@ class TestMPSBaseline:
             assert m > 0
 
     def test_exact_memory_positive(self) -> None:
+        """Exact memory is positive."""
         from scpn_quantum_control.benchmarks.mps_baseline import exact_memory
 
         for n in [4, 8, 12]:
@@ -96,7 +111,10 @@ class TestMPSBaseline:
 
 
 class TestQuantumAdvantage:
+    """The quantum-advantage scaling run."""
+
     def test_run_scaling_single_size(self) -> None:
+        """One size gives one result."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             run_scaling_benchmark,
         )
@@ -106,6 +124,7 @@ class TestQuantumAdvantage:
         assert results[0].n_qubits == 4
 
     def test_scaling_results_structure(self) -> None:
+        """Each result records its qubit count."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             run_scaling_benchmark,
         )
@@ -117,19 +136,24 @@ class TestQuantumAdvantage:
 
 
 class TestBenchmarkEdgeCases:
+    """Edge cases of the benchmarks."""
+
     def test_quantum_advantage_scaling(self) -> None:
+        """Two sizes give two results."""
         from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark
 
         result = run_scaling_benchmark(sizes=[2, 3])
         assert len(result) == 2
 
     def test_gpu_baseline_comparison(self) -> None:
+        """The GPU comparison reports a time."""
         from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
 
         result = gpu_baseline_comparison(n=3)
         assert hasattr(result, "estimated_gpu_time_s")
 
     def test_gpu_baseline_scaling(self) -> None:
+        """The GPU scaling has one entry per size."""
         from scpn_quantum_control.benchmarks.gpu_baseline import scaling_comparison
 
         results = scaling_comparison(n_values=[2, 3])
@@ -141,6 +165,7 @@ class TestQuantumAdvantageEdgeCases:
     """Verify behaviours in benchmarks/quantum_advantage.py."""
 
     def test_classical_benchmark_infeasible(self) -> None:
+        """An infeasible classical benchmark reports infinite time and no energy."""
         from scpn_quantum_control.benchmarks.quantum_advantage import classical_benchmark
 
         result = classical_benchmark(16, t_max=0.1, dt=0.1)
@@ -148,6 +173,7 @@ class TestQuantumAdvantageEdgeCases:
         assert result["ground_energy"] is None
 
     def test_estimate_crossover_too_few_points(self) -> None:
+        """Too few points give no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
             estimate_crossover,
@@ -157,6 +183,7 @@ class TestQuantumAdvantageEdgeCases:
         assert estimate_crossover(results) is None
 
     def test_estimate_crossover_with_inf(self) -> None:
+        """An infinite time gives no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
             estimate_crossover,
@@ -172,6 +199,7 @@ class TestQuantumAdvantageEdgeCases:
         assert cross is None
 
     def test_run_scaling_benchmark_few_sizes(self) -> None:
+        """Fewer than three sizes predict no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark
 
         results = run_scaling_benchmark(sizes=[4, 6], t_max=0.1, dt=0.1)
@@ -180,8 +208,10 @@ class TestQuantumAdvantageEdgeCases:
 
 
 class TestQuantumAdvantageMoreEdges:
-    def test_estimate_crossover_curve_fit_fails(self) -> None:
+    """More edge cases of the advantage estimate."""
 
+    def test_estimate_crossover_curve_fit_fails(self) -> None:
+        """A failed curve fit gives no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
             estimate_crossover,
@@ -199,6 +229,7 @@ class TestQuantumAdvantageMoreEdges:
             assert estimate_crossover(results) is None
 
     def test_estimate_crossover_quantum_grows_faster(self) -> None:
+        """Quantum time growing faster gives no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
             estimate_crossover,
@@ -215,6 +246,7 @@ class TestQuantumAdvantageMoreEdges:
         assert cross is None
 
     def test_run_scaling_default_sizes(self) -> None:
+        """A single size predicts no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark
 
         results = run_scaling_benchmark(sizes=[4], t_max=0.1, dt=0.1)
@@ -222,13 +254,14 @@ class TestQuantumAdvantageMoreEdges:
         assert results[0].crossover_predicted is None  # single size
 
     def test_classical_benchmark_n15(self) -> None:
+        """Fifteen qubits are infeasible classically here."""
         from scpn_quantum_control.benchmarks.quantum_advantage import classical_benchmark
 
         result = classical_benchmark(15, t_max=0.05, dt=0.05)
         assert result["t_total_ms"] == float("inf")
 
     def test_estimate_crossover_negative_ratio(self) -> None:
-
+        """A negative ratio gives no crossover."""
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
             estimate_crossover,
@@ -249,6 +282,7 @@ class TestQuantumAdvantageMoreEdges:
             assert estimate_crossover(results) is None
 
     def test_run_scaling_uses_default_sizes(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The default sizes are 4, 8, 12, 16 and 20."""
         from scpn_quantum_control.benchmarks import quantum_advantage as qa
 
         observed: list[int] = []
@@ -271,6 +305,7 @@ class TestQuantumAdvantageMoreEdges:
         assert [r.n_qubits for r in results] == observed
 
     def test_run_scaling_with_warning(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A run that warns still returns its result."""
         import warnings
 
         from scpn_quantum_control.benchmarks import quantum_advantage as qa

@@ -50,8 +50,11 @@ from scpn_quantum_control.hardware.classical import (
 
 
 class TestHamiltonianHermiticity:
+    """Hermiticity of the Hamiltonians."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     def test_paper27_hamiltonian_is_hermitian(self, n: int) -> None:
+        """The paper-27 Hamiltonian is Hermitian."""
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
         H = knm_to_hamiltonian(K, omega)
@@ -60,6 +63,7 @@ class TestHamiltonianHermiticity:
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
     def test_ring_hamiltonian_is_hermitian(self, n: int) -> None:
+        """The ring Hamiltonian is Hermitian."""
         K, omega = build_kuramoto_ring(n, coupling=1.0, rng_seed=0)
         H = knm_to_hamiltonian(K, omega)
         H_mat = np.array(H.to_matrix())
@@ -67,6 +71,7 @@ class TestHamiltonianHermiticity:
 
     @pytest.mark.parametrize("delta", [0.0, 0.5, 1.0])
     def test_xxz_hamiltonian_is_hermitian(self, delta: float) -> None:
+        """The XXZ Hamiltonian is Hermitian."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_xxz_hamiltonian(K, omega, delta=delta)
@@ -85,6 +90,7 @@ class TestHamiltonianHermiticity:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_hamiltonian_eigenvalues_real(self, n: int) -> None:
+        """The Hamiltonian's eigenvalues are real."""
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
         H = knm_to_hamiltonian(K, omega)
@@ -108,8 +114,11 @@ class TestHamiltonianHermiticity:
 
 
 class TestStateNormalisation:
+    """Normalisation of states."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     def test_initial_state_normalised(self, n: int) -> None:
+        """The initial state is normalised."""
         omega = OMEGA_N_16[:n]
         psi = _build_initial_state(n, omega)
         np.testing.assert_allclose(np.linalg.norm(psi), 1.0, atol=1e-14)
@@ -142,6 +151,7 @@ class TestStateNormalisation:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_ground_state_normalised(self, n: int) -> None:
+        """The ground state is normalised."""
         result = classical_exact_diag(n)
         np.testing.assert_allclose(np.linalg.norm(result["ground_state"]), 1.0, atol=1e-12)
 
@@ -152,6 +162,8 @@ class TestStateNormalisation:
 
 
 class TestOrderParameterBounds:
+    """Bounds of the order parameter."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     @pytest.mark.parametrize("dt", [0.01, 0.05, 0.1])
     def test_quantum_R_in_01(self, n: int, dt: float) -> None:
@@ -163,6 +175,7 @@ class TestOrderParameterBounds:
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     @pytest.mark.parametrize("dt", [0.01, 0.05, 0.1])
     def test_classical_R_in_01(self, n: int, dt: float) -> None:
+        """The classical order parameter lies in [0, 1]."""
         result = classical_kuramoto_reference(n, t_max=0.5, dt=dt)
         for r in result["R"]:
             assert -1e-10 <= r <= 1.0 + 1e-10, f"R={r} out of [0,1] for n={n}, dt={dt}"
@@ -204,24 +217,30 @@ class TestOrderParameterBounds:
 
 
 class TestSpectralProperties:
+    """Spectral properties."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     def test_spectral_gap_positive(self, n: int) -> None:
+        """The spectral gap is positive."""
         result = classical_exact_diag(n)
         assert result["spectral_gap"] > 0.0
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
     def test_eigenvalues_sorted_ascending(self, n: int) -> None:
+        """Eigenvalues are in ascending order."""
         result = classical_exact_diag(n)
         evals = result["eigenvalues"]
         np.testing.assert_array_less(evals[:-1], evals[1:] + 1e-12)
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
     def test_ground_energy_is_minimum(self, n: int) -> None:
+        """The ground energy is the lowest eigenvalue."""
         result = classical_exact_diag(n)
         assert result["ground_energy"] == pytest.approx(result["eigenvalues"][0])
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_ground_state_is_eigenvector(self, n: int) -> None:
+        """The ground state is an eigenvector."""
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
         H = knm_to_hamiltonian(K, omega)
@@ -236,6 +255,7 @@ class TestSpectralProperties:
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
     def test_hilbert_space_dimension(self, n: int) -> None:
+        """The ground state has 2^n amplitudes."""
         result = classical_exact_diag(n)
         assert len(result["ground_state"]) == 2**n
 
@@ -254,6 +274,8 @@ class TestSpectralProperties:
 
 
 class TestEnergyConservation:
+    """Energy conservation under evolution."""
+
     @pytest.mark.parametrize("n", [2, 3, 4])
     @pytest.mark.parametrize("dt", [0.01, 0.05])
     def test_energy_conserved_under_evolution(self, n: int, dt: float) -> None:
@@ -281,6 +303,8 @@ class TestEnergyConservation:
 
 
 class TestSparseVsDense:
+    """Sparse against dense computations."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     def test_state_order_param_sparse_matches_dense(self, n: int) -> None:
         """_state_order_param_sparse must match _state_order_param exactly."""
@@ -336,8 +360,11 @@ class TestSparseVsDense:
 
 
 class TestInitialStatePreparation:
+    """Preparing the initial state."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     def test_initial_state_dimension(self, n: int) -> None:
+        """The initial state has 2^n amplitudes."""
         omega = OMEGA_N_16[:n]
         psi = _build_initial_state(n, omega)
         assert len(psi) == 2**n
@@ -374,13 +401,17 @@ class TestInitialStatePreparation:
 
 
 class TestCouplingMatrixProperties:
+    """Properties of the coupling matrices."""
+
     @pytest.mark.parametrize("n", [2, 4, 8, 16])
     def test_paper27_coupling_symmetric(self, n: int) -> None:
+        """The paper-27 coupling is symmetric."""
         K = build_knm_paper27(L=n)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
     @pytest.mark.parametrize("n", [2, 4, 8, 16])
     def test_paper27_coupling_nonneg(self, n: int) -> None:
+        """The paper-27 coupling is non-negative."""
         K = build_knm_paper27(L=n)
         assert np.all(K >= -1e-14)
 
@@ -395,11 +426,13 @@ class TestCouplingMatrixProperties:
 
     @pytest.mark.parametrize("n", [3, 5, 8])
     def test_ring_coupling_symmetric(self, n: int) -> None:
+        """The ring coupling is symmetric."""
         K, _ = build_kuramoto_ring(n, coupling=1.0, rng_seed=0)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
     @pytest.mark.parametrize("n", [3, 5, 8])
     def test_ring_coupling_neighbours_only(self, n: int) -> None:
+        """The ring couples only neighbours."""
         K, _ = build_kuramoto_ring(n, coupling=1.0, rng_seed=0)
         for i in range(n):
             for j in range(n):
@@ -410,6 +443,7 @@ class TestCouplingMatrixProperties:
 
     @pytest.mark.parametrize("coupling", [0.0, 0.5, 1.0, 2.0])
     def test_ring_coupling_strength(self, coupling: float) -> None:
+        """Ring edges carry the requested strength."""
         K, _ = build_kuramoto_ring(4, coupling=coupling, rng_seed=0)
         for i in range(4):
             j = (i + 1) % 4
@@ -422,9 +456,12 @@ class TestCouplingMatrixProperties:
 
 
 class TestKuramotoProperties:
+    """Properties of the classical Kuramoto run."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     @pytest.mark.parametrize("dt", [0.01, 0.05, 0.1])
     def test_kuramoto_shapes(self, n: int, dt: float) -> None:
+        """Times, phases and order parameter have one entry per step plus the start."""
         result = classical_kuramoto_reference(n, t_max=0.5, dt=dt)
         n_steps = max(1, round(0.5 / dt))
         assert result["times"].shape == (n_steps + 1,)
@@ -443,10 +480,12 @@ class TestKuramotoProperties:
         np.testing.assert_allclose(result["theta"][-1], omega * 0.1, atol=0.01)
 
     def test_negative_dt_raises(self) -> None:
+        """A negative step is refused."""
         with pytest.raises(ValueError, match="dt must be positive"):
             classical_kuramoto_reference(4, t_max=1.0, dt=-0.1)
 
     def test_negative_tmax_raises(self) -> None:
+        """A negative end time is refused."""
         with pytest.raises(ValueError, match="t_max must be non-negative"):
             classical_kuramoto_reference(4, t_max=-1.0, dt=0.1)
 
@@ -468,9 +507,12 @@ class TestKuramotoProperties:
 
 
 class TestEvolutionShapes:
+    """Shapes of the exact evolution."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
     @pytest.mark.parametrize("dt", [0.01, 0.05, 0.1])
     def test_exact_evolution_shapes(self, n: int, dt: float) -> None:
+        """Exact evolution has one time and order value per step plus the start."""
         result = classical_exact_evolution(n, t_max=0.3, dt=dt)
         n_steps = max(1, round(0.3 / dt))
         assert result["times"].shape == (n_steps + 1,)
@@ -478,5 +520,6 @@ class TestEvolutionShapes:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_exact_evolution_initial_R_positive(self, n: int) -> None:
+        """The initial order parameter is positive."""
         result = classical_exact_evolution(n, t_max=0.1, dt=0.05)
         assert result["R"][0] > 0.0
