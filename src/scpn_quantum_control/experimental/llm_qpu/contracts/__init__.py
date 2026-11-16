@@ -48,6 +48,12 @@ if TYPE_CHECKING:
     )
     from .model import ModelDescriptor
     from .protocol import ExperimentProtocol, validate_experiment_protocol
+    from .receipt import (
+        ProviderBatchReceipt,
+        SubmittedJob,
+        decode_provider_batch_receipt,
+        validate_provider_batch_receipt,
+    )
     from .static import (
         ReservoirSpec,
         StaticCircuitPlan,
@@ -68,6 +74,7 @@ if TYPE_CHECKING:
         MEASUREMENT_PLAN_SCHEMA,
         MODEL_SCHEMA,
         OWNER_APPROVAL_SCHEMA,
+        PROVIDER_BATCH_RECEIPT_SCHEMA,
         RESERVOIR_SCHEMA,
         SCHEMA,
         SPLIT_SCHEMA,
@@ -237,6 +244,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.approval",
         "decode_owner_approval",
     ),
+    "SubmittedJob": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.receipt",
+        "SubmittedJob",
+    ),
+    "ProviderBatchReceipt": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.receipt",
+        "ProviderBatchReceipt",
+    ),
+    "validate_provider_batch_receipt": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.receipt",
+        "validate_provider_batch_receipt",
+    ),
+    "decode_provider_batch_receipt": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.receipt",
+        "decode_provider_batch_receipt",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -295,6 +318,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "OWNER_APPROVAL_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "OWNER_APPROVAL_SCHEMA",
+    ),
+    "PROVIDER_BATCH_RECEIPT_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "PROVIDER_BATCH_RECEIPT_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -507,4 +534,9 @@ __all__ = (
     "SignatureVerifier",
     "validate_owner_approval",
     "decode_owner_approval",
+    "PROVIDER_BATCH_RECEIPT_SCHEMA",
+    "SubmittedJob",
+    "ProviderBatchReceipt",
+    "validate_provider_batch_receipt",
+    "decode_provider_batch_receipt",
 )

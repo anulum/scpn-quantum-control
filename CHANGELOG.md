@@ -497,6 +497,26 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `ProviderBatchReceipt`
+  contract (`experimental/llm_qpu/contracts/receipt.py`, schema
+  `provider_batch_receipt.v1`) that binds one approved compiled bundle to its
+  provider jobs. Each `SubmittedJob` records its ordinal, phase name,
+  submitted payload digest, the bundle cells it carries in provider circuit
+  order, the local submit boundary time and, when reported, the provider's
+  creation time. A job is either `submitted`, with the provider's own job ID
+  and where that ID came from (the submit response or a read-only
+  recovery), or `recovery_required`, with no ID and a blocker; a missing ID
+  is never read as a failed, zero-cost job. Job IDs must have the provider's
+  form (a canonical UUID for IQM, 20 lowercase alphanumerics for IBM), so a
+  local handle is refused, as are the attempt ID reused as a job ID and one
+  ID backing two jobs. `validate_provider_batch_receipt` refuses a receipt
+  for another bundle, payload or approval, an approval for another bundle,
+  a different route or device, more jobs than approved, any cell mapped
+  twice or not at all, a data origin different from the bundle's, and a
+  test-key approval behind a provider receipt. The standalone worker
+  validates the same wire independently after revalidating the approval
+  chain.
+
 - The experimental LLM-QPU lane gains a design-only `OwnerApproval` contract
   (`experimental/llm_qpu/contracts/approval.py`, schema `owner_approval.v1`)
   for one exact cost quote. It binds the compiled bundle, its payload digest

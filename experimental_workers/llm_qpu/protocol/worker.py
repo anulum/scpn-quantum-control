@@ -36,6 +36,9 @@ _TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
 _COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
 _COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
 _OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
+_RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receipt.v1"
+_UUID_TEXT = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z")
+_PROVIDER_JOB_ID = {"iqm": _UUID_TEXT, "ibm": re.compile(r"[a-z0-9]{20}\Z")}
 _APPROVAL_ORIGINS = {"live": "owner_decision", "test": "synthetic_classical"}
 _APPROVAL_EGRESS = ("private_derived", "reviewed_synthetic", "value_free")
 _QUOTE_COUNTS = ("job_count", "overhead_executions", "resource_units", "price_minor_units")
@@ -1530,6 +1533,163 @@ def _roundtrip_owner_approval(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+_JOB_FIELDS = {
+    "ordinal",
+    "name",
+    "payload_sha256",
+    "cell_ordinals",
+    "state",
+    "provider_job_id",
+    "id_source",
+    "boundary_at_utc",
+    "provider_created_at_utc",
+    "blocker",
+}
+_RECEIPT_FIELDS = {
+    "schema",
+    "object_kind",
+    "attempt_id",
+    "compiled_bundle_digest",
+    "bundle_payload_digest",
+    "owner_approval_digest",
+    "provider",
+    "account_route",
+    "device_name",
+    "jobs",
+    "header",
+}
+
+
+def _validate_job_record(job: object, ordinal: int) -> list[int]:
+    if type(job) is not dict or set(job) != _JOB_FIELDS:
+        raise ValueError("SubmittedJob fields mismatch")
+    if job["ordinal"] != ordinal:
+        raise ValueError("receipt jobs must be ordered by ordinal from zero")
+    name = job["name"]
+    if type(name) is not str or re.fullmatch(r"[a-z][a-z0-9_]{1,63}", name) is None:
+        raise ValueError("invalid provider job phase name")
+    _worker_digest(job["payload_sha256"], "submitted payload digest")
+    cells = job["cell_ordinals"]
+    if type(cells) is not list or not cells or len(set(map(str, cells))) != len(cells):
+        raise ValueError("a job maps a nonempty list of distinct cells")
+    if any(type(cell) is not int or not 0 <= cell < 10_000_000 for cell in cells):
+        raise ValueError("cell ordinals must be bounded non-negative integers")
+    boundary = job["boundary_at_utc"]
+    if type(boundary) is not str or _UTC_SECOND.fullmatch(boundary) is None:
+        raise ValueError("submit boundary time must be an ISO-8601 UTC second")
+    created = job["provider_created_at_utc"]
+    if job["state"] == "submitted":
+        if type(job["provider_job_id"]) is not str or job["id_source"] not in (
+            "submit_response",
+            "read_only_recovery",
+        ):
+            raise ValueError("a submitted job needs its provider job ID and its source")
+        if job["blocker"] is not None:
+            raise ValueError("a submitted job cannot carry a blocker")
+        if created is not None and (
+            type(created) is not str or _UTC_SECOND.fullmatch(created) is None
+        ):
+            raise ValueError("provider creation time must be an ISO-8601 UTC second")
+    elif job["state"] == "recovery_required":
+        if (
+            job["provider_job_id"] is not None
+            or job["id_source"] is not None
+            or created is not None
+        ):
+            raise ValueError("an ambiguous job has no provider job ID or creation time yet")
+        _target_text(job["blocker"], "recovery blocker")
+    else:
+        raise ValueError("a missing job ID is ambiguous, never a failed zero-cost job")
+    return [int(str(cell)) for cell in cells]
+
+
+def _validate_receipt_fields(receipt: object) -> dict[str, object]:
+    if type(receipt) is not dict or set(receipt) != _RECEIPT_FIELDS:
+        raise ValueError("ProviderBatchReceipt fields mismatch")
+    if receipt["schema"] != _RECEIPT_SCHEMA or receipt["object_kind"] != "provider_batch_receipt":
+        raise ValueError("unknown ProviderBatchReceipt schema")
+    attempt = receipt["attempt_id"]
+    if type(attempt) is not str or _UUID_TEXT.fullmatch(attempt) is None:
+        raise ValueError("attempt ID must be canonical UUID text")
+    for name in ("compiled_bundle_digest", "bundle_payload_digest", "owner_approval_digest"):
+        _worker_digest(receipt[name], name)
+    provider = receipt["provider"]
+    if provider not in _PROVIDER_JOB_ID:
+        raise ValueError("receipt provider must be ibm or iqm")
+    for name in ("account_route", "device_name"):
+        _target_text(receipt[name], name)
+    jobs = receipt["jobs"]
+    if type(jobs) is not list or not jobs:
+        raise ValueError("a receipt needs a nonempty list of jobs")
+    seen: set[str] = {str(attempt)}
+    for ordinal, job in enumerate(jobs):
+        _validate_job_record(job, ordinal)
+        job_id = job["provider_job_id"] if type(job) is dict else None
+        if job_id is None:
+            continue
+        if _PROVIDER_JOB_ID[str(provider)].fullmatch(str(job_id)) is None:
+            raise ValueError("provider job ID does not have the provider's form")
+        if str(job_id) in seen:
+            raise ValueError("a provider job ID repeats or reuses the attempt ID")
+        seen.add(str(job_id))
+    return receipt
+
+
+def _cross_check_receipt(
+    receipt: dict[str, object], approval: dict[str, object], bundle: dict[str, object]
+) -> None:
+    bundle_digest = hashlib.sha256(_canonical_bytes(bundle)).hexdigest()
+    if receipt["compiled_bundle_digest"] != bundle_digest:
+        raise ValueError("receipt names a different compiled bundle")
+    if receipt["bundle_payload_digest"] != bundle["payload_digest"]:
+        raise ValueError("receipt names a different compiled payload")
+    if receipt["owner_approval_digest"] != hashlib.sha256(_canonical_bytes(approval)).hexdigest():
+        raise ValueError("receipt names a different owner approval")
+    names = ("provider", "account_route", "device_name")
+    if [receipt[name] for name in names] != [approval[name] for name in names]:
+        raise ValueError("receipt route or device differs from the approval")
+    jobs, cells = receipt["jobs"], bundle["cells"]
+    if type(jobs) is not list or type(cells) is not list:
+        raise ValueError("receipt jobs and bundle cells must be lists")
+    if len(jobs) > int(str(approval["max_jobs"])):
+        raise ValueError("receipt has more provider jobs than approved")
+    mapped = sorted(int(str(cell)) for job in jobs for cell in job["cell_ordinals"])
+    if mapped != list(range(len(cells))):
+        raise ValueError("receipt does not map every compiled cell exactly once")
+
+
+def _roundtrip_provider_batch_receipt(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "target", "bundle", "quote", "approval", "receipt"}:
+        raise ValueError("receipt request fields mismatch")
+    approval_request = {name: request[name] for name in ("target", "bundle", "quote", "approval")}
+    _roundtrip_owner_approval({"op": "roundtrip_owner_approval", **approval_request})
+    bundle, approval = request["bundle"], request["approval"]
+    if type(bundle) is not dict or type(approval) is not dict:
+        raise ValueError("bundle and approval must be objects")
+    receipt = _validate_receipt_fields(request["receipt"])
+    header, bundle_header, signature = receipt["header"], bundle["header"], approval["signature"]
+    if type(header) is not dict or type(bundle_header) is not dict or type(signature) is not dict:
+        raise ValueError("headers and the approval signature must be objects")
+    origin = str(header["data_origin"])
+    if origin not in ("provider_metadata", "synthetic_classical"):
+        raise ValueError("a receipt derives from provider responses or a fixture")
+    parents = (str(receipt["compiled_bundle_digest"]), str(receipt["owner_approval_digest"]))
+    _validate_artifact_header(receipt, parents, origin)
+    _cross_check_receipt(receipt, approval, bundle)
+    if origin != bundle_header["data_origin"]:
+        raise ValueError("receipt and bundle data origins differ")
+    if origin == "provider_metadata" and signature["key_environment"] == "test":
+        raise ValueError("a test-key approval cannot back a provider receipt")
+    wire = _canonical_bytes(receipt)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "receipt": json.loads(wire),
+        "receipt_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -1547,6 +1707,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_compiled_bundle": (_roundtrip_compiled_bundle, (ValueError, TypeError, KeyError)),
     "roundtrip_cost_quote": (_roundtrip_cost_quote, (ValueError, TypeError, KeyError)),
     "roundtrip_owner_approval": (_roundtrip_owner_approval, (ValueError, TypeError, KeyError)),
+    "roundtrip_provider_batch_receipt": (
+        _roundtrip_provider_batch_receipt,
+        (ValueError, TypeError, KeyError),
+    ),
 }
 
 

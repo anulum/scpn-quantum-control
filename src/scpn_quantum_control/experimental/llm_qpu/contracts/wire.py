@@ -37,6 +37,7 @@ TARGET_SNAPSHOT_SCHEMA = "scpn.experimental.llm_qpu.target_snapshot.v1"
 COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
 COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
 OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
+PROVIDER_BATCH_RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receipt.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -273,6 +274,7 @@ class ArtifactHeader:
             "compiled_bundle",
             "cost_quote",
             "owner_approval",
+            "provider_batch_receipt",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")
