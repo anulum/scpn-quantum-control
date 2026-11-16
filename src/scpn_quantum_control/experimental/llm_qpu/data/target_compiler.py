@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import hashlib
-import io
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -172,8 +171,12 @@ def verify_compiled_experiment(
     *,
     tolerance: float = 1e-9,
 ) -> None:
-    """Reload every stored payload and prove it again against the bundle, the plan and the target."""
-    from qiskit import qpy
+    """Reload every stored payload and prove it again against the bundle, the plan and the target.
+
+    Each payload is decoded only after its digest has matched the bundle cell, and only through the
+    repository's reviewed QPY wrapper.
+    """
+    from scpn_quantum_control.hardware.hal_qiskit import _reviewed_qpy_load_circuits
 
     bundle = compiled.bundle
     validate_compiled_bundle(bundle, target)
@@ -189,5 +192,5 @@ def verify_compiled_experiment(
     ):
         if cell != _compiled_cell(planned, measurement, payload):
             raise ValueError("a compiled cell does not follow its planned cell and payload")
-    loaded = tuple(qpy.load(io.BytesIO(payload))[0] for payload in compiled.payloads)
+    loaded = tuple(_reviewed_qpy_load_circuits(payload)[0] for payload in compiled.payloads)
     _check_all(loaded, experiment, plan_set, target, bundle.layout, tolerance)

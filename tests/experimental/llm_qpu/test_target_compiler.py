@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import platform
 import subprocess
@@ -21,7 +20,7 @@ from typing import Any
 
 import pytest
 from _llm_qpu_dev_chain import _BASIS, _REVISIONS, _both_ways, _planned, _target, _worker
-from qiskit import QuantumCircuit, qpy
+from qiskit import QuantumCircuit
 
 from scpn_quantum_control.experimental.llm_qpu.contracts import (
     canonical_bytes,
@@ -36,6 +35,7 @@ from scpn_quantum_control.experimental.llm_qpu.data.target_compiler import (
     compile_experiment,
     verify_compiled_experiment,
 )
+from scpn_quantum_control.hardware.hal_qiskit import _reviewed_qpy_load_circuits
 
 
 def _bundle_fields(compiled: CompiledExperiment, **changes: Any) -> dict[str, Any]:
@@ -90,7 +90,7 @@ def test_compiling_proves_every_cell_and_freezes_the_declared_bundle() -> None:
         for name, count in cell["gate_counts"]:
             totals[name] = totals.get(name, 0) + count
     assert tuple(sorted(totals.items())) == bundle.compiled_gate_counts
-    loaded = [qpy.load(io.BytesIO(payload))[0] for payload in compiled.payloads]
+    loaded = [_reviewed_qpy_load_circuits(payload)[0] for payload in compiled.payloads]
     assert all(circuit.layout is None for circuit in loaded)
     assert [circuit.name for circuit in loaded] == [f"cell_{index:04d}" for index in range(16)]
     binding = canonical_bytes(

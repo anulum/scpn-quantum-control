@@ -4,6 +4,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- **Security: the offline compile check decodes QPY only through the
+  reviewed wrapper.**
+  - `verify_compiled_experiment` reloads each stored payload after its digest
+    has matched the bundle cell. It called `qiskit.qpy.load` directly, which
+    the serialisation-surface audit refuses outside a reviewed wrapper.
+  - It now uses the repository's reviewed QPY decoder, and so does its test.
+  - The audit is clean, and the allow-list is unchanged.
+
 - **Fixed: the experimental logistic readout reported convergence before its
   gradient vanished.**
   - `fit_logistic` uses L-BFGS-B with a gradient tolerance of 1e-8. Its
