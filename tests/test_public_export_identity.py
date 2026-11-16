@@ -535,6 +535,26 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_simulated_count_set",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
             ),
+            (
+                "SIMULATED_FEATURE_BATCH_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "SimulatedFeatureBatch",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+            ),
+            (
+                "estimate_simulated_features",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+            ),
+            (
+                "validate_simulated_feature_batch",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+            ),
+            (
+                "decode_simulated_feature_batch",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+            ),
         ),
     ),
 }

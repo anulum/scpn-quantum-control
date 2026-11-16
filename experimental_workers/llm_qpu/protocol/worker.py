@@ -53,6 +53,7 @@ _SENTINEL_SCHEMA = "scpn.experimental.llm_qpu.sentinel_preparation.v1"
 _EXPERIMENT_SCHEMA = "scpn.experimental.llm_qpu.planned_experiment.v1"
 _EXACT_SCHEMA = "scpn.experimental.llm_qpu.exact_feature_set.v1"
 _SIMULATED_SCHEMA = "scpn.experimental.llm_qpu.simulated_count_set.v1"
+_SIMULATED_FEATURES_SCHEMA = "scpn.experimental.llm_qpu.simulated_feature_batch.v1"
 _SAMPLER_DOMAIN = b"scpn.experimental.llm_qpu.simulated_counts.v1\x00"
 _TEACHER_ORIGINS = {
     "hardware_features": "provider_result",
@@ -2020,11 +2021,16 @@ def _sampled_estimate(
         or sorted(physical) != sorted(measured)
     ):
         raise ValueError("measurement plan layout differs from the measured qubits")
-    position = [measured.index(wire) for wire in physical]
-    width = len(physical) * 2 - 1
     counts = result["counts"]
     if type(counts) is not list:
         raise ValueError("raw counts must be a list")
+    return _accumulate(counts, [measured.index(wire) for wire in physical], plan["shots"])
+
+
+def _accumulate(
+    counts: list[Any], position: list[int], expected: object
+) -> tuple[int, list[float], list[list[float]] | None]:
+    width = len(position) * 2 - 1
     totals, joint, shots = [0] * width, [[0] * width for _ in range(width)], 0
     for bits, count in counts:
         single = [1 - 2 * int(bits[index]) for index in position]
@@ -2034,7 +2040,7 @@ def _sampled_estimate(
             totals[i] += count * value
             for j, other in enumerate(values):
                 joint[i][j] += count * value * other
-    if shots != plan["shots"]:
+    if shots != expected:
         raise ValueError("raw counts do not match requested shots")
     means = [total / shots for total in totals]
     if shots == 1:
@@ -3310,6 +3316,103 @@ def _roundtrip_simulated_count_set(request: dict[str, object]) -> dict[str, obje
     }
 
 
+def _check_simulated_feature_fields(batch: object, counts: dict[str, Any]) -> dict[str, Any]:
+    names = {"schema", "object_kind", "simulated_count_set_digest", "estimator", "basis_id"}
+    if type(batch) is not dict or set(batch) != names | {"observable_ids", "rows", "header"}:
+        raise ValueError("SimulatedFeatureBatch fields mismatch")
+    if (
+        batch["schema"] != _SIMULATED_FEATURES_SCHEMA
+        or batch["object_kind"] != "simulated_feature_batch"
+    ):
+        raise ValueError("unknown SimulatedFeatureBatch schema")
+    if batch["estimator"] != "sampled_mean_v1":
+        raise ValueError("unknown feature estimator")
+    if batch["basis_id"] not in ("X", "Y", "Z"):
+        raise ValueError("feature basis must be X, Y or Z")
+    digest = hashlib.sha256(_canonical_bytes(counts)).hexdigest()
+    if batch["simulated_count_set_digest"] != digest:
+        raise ValueError("features name a different simulated count set")
+    header = counts["header"]
+    _validate_artifact_header(batch, (digest,), str(header["data_origin"]))
+    return batch
+
+
+def _check_simulated_feature_row(
+    row: object, cell: dict[str, Any], planned: dict[str, Any], measurement: dict[str, Any]
+) -> None:
+    checked = _validate_feature_row(row, len(measurement["observable_ids"]))
+    if checked["values"] is None:
+        raise ValueError("a simulated cell is never missing")
+    if checked["key"] != planned["key"]:
+        raise ValueError("feature row key differs from the planned cell")
+    if (
+        checked["measurement_request_digest"]
+        != hashlib.sha256(_canonical_bytes(measurement)).hexdigest()
+    ):
+        raise ValueError("feature row names another measurement request")
+    order = measurement["display_order_clbits"]
+    position = [order.index(clbit) for clbit in measurement["logical_to_clbit"]]
+    shots, means, covariance = _accumulate(cell["counts"], position, measurement["shots"])
+    values: Any = checked["values"]
+    found: Any = checked["covariance"]
+    recorded = [_f64_token(v) for v in values]
+    matrix = None if found is None else [[_f64_token(v) for v in line] for line in found]
+    if (checked["shots"], recorded, matrix) != (shots, means, covariance):
+        raise ValueError("a feature row differs from its simulated counts")
+
+
+def _roundtrip_simulated_feature_batch(request: dict[str, object]) -> dict[str, object]:
+    chain = (
+        "task",
+        "split",
+        "model",
+        "latent",
+        "latent_base64",
+        "compressor",
+        "centering_base64",
+        "projection_base64",
+        "scales_base64",
+        "compressed",
+        "angles_base64",
+        "reservoir",
+        "plan_set",
+        "measurement_spec",
+        "experiment",
+        "counts",
+    )
+    if set(request) != {"op", *chain, "features"}:
+        raise ValueError("simulated-feature request fields mismatch")
+    _roundtrip_simulated_count_set(
+        {"op": "roundtrip_simulated_count_set", **{n: request[n] for n in chain}}
+    )
+    counts: Any = request["counts"]
+    experiment: Any = request["experiment"]
+    batch = _check_simulated_feature_fields(request["features"], counts)
+    measurements = experiment["measurements"]
+    expected = [i for i, m in enumerate(measurements) if m["basis_id"] == batch["basis_id"]]
+    rows = batch["rows"]
+    if (
+        type(rows) is not list
+        or [row.get("cell_ordinal") if type(row) is dict else None for row in rows] != expected
+    ):
+        raise ValueError("feature rows must cover every cell measured in this basis, in order")
+    for row in rows:
+        index = row["cell_ordinal"]
+        if measurements[index]["observable_ids"] != batch["observable_ids"]:
+            raise ValueError("feature columns differ from the cell's observables")
+        _check_simulated_feature_row(
+            row, counts["cells"][index], experiment["cells"][index], measurements[index]
+        )
+    wire = _canonical_bytes(batch)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "features": json.loads(wire),
+        "features_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -3353,6 +3456,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_simulated_count_set": (
         _roundtrip_simulated_count_set,
         (ValueError, TypeError, KeyError, OverflowError),
+    ),
+    "roundtrip_simulated_feature_batch": (
+        _roundtrip_simulated_feature_batch,
+        (ValueError, TypeError, KeyError, OverflowError, IndexError),
     ),
 }
 

@@ -48,6 +48,7 @@ SENTINEL_SCHEMA = "scpn.experimental.llm_qpu.sentinel_preparation.v1"
 PLANNED_EXPERIMENT_SCHEMA = "scpn.experimental.llm_qpu.planned_experiment.v1"
 EXACT_FEATURE_SET_SCHEMA = "scpn.experimental.llm_qpu.exact_feature_set.v1"
 SIMULATED_COUNT_SET_SCHEMA = "scpn.experimental.llm_qpu.simulated_count_set.v1"
+SIMULATED_FEATURE_BATCH_SCHEMA = "scpn.experimental.llm_qpu.simulated_feature_batch.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -293,6 +294,7 @@ class ArtifactHeader:
             "planned_experiment",
             "exact_feature_set",
             "simulated_count_set",
+            "simulated_feature_batch",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")

@@ -103,6 +103,12 @@ if TYPE_CHECKING:
         draw_counts,
         validate_simulated_count_set,
     )
+    from .simulated_features import (
+        SimulatedFeatureBatch,
+        decode_simulated_feature_batch,
+        estimate_simulated_features,
+        validate_simulated_feature_batch,
+    )
     from .static import (
         ReservoirSpec,
         StaticCircuitPlan,
@@ -140,6 +146,7 @@ if TYPE_CHECKING:
         SCHEMA,
         SENTINEL_SCHEMA,
         SIMULATED_COUNT_SET_SCHEMA,
+        SIMULATED_FEATURE_BATCH_SCHEMA,
         SPLIT_SCHEMA,
         STATIC_PLAN_SCHEMA,
         STUDENT_ARTIFACT_SCHEMA,
@@ -476,6 +483,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.sampled",
         "decode_simulated_count_set",
     ),
+    "SimulatedFeatureBatch": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+        "SimulatedFeatureBatch",
+    ),
+    "estimate_simulated_features": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+        "estimate_simulated_features",
+    ),
+    "validate_simulated_feature_batch": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+        "validate_simulated_feature_batch",
+    ),
+    "decode_simulated_feature_batch": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features",
+        "decode_simulated_feature_batch",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -578,6 +601,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "SIMULATED_COUNT_SET_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "SIMULATED_COUNT_SET_SCHEMA",
+    ),
+    "SIMULATED_FEATURE_BATCH_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "SIMULATED_FEATURE_BATCH_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -843,4 +870,9 @@ __all__ = (
     "draw_counts",
     "validate_simulated_count_set",
     "decode_simulated_count_set",
+    "SIMULATED_FEATURE_BATCH_SCHEMA",
+    "SimulatedFeatureBatch",
+    "estimate_simulated_features",
+    "validate_simulated_feature_batch",
+    "decode_simulated_feature_batch",
 )

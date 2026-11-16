@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1676,
-    "python_model_source_modules": 890,
+    "python_model_classes": 1677,
+    "python_model_source_modules": 891,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1660
+    "test_files": 1661
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 46
+        "python_modules": 47
       },
       {
         "package": "fep",
@@ -6638,6 +6638,10 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/sampled.py"
       },
       {
+        "name": "SimulatedFeatureBatch",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/simulated_features.py"
+      },
+      {
         "name": "SingleErrorSyndrome",
         "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
@@ -7875,6 +7879,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/receipt.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/results.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/sampled.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/simulated_features.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/student.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/target.py",
@@ -9675,6 +9680,7 @@
       "tests/experimental/llm_qpu/test_provider_batch_receipt_contract.py",
       "tests/experimental/llm_qpu/test_raw_result_set_contract.py",
       "tests/experimental/llm_qpu/test_simulated_count_set_contract.py",
+      "tests/experimental/llm_qpu/test_simulated_feature_batch_contract.py",
       "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
       "tests/experimental/llm_qpu/test_student_artifact_contract.py",
       "tests/experimental/llm_qpu/test_target_compiler.py",

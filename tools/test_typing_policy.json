@@ -952,6 +952,7 @@
         "tests/experimental/llm_qpu/test_provider_batch_receipt_contract.py",
         "tests/experimental/llm_qpu/test_raw_result_set_contract.py",
         "tests/experimental/llm_qpu/test_simulated_count_set_contract.py",
+        "tests/experimental/llm_qpu/test_simulated_feature_batch_contract.py",
         "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
         "tests/experimental/llm_qpu/test_student_artifact_contract.py",
         "tests/experimental/llm_qpu/test_target_compiler.py",

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **890 modules** across **41 package families**
-- **4776 documented public module-level symbols**
+- **891 modules** across **41 package families**
+- **4780 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2584,6 +2584,16 @@ Seeded simulated counts for every planned cell, reproducible from the record alo
 **Classes:** `SimulatedCell`, `SimulatedCountSet`
 
 **Functions:** `cell_probabilities()`, `draw_counts()`, `experiment_circuits()`, `validate_simulated_count_set()`, `decode_simulated_count_set()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.simulated_features`
+
+Sampled features of seeded simulated counts, kept apart from provider-result features.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/simulated_features.py) · Public symbols: **4**
+
+**Classes:** `SimulatedFeatureBatch`
+
+**Functions:** `estimate_simulated_features()`, `validate_simulated_feature_batch()`, `decode_simulated_feature_batch()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.static`
 

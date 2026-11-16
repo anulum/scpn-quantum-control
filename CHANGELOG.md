@@ -497,6 +497,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains features of simulated counts.
+  - `SimulatedFeatureBatch` (`experimental/llm_qpu/contracts/simulated_features.py`,
+    schema `simulated_feature_batch.v1`) holds the sampled features of
+    one basis, estimated from a `SimulatedCountSet`. Its rows are the
+    existing `FeatureRow`s, covering every cell of that basis in
+    experiment order. A simulated cell is never missing.
+  - It is a separate, design-only record. `FeatureBatch` keeps its binding
+    to provider results and compiled bundles, so simulated and hardware
+    features cannot be mistaken for one another.
+  - `estimate_simulated_features` estimates each cell with
+    `estimate_sampled_basis` under the simulator's virtual identity
+    layout; the keys are already in display order.
+  - `validate_simulated_feature_batch` refuses another count set or
+    experiment, another origin, dropped or reordered rows, foreign
+    columns and any recomputed difference.
+  - The standalone worker revalidates the whole count chain and
+    recomputes every row with its own estimator. That estimator now shares
+    one accumulation routine with the provider-result path.
+
 - The experimental LLM-QPU lane gains strong classical baselines
   (`experimental/llm_qpu/learning/`).
   - `feature_maps` provides:
