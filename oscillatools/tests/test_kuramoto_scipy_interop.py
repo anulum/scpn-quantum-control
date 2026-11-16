@@ -54,7 +54,6 @@ def _finite_difference_jacobian(
     rule: object, state: np.ndarray, parameters: KuramotoParameters, *, step: float = 1e-6
 ) -> np.ndarray:
     """Central finite-difference Jacobian of ``rule(state, parameters, 0)``."""
-
     size = state.size
     jacobian = np.zeros((size, size), dtype=np.float64)
     for column in range(size):
@@ -70,7 +69,10 @@ def _finite_difference_jacobian(
 # Analytic rule Jacobians
 # --------------------------------------------------------------------------- #
 class TestPhaseRuleJacobians:
+    """Jacobians of the phase rules."""
+
     def test_mean_field_jacobian_equals_force_jacobian(self) -> None:
+        """The mean-field rule Jacobian equals the force Jacobian."""
         theta = np.array([0.2, -0.5, 1.1, 0.7])
         parameters = KuramotoParameters(np.zeros(4), 0.8)
         np.testing.assert_allclose(
@@ -79,6 +81,7 @@ class TestPhaseRuleJacobians:
         )
 
     def test_mean_field_jacobian_uses_sakaguchi_when_frustrated(self) -> None:
+        """With frustration the mean-field Jacobian is the Sakaguchi one."""
         theta = np.array([0.2, -0.5, 1.1, 0.7])
         parameters = KuramotoParameters(np.zeros(4), 0.8, frustration=0.3)
         np.testing.assert_allclose(
@@ -87,6 +90,7 @@ class TestPhaseRuleJacobians:
         )
 
     def test_networked_jacobian_equals_force_jacobian(self) -> None:
+        """The networked rule Jacobian equals the force Jacobian."""
         theta = np.array([0.2, -0.5, 1.1])
         coupling = _ring_coupling(3, 0.6)
         parameters = KuramotoParameters(np.zeros(3), coupling)
@@ -96,6 +100,7 @@ class TestPhaseRuleJacobians:
         )
 
     def test_networked_jacobian_uses_sakaguchi_when_frustrated(self) -> None:
+        """With frustration the networked Jacobian is the Sakaguchi one."""
         theta = np.array([0.2, -0.5, 1.1])
         coupling = _ring_coupling(3, 0.6)
         parameters = KuramotoParameters(np.zeros(3), coupling, frustration=0.25)
@@ -105,17 +110,20 @@ class TestPhaseRuleJacobians:
         )
 
     def test_mean_field_jacobian_rejects_matrix_coupling(self) -> None:
+        """The mean-field Jacobian refuses a matrix coupling."""
         parameters = KuramotoParameters(np.zeros(3), _ring_coupling(3, 0.5))
         with pytest.raises(ValueError, match="scalar coupling"):
             mean_field_phase_rule_jacobian(np.zeros(3), parameters, 0.0)
 
     def test_networked_jacobian_rejects_scalar_coupling(self) -> None:
+        """The networked Jacobian refuses a scalar coupling."""
         parameters = KuramotoParameters(np.zeros(3), 0.5)
         with pytest.raises(ValueError, match="coupling matrix"):
             networked_phase_rule_jacobian(np.zeros(3), parameters, 0.0)
 
     @pytest.mark.parametrize("frustration", [0.0, 0.4])
     def test_mean_field_jacobian_matches_finite_difference(self, frustration: float) -> None:
+        """The mean-field Jacobian agrees with finite differences."""
         theta = np.array([0.3, -0.6, 0.9, 1.4, -0.2])
         parameters = KuramotoParameters(np.zeros(5), 1.1, frustration=frustration)
         np.testing.assert_allclose(
@@ -127,6 +135,7 @@ class TestPhaseRuleJacobians:
 
     @pytest.mark.parametrize("frustration", [0.0, 0.3])
     def test_networked_jacobian_matches_finite_difference(self, frustration: float) -> None:
+        """The networked Jacobian agrees with finite differences."""
         theta = np.array([0.3, -0.6, 0.9, 1.4])
         coupling = _ring_coupling(4, 0.7)
         parameters = KuramotoParameters(np.zeros(4), coupling, frustration=frustration)
@@ -142,7 +151,10 @@ class TestPhaseRuleJacobians:
 # KuramotoSystem rule / jacobian accessors
 # --------------------------------------------------------------------------- #
 class TestSystemJacobianAccessors:
+    """Jacobian accessors of a system."""
+
     def test_factory_systems_carry_the_matching_jacobian(self) -> None:
+        """Factory systems carry the matching Jacobian."""
         mean_field = KuramotoSystem.mean_field(np.zeros(3), np.zeros(3), 0.5, dt=0.01)
         assert mean_field.jacobian is mean_field_phase_rule_jacobian
         networked = KuramotoSystem.networked(
@@ -151,12 +163,14 @@ class TestSystemJacobianAccessors:
         assert networked.jacobian is networked_phase_rule_jacobian
 
     def test_custom_rule_system_has_no_jacobian(self) -> None:
+        """A custom-rule system has no Jacobian."""
         system = KuramotoSystem(
             mean_field_phase_rule, np.zeros(3), KuramotoParameters(np.zeros(3), 0.5), dt=0.01
         )
         assert system.jacobian is None
 
     def test_rule_property_evaluates_at_arbitrary_state(self) -> None:
+        """The rule evaluates at any state."""
         system = KuramotoSystem.mean_field(np.zeros(3), np.array([0.1, 0.2, 0.3]), 0.5, dt=0.01)
         probe = np.array([0.4, 0.5, 0.6])
         np.testing.assert_allclose(
@@ -165,11 +179,13 @@ class TestSystemJacobianAccessors:
         )
 
     def test_rule_jacobian_at_current_state(self) -> None:
+        """The rule Jacobian is evaluated at the current state."""
         theta = np.array([0.2, 0.5, 0.9])
         system = KuramotoSystem.mean_field(theta, np.zeros(3), 0.7, dt=0.01)
         np.testing.assert_allclose(system.rule_jacobian(), mean_field_jacobian(theta, 0.7))
 
     def test_rule_jacobian_requires_a_jacobian(self) -> None:
+        """Without an analytic Jacobian the accessor raises."""
         system = KuramotoSystem(
             mean_field_phase_rule, np.zeros(3), KuramotoParameters(np.zeros(3), 0.5), dt=0.01
         )
@@ -177,6 +193,7 @@ class TestSystemJacobianAccessors:
             system.rule_jacobian()
 
     def test_explicit_jacobian_argument_is_stored(self) -> None:
+        """An explicit Jacobian argument is stored."""
         system = KuramotoSystem(
             mean_field_phase_rule,
             np.zeros(3),
@@ -191,7 +208,10 @@ class TestSystemJacobianAccessors:
 # ODE adapters
 # --------------------------------------------------------------------------- #
 class TestOdeAdapters:
+    """Adapters for SciPy's ODE solvers."""
+
     def test_rhs_matches_the_rule_and_ignores_internal_state(self) -> None:
+        """The right-hand side follows its argument, not the system's state."""
         system = KuramotoSystem.mean_field(
             np.zeros(4), np.array([0.1, 0.2, -0.1, 0.3]), 0.6, dt=0.01
         )
@@ -204,6 +224,7 @@ class TestOdeAdapters:
         assert not np.allclose(rhs(0.0, probe), system.rule_value())
 
     def test_jacobian_adapter_for_factory_system(self) -> None:
+        """A factory system yields a Jacobian adapter."""
         system = KuramotoSystem.networked(
             np.zeros(3), np.zeros(3), _ring_coupling(3, 0.5), dt=0.01
         )
@@ -215,6 +236,7 @@ class TestOdeAdapters:
         )
 
     def test_jacobian_adapter_none_for_custom_rule(self) -> None:
+        """A custom rule yields no Jacobian adapter."""
         system = KuramotoSystem(
             mean_field_phase_rule, np.zeros(3), KuramotoParameters(np.zeros(3), 0.5), dt=0.01
         )
@@ -225,6 +247,8 @@ class TestOdeAdapters:
 # solve_kuramoto_ivp
 # --------------------------------------------------------------------------- #
 class TestSolveKuramotoIvp:
+    """Solving the Kuramoto IVP with SciPy."""
+
     def _system(self) -> KuramotoSystem:
         rng = np.random.default_rng(20260702)
         theta0 = rng.uniform(-np.pi, np.pi, 6)
@@ -232,6 +256,7 @@ class TestSolveKuramotoIvp:
         return KuramotoSystem.networked(theta0, omega, _ring_coupling(6, 0.9), dt=0.005)
 
     def test_returns_solution_shape_and_diagnostics(self) -> None:
+        """The solve returns a successful solution with its diagnostics."""
         system = self._system()
         solution = solve_kuramoto_ivp(system, (0.0, 1.0))
         assert isinstance(solution, KuramotoIvpSolution)
@@ -243,6 +268,7 @@ class TestSolveKuramotoIvp:
         np.testing.assert_array_equal(solution.terminal_phases, solution.phases[-1])
 
     def test_does_not_mutate_the_system(self) -> None:
+        """The solve leaves the system unchanged."""
         system = self._system()
         before_state = system.current_state
         before_time = system.current_time
@@ -251,16 +277,19 @@ class TestSolveKuramotoIvp:
         assert system.current_time == before_time
 
     def test_t_eval_controls_sample_times(self) -> None:
+        """Requested times set the samples."""
         system = self._system()
         requested = np.linspace(0.0, 1.0, 11)
         solution = solve_kuramoto_ivp(system, (0.0, 1.0), t_eval=requested)
         np.testing.assert_allclose(solution.times, requested)
 
     def test_rejects_malformed_t_span(self) -> None:
+        """A time span that is not a pair is refused."""
         with pytest.raises(ValueError, match=r"\(t0, tf\) pair"):
             solve_kuramoto_ivp(self._system(), (0.0, 1.0, 2.0))
 
     def test_use_jacobian_requires_a_jacobian(self) -> None:
+        """Using the Jacobian needs a system that has one."""
         system = KuramotoSystem(
             mean_field_phase_rule,
             np.zeros(4),
@@ -271,12 +300,14 @@ class TestSolveKuramotoIvp:
             solve_kuramoto_ivp(system, (0.0, 1.0), use_jacobian=True)
 
     def test_terminal_phases_is_a_defensive_copy(self) -> None:
+        """The terminal phases are a copy."""
         solution = solve_kuramoto_ivp(self._system(), (0.0, 0.3))
         snapshot = solution.terminal_phases
         snapshot[0] = 123.0
         assert solution.phases[-1][0] != 123.0
 
     def test_matches_the_dedicated_rk4_integrator_at_tight_tolerance(self) -> None:
+        """At tight tolerance the solve matches the RK4 integrator."""
         rng = np.random.default_rng(7)
         size = 5
         theta0 = rng.uniform(-np.pi, np.pi, size)
@@ -289,6 +320,7 @@ class TestSolveKuramotoIvp:
         np.testing.assert_allclose(solution.terminal_phases, reference, rtol=0.0, atol=1e-7)
 
     def test_matches_system_trajectory_at_tight_tolerance(self) -> None:
+        """At tight tolerance the solve matches the system's own trajectory."""
         theta0 = np.array([0.3, -0.7, 1.1, 0.4, -0.2])
         omega = np.array([0.1, 0.2, -0.1, 0.05, -0.15])
         system = KuramotoSystem.mean_field(theta0, omega, 1.2, dt=0.0005)
@@ -298,6 +330,7 @@ class TestSolveKuramotoIvp:
         np.testing.assert_allclose(solution.terminal_phases, reference, rtol=0.0, atol=1e-6)
 
     def test_implicit_method_with_jacobian_agrees_with_explicit(self) -> None:
+        """An implicit method with the Jacobian agrees with an explicit one."""
         rng = np.random.default_rng(3)
         size = 4
         theta0 = rng.uniform(-np.pi, np.pi, size)

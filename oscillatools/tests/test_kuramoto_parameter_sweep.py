@@ -36,8 +36,7 @@ from oscillatools.accel.kuramoto_system import KuramotoSystem
 
 
 def _mean_field_system() -> KuramotoSystem:
-    """A small, deterministic mean-field system for the sweeps."""
-
+    """Build a small, deterministic mean-field system for the sweeps."""
     rng = np.random.default_rng(20260702)
     natural_frequencies = rng.normal(0.0, 0.4, size=8)
     initial_phases = rng.uniform(-np.pi, np.pi, size=8)
@@ -47,8 +46,7 @@ def _mean_field_system() -> KuramotoSystem:
 
 
 def _networked_system() -> KuramotoSystem:
-    """A small ring-coupled networked system for the sweeps."""
-
+    """Build a small ring-coupled networked system for the sweeps."""
     size = 6
     coupling = np.zeros((size, size))
     for node in range(size):
@@ -66,21 +64,25 @@ def _networked_system() -> KuramotoSystem:
 
 
 def test_grid_rejects_an_empty_specification() -> None:
+    """A grid without axes is refused."""
     with pytest.raises(ValueError, match="at least one axis"):
         KuramotoParameterGrid({})
 
 
 def test_grid_rejects_an_untunable_parameter() -> None:
+    """An unknown parameter is refused."""
     with pytest.raises(ValueError, match="unknown Kuramoto parameter"):
         KuramotoParameterGrid({"temperature": [1.0, 2.0]})
 
 
 def test_grid_rejects_an_empty_axis() -> None:
+    """An axis without values is refused."""
     with pytest.raises(ValueError, match="axis 'coupling' needs at least one value"):
         KuramotoParameterGrid({"coupling": []})
 
 
 def test_grid_exposes_axes_shape_and_size() -> None:
+    """The grid exposes its axes, shape and size."""
     grid = KuramotoParameterGrid({"coupling": [0.5, 1.0, 2.0], "frustration": [0.0, 0.3]})
     assert grid.axis_names == ("coupling", "frustration")
     assert grid.axis_values == ((0.5, 1.0, 2.0), (0.0, 0.3))
@@ -90,6 +92,7 @@ def test_grid_exposes_axes_shape_and_size() -> None:
 
 
 def test_grid_points_are_the_row_major_cartesian_product() -> None:
+    """Grid points are the row-major Cartesian product."""
     grid = KuramotoParameterGrid({"coupling": [0.5, 1.0], "frustration": [0.0, 0.3]})
     points = list(grid)
     assert points == [
@@ -101,6 +104,7 @@ def test_grid_points_are_the_row_major_cartesian_product() -> None:
 
 
 def test_grid_repr_names_the_axes_and_size() -> None:
+    """The grid's repr names its axes and size."""
     grid = KuramotoParameterGrid({"coupling": [0.5, 1.0, 2.0]})
     assert repr(grid) == "KuramotoParameterGrid(coupling[3], size=3)"
 
@@ -109,6 +113,7 @@ def test_grid_repr_names_the_axes_and_size() -> None:
 
 
 def test_observable_is_callable_on_a_trajectory() -> None:
+    """An observable is callable on a trajectory."""
     trajectory = np.zeros((4, 3))  # a fully synchronised, static trajectory
     observable = mean_order_parameter()
     assert observable.name == "mean_order_parameter"
@@ -117,17 +122,20 @@ def test_observable_is_callable_on_a_trajectory() -> None:
 
 def test_custom_observable_reduces_a_trajectory() -> None:
     # a user-defined measurement: the final-row phase range.
+    """A custom observable reduces a trajectory."""
     phase_range = Observable("phase_range", lambda trajectory, dt: float(np.ptp(trajectory[-1])))
     assert phase_range.name == "phase_range"
     assert phase_range(np.array([[0.0, 0.0], [0.0, 1.5]]), 0.05) == pytest.approx(1.5)
 
 
 def test_terminal_order_parameter_reads_the_final_row() -> None:
+    """The terminal order parameter reads the final row."""
     trajectory = np.vstack([np.linspace(0.0, np.pi, 3), np.zeros(3)])
     assert terminal_order_parameter()(trajectory, 0.05) == pytest.approx(1.0)
 
 
 def test_metastability_is_zero_for_a_static_trajectory() -> None:
+    """A static trajectory has zero metastability."""
     trajectory = np.zeros((5, 4))
     assert metastability()(trajectory, 0.05) == pytest.approx(0.0)
 
@@ -135,6 +143,7 @@ def test_metastability_is_zero_for_a_static_trajectory() -> None:
 def test_frequency_spread_is_zero_for_a_rigidly_rotating_state() -> None:
     # every oscillator advances by the same increment each step → identical
     # effective frequencies → zero spread.
+    """A rigidly rotating state has zero frequency spread."""
     steps = np.arange(6).reshape(-1, 1)
     trajectory = steps * 0.1 * np.ones((1, 4))
     assert frequency_spread()(trajectory, 0.05) == pytest.approx(0.0, abs=1e-9)
@@ -144,6 +153,7 @@ def test_frequency_spread_is_zero_for_a_rigidly_rotating_state() -> None:
 
 
 def test_sweep_requires_at_least_one_observable() -> None:
+    """A sweep without observables is refused."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     with pytest.raises(ValueError, match="at least one observable"):
@@ -151,6 +161,7 @@ def test_sweep_requires_at_least_one_observable() -> None:
 
 
 def test_sweep_rejects_duplicate_observable_names() -> None:
+    """Duplicate observable names are refused."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     with pytest.raises(ValueError, match="distinct"):
@@ -160,6 +171,7 @@ def test_sweep_rejects_duplicate_observable_names() -> None:
 
 
 def test_sweep_rejects_a_non_positive_step_count() -> None:
+    """A non-positive step count is refused."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     with pytest.raises(ValueError, match="n_steps must be a positive integer"):
@@ -167,6 +179,7 @@ def test_sweep_rejects_a_non_positive_step_count() -> None:
 
 
 def test_sweep_rejects_a_negative_transient() -> None:
+    """A negative transient is refused."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     with pytest.raises(ValueError, match="transient must be non-negative"):
@@ -174,6 +187,7 @@ def test_sweep_rejects_a_negative_transient() -> None:
 
 
 def test_sweep_rejects_a_transient_that_discards_everything() -> None:
+    """A transient that discards every row is refused."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     with pytest.raises(ValueError, match="at least one trajectory row"):
@@ -181,6 +195,7 @@ def test_sweep_rejects_a_transient_that_discards_everything() -> None:
 
 
 def test_sweep_measures_the_full_grid() -> None:
+    """The sweep measures every grid point and observable."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [0.2, 1.0, 4.0]})
     result = sweep_parameter_grid(
@@ -197,6 +212,7 @@ def test_sweep_measures_the_full_grid() -> None:
 
 
 def test_mean_order_parameter_rises_with_coupling() -> None:
+    """The mean order parameter rises with the coupling."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [0.2, 1.0, 4.0]})
     result = sweep_parameter_grid(
@@ -210,6 +226,7 @@ def test_mean_order_parameter_rises_with_coupling() -> None:
 
 
 def test_frequency_spread_falls_with_coupling() -> None:
+    """The frequency spread falls with the coupling."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [0.2, 4.0]})
     result = sweep_parameter_grid(system, grid, [frequency_spread()], n_steps=600, transient=300)
@@ -219,6 +236,7 @@ def test_frequency_spread_falls_with_coupling() -> None:
 
 
 def test_best_selects_the_optimising_cell() -> None:
+    """Best and worst select the optimising grid points."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [0.2, 1.0, 4.0]})
     result = sweep_parameter_grid(
@@ -233,6 +251,7 @@ def test_best_selects_the_optimising_cell() -> None:
 
 
 def test_records_merge_parameters_and_observables() -> None:
+    """Records merge the parameters and the observables."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [0.5, 2.0], "frustration": [0.0, 0.4]})
     result = sweep_parameter_grid(
@@ -251,6 +270,7 @@ def test_records_merge_parameters_and_observables() -> None:
 
 
 def test_grid_values_rejects_an_unmeasured_observable() -> None:
+    """An unmeasured observable is refused."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     result = sweep_parameter_grid(system, grid, [mean_order_parameter()], n_steps=50)
@@ -259,6 +279,7 @@ def test_grid_values_rejects_an_unmeasured_observable() -> None:
 
 
 def test_best_rejects_an_unmeasured_observable() -> None:
+    """Best refuses an unmeasured observable."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     result = sweep_parameter_grid(system, grid, [mean_order_parameter()], n_steps=50)
@@ -267,6 +288,7 @@ def test_best_rejects_an_unmeasured_observable() -> None:
 
 
 def test_sweep_uses_an_explicit_step_when_given() -> None:
+    """An explicit step changes the measurement."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [1.0]})
     default = sweep_parameter_grid(system, grid, [mean_order_parameter()], n_steps=100)
@@ -277,6 +299,7 @@ def test_sweep_uses_an_explicit_step_when_given() -> None:
 
 
 def test_sweep_does_not_mutate_the_input_system() -> None:
+    """The sweep leaves the input system unchanged."""
     system = _mean_field_system()
     state_before = system.current_state
     coupling_before = system.current_parameters.coupling
@@ -289,6 +312,7 @@ def test_sweep_does_not_mutate_the_input_system() -> None:
 
 
 def test_sweep_runs_on_a_networked_system() -> None:
+    """The sweep runs on a networked system."""
     system = _networked_system()
     grid = KuramotoParameterGrid({"frustration": [0.0, 0.3]})
     result = sweep_parameter_grid(
@@ -299,6 +323,7 @@ def test_sweep_runs_on_a_networked_system() -> None:
 
 
 def test_two_parameter_sweep_reshapes_to_the_grid() -> None:
+    """A two-parameter sweep reshapes to the grid."""
     system = _mean_field_system()
     grid = KuramotoParameterGrid({"coupling": [0.5, 2.0, 4.0], "frustration": [0.0, 0.5]})
     result = sweep_parameter_grid(

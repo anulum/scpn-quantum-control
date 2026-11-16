@@ -35,26 +35,34 @@ if TYPE_CHECKING:
 
 
 class TestHamiltonian1Norm:
+    """The Hamiltonian's 1-norm."""
+
     def test_positive(self) -> None:
+        """The 1-norm is positive."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         alpha = hamiltonian_1norm(K, omega)
         assert alpha > 0
 
     def test_scales_with_coupling(self) -> None:
+        """Stronger coupling raises the 1-norm."""
         omega = OMEGA_N_16[:4]
         a_weak = hamiltonian_1norm(build_knm_paper27(L=4, K_base=0.1), omega)
         a_strong = hamiltonian_1norm(build_knm_paper27(L=4, K_base=1.0), omega)
         assert a_strong > a_weak
 
     def test_scales_with_n(self) -> None:
+        """More oscillators raise the 1-norm."""
         a4 = hamiltonian_1norm(build_knm_paper27(L=4), OMEGA_N_16[:4])
         a8 = hamiltonian_1norm(build_knm_paper27(L=8), OMEGA_N_16[:8])
         assert a8 > a4
 
 
 class TestHamiltonianSpectralNorm:
+    """The Hamiltonian's spectral norm."""
+
     def test_positive(self) -> None:
+        """The spectral norm is positive."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         norm = hamiltonian_spectral_norm(K, omega)
@@ -71,7 +79,7 @@ class TestHamiltonianSpectralNorm:
     def test_large_system_uses_sparse_matrix_without_dense_builder(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """n >= 14 must not allocate a dense 2^n x 2^n matrix."""
+        """For n >= 14 no dense 2^n x 2^n matrix may be allocated."""
         K = np.zeros((14, 14))
         omega = np.linspace(0.5, 1.5, 14)
 
@@ -104,15 +112,20 @@ class TestHamiltonianSpectralNorm:
 
 
 class TestQueryCounts:
+    """Query counts of QSVT and Trotter."""
+
     def test_qsvt_positive(self) -> None:
+        """QSVT needs at least one query."""
         q = qsvt_query_count(1.0, 1.0, 0.01)
         assert q >= 1
 
     def test_trotter1_positive(self) -> None:
+        """First-order Trotter needs at least one step."""
         r = trotter1_step_count(1.0, 1.0, 0.01)
         assert r >= 1
 
     def test_trotter2_positive(self) -> None:
+        """Second-order Trotter needs at least one step."""
         r = trotter2_step_count(1.0, 1.0, 0.01)
         assert r >= 1
 
@@ -132,6 +145,7 @@ class TestQueryCounts:
 
     @pytest.mark.parametrize("alpha", [0.0, -1.0, float("inf"), float("nan")])
     def test_query_counts_reject_invalid_alpha(self, alpha: float) -> None:
+        """An invalid alpha is refused."""
         with pytest.raises(ValueError, match="alpha"):
             qsvt_query_count(alpha, 1.0, 0.01)
         with pytest.raises(ValueError, match="alpha"):
@@ -141,6 +155,7 @@ class TestQueryCounts:
 
     @pytest.mark.parametrize("epsilon", [0.0, -0.1, 1.0, 1.5, float("nan")])
     def test_query_counts_reject_invalid_error_budget(self, epsilon: float) -> None:
+        """An invalid error budget is refused."""
         with pytest.raises(ValueError, match="epsilon"):
             qsvt_query_count(1.0, 1.0, epsilon)
         with pytest.raises(ValueError, match="epsilon"):
@@ -150,6 +165,7 @@ class TestQueryCounts:
 
     @pytest.mark.parametrize("time", [-1.0, float("inf"), float("nan")])
     def test_query_counts_reject_invalid_time(self, time: float) -> None:
+        """An invalid simulation time is refused."""
         with pytest.raises(ValueError, match="simulation time"):
             qsvt_query_count(1.0, time, 0.01)
         with pytest.raises(ValueError, match="simulation time"):
@@ -158,36 +174,44 @@ class TestQueryCounts:
             trotter2_step_count(1.0, time, 0.01)
 
     def test_query_counts_reject_string_alpha_coercion(self) -> None:
+        """A string alpha is refused rather than coerced."""
         with pytest.raises(ValueError, match="alpha must be a real numeric scalar"):
             # The rejection under test is the runtime coercion guard, so the
             # wrong type is the input, not a typing defect.
             qsvt_query_count("1.0", 1.0, 0.01)  # type: ignore[arg-type]
 
     def test_query_counts_reject_boolean_time_coercion(self) -> None:
+        """A boolean time is refused rather than coerced."""
         with pytest.raises(ValueError, match="simulation time must be a real numeric scalar"):
             trotter1_step_count(1.0, True, 0.01)
 
 
 class TestQSVTResourceEstimate:
+    """The QSVT resource estimate."""
+
     def test_returns_result(self) -> None:
+        """The estimate returns a result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = qsvt_resource_estimate(K, omega)
         assert isinstance(result, QSVTResourceEstimate)
 
     def test_speedup_positive(self) -> None:
+        """QSVT beats first-order Trotter."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = qsvt_resource_estimate(K, omega, t=2.0, epsilon=0.001)
         assert result.speedup_vs_trotter1 > 1.0
 
     def test_n_qubits(self) -> None:
+        """The estimate records eight qubits."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = qsvt_resource_estimate(K, omega)
         assert result.n_qubits == 8
 
     def test_ancilla_positive(self) -> None:
+        """QSVT needs at least two ancillas."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = qsvt_resource_estimate(K, omega)
@@ -221,10 +245,12 @@ class TestQSVTResourceEstimate:
     def test_resource_estimate_rejects_invalid_problem_shapes_and_values(
         self, K: NDArray[np.float64], omega: NDArray[np.float64], match: str
     ) -> None:
+        """Invalid problem shapes and values are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             qsvt_resource_estimate(K, omega)
 
     def test_resource_estimate_rejects_string_coupling_coercion(self) -> None:
+        """A string coupling is refused rather than coerced."""
         K = [["0.0", "0.25"], ["0.25", "0.0"]]
         omega = np.array([0.1, 0.2])
 
@@ -233,6 +259,7 @@ class TestQSVTResourceEstimate:
             qsvt_resource_estimate(K, omega)  # type: ignore[arg-type]
 
     def test_resource_estimate_rejects_boolean_frequency_coercion(self) -> None:
+        """A boolean frequency is refused rather than coerced."""
         K = np.zeros((2, 2))
         omega = [True, False]
 
@@ -251,6 +278,7 @@ class TestQSVTResourceEstimate:
     def test_resource_estimate_rejects_invalid_budget_parameters(
         self, time: float, epsilon: float, match: str
     ) -> None:
+        """Invalid budget parameters are refused with their reasons."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
@@ -260,6 +288,7 @@ class TestQSVTResourceEstimate:
     def test_resource_estimate_propagates_dense_budget(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """The estimate refuses a dense spectral norm above the budget."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
@@ -273,6 +302,8 @@ class TestQSVTResourceEstimate:
 
 
 class TestQSPPhaseAngles:
+    """QSP phase angles."""
+
     def test_default_route_returns_certified_cosine_phases(self) -> None:
         """The default route must realise the degree-d Chebyshev cosine polynomial."""
         degree = 10
@@ -286,15 +317,18 @@ class TestQSPPhaseAngles:
 
     @pytest.mark.parametrize("degree", [1.5, True, "4"])
     def test_rejects_non_integer_degree(self, degree: object) -> None:
+        """A non-integer degree is refused."""
         with pytest.raises(ValueError, match="degree"):
             # Each parametrised row is a non-integer degree the guard must refuse.
             qsp_phase_angles(degree, allow_initial_guess=True)  # type: ignore[arg-type]
 
     def test_initial_guess_length_when_explicitly_requested(self) -> None:
+        """An explicitly requested initial guess has the expected length."""
         phases = qsp_phase_angles(10, allow_initial_guess=True)
         assert len(phases) == 11
 
     def test_initial_guess_symmetric_when_explicitly_requested(self) -> None:
+        """An explicitly requested initial guess is symmetric."""
         phases = qsp_phase_angles(8, allow_initial_guess=True)
         assert phases[0] == pytest.approx(phases[-1])
 

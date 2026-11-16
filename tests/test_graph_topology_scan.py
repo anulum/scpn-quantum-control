@@ -40,38 +40,50 @@ if TYPE_CHECKING:
 
 
 class TestGraphGenerators:
+    """The random and regular graph generators."""
+
     def test_erdos_renyi_symmetric(self) -> None:
+        """The Erdos-Renyi coupling is symmetric."""
         K = _erdos_renyi_coupling(16, 0.5)
         np.testing.assert_allclose(K, K.T, atol=1e-12)
 
     def test_erdos_renyi_density(self) -> None:
+        """Probability one couples every pair."""
         K = _erdos_renyi_coupling(16, 1.0)
         assert np.all(K[np.eye(16) == 0] > 0)
 
     def test_erdos_renyi_empty(self) -> None:
+        """Probability zero couples nothing."""
         K = _erdos_renyi_coupling(16, 0.0)
         assert np.sum(K) == 0.0
 
     def test_ring_degree(self) -> None:
+        """Each ring node has degree four."""
         K = _ring_coupling(16, k=2)
         degrees = np.sum(K > 0, axis=1)
         assert np.all(degrees == 4)
 
     def test_ring_shape(self) -> None:
+        """The ring is square in the node count."""
         K = _ring_coupling(8, k=1)
         assert K.shape == (8, 8)
 
     def test_watts_strogatz_shape(self) -> None:
+        """The Watts-Strogatz coupling is square in the node count."""
         K = _watts_strogatz_coupling(16, k=4, beta=0.3)
         assert K.shape == (16, 16)
 
     def test_watts_strogatz_symmetric(self) -> None:
+        """The Watts-Strogatz coupling is symmetric."""
         K = _watts_strogatz_coupling(16, k=4, beta=0.5)
         np.testing.assert_allclose(K, K.T, atol=1e-12)
 
 
 class TestGraphP_H1_Result:
+    """The scan result record."""
+
     def test_dataclass_fields(self) -> None:
+        """The record keeps its family and a persistence in [0, 1]."""
         r = GraphP_H1_Result(
             graph_family="test",
             parameter=0.5,
@@ -91,23 +103,30 @@ class TestGraphP_H1_Result:
 
 
 class TestGraphInvariants:
+    """Invariants of the generated couplings."""
+
     def test_ring_zero_diagonal(self) -> None:
+        """The ring has a zero diagonal."""
         K = _ring_coupling(8, k=1)
         np.testing.assert_allclose(np.diag(K), 0.0)
 
     def test_erdos_renyi_zero_diagonal(self) -> None:
+        """The Erdos-Renyi coupling has a zero diagonal."""
         K = _erdos_renyi_coupling(8, 0.5)
         np.testing.assert_allclose(np.diag(K), 0.0)
 
     def test_watts_strogatz_zero_diagonal(self) -> None:
+        """The Watts-Strogatz coupling has a zero diagonal."""
         K = _watts_strogatz_coupling(8, k=2, beta=0.3)
         np.testing.assert_allclose(np.diag(K), 0.0)
 
     def test_ring_non_negative(self) -> None:
+        """The ring is non-negative."""
         K = _ring_coupling(16, k=2)
         assert np.all(K >= 0)
 
     def test_erdos_renyi_non_negative(self) -> None:
+        """The Erdos-Renyi coupling is non-negative."""
         K = _erdos_renyi_coupling(16, 0.3)
         assert np.all(K >= 0)
 
@@ -118,6 +137,8 @@ class TestGraphInvariants:
 
 
 class TestGraphPipeline:
+    """From generated graphs to Hamiltonians."""
+
     def test_ring_to_hamiltonian(self) -> None:
         """Ring topology coupling feeds into knm_to_hamiltonian without error."""
         from scpn_quantum_control.bridge.knm_hamiltonian import (
@@ -131,6 +152,7 @@ class TestGraphPipeline:
         assert H.num_qubits == 4
 
     def test_erdos_renyi_to_hamiltonian(self) -> None:
+        """An Erdos-Renyi coupling gives a Hamiltonian of the right size."""
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
             knm_to_hamiltonian,
@@ -203,6 +225,7 @@ class TestMeasurePH1AtTransition:
 
     @_MOCK_CP
     def test_returns_mean_and_std(self, _mock: MagicMock) -> None:
+        """The measurement returns a float mean in [0, 1] and a spread."""
         K = _ring_coupling(8, k=2)
         mean, std = _measure_p_h1_at_transition(K, n_thermalize=10, n_samples=5, seed=42)
         assert isinstance(mean, float)
@@ -212,6 +235,7 @@ class TestMeasurePH1AtTransition:
 
     @_MOCK_CP
     def test_reproducible(self, _mock: MagicMock) -> None:
+        """The measurement is reproducible."""
         K = _ring_coupling(8, k=2)
         m1, s1 = _measure_p_h1_at_transition(K, n_thermalize=10, n_samples=5, seed=99)
         m2, s2 = _measure_p_h1_at_transition(K, n_thermalize=10, n_samples=5, seed=99)
@@ -228,12 +252,14 @@ class TestMeasurePH1AtTransition:
 
     @_MOCK_CP
     def test_erdos_renyi_input(self, _mock: MagicMock) -> None:
+        """An Erdos-Renyi input gives a mean in [0, 1]."""
         K = _erdos_renyi_coupling(8, 0.5)
         mean, std = _measure_p_h1_at_transition(K, n_thermalize=10, n_samples=5, seed=42)
         assert 0 <= mean <= 1
 
     @_MOCK_CP
     def test_watts_strogatz_input(self, _mock: MagicMock) -> None:
+        """A Watts-Strogatz input gives a mean in [0, 1]."""
         K = _watts_strogatz_coupling(8, k=4, beta=0.3)
         mean, std = _measure_p_h1_at_transition(K, n_thermalize=10, n_samples=5, seed=42)
         assert 0 <= mean <= 1
@@ -279,12 +305,14 @@ class TestScanGraphTopologies:
     """Full scan pipeline with mocked _measure_p_h1_at_transition for speed."""
 
     def test_returns_list_of_results(self) -> None:
+        """The scan returns a non-empty list of results."""
         results = _run_scan(n=6, n_samples=3, seed=42)
         assert isinstance(results, list)
         assert len(results) > 0
         assert all(isinstance(r, GraphP_H1_Result) for r in results)
 
     def test_all_families_present(self) -> None:
+        """Every graph family appears."""
         results = _run_scan(n=6, n_samples=3, seed=42)
         families = {r.graph_family for r in results}
         assert families == {"erdos_renyi", "ring_lattice", "watts_strogatz", "knm_complete"}
@@ -295,6 +323,7 @@ class TestScanGraphTopologies:
         assert len(results) == 16
 
     def test_result_fields_valid(self) -> None:
+        """Each result records its size, samples and a persistence in [0, 1]."""
         results = _run_scan(n=6, n_samples=3, seed=42)
         for r in results:
             assert r.n_nodes == 6
@@ -318,6 +347,7 @@ class TestScanGraphTopologies:
         assert knm[0].avg_degree > 0
 
     def test_deterministic(self) -> None:
+        """The scan is deterministic."""
         r1 = _run_scan(n=6, n_samples=3, seed=42)
         r2 = _run_scan(n=6, n_samples=3, seed=42)
         for a, b in zip(r1, r2, strict=True):
@@ -325,6 +355,7 @@ class TestScanGraphTopologies:
             assert a.p_h1_mean == b.p_h1_mean
 
     def test_raises_without_ripser(self) -> None:
+        """Without ripser the scan raises."""
         with (
             patch(
                 "scpn_quantum_control.analysis.graph_topology_scan._RIPSER_AVAILABLE",
@@ -350,22 +381,26 @@ class TestParametricSensitivity:
         assert np.sum(K_lo > 0) < np.sum(K_hi > 0)
 
     def test_erdos_renyi_strength(self) -> None:
+        """Erdos-Renyi edges carry the requested strength."""
         K = _erdos_renyi_coupling(8, 1.0, strength=3.5)
         nonzero = K[K > 0]
         np.testing.assert_allclose(nonzero, 3.5)
 
     def test_ring_strength(self) -> None:
+        """Ring edges carry the requested strength."""
         K = _ring_coupling(6, k=1, strength=0.7)
         nonzero = K[K > 0]
         np.testing.assert_allclose(nonzero, 0.7)
 
     def test_watts_strogatz_strength(self) -> None:
+        """Watts-Strogatz edges carry the requested strength."""
         K = _watts_strogatz_coupling(8, k=4, beta=0.0, strength=2.0)
         nonzero = K[K > 0]
         np.testing.assert_allclose(nonzero, 2.0)
 
     @pytest.mark.parametrize("n", [8, 12, 16])
     def test_ring_degree_invariant(self, n: int) -> None:
+        """Ring nodes keep degree four."""
         K = _ring_coupling(n, k=2)
         degrees = np.sum(K > 0, axis=1)
         np.testing.assert_array_equal(degrees, 4)

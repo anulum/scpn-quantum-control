@@ -47,6 +47,7 @@ _N = 64
 
 @pytest.fixture(scope="module")
 def triadic_loop() -> HysteresisLoop:
+    """Return a triadic hysteresis loop over the test coupling grid."""
     omega = _cauchy_frequencies(_N, 11)
     return triadic_hysteresis_loop(
         omega, _GRID, _incoherent_phases(_N, 3), np.zeros(_N), dt=0.05, n_steps=500
@@ -55,6 +56,7 @@ def triadic_loop() -> HysteresisLoop:
 
 @pytest.fixture(scope="module")
 def pairwise_loop() -> HysteresisLoop:
+    """Return a pairwise hysteresis loop over the test coupling grid."""
     omega = _cauchy_frequencies(_N, 11)
     return hysteresis_loop(
         omega,
@@ -69,8 +71,11 @@ def pairwise_loop() -> HysteresisLoop:
 
 
 class TestTriadicExplosiveHysteresis:
+    """Explosive synchronisation with triadic coupling."""
+
     def test_loop_is_hysteretic_with_finite_width(self, triadic_loop: HysteresisLoop) -> None:
         # The r² gain leaves a bistable window: the branches separate over a finite coupling range.
+        """The triadic loop is hysteretic with a finite width."""
         assert triadic_loop.is_hysteretic
         assert triadic_loop.hysteresis_width > 1.0
         assert triadic_loop.max_branch_separation > 0.5
@@ -80,6 +85,7 @@ class TestTriadicExplosiveHysteresis:
     ) -> None:
         # Seeded coherent at the top coupling, the backward branch stays synchronised then collapses
         # at a finite saddle-node inside the swept range.
+        """The coherent branch collapses at a backward saddle-node inside the grid."""
         assert triadic_loop.backward_transition_coupling is not None
         assert _GRID[0] < triadic_loop.backward_transition_coupling < _GRID[-1]
         assert triadic_loop.backward.order_parameters[0] > 0.6  # coherent at the highest coupling
@@ -89,23 +95,29 @@ class TestTriadicExplosiveHysteresis:
     def test_forward_branch_stays_incoherent_in_range(self, triadic_loop: HysteresisLoop) -> None:
         # The incoherent state is linearly stable for the triadic gain, so the forward branch never
         # synchronises within the range and the forward transition lies beyond the grid.
+        """The forward branch stays incoherent over the grid."""
         assert triadic_loop.forward_transition_coupling is None
         assert float(triadic_loop.forward.order_parameters.max()) < 0.4
 
     def test_separation_window_matches_reported_width(self, triadic_loop: HysteresisLoop) -> None:
+        """The separation window matches the reported width."""
         separated = np.flatnonzero(triadic_loop.branch_separation > 0.1)
         expected = float(_GRID[separated[-1]] - _GRID[separated[0]])
         assert triadic_loop.hysteresis_width == pytest.approx(expected)
 
 
 class TestPairwiseContinuousTransition:
+    """The continuous transition with pairwise coupling."""
+
     def test_branches_coincide_with_no_hysteresis(self, pairwise_loop: HysteresisLoop) -> None:
         # The pairwise mean field has a continuous transition: forward and backward branches overlap.
+        """Pairwise branches coincide with no hysteresis."""
         assert not pairwise_loop.is_hysteretic
         assert pairwise_loop.hysteresis_width == 0.0
         assert pairwise_loop.max_branch_separation < 0.15
 
     def test_forward_and_backward_transitions_match(self, pairwise_loop: HysteresisLoop) -> None:
+        """Forward and backward transitions agree."""
         assert pairwise_loop.forward_transition_coupling is not None
         assert pairwise_loop.backward_transition_coupling is not None
         assert pairwise_loop.forward_transition_coupling == pytest.approx(
@@ -116,11 +128,15 @@ class TestPairwiseContinuousTransition:
         self, pairwise_loop: HysteresisLoop
     ) -> None:
         # Above the critical coupling K_c = 2 the order parameter rises into coherence.
+        """The forward branch synchronises above the critical coupling."""
         assert float(pairwise_loop.forward.order_parameters[-1]) > 0.6
 
 
 class TestContinuationBranch:
+    """Single continuation branches."""
+
     def test_ascending_sweep_metadata(self) -> None:
+        """An ascending sweep records its direction."""
         omega = _cauchy_frequencies(_N, 5)
         branch = continuation_sweep(
             omega, mean_field_force, np.linspace(1.0, 6.0, 6), np.zeros(_N), dt=0.05, n_steps=300
@@ -134,6 +150,7 @@ class TestContinuationBranch:
         assert np.all(branch.order_parameters <= 1.0)
 
     def test_descending_sweep_metadata(self) -> None:
+        """A descending sweep records its direction."""
         omega = _cauchy_frequencies(_N, 5)
         branch = continuation_sweep(
             omega, mean_field_force, np.linspace(6.0, 1.0, 6), np.zeros(_N), dt=0.05, n_steps=300
@@ -142,6 +159,7 @@ class TestContinuationBranch:
         assert not branch.is_ascending
 
     def test_default_settle_window_matches_explicit_quarter(self) -> None:
+        """The default settling window equals an explicit quarter."""
         omega = _cauchy_frequencies(_N, 5)
         grid = np.linspace(1.0, 6.0, 4)
         seed = np.zeros(_N)
@@ -152,6 +170,7 @@ class TestContinuationBranch:
         np.testing.assert_allclose(default.order_parameters, explicit.order_parameters)
 
     def test_loop_is_reproducible(self) -> None:
+        """The loop is reproducible."""
         omega = _cauchy_frequencies(48, 1)
         grid = np.linspace(1.0, 6.0, 5)
         incoherent = _incoherent_phases(48, 2)
@@ -167,35 +186,42 @@ class TestContinuationBranch:
 
 
 class TestSweepValidation:
+    """Validation of a coupling sweep."""
+
     _OMEGA = np.zeros(3)
     _GRID = np.array([1.0, 2.0])
     _PHASES = np.zeros(3)
 
     def test_omega_must_be_one_dimensional(self) -> None:
+        """Frequencies that are not one-dimensional are refused."""
         with pytest.raises(ValueError, match="non-empty one-dimensional"):
             continuation_sweep(
                 np.zeros((3, 1)), mean_field_force, self._GRID, self._PHASES, dt=0.1, n_steps=4
             )
 
     def test_omega_must_be_non_empty(self) -> None:
+        """Empty frequencies are refused."""
         with pytest.raises(ValueError, match="non-empty one-dimensional"):
             continuation_sweep(
                 np.zeros(0), mean_field_force, self._GRID, np.zeros(0), dt=0.1, n_steps=4
             )
 
     def test_initial_phases_shape(self) -> None:
+        """Initial phases of the wrong shape are refused."""
         with pytest.raises(ValueError, match="initial_phases must have shape"):
             continuation_sweep(
                 self._OMEGA, mean_field_force, self._GRID, np.zeros(2), dt=0.1, n_steps=4
             )
 
     def test_coupling_grid_needs_two_points(self) -> None:
+        """A grid with fewer than two couplings is refused."""
         with pytest.raises(ValueError, match="at least two couplings"):
             continuation_sweep(
                 self._OMEGA, mean_field_force, np.array([1.0]), self._PHASES, dt=0.1, n_steps=4
             )
 
     def test_coupling_grid_must_be_monotonic(self) -> None:
+        """A grid that is not strictly monotonic is refused."""
         with pytest.raises(ValueError, match="strictly monotonic"):
             continuation_sweep(
                 self._OMEGA,
@@ -207,18 +233,21 @@ class TestSweepValidation:
             )
 
     def test_dt_must_be_positive(self) -> None:
+        """A non-positive step is refused."""
         with pytest.raises(ValueError, match="dt must be positive"):
             continuation_sweep(
                 self._OMEGA, mean_field_force, self._GRID, self._PHASES, dt=0.0, n_steps=4
             )
 
     def test_n_steps_must_be_positive(self) -> None:
+        """A non-positive step count is refused."""
         with pytest.raises(ValueError, match="n_steps must be positive"):
             continuation_sweep(
                 self._OMEGA, mean_field_force, self._GRID, self._PHASES, dt=0.1, n_steps=0
             )
 
     def test_settle_steps_range(self) -> None:
+        """A settle_steps value outside [1, 4] is refused."""
         with pytest.raises(ValueError, match=r"settle_steps must be in \[1, 4\]"):
             continuation_sweep(
                 self._OMEGA,
@@ -242,10 +271,13 @@ class TestSweepValidation:
 
 
 class TestLoopValidation:
+    """Validation of a hysteresis loop."""
+
     _OMEGA = np.zeros(3)
     _PHASES = np.zeros(3)
 
     def test_coupling_grid_must_be_strictly_ascending(self) -> None:
+        """A grid that is not strictly ascending is refused."""
         with pytest.raises(ValueError, match="strictly ascending"):
             hysteresis_loop(
                 self._OMEGA,
@@ -258,6 +290,7 @@ class TestLoopValidation:
             )
 
     def test_coupling_grid_must_have_two_points(self) -> None:
+        """A single-point grid is refused."""
         with pytest.raises(ValueError, match="strictly ascending"):
             hysteresis_loop(
                 self._OMEGA,
@@ -270,6 +303,7 @@ class TestLoopValidation:
             )
 
     def test_separation_tolerance_must_be_positive(self) -> None:
+        """A non-positive separation tolerance is refused."""
         with pytest.raises(ValueError, match="separation_tolerance must be positive"):
             hysteresis_loop(
                 self._OMEGA,
@@ -283,6 +317,7 @@ class TestLoopValidation:
             )
 
     def test_delegates_sweep_validation(self) -> None:
+        """The loop applies the sweep's validation."""
         with pytest.raises(ValueError, match="initial_phases must have shape"):
             hysteresis_loop(
                 self._OMEGA,
@@ -296,4 +331,5 @@ class TestLoopValidation:
 
 
 def test_mean_field_force_type_alias_is_exported() -> None:
+    """The mean-field force type alias is exported."""
     assert MeanFieldForce is not None

@@ -92,10 +92,14 @@ class _Service:
 
 
 class TestCountsFromPub:
+    """Counts from one primitive result."""
+
     def test_extracts_counts(self) -> None:
+        """Counts are read from the classical register."""
         assert script.counts_from_pub(_Pub({"0000": 5, "1111": 3})) == {"0000": 5, "1111": 3}
 
     def test_missing_register_raises(self) -> None:
+        """A result without a classical register is refused."""
         with pytest.raises(ValueError, match="no classical register"):
             script.counts_from_pub(_Pub(None))
 
@@ -103,6 +107,8 @@ class TestCountsFromPub:
         # a public attribute (alphabetically before the register) without
         # get_counts() must be skipped, not crash — dir() is sorted, so "aaa"
         # is examined before "meas" and exercises the hasattr-False branch.
+        """Fields that are not registers are skipped."""
+
         class _Data:
             def __init__(self) -> None:
                 self.aaa = {"shots": 8192}
@@ -113,11 +119,15 @@ class TestCountsFromPub:
 
 
 class TestJobRawCounts:
+    """Raw counts from a job."""
+
     def test_iterable_result(self) -> None:
+        """An iterable result gives one count map per result."""
         job = _Job("j", [_Pub({"0000": 1}), _Pub({"1111": 2})])
         assert script.job_raw_counts(job) == [{"0000": 1}, {"1111": 2}]
 
     def test_non_iterable_result(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A single result gives one count map."""
         single = _Pub({"0000": 7})
 
         class _SingleJob:
@@ -128,6 +138,8 @@ class TestJobRawCounts:
 
 
 class TestBuildPack:
+    """Building the recovered-counts pack."""
+
     def _records(self) -> list[dict[str, Any]]:
         return [
             {
@@ -139,6 +151,7 @@ class TestBuildPack:
         ]
 
     def test_assembles_nine_experiments(self) -> None:
+        """The pack holds the nine experiments in order with their totals and committed means."""
         committed = {name: {"mean": 0.9} for name in script.EXPERIMENT_ORDER}
         pack = script.build_pack(self._records(), {"available": True}, committed)
         assert [e["experiment"] for e in pack["experiments"]] == list(script.EXPERIMENT_ORDER)
@@ -147,34 +160,45 @@ class TestBuildPack:
         assert pack["calibration_snapshot"] == {"available": True}
 
     def test_wrong_job_count_raises(self) -> None:
+        """A job count other than nine is refused."""
         with pytest.raises(ValueError, match="expected 9 jobs"):
             script.build_pack(self._records()[:5], {}, {})
 
 
 class TestLeakGuard:
+    """Guarding against a leaked token."""
+
     def test_token_present_raises(self) -> None:
+        """A payload containing the token is refused."""
         with pytest.raises(RuntimeError, match="API token found"):
             script.assert_no_token_leak({"x": f"prefix-{TOKEN}-suffix"}, TOKEN)
 
     def test_token_absent_passes(self) -> None:
+        """A clean payload passes."""
         script.assert_no_token_leak({"x": "clean"}, TOKEN)
 
     def test_no_token_is_noop(self) -> None:
+        """Without a token the guard does nothing."""
         script.assert_no_token_leak({"x": "anything"}, None)
 
 
 class TestRetrieval:
+    """Retrieving jobs and calibration."""
+
     def test_retrieve_calibration_available(self) -> None:
+        """Available calibration reports the qubit count."""
         props = types.SimpleNamespace(last_update_date="2026-03-29", qubits=[0] * 156)
         cal = script.retrieve_calibration(_Service([], props))
         assert cal["available"] is True
         assert cal["num_qubits"] == 156
 
     def test_retrieve_calibration_absent(self) -> None:
+        """Missing calibration is reported as unavailable."""
         cal = script.retrieve_calibration(_Service([], None))
         assert cal["available"] is False
 
     def test_retrieve_cluster_reverses_and_reads(self) -> None:
+        """The cluster is read in submission order."""
         service = _Service(_nine_jobs(), None)
         records = script.retrieve_cluster(service)
         assert len(records) == 9
@@ -184,13 +208,17 @@ class TestRetrieval:
         assert records[0]["per_pub_counts"] == [{"0000": 900, "1111": 100}]
 
     def test_retrieve_cluster_creation_date_fallback(self) -> None:
+        """A job without a creation date records None."""
         job = _Job("j", [_Pub({"0000": 1})], created=None)
         records = script.retrieve_cluster(_Service([job], None))
         assert records[0]["creation_date"] is None
 
 
 class TestSha256:
+    """File digests."""
+
     def test_digest(self, tmp_path: Path) -> None:
+        """The digest is the file's SHA-256."""
         f = tmp_path / "x.json"
         f.write_text("abc", encoding="utf-8")
         assert script.sha256_file(f) == (
@@ -199,7 +227,10 @@ class TestSha256:
 
 
 class TestLoadCommittedAggregates:
+    """Loading the committed aggregates."""
+
     def test_reads_committed_v2(self) -> None:
+        """The committed means are read."""
         agg = script.load_committed_aggregates()
         # the committed aggregate-only pack carries the C-experiment means
         assert agg["C_fim"]["mean"] == pytest.approx(0.9158, abs=1e-3)
@@ -207,9 +238,12 @@ class TestLoadCommittedAggregates:
 
 
 class TestLoadRuntimeService:
+    """Building the runtime service."""
+
     def test_builds_service_with_vault(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A vault token builds an IBM Cloud service with its instance."""
         captured: dict[str, Any] = {}
 
         class _FakeRuntimeService:
@@ -231,6 +265,7 @@ class TestLoadRuntimeService:
         assert isinstance(service, _FakeRuntimeService)
 
     def test_no_vault_no_token(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without a vault no token is used."""
         captured: dict[str, Any] = {}
 
         class _FakeRuntimeService:
@@ -246,6 +281,7 @@ class TestLoadRuntimeService:
         assert isinstance(service, _FakeRuntimeService)
 
     def test_token_without_instance(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A token without an instance builds the service without one."""
         captured: dict[str, Any] = {}
 
         class _FakeRuntimeService:
@@ -267,6 +303,8 @@ class TestLoadRuntimeService:
 
 
 class TestCli:
+    """The recovery command."""
+
     @pytest.fixture()
     def _stub_service(self, monkeypatch: pytest.MonkeyPatch) -> None:
         props = types.SimpleNamespace(last_update_date="2026-03-29", qubits=[0] * 156)
@@ -276,12 +314,14 @@ class TestCli:
         monkeypatch.setattr(script, "load_committed_aggregates", lambda *_a, **_k: committed)
 
     def test_dry_run(self, _stub_service: None, capsys: pytest.CaptureFixture[str]) -> None:
+        """A dry run returns zero and says so."""
         assert script.main(["--dry-run"]) == 0
         assert "dry-run" in capsys.readouterr().out
 
     def test_writes_pack(
         self, _stub_service: None, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """The command writes the pack and its manifest."""
         assert script.main(["--output-dir", str(tmp_path)]) == 0
         pack = json.loads((tmp_path / "recovered_raw_counts.json").read_text(encoding="utf-8"))
         assert len(pack["experiments"]) == 9

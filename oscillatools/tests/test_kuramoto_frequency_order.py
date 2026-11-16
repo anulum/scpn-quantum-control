@@ -40,7 +40,7 @@ def _wrap(values: np.ndarray) -> np.ndarray:
 def _linear_trajectory(
     rates: np.ndarray, offsets: np.ndarray, *, dt: float, steps: int
 ) -> np.ndarray:
-    """A trajectory whose oscillator ``i`` advances at a constant rate ``rates[i]``."""
+    """Build a trajectory whose oscillator ``i`` advances at a constant rate ``rates[i]``."""
     grid = np.arange(steps + 1) * dt
     return rates[None, :] * grid[:, None] + offsets[None, :]
 
@@ -49,6 +49,7 @@ def _linear_trajectory(
 
 
 def test_constant_rate_recovers_the_rate() -> None:
+    """A constant rate is recovered."""
     rates = np.array([1.3, 1.3, 1.3, 1.3])
     offsets = np.random.default_rng(0).uniform(0.0, 2.0 * np.pi, 4)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=500)
@@ -56,6 +57,7 @@ def test_constant_rate_recovers_the_rate() -> None:
 
 
 def test_distinct_rates_recovered_per_oscillator() -> None:
+    """Each oscillator's rate is recovered."""
     rates = np.array([-2.0, -0.5, 0.0, 0.75, 3.1])
     offsets = np.random.default_rng(1).uniform(0.0, 2.0 * np.pi, 5)
     trajectory = _linear_trajectory(rates, offsets, dt=0.005, steps=800)
@@ -63,6 +65,7 @@ def test_distinct_rates_recovered_per_oscillator() -> None:
 
 
 def test_wrapped_storage_gives_same_frequencies() -> None:
+    """Wrapped phases give the same frequencies."""
     rates = np.array([-1.1, 0.4, 2.7])
     offsets = np.random.default_rng(2).uniform(0.0, 2.0 * np.pi, 3)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=600)
@@ -72,6 +75,7 @@ def test_wrapped_storage_gives_same_frequencies() -> None:
 
 
 def test_telescopes_to_endpoint_slope_when_no_step_wraps() -> None:
+    """Without wrapping the estimate is the endpoint slope."""
     rates = np.array([0.3, -0.7, 1.2])
     offsets = np.zeros(3)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=400)
@@ -83,6 +87,7 @@ def test_telescopes_to_endpoint_slope_when_no_step_wraps() -> None:
 def test_frequency_scales_inversely_with_dt() -> None:
     # One fixed phase array (identical per-step advance) read at two steps: doubling the
     # interpretation step halves the reported frequency.
+    """The frequency scales inversely with the step."""
     rates = np.array([0.5, 1.0, 2.0])
     phases = rates[None, :] * np.arange(401)[:, None] * 0.01
     assert np.allclose(
@@ -96,6 +101,7 @@ def test_frequency_scales_inversely_with_dt() -> None:
 
 
 def test_index_vanishes_for_frequency_locked_state() -> None:
+    """A frequency-locked state has index zero."""
     rates = np.full(8, 2.4)
     offsets = np.random.default_rng(3).uniform(0.0, 2.0 * np.pi, 8)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=500)
@@ -103,6 +109,7 @@ def test_index_vanishes_for_frequency_locked_state() -> None:
 
 
 def test_index_equals_population_spread_for_linear_drift() -> None:
+    """For linear drift the index is the population spread."""
     rates = np.random.default_rng(4).standard_normal(16)
     offsets = np.random.default_rng(5).uniform(0.0, 2.0 * np.pi, 16)
     trajectory = _linear_trajectory(rates, offsets, dt=0.005, steps=900)
@@ -112,6 +119,7 @@ def test_index_equals_population_spread_for_linear_drift() -> None:
 
 
 def test_index_grows_monotonically_with_spread() -> None:
+    """The index grows with the spread."""
     base = np.random.default_rng(6).standard_normal(12)
     offsets = np.zeros(12)
     previous = -1.0
@@ -123,6 +131,7 @@ def test_index_grows_monotonically_with_spread() -> None:
 
 
 def test_index_is_zero_for_single_oscillator() -> None:
+    """A single oscillator has index zero."""
     trajectory = _linear_trajectory(np.array([1.7]), np.array([0.2]), dt=0.01, steps=300)
     assert frequency_synchronisation_index(trajectory, dt=0.01) == 0.0
 
@@ -131,7 +140,7 @@ def test_index_is_zero_for_single_oscillator() -> None:
 
 
 def _smooth_trajectory(rates: np.ndarray, *, dt: float, steps: int, seed: int) -> np.ndarray:
-    """A drift-plus-bounded-ripple trajectory with no per-step advance near ``±π``."""
+    """Build a drift-plus-bounded-ripple trajectory with no per-step advance near ``±π``."""
     rng = np.random.default_rng(seed)
     grid = np.arange(steps + 1) * dt
     ripple = 0.05 * np.sin(
@@ -145,6 +154,7 @@ def _smooth_trajectory(rates: np.ndarray, *, dt: float, steps: int, seed: int) -
 
 
 def test_index_gradient_is_nonzero_only_at_the_endpoints() -> None:
+    """The index gradient is non-zero only at the endpoints, with opposite signs."""
     rates = np.random.default_rng(20).standard_normal(9)
     trajectory = _smooth_trajectory(rates, dt=0.01, steps=300, seed=21)
     gradient = frequency_synchronisation_index_gradient(trajectory, dt=0.01)
@@ -154,6 +164,7 @@ def test_index_gradient_is_nonzero_only_at_the_endpoints() -> None:
 
 
 def test_index_gradient_matches_central_difference() -> None:
+    """The index gradient agrees with central differences."""
     rates = np.random.default_rng(22).standard_normal(7)
     trajectory = _smooth_trajectory(rates, dt=0.01, steps=120, seed=23)
     analytic = frequency_synchronisation_index_gradient(trajectory, dt=0.01)
@@ -176,6 +187,7 @@ def test_index_gradient_matches_central_difference() -> None:
 def test_index_gradient_vanishes_for_a_frequency_locked_state() -> None:
     # An integrated, supercritically coupled ensemble is frequency-locked to floating
     # precision, so the standard deviation sits at its non-differentiable point.
+    """A frequency-locked state has zero index gradient."""
     count = 10
     rng = np.random.default_rng(24)
     omega = rng.normal(0.0, 1.0, count)
@@ -188,12 +200,14 @@ def test_index_gradient_vanishes_for_a_frequency_locked_state() -> None:
 
 
 def test_index_gradient_vanishes_for_a_single_oscillator() -> None:
+    """A single oscillator has zero index gradient."""
     trajectory = _linear_trajectory(np.array([1.7]), np.array([0.4]), dt=0.01, steps=200)
     gradient = frequency_synchronisation_index_gradient(trajectory, dt=0.01)
     assert np.array_equal(gradient, np.zeros_like(gradient))
 
 
 def test_index_gradient_rejects_non_two_dimensional_phases() -> None:
+    """Phases that are not two-dimensional are refused."""
     with pytest.raises(ValueError, match="two-dimensional"):
         frequency_synchronisation_index_gradient(np.zeros(5), dt=0.01)
 
@@ -202,6 +216,7 @@ def test_index_gradient_rejects_non_two_dimensional_phases() -> None:
 
 
 def test_locked_fraction_is_one_for_fully_locked() -> None:
+    """A fully locked state has locked fraction one."""
     rates = np.full(10, 1.0)
     offsets = np.random.default_rng(7).uniform(0.0, 2.0 * np.pi, 10)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=400)
@@ -210,6 +225,7 @@ def test_locked_fraction_is_one_for_fully_locked() -> None:
 
 def test_locked_fraction_is_zero_for_symmetric_split() -> None:
     # Half advance at +1, half at -1; the mean is 0 and neither group sits near it.
+    """A symmetric split has locked fraction zero."""
     rates = np.array([1.0, 1.0, 1.0, -1.0, -1.0, -1.0])
     offsets = np.zeros(6)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=400)
@@ -219,6 +235,7 @@ def test_locked_fraction_is_zero_for_symmetric_split() -> None:
 def test_locked_fraction_counts_the_cluster_about_the_mean() -> None:
     # Nine oscillators at 1.0 plus one modest outlier at 2.0: the mean is 1.1, so the nine
     # sit within tolerance and the single outlier does not.
+    """The locked fraction counts the cluster around the mean."""
     rates = np.concatenate([np.full(9, 1.0), np.array([2.0])])
     offsets = np.zeros(10)
     trajectory = _linear_trajectory(rates, offsets, dt=0.005, steps=800)
@@ -229,6 +246,7 @@ def test_locked_fraction_counts_the_cluster_about_the_mean() -> None:
 def test_locked_fraction_is_outlier_sensitive_through_the_mean() -> None:
     # A large outlier drags the mean out of the cluster, so locking-to-the-mean reports no
     # locked oscillators — the documented behaviour of a mean-referenced index.
+    """An outlier moves the mean and can empty the locked fraction."""
     rates = np.concatenate([np.full(9, 1.0), np.array([20.0])])
     offsets = np.zeros(10)
     trajectory = _linear_trajectory(rates, offsets, dt=0.005, steps=800)
@@ -236,6 +254,7 @@ def test_locked_fraction_is_outlier_sensitive_through_the_mean() -> None:
 
 
 def test_locked_fraction_is_one_for_a_wide_tolerance() -> None:
+    """A wide tolerance locks every oscillator."""
     rates = np.random.default_rng(8).standard_normal(7)
     offsets = np.zeros(7)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=300)
@@ -246,6 +265,7 @@ def test_locked_fraction_is_one_for_a_wide_tolerance() -> None:
 
 
 def test_diagnostics_bundle_matches_individual_helpers() -> None:
+    """The diagnostics bundle matches the individual helpers."""
     rates = np.random.default_rng(9).standard_normal(11)
     offsets = np.random.default_rng(10).uniform(0.0, 2.0 * np.pi, 11)
     trajectory = _linear_trajectory(rates, offsets, dt=0.01, steps=500)
@@ -261,6 +281,7 @@ def test_diagnostics_bundle_matches_individual_helpers() -> None:
 
 
 def test_frequency_order_is_frozen() -> None:
+    """The diagnostics bundle cannot be modified."""
     bundle = FrequencyOrder(
         effective_frequencies=np.zeros(3), synchronisation_index=0.0, locked_fraction=1.0
     )
@@ -274,6 +295,7 @@ def test_frequency_order_is_frozen() -> None:
 def test_supercritical_coupling_collapses_the_index() -> None:
     # A frequency-spread ensemble: weak coupling lets them drift (large index); strong
     # coupling locks them to a common rate (small index) — the roadmap acceptance.
+    """Supercritical coupling collapses the index and locks every oscillator."""
     count = 12
     rng = np.random.default_rng(11)
     omega = rng.normal(0.0, 1.0, count)
@@ -299,32 +321,38 @@ def test_supercritical_coupling_collapses_the_index() -> None:
 
 
 def test_rejects_non_two_dimensional_phases() -> None:
+    """Phases that are not two-dimensional are refused."""
     with pytest.raises(ValueError, match="two-dimensional"):
         effective_frequencies(np.zeros(5), dt=0.01)
 
 
 def test_rejects_too_few_time_samples() -> None:
+    """Fewer than two time samples are refused."""
     with pytest.raises(ValueError, match="at least two time samples"):
         effective_frequencies(np.zeros((1, 4)), dt=0.01)
 
 
 def test_rejects_zero_oscillators() -> None:
+    """A trajectory without oscillators is refused."""
     with pytest.raises(ValueError, match="at least one oscillator"):
         effective_frequencies(np.zeros((5, 0)), dt=0.01)
 
 
 def test_rejects_non_positive_dt() -> None:
+    """A non-positive step is refused."""
     with pytest.raises(ValueError, match="dt must be strictly positive"):
         effective_frequencies(np.zeros((3, 2)), dt=0.0)
 
 
 def test_rejects_negative_tolerance_in_fraction() -> None:
+    """A negative tolerance is refused."""
     trajectory = _linear_trajectory(np.array([1.0, 2.0]), np.zeros(2), dt=0.01, steps=100)
     with pytest.raises(ValueError, match="tolerance must be non-negative"):
         frequency_locked_fraction(trajectory, dt=0.01, tolerance=-1e-9)
 
 
 def test_rejects_negative_tolerance_in_diagnostics() -> None:
+    """A negative tolerance is refused in the diagnostics too."""
     trajectory = _linear_trajectory(np.array([1.0, 2.0]), np.zeros(2), dt=0.01, steps=100)
     with pytest.raises(ValueError, match="tolerance must be non-negative"):
         frequency_order_diagnostics(trajectory, dt=0.01, tolerance=-1.0)
