@@ -25,30 +25,38 @@ from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
 
 class TestVQLSInit:
+    """Constructing the VQLS solver."""
+
     def test_default_n_qubits(self) -> None:
+        """The default is four qubits on a 16-point grid."""
         v = VQLS_GradShafranov()
         assert v.n_qubits == 4
         assert v.grid_size == 16
 
     def test_custom_n_qubits(self) -> None:
+        """Three qubits give an 8-point grid."""
         v = VQLS_GradShafranov(n_qubits=3)
         assert v.n_qubits == 3
         assert v.grid_size == 8
 
     def test_default_source_width(self) -> None:
+        """The default source width is 0.05."""
         v = VQLS_GradShafranov()
         assert v.source_width == 0.05
 
     def test_default_imag_tol(self) -> None:
+        """The default imaginary tolerance is 0.1."""
         v = VQLS_GradShafranov()
         assert v.imag_tol == 0.1
 
     def test_custom_imag_tol(self) -> None:
+        """A custom imaginary tolerance is kept."""
         v = VQLS_GradShafranov(imag_tol=0.5)
         assert v.imag_tol == 0.5
 
     @pytest.mark.parametrize("n", [2, 3, 4, 5])
     def test_grid_size_is_power_of_two(self, n: int) -> None:
+        """The grid size is two to the qubit count."""
         v = VQLS_GradShafranov(n_qubits=n)
         assert v.grid_size == 2**n
 
@@ -59,18 +67,23 @@ class TestVQLSInit:
 
 
 class TestDiscretize:
+    """Discretising the Grad-Shafranov problem."""
+
     def test_returns_A_and_b(self) -> None:
+        """Discretising returns the matrix and the source vector."""
         v = VQLS_GradShafranov(n_qubits=2)
         A, b = v.discretize()
         assert A.shape == (4, 4)
         assert b.shape == (4,)
 
     def test_laplacian_is_symmetric(self) -> None:
+        """The Laplacian is symmetric."""
         v = VQLS_GradShafranov(n_qubits=3)
         A, _ = v.discretize()
         np.testing.assert_allclose(A, A.T, atol=1e-14)
 
     def test_laplacian_is_tridiagonal(self) -> None:
+        """The Laplacian is tridiagonal."""
         v = VQLS_GradShafranov(n_qubits=3)
         A, _ = v.discretize()
         N = 8
@@ -80,11 +93,13 @@ class TestDiscretize:
                     assert A[i, j] == 0.0
 
     def test_laplacian_diagonal_positive(self) -> None:
+        """The Laplacian diagonal is positive."""
         v = VQLS_GradShafranov(n_qubits=3)
         A, _ = v.discretize()
         assert np.all(np.diag(A) > 0)
 
     def test_source_vector_normalised(self) -> None:
+        """The source vector is normalised."""
         v = VQLS_GradShafranov(n_qubits=3)
         _, b = v.discretize()
         np.testing.assert_allclose(np.linalg.norm(b), 1.0, atol=1e-14)
@@ -97,6 +112,7 @@ class TestDiscretize:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_various_sizes(self, n: int) -> None:
+        """Each size gives a square matrix and a matching vector."""
         v = VQLS_GradShafranov(n_qubits=n)
         A, b = v.discretize()
         N = 2**n
@@ -104,6 +120,7 @@ class TestDiscretize:
         assert b.shape == (N,)
 
     def test_stores_A_and_b_internally(self) -> None:
+        """The solver keeps the matrix and the vector."""
         v = VQLS_GradShafranov(n_qubits=2)
         v.discretize()
         assert v._A is not None
@@ -116,7 +133,10 @@ class TestDiscretize:
 
 
 class TestBuildAnsatz:
+    """Building the ansatz."""
+
     def test_returns_quantum_circuit(self) -> None:
+        """The ansatz is a quantum circuit."""
         from qiskit import QuantumCircuit
 
         v = VQLS_GradShafranov(n_qubits=2)
@@ -124,16 +144,19 @@ class TestBuildAnsatz:
         assert isinstance(qc, QuantumCircuit)
 
     def test_correct_qubit_count(self) -> None:
+        """The ansatz has the solver's qubit count."""
         v = VQLS_GradShafranov(n_qubits=3)
         qc = v.build_ansatz(reps=2)
         assert qc.num_qubits == 3
 
     def test_has_parameters(self) -> None:
+        """The ansatz has parameters."""
         v = VQLS_GradShafranov(n_qubits=2)
         qc = v.build_ansatz(reps=2)
         assert qc.num_parameters > 0
 
     def test_more_reps_more_params(self) -> None:
+        """More repetitions give more parameters."""
         v = VQLS_GradShafranov(n_qubits=2)
         qc1 = v.build_ansatz(reps=1)
         qc2 = v.build_ansatz(reps=3)
@@ -146,17 +169,22 @@ class TestBuildAnsatz:
 
 
 class TestSolve:
+    """Solving the linear system."""
+
     def test_output_shape_n2(self) -> None:
+        """Two qubits give a four-entry solution."""
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert result.shape == (4,)
 
     def test_output_is_real(self) -> None:
+        """The solution is real."""
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert result.dtype in (np.float64, np.float32)
 
     def test_output_all_finite(self) -> None:
+        """The solution is finite."""
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert np.all(np.isfinite(result))
@@ -179,6 +207,7 @@ class TestSolve:
         np.testing.assert_array_equal(r1, r2)
 
     def test_stores_optimal_params(self) -> None:
+        """The solver keeps its optimal parameters."""
         v = VQLS_GradShafranov(n_qubits=2)
         v.solve(reps=1, maxiter=5, seed=42)
         assert v._optimal_params is not None
@@ -191,6 +220,8 @@ class TestSolve:
 
 
 class TestSolveEdgeCases:
+    """Edge cases of the solve."""
+
     def test_imag_tol_zero_raises(self) -> None:
         """imag_tol=0 guarantees ValueError since any state has epsilon imaginary."""
         v = VQLS_GradShafranov(n_qubits=2, imag_tol=0.0)

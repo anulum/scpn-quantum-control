@@ -1,26 +1,23 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "ffce14ff08be4254fa78a8dbbaa0ddb022deb5bd",
+ "measured_commit": "8dad3815cc64d03d02dc4489cf9b6a410038cb7c",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 2239,
- "total_files": 51,
+ "total_findings": 2079,
+ "total_files": 45,
  "files": {
   "oscillatools/tests/test_accel_dispatch.py": 95,
   "oscillatools/tests/test_daido_observables.py": 42,
   "oscillatools/tests/test_daido_phase.py": 39,
-  "oscillatools/tests/test_diff_kuramoto_dopri.py": 27,
-  "oscillatools/tests/test_kuramoto_chimera.py": 27,
   "oscillatools/tests/test_kuramoto_delayed.py": 28,
   "oscillatools/tests/test_kuramoto_energy.py": 39,
   "oscillatools/tests/test_kuramoto_explosive_continuation.py": 31,
   "oscillatools/tests/test_kuramoto_frequency_order.py": 30,
   "oscillatools/tests/test_kuramoto_inertial.py": 33,
   "oscillatools/tests/test_kuramoto_parameter_sweep.py": 31,
-  "oscillatools/tests/test_kuramoto_ring_basins.py": 27,
   "oscillatools/tests/test_kuramoto_scipy_interop.py": 31,
   "oscillatools/tests/test_kuramoto_system.py": 54,
   "oscillatools/tests/test_mean_phase_observables.py": 43,
@@ -37,7 +34,6 @@
   "tests/test_ibm_public_artifact_audit.py": 33,
   "tests/test_iqm_lattice_calibration.py": 28,
   "tests/test_iqm_layout_transfer_benchmark.py": 39,
-  "tests/test_iter_benchmark.py": 27,
   "tests/test_krylov_complexity.py": 29,
   "tests/test_parametrized_sweeps.py": 40,
   "tests/test_pgbo_qgt_product.py": 116,
@@ -57,9 +53,7 @@
   "tests/test_submit_qkd_qber_basis_metadata.py": 61,
   "tests/test_tensor_jump.py": 28,
   "tests/test_thermo_readiness_product.py": 85,
-  "tests/test_tier_benchmark_regression_gate.py": 28,
-  "tests/test_topology_auth_edge.py": 26,
-  "tests/test_vqls_edge_cases.py": 26
+  "tests/test_tier_benchmark_regression_gate.py": 28
  },
  "history": [
   {

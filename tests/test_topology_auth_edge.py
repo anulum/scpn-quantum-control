@@ -44,14 +44,18 @@ def _ring_coupling(n: int) -> np.ndarray:
 # Spectral Fingerprint
 # =====================================================================
 class TestSpectralFingerprint:
+    """The spectral fingerprint of a coupling."""
+
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
     def test_returns_dict_with_keys(self, n: int) -> None:
+        """The fingerprint holds the eigenvalues and the spectral entropy."""
         K = _ring_coupling(n)
         fp = spectral_fingerprint(K)
         assert "eigenvalues" in fp
         assert "spectral_entropy" in fp
 
     def test_eigenvalues_sorted(self) -> None:
+        """The eigenvalues are sorted."""
         K = _ring_coupling(4)
         fp = spectral_fingerprint(K)
         eigvals = fp["eigenvalues"]
@@ -70,6 +74,7 @@ class TestSpectralFingerprint:
         assert fp["fiedler"] > 0
 
     def test_entropy_nonnegative(self) -> None:
+        """The spectral entropy is non-negative."""
         K = _ring_coupling(4)
         fp = spectral_fingerprint(K)
         assert fp["spectral_entropy"] >= 0.0
@@ -79,12 +84,16 @@ class TestSpectralFingerprint:
 # Normalized Laplacian
 # =====================================================================
 class TestNormalizedLaplacian:
+    """The normalised-Laplacian fingerprint."""
+
     def test_zero_entropy_for_1x1(self) -> None:
+        """A single node has zero normalised entropy."""
         K = np.array([[1.0]])
         fp = normalized_laplacian_fingerprint(K)
         assert fp["spectral_entropy_norm"] == 0.0
 
     def test_returns_dict(self) -> None:
+        """The fingerprint holds the normalised eigenvalues and entropy."""
         K = _ring_coupling(4)
         fp = normalized_laplacian_fingerprint(K)
         assert "eigenvalues_norm" in fp
@@ -102,29 +111,36 @@ class TestNormalizedLaplacian:
 # Verification & Commitment
 # =====================================================================
 class TestVerification:
+    """Verifying fingerprints and commitments."""
+
     def test_verify_fingerprint_roundtrip(self) -> None:
+        """A fingerprint verifies against its own coupling."""
         K = _ring_coupling(4)
         fp = spectral_fingerprint(K)
         assert verify_fingerprint(K, fp)
 
     def test_verify_fails_for_wrong_K(self) -> None:
+        """A fingerprint does not verify against another coupling."""
         K = _ring_coupling(4)
         fp = spectral_fingerprint(K)
         K_wrong = K * 2.0
         assert not verify_fingerprint(K_wrong, fp)
 
     def test_commitment_roundtrip(self) -> None:
+        """A commitment verifies with its nonce."""
         K = _ring_coupling(4)
         nonce = b"test_nonce"
         commit = topology_commitment(K, nonce)
         assert verify_commitment(K, nonce, commit)
 
     def test_commitment_fails_wrong_nonce(self) -> None:
+        """A commitment does not verify with another nonce."""
         K = _ring_coupling(4)
         commit = topology_commitment(K, b"nonce_a")
         assert not verify_commitment(K, b"nonce_b", commit)
 
     def test_commitment_deterministic(self) -> None:
+        """The same inputs give the same commitment."""
         K = _ring_coupling(4)
         c1 = topology_commitment(K, b"det")
         c2 = topology_commitment(K, b"det")
@@ -135,13 +151,17 @@ class TestVerification:
 # Challenge-Response
 # =====================================================================
 class TestChallengeResponse:
+    """The challenge-response proof."""
+
     def test_prove_verify_roundtrip(self) -> None:
+        """A response verifies for its challenge and coupling."""
         K = _ring_coupling(4)
         challenge = b"challenge_42"
         response = challenge_response_prove(K, challenge)
         assert challenge_response_verify(K, challenge, response)
 
     def test_wrong_K_fails(self) -> None:
+        """A response does not verify against another coupling."""
         K = _ring_coupling(4)
         response = challenge_response_prove(K, b"ch")
         K_wrong = K + 0.01
@@ -152,13 +172,17 @@ class TestChallengeResponse:
 # Topology Distance
 # =====================================================================
 class TestTopologyDistance:
+    """The distance between topologies."""
+
     def test_self_distance_is_zero(self) -> None:
+        """A topology is at distance zero from itself."""
         K = _ring_coupling(4)
         fp = spectral_fingerprint(K)
         d = topology_distance(fp, fp)
         np.testing.assert_allclose(d, 0.0, atol=1e-12)
 
     def test_distance_positive_for_different(self) -> None:
+        """Different topologies are at a positive distance."""
         fp1 = spectral_fingerprint(_ring_coupling(4))
         fp2 = spectral_fingerprint(_ring_coupling(3))
         d = topology_distance(fp1, fp2)
@@ -169,18 +193,23 @@ class TestTopologyDistance:
 # Row Hashing
 # =====================================================================
 class TestRowHash:
+    """Per-row hashes of the coupling."""
+
     def test_row_hash_length(self) -> None:
+        """There is one hash per row."""
         K = _ring_coupling(4)
         hashes = row_hash_fingerprint(K)
         assert len(hashes) == 4
 
     def test_row_hash_verify_roundtrip(self) -> None:
+        """Each row verifies against its hash."""
         K = _ring_coupling(4)
         hashes = row_hash_fingerprint(K)
         for i in range(4):
             assert verify_row_hash(K, i, hashes[i])
 
     def test_row_hash_fails_for_modified_row(self) -> None:
+        """A modified row does not verify."""
         K = _ring_coupling(4)
         hashes = row_hash_fingerprint(K)
         K_mod = K.copy()
@@ -192,12 +221,16 @@ class TestRowHash:
 # Noise Tolerance
 # =====================================================================
 class TestNoiseTolerance:
+    """The noise-tolerance check."""
+
     def test_returns_dict(self) -> None:
+        """The check returns a dict."""
         K = _ring_coupling(4)
         result = fingerprint_noise_tolerance(K, n_trials=10, sigma=0.01)
         assert "mean_drift" in result or "max_drift" in result or isinstance(result, dict)
 
     def test_small_noise_small_drift(self) -> None:
+        """Small and large noise both return a dict."""
         K = _ring_coupling(4)
         r_small = fingerprint_noise_tolerance(K, n_trials=10, sigma=0.001)
         r_large = fingerprint_noise_tolerance(K, n_trials=10, sigma=0.1)

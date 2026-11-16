@@ -50,6 +50,7 @@ def _force(theta: np.ndarray, coupling: np.ndarray) -> np.ndarray:
 
 
 def test_forward_matches_high_accuracy_reference() -> None:
+    """The adaptive solve matches a high-accuracy reference."""
     theta0, omega, coupling = _problem(5, 0)
     trajectory = kuramoto_dopri_trajectory(
         theta0, omega, coupling, t_end=2.0, rtol=1e-9, atol=1e-12
@@ -66,6 +67,7 @@ def test_forward_matches_high_accuracy_reference() -> None:
 
 
 def test_tolerance_is_honoured_and_tightens() -> None:
+    """Tighter tolerances never increase the error."""
     theta0, omega, coupling = _problem(5, 1)
     reference = solve_ivp(
         lambda _t, y: omega + _force(y, coupling),
@@ -86,6 +88,7 @@ def test_tolerance_is_honoured_and_tightens() -> None:
 
 
 def test_zero_coupling_reproduces_linear_drift() -> None:
+    """Without coupling the phases drift linearly."""
     theta0, omega, _ = _problem(4, 2)
     coupling = np.zeros((4, 4))
     trajectory = kuramoto_dopri_trajectory(
@@ -98,6 +101,7 @@ def test_zero_coupling_reproduces_linear_drift() -> None:
 
 
 def test_trajectory_structure_is_consistent() -> None:
+    """The trajectory has one time and phase row per accepted step plus the start."""
     theta0, omega, coupling = _problem(4, 3)
     trajectory = kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=1.0, rtol=1e-6)
     assert isinstance(trajectory, DopriTrajectory)
@@ -113,6 +117,7 @@ def test_trajectory_structure_is_consistent() -> None:
 
 
 def test_explicit_first_step_is_accepted() -> None:
+    """An explicit first step is accepted and the solve reaches t_end."""
     theta0, omega, coupling = _problem(4, 4)
     trajectory = kuramoto_dopri_trajectory(
         theta0, omega, coupling, t_end=1.0, rtol=1e-7, first_step=0.05
@@ -145,6 +150,7 @@ def _finite_difference(function, base: np.ndarray, step: float = 1e-6) -> np.nda
 
 
 def test_vjp_matches_finite_difference_across_all_inputs() -> None:
+    """The VJP agrees with finite differences for every input."""
     theta0, omega, coupling = _problem(4, 5)
     trajectory = kuramoto_dopri_trajectory(
         theta0, omega, coupling, t_end=1.0, rtol=1e-9, atol=1e-12
@@ -164,6 +170,7 @@ def test_vjp_matches_finite_difference_across_all_inputs() -> None:
 
 
 def test_vjp_shapes() -> None:
+    """The VJP channels have the input shapes."""
     theta0, omega, coupling = _problem(3, 6)
     trajectory = kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=0.5, rtol=1e-7)
     grad_theta0, grad_omega, grad_coupling = kuramoto_dopri_vjp(
@@ -178,33 +185,39 @@ def test_vjp_shapes() -> None:
 
 
 def test_forward_rejects_non_positive_t_end() -> None:
+    """A non-positive end time is refused."""
     theta0, omega, coupling = _problem(3, 7)
     with pytest.raises(ValueError, match="t_end must be strictly positive"):
         kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=0.0)
 
 
 def test_forward_rejects_non_positive_tolerances() -> None:
+    """Non-positive tolerances are refused."""
     theta0, omega, coupling = _problem(3, 8)
     with pytest.raises(ValueError, match="rtol and atol must be strictly positive"):
         kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=1.0, rtol=0.0)
 
 
 def test_forward_rejects_non_vector_theta0() -> None:
+    """Initial phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         kuramoto_dopri_trajectory(np.zeros((2, 2)), np.zeros(4), np.zeros((4, 4)), t_end=1.0)
 
 
 def test_forward_rejects_mismatched_omega() -> None:
+    """Frequencies of the wrong shape are refused."""
     with pytest.raises(ValueError, match="omega must match"):
         kuramoto_dopri_trajectory(np.zeros(3), np.zeros(4), np.zeros((3, 3)), t_end=1.0)
 
 
 def test_forward_rejects_non_square_coupling() -> None:
+    """A non-square coupling is refused."""
     with pytest.raises(ValueError, match="coupling must be a square matrix"):
         kuramoto_dopri_trajectory(np.zeros(3), np.zeros(3), np.zeros((3, 4)), t_end=1.0)
 
 
 def test_forward_raises_when_max_steps_exceeded() -> None:
+    """Exceeding the step budget raises."""
     theta0, omega, coupling = _problem(3, 9)
     with pytest.raises(ValueError, match="exceeded max_steps"):
         kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=10.0, rtol=1e-10, max_steps=2)
@@ -214,6 +227,7 @@ def test_forward_raises_when_max_steps_exceeded() -> None:
 
 
 def test_vjp_rejects_too_short_trajectory() -> None:
+    """A trajectory without a step is refused."""
     with pytest.raises(ValueError, match="at least one step"):
         kuramoto_dopri_vjp(
             np.zeros((1, 3)), np.zeros(0), np.zeros(3), np.zeros((3, 3)), np.zeros(3)
@@ -221,6 +235,7 @@ def test_vjp_rejects_too_short_trajectory() -> None:
 
 
 def test_vjp_rejects_mismatched_steps() -> None:
+    """Step sizes of the wrong length are refused."""
     with pytest.raises(ValueError, match="steps must be one-dimensional of length"):
         kuramoto_dopri_vjp(
             np.zeros((4, 3)), np.zeros(2), np.zeros(3), np.zeros((3, 3)), np.zeros(3)
@@ -228,6 +243,7 @@ def test_vjp_rejects_mismatched_steps() -> None:
 
 
 def test_vjp_rejects_mismatched_cotangent() -> None:
+    """A cotangent of the wrong shape is refused."""
     with pytest.raises(ValueError, match="cotangent must have shape"):
         kuramoto_dopri_vjp(
             np.zeros((3, 3)), np.zeros(2), np.zeros(3), np.zeros((3, 3)), np.zeros(4)
@@ -235,6 +251,7 @@ def test_vjp_rejects_mismatched_cotangent() -> None:
 
 
 def test_vjp_rejects_mismatched_omega() -> None:
+    """Frequencies of the wrong shape are refused."""
     with pytest.raises(ValueError, match="omega must have shape"):
         kuramoto_dopri_vjp(
             np.zeros((3, 3)), np.zeros(2), np.zeros(4), np.zeros((3, 3)), np.zeros(3)
@@ -242,6 +259,7 @@ def test_vjp_rejects_mismatched_omega() -> None:
 
 
 def test_vjp_rejects_non_square_coupling() -> None:
+    """A non-square coupling is refused."""
     with pytest.raises(ValueError, match="coupling must be a square matrix"):
         kuramoto_dopri_vjp(
             np.zeros((3, 3)), np.zeros(2), np.zeros(3), np.zeros((3, 4)), np.zeros(3)
@@ -260,12 +278,14 @@ class TestDopriForwardTierDispatch:
     """The Rust → Julia → Python floor tier chain for the adaptive DOPRI forward trajectory."""
 
     def test_public_call_reaches_t_end_and_records_a_tier(self) -> None:
+        """A public call reaches t_end and records the tier that served it."""
         theta0, omega, coupling = _problem(24, 3)
         trajectory = kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=6.0)
         assert float(trajectory.times[-1]) == pytest.approx(6.0)
         assert last_kuramoto_dopri_trajectory_tier_used() in {"rust", "julia", "python"}
 
     def test_python_floor_tier_reaches_t_end(self) -> None:
+        """The Python floor reaches t_end with consistent shapes."""
         theta0, omega, coupling = _problem(16, 1)
         times, phases, steps = dopri_module._python_kuramoto_dopri_trajectory(
             theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
@@ -275,16 +295,19 @@ class TestDopriForwardTierDispatch:
         assert steps.size == times.size - 1
 
     def test_positive_first_step_uses_the_floor_and_reaches_t_end(self) -> None:
+        """A positive first step uses the floor and reaches t_end."""
         theta0, omega, coupling = _problem(12, 2)
         trajectory = kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=6.0, first_step=0.05)
         assert float(trajectory.times[-1]) == pytest.approx(6.0)
 
     def test_dispatched_call_exceeding_max_steps_raises(self) -> None:
+        """A dispatched call over the step budget raises."""
         theta0, omega, coupling = _problem(16, 4)
         with pytest.raises(ValueError, match="max_steps"):
             kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=6.0, max_steps=3)
 
     def test_floor_path_exceeding_max_steps_raises(self) -> None:
+        """The floor path over the step budget raises."""
         theta0, omega, coupling = _problem(16, 5)
         with pytest.raises(ValueError, match="max_steps"):
             kuramoto_dopri_trajectory(
@@ -292,6 +315,7 @@ class TestDopriForwardTierDispatch:
             )
 
     def test_rust_tier_matches_python_floor_grid_and_terminal(self) -> None:
+        """The native tier matches the floor's grid and terminal state."""
         engine = pytest.importorskip("scpn_quantum_engine")
         assert hasattr(engine, "kuramoto_dopri_trajectory")
         theta0, omega, coupling = _problem(32, 6)
@@ -305,6 +329,7 @@ class TestDopriForwardTierDispatch:
         assert _wrapped_terminal_gap(rust[1], floor[1]) < 1e-6
 
     def test_julia_tier_matches_python_floor_grid_and_terminal(self) -> None:
+        """The Julia tier matches the floor's grid and terminal state."""
         pytest.importorskip("juliacall")
         theta0, omega, coupling = _problem(24, 7)
         julia = dopri_module._julia_kuramoto_dopri_trajectory(
@@ -317,6 +342,7 @@ class TestDopriForwardTierDispatch:
         assert _wrapped_terminal_gap(julia[1], floor[1]) < 1e-6
 
     def test_rust_tier_raises_when_engine_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native tier raises."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         theta0, omega, coupling = _problem(8, 8)
         with pytest.raises(ModuleNotFoundError):
@@ -325,6 +351,7 @@ class TestDopriForwardTierDispatch:
             )
 
     def test_rust_tier_raises_when_symbol_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel makes the native tier raise."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: object())
         theta0, omega, coupling = _problem(8, 9)
         with pytest.raises(ImportError):

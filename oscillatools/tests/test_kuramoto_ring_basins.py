@@ -37,7 +37,10 @@ from oscillatools.accel import (
 
 
 class TestRingCouplingMatrix:
+    """The ring coupling matrix."""
+
     def test_nearest_neighbour_structure(self) -> None:
+        """Nearest-neighbour coupling links each node to its two neighbours."""
         matrix = ring_coupling_matrix(6, 1, coupling=2.0)
         assert matrix.shape == (6, 6)
         np.testing.assert_allclose(matrix, matrix.T)  # symmetric
@@ -49,6 +52,7 @@ class TestRingCouplingMatrix:
         assert matrix[0, 2] == 0.0
 
     def test_range_two_band(self) -> None:
+        """Range two couples the two nearest neighbours on each side at K/(2R)."""
         matrix = ring_coupling_matrix(8, 2, coupling=4.0)
         np.testing.assert_allclose(matrix.sum(axis=1), 4.0)
         assert matrix[0, 1] == pytest.approx(1.0)  # K/(2R) = 4/4
@@ -56,6 +60,7 @@ class TestRingCouplingMatrix:
         assert matrix[0, 3] == 0.0
 
     def test_validation(self) -> None:
+        """Too few nodes or an out-of-range coupling range are refused."""
         with pytest.raises(ValueError, match="n must be at least 3"):
             ring_coupling_matrix(2, 1)
         with pytest.raises(ValueError, match=r"coupling_range must be in \[1, 3\]"):
@@ -67,23 +72,30 @@ class TestRingCouplingMatrix:
 
 
 class TestTwistedStateAndWinding:
+    """Twisted states and winding numbers."""
+
     def test_twisted_state_values(self) -> None:
+        """A twisted state places the phases at even steps of 2 pi q / n."""
         state = twisted_state(4, 1)
         np.testing.assert_allclose(state, [0.0, math.pi / 2, math.pi, 3 * math.pi / 2])
 
     def test_winding_round_trip(self) -> None:
         # Within |q| <= N/2 the winding number recovers the twist that built the state.
+        """Each twisted state's winding number is its q."""
         for q in range(-3, 4):
             assert winding_number(twisted_state(16, q)) == q
 
     def test_synchronised_state_has_zero_winding(self) -> None:
+        """The synchronised state has winding zero."""
         assert winding_number(np.zeros(10)) == 0
 
     def test_twisted_state_validation(self) -> None:
+        """A non-positive size is refused."""
         with pytest.raises(ValueError, match="n must be positive"):
             twisted_state(0, 1)
 
     def test_winding_validation(self) -> None:
+        """Phases that are not a non-empty vector are refused."""
         with pytest.raises(ValueError, match="non-empty one-dimensional"):
             winding_number(np.zeros((3, 2)))
         with pytest.raises(ValueError, match="non-empty one-dimensional"):
@@ -91,13 +103,17 @@ class TestTwistedStateAndWinding:
 
 
 class TestTwistedStateEigenvalues:
+    """Eigenvalues around a twisted state."""
+
     def test_goldstone_mode_is_zero(self) -> None:
+        """The Goldstone eigenvalue is zero."""
         eigenvalues = twisted_state_eigenvalues(12, 2, 1)
         assert eigenvalues[0] == pytest.approx(0.0, abs=1e-12)
 
     def test_match_dense_jacobian_spectrum(self) -> None:
         # The closed-form eigenvalues must equal the spectrum of the actual networked Jacobian at the
         # twisted state, for nearest-neighbour and longer-range coupling alike.
+        """The closed form matches the dense Jacobian spectrum."""
         for coupling_range, winding in ((1, 1), (2, 1), (3, 2)):
             n = 14
             matrix = ring_coupling_matrix(n, coupling_range, coupling=1.3)
@@ -109,6 +125,7 @@ class TestTwistedStateEigenvalues:
             np.testing.assert_allclose(closed_form, dense_spectrum, atol=1e-10)
 
     def test_validation(self) -> None:
+        """Too few nodes or an out-of-range coupling range are refused."""
         with pytest.raises(ValueError, match="n must be at least 3"):
             twisted_state_eigenvalues(2, 0, 1)
         with pytest.raises(ValueError, match=r"coupling_range must be in \[1, 3\]"):
@@ -116,26 +133,34 @@ class TestTwistedStateEigenvalues:
 
 
 class TestTwistedStateStability:
+    """Stability of twisted states."""
+
     def test_nearest_neighbour_quarter_law(self) -> None:
         # q-twisted states are stable iff |q| < N/4 for nearest-neighbour coupling.
+        """With nearest neighbours a twist is stable when |q| < n/4."""
         n = 16  # N/4 = 4
         stable = [q for q in range(n) if is_twisted_state_stable(n, q, 1)]
         assert stable == [0, 1, 2, 3, 13, 14, 15]  # |q| < 4 with q and N-q both counted
 
     def test_marginal_state_is_not_stable(self) -> None:
         # q = N/4 gives cos(2πq/N) = 0, a marginal (non-asymptotic) state.
+        """The marginal twist q = n/4 is not stable."""
         assert not is_twisted_state_stable(16, 4, 1)
 
     def test_long_range_only_sync_is_stable(self) -> None:
+        """With long range only synchrony is stable."""
         n = 16
         stable = [q for q in range(n) if is_twisted_state_stable(n, q, 7)]
         assert stable == [0]
 
 
 class TestGradientFlowRelaxation:
+    """Relaxation by gradient flow."""
+
     def test_interaction_energy_decreases_to_a_stable_twisted_state(self) -> None:
         # The symmetric ring is a gradient flow of the interaction energy, so relaxation lowers the
         # energy monotonically and settles on a stable twisted state.
+        """The interaction energy decreases monotonically to a stable twisted state."""
         n = 16
         matrix = ring_coupling_matrix(n, 1)
         rng = np.random.default_rng(4)
@@ -155,7 +180,10 @@ class TestGradientFlowRelaxation:
 
 
 class TestBasinEstimate:
+    """Estimating basins of attraction."""
+
     def test_short_range_basin_is_mixed_and_normalised(self) -> None:
+        """Short range gives a mixed, normalised basin."""
         estimate = estimate_ring_basins(16, 1, 60, seed=0)
         assert isinstance(estimate, BasinEstimate)
         assert estimate.n_converged > 0
@@ -169,22 +197,26 @@ class TestBasinEstimate:
         assert abs(estimate.mean_winding) < 0.5
 
     def test_long_range_basin_is_all_synchronised(self) -> None:
+        """Long range sends every sample to synchrony."""
         estimate = estimate_ring_basins(16, 7, 40, seed=1)
         assert estimate.sync_basin_fraction == pytest.approx(1.0)
         assert estimate.winding_values.tolist() == [0]
 
     def test_reproducible_for_a_fixed_seed(self) -> None:
+        """A fixed seed gives the same basins."""
         first = estimate_ring_basins(14, 1, 30, seed=2)
         second = estimate_ring_basins(14, 1, 30, seed=2)
         np.testing.assert_array_equal(first.winding_values, second.winding_values)
         np.testing.assert_array_equal(first.winding_counts, second.winding_counts)
 
     def test_absent_winding_has_zero_fraction(self) -> None:
+        """A winding never reached has fraction zero."""
         estimate = estimate_ring_basins(16, 7, 20, seed=3)
         assert estimate.basin_fraction(5) == 0.0  # never reached
 
     def test_no_convergence_yields_empty_tally(self) -> None:
         # A single step with an unreachable tolerance leaves every sample unconverged.
+        """Without convergence the tally is empty."""
         estimate = estimate_ring_basins(16, 1, 4, seed=5, max_steps=1, force_tolerance=1e-12)
         assert estimate.n_converged == 0
         assert estimate.converged_fraction == 0.0
@@ -194,6 +226,7 @@ class TestBasinEstimate:
         assert estimate.winding_values.size == 0
 
     def test_validation(self) -> None:
+        """Non-positive sample counts, step sizes or budgets are refused."""
         with pytest.raises(ValueError, match="n_samples must be positive"):
             estimate_ring_basins(6, 1, 0, seed=0)
         with pytest.raises(ValueError, match="dt must be positive"):
