@@ -228,6 +228,7 @@
         "tests/_phase_jax_qnode_test_helpers.py",
         "tests/_phase_pennylane_bridge_test_helpers.py",
         "tests/_phase_torch_bridge_test_helpers.py",
+        "tests/_program_ad_capture_objectives.py",
         "tests/_program_ad_exception_objectives.py",
         "tests/_whole_program_trace_array_helpers.py",
         "tests/conftest.py",

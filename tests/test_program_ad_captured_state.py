@@ -23,6 +23,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+from _program_ad_capture_objectives import string_capture_objective
 from numpy.typing import NDArray
 
 from scpn_quantum_control import (
@@ -1023,13 +1024,14 @@ def test_forward_capture_copy_obeys_execution_memory_cap(storage: str) -> None:
 def test_utf8_capture_uses_encoded_byte_size_under_sufficient_cap(text: str) -> None:
     """String admission retains a sufficient budget for the exact UTF-8 payload.
 
-    The cap of 2.25 MiB lies between two measured totals for the mixed-width
-    text. Charging the exact 655,360 encoded bytes needs about 2.10 MB in all
-    (2,099,958 bytes under Python 3.11, slightly less under 3.12; the total
-    also grows with the size of this module, whose source is charged).
-    Charging four bytes for each of the 262,144 characters would need 393,216
-    bytes more, about 2.49 MB, and exceed the cap. A cap of exactly 2 MiB left
-    a few kilobytes of margin and failed under Python 3.11.
+    The objective is defined in ``tests/_program_ad_capture_objectives.py``, so
+    the charged source is that small module and the totals do not grow with this
+    one. Charging the exact 655,360 encoded bytes of the mixed-width text needs
+    803,723 bytes in all under Python 3.12, 804,437 under 3.13 and 812,788 under
+    3.15. Charging four bytes for each of its 262,144 characters would need
+    393,216 bytes more, at least 1,196,939. The cap of 0.96 MiB (1,006,633
+    bytes) lies about 190 kB from either side. The ASCII text needs at most
+    681,724 bytes.
 
     Parameters
     ----------
@@ -1038,16 +1040,37 @@ def test_utf8_capture_uses_encoded_byte_size_under_sufficient_cap(text: str) -> 
 
     """
     assert len(text.encode("utf-8", errors="surrogatepass")) < 1024**2
-
-    def objective(values: TraceADArray) -> object:
-        return values[0] * (2.0 if text is not None else 5.0)
-
+    objective = string_capture_objective(text)
     baseline = active_reserved_bytes()
     result = whole_program_value_and_grad(
-        objective, [3.0], trace=False, max_execution_gib=2.25 / 1024
+        objective, [3.0], trace=False, max_execution_gib=0.96 / 1024
     )
     assert result.value == 6.0
     np.testing.assert_array_equal(result.gradient, [2.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_utf8_capture_charges_encoded_bytes_rather_than_characters() -> None:
+    """Fewer but wider characters cost more than more narrow ones: the charge counts bytes.
+
+    Under a cap of 0.7 MiB (734,003 bytes) the 524,288 ASCII bytes are admitted
+    (at most 681,724 in all) and the 655,360 encoded bytes of 262,144
+    mixed-width characters are refused (at least 803,723), although the mixed
+    text has half as many characters.
+
+    """
+    narrow = "x" * (512 * 1024)
+    wide = "aé𐀀\udc00" * (64 * 1024)
+    cap = 0.7 / 1024
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(
+        string_capture_objective(narrow), [3.0], trace=False, max_execution_gib=cap
+    )
+    assert result.value == 6.0
+    with pytest.raises(DenseAllocationError, match="exceeds shared allowance"):
+        whole_program_value_and_grad(
+            string_capture_objective(wide), [3.0], trace=False, max_execution_gib=cap
+        )
     assert active_reserved_bytes() == baseline
 
 
