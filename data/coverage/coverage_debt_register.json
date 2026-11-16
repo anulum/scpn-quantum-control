@@ -882,16 +882,16 @@
     "claim_ledger_path": "data/differentiable_phase_qnode/claim_ledger.json",
     "claim_ledger_sha256": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
-    "justified_exclusions_sha256": "009dd94c781736f9ef1d8b39deca4fafb2901687a2bceaf0888c9cbb2a550ed6"
+    "justified_exclusions_sha256": "c1ddb562ffd6c393a645a34752103066c0c1458e6f54ccd5809981dd5d48d235"
   },
   "policy_sha256": "cd741fbf4c92a951aeff6625d7d8560467aa44a76deaca96bd0eb2ec27f916c9",
   "schema_version": 1,
   "source_inventory": {
     "baseline_report_file_count": 911,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 942,
+    "file_count": 943,
     "path": "src/scpn_quantum_control",
-    "sha256": "5b29a2c3181aaec5506d19fc285ec2fdc9f5a9b1bed56d7fbbcc6feb40cc14f3"
+    "sha256": "e5626f76735a8f731136621eb6f8f4a66782faef85c76da906883214d77ee253"
   },
   "summary": {
     "debt_file_count": 79,

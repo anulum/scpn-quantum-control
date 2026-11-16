@@ -8,6 +8,7 @@
 """Lock the hardware HAL gate into preflight and CI."""
 
 import ast
+import json
 import re
 import shlex
 import subprocess
@@ -485,3 +486,37 @@ def test_iqm_cohort_runs_job_recovery_at_exact_coverage_with_the_locked_sdk() ->
     report = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
     omitted = report["tool"]["coverage"]["report"]["omit"]
     assert "*/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py" in omitted
+
+
+def test_iqm_cohort_runs_the_offline_iqm_compile_at_exact_coverage() -> None:
+    """The IQM cohort executes the adapter-bound compile test right after job recovery, at exact coverage."""
+    workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
+    steps = workflow["jobs"]["provider-sdk-conformance"]["steps"]
+    names = [step.get("name") for step in steps]
+    name = "Enforce exact IQM offline-compile coverage with the locked SDK (iqm only)"
+    recovery = "Enforce exact IQM job-recovery coverage with the locked SDK (iqm only)"
+    assert names.index(name) == names.index(recovery) + 1
+    step = steps[names.index(name)]
+    assert step["if"] == "matrix.cohort == 'iqm'"
+    command = " ".join(step["run"].replace("\\\n", " ").split())
+    assert command == (
+        "python -m coverage run --rcfile=/dev/null --branch "
+        '--data-file="$RUNNER_TEMP/iqm-offline-compile.coverage" '
+        "--include='*/llm_qpu/data/iqm_compile.py' "
+        "-m pytest -q -rs tests/experimental/llm_qpu/test_iqm_target_compiler.py "
+        "python -m coverage report --rcfile=/dev/null "
+        '--data-file="$RUNNER_TEMP/iqm-offline-compile.coverage" '
+        "--precision=2 --show-missing --fail-under=100"
+    )
+    report = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    assert (
+        "*/scpn_quantum_control/experimental/llm_qpu/data/iqm_compile.py"
+        in report["tool"]["coverage"]["report"]["omit"]
+    )
+    ledger = json.loads(Path("docs/release_coverage_exclusions.json").read_text(encoding="utf-8"))
+    rows = [
+        row
+        for row in ledger["exclusions"]
+        if row.get("path", "").endswith("llm_qpu/data/iqm_compile.py")
+    ]
+    assert len(rows) == 1 and "test_iqm_target_compiler.py" in rows[0]["exercised_by"]

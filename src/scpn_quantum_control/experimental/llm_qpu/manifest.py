@@ -56,6 +56,7 @@ _INVENTORY = (
     "llm_qpu/data/compression_fit.py",
     "llm_qpu/data/dedup.py",
     "llm_qpu/data/digital_simulation.py",
+    "llm_qpu/data/iqm_compile.py",
     "llm_qpu/data/lineage.py",
     "llm_qpu/data/measurement_compiler.py",
     "llm_qpu/data/splits.py",

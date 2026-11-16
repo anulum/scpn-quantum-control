@@ -893,6 +893,16 @@ jobs:
           python -m coverage report --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/iqm-job-recovery.coverage" \
             --precision=2 --show-missing --fail-under=100
+      - name: Enforce exact IQM offline-compile coverage with the locked SDK (iqm only)
+        if: matrix.cohort == 'iqm'
+        run: |
+          python -m coverage run --rcfile=/dev/null --branch \
+            --data-file="$RUNNER_TEMP/iqm-offline-compile.coverage" \
+            --include='*/llm_qpu/data/iqm_compile.py' \
+            -m pytest -q -rs tests/experimental/llm_qpu/test_iqm_target_compiler.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/iqm-offline-compile.coverage" \
+            --precision=2 --show-missing --fail-under=100
       - name: Retain native codec diagnostics
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2

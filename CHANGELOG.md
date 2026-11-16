@@ -497,6 +497,34 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains an offline IQM compile path
+  (`experimental/llm_qpu/data/iqm_compile.py`). It runs where the IQM SDK
+  is installed, which is the isolated IQM cohort.
+  - `iqm_architecture` rebuilds a compile-only IQM architecture from a
+    stored IQM target snapshot:
+    - qubits QB1..QBn;
+    - prx and measure on every qubit, and one cz locus per coupled pair;
+    - a calibration set ID derived from the snapshot digest, so no live
+      calibration is named.
+  - `iqm_backend` wraps it in an adapter backend whose `run` always
+    refuses.
+  - `compile_iqm_experiment` renders every cell through the measurement
+    compiler and transpiles it with the adapter's `transpile_to_IQM`
+    under a fixed layout and seed. It serialises each cell with
+    `serialize_instructions`, written as the canonical JSON of the circuit
+    type the IQM run request declares.
+  - Every payload is proved after the adapter deserialises it: native
+    gates only, reads from the layout qubits into the declared clbits,
+    and the logical distribution. The bundle records IQM gate names (cz,
+    measure, prx) and an SDK lock that includes iqm-client.
+  - `verify_iqm_experiment` reloads the stored payloads and proves them
+    again.
+  - `check_compiled_cell` accepts the gate names an adapter's target
+    declares (IQM's prx is Qiskit's `r`), and `sdk_lock` takes the package
+    list.
+  - The IQM provider cohort job enforces the new test at exact coverage,
+    and the module has a row in the coverage exclusion ledger.
+
 - The experimental LLM-QPU lane gains a paired dev evaluation of a quantum
   arm (`experimental/llm_qpu/learning/dev_evaluation.py`).
   - `exact_arm_features` assembles each sample's X, Y and Z values of one

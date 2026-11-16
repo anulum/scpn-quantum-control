@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **892 modules** across **41 package families**
-- **4785 documented public module-level symbols**
+- **893 modules** across **41 package families**
+- **4789 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2712,6 +2712,14 @@ Exact expectations and seeded counts of every plan, computed with the Qiskit sta
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/digital_simulation.py) · Public symbols: **2**
 
 **Functions:** `simulate_exact()`, `simulate_sampled()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.iqm_compile`
+
+Compile a planned experiment offline for a stored IQM target through the IQM adapter, and prove each payload.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/iqm_compile.py) · Public symbols: **4**
+
+**Functions:** `iqm_architecture()`, `iqm_backend()`, `compile_iqm_experiment()`, `verify_iqm_experiment()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.lineage`
 

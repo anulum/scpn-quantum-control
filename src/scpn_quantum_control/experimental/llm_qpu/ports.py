@@ -136,7 +136,7 @@ PORTS: tuple[PortSpec, ...] = (
         "CompiledBundle",
         "offline_planning",
         "it compiles against a stored target only: data.target_compiler.compile_experiment for "
-        "Qiskit-standard bases; an IQM prx basis needs the IQM adapter in its isolated cohort",
+        "Qiskit-standard bases, data.iqm_compile.compile_iqm_experiment through the IQM adapter",
     ),
     PortSpec(
         "quote_bundle",

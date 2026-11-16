@@ -42,14 +42,14 @@ def _sha(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def sdk_lock() -> bytes:
-    """Return the canonical record of the interpreter and the packages that shape a compile."""
-    packages = [[name, metadata.version(name)] for name in _SDK_PACKAGES]
+def sdk_lock(packages: tuple[str, ...] = _SDK_PACKAGES) -> bytes:
+    """Return the canonical record of the interpreter and the installed versions of the given packages."""
+    versions = [[name, metadata.version(name)] for name in packages]
     return canonical_bytes(
         {
             "schema": "scpn.experimental.llm_qpu.sdk_lock.v1",
             "python": platform.python_version(),
-            "packages": packages,
+            "packages": versions,
         }
     )
 

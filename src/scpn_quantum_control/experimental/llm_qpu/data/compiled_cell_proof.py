@@ -28,11 +28,18 @@ def check_compiled_cell(
     target: TargetSnapshot,
     layout: tuple[int, ...],
     tolerance: float,
+    *,
+    allowed: frozenset[str] | None = None,
 ) -> None:
-    """Require basis gates only, each logical wire read from its layout qubit, and the logical distribution."""
+    """Require allowed gates only, each logical wire read from its layout qubit, and the logical distribution.
+
+    ``allowed`` defaults to the target basis; a provider adapter that names its native gates differently
+    at the Qiskit level (IQM's ``prx`` is Qiskit's ``r``) passes the names its own target declares.
+    """
     from qiskit.quantum_info import Statevector
 
-    outside = sorted({item.operation.name for item in compiled.data} - set(target.basis_gates))
+    names = set(target.basis_gates) if allowed is None else set(allowed)
+    outside = sorted({item.operation.name for item in compiled.data} - names)
     if outside:
         raise ValueError(f"compiled gates outside the target basis: {', '.join(outside)}")
     measured = sorted(
@@ -71,6 +78,8 @@ def _check_all(
     target: TargetSnapshot,
     layout: tuple[int, ...],
     tolerance: float,
+    *,
+    allowed: frozenset[str] | None = None,
 ) -> None:
     """Prove every compiled cell against its measurement and its logical gates."""
     operations = experiment_circuits(experiment, plan_set)
@@ -82,4 +91,5 @@ def _check_all(
             target,
             layout,
             tolerance,
+            allowed=allowed,
         )

@@ -524,6 +524,9 @@ omit = [
     # Read-only IQM job recovery needs the IQM SDK, which does not install on Python 3.15; the
     # IQM provider cohort runs its test with the locked SDK on 3.13 at exact coverage.
     "*/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py",
+    # The offline IQM compile drives the IQM adapter, which installs only in the isolated IQM
+    # cohort (Python 3.13); that cohort runs its test with the locked SDK at exact coverage.
+    "*/scpn_quantum_control/experimental/llm_qpu/data/iqm_compile.py",
 ]
 exclude_lines = [
     "pragma: no cover",

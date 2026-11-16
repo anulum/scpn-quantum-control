@@ -939,6 +939,7 @@
         "tests/experimental/llm_qpu/test_exact_feature_set_contract.py",
         "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
         "tests/experimental/llm_qpu/test_feature_batch_contract.py",
+        "tests/experimental/llm_qpu/test_iqm_target_compiler.py",
         "tests/experimental/llm_qpu/test_lane_classical_baselines.py",
         "tests/experimental/llm_qpu/test_lane_dev_evaluation.py",
         "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
