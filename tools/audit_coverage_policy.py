@@ -18,10 +18,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import xml.etree.ElementTree as ET  # noqa: S405
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, cast
+
+from defusedxml import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_POLICY = ROOT / "tools" / "coverage_policy.json"
@@ -288,8 +289,8 @@ def _validate_rate(rate: float, covered: int, valid: int, context: str) -> None:
 
 def parse_coverage_xml(path: Path) -> CoverageMetrics:
     """Parse aggregate coverage.py Cobertura metrics from an XML report."""
-    root = ET.parse(path).getroot()  # noqa: S314
-    if root.tag != "coverage":
+    root = ET.parse(path).getroot()
+    if root is None or root.tag != "coverage":
         raise ValueError("coverage XML root must be <coverage>")
     attributes = dict(root.attrib)
     lines_covered = _xml_integer(attributes, "lines-covered")

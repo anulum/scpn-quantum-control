@@ -1150,6 +1150,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The hosted workflows keep their `/tmp` paths, since every job runs on a
     fresh single-tenant runner. The 136 contract tests now check the
     private directory, and compare the workflow by database name.
+
+- The CI security job now runs Bandit at medium severity over `tools/` too
+  (`bandit -r src/ scripts/ tools/ -x tools/tests -ll -q`). Test code stays
+  unscanned, as `tests/` always was. The five medium findings in `tools/`
+  were fixed at their cause, with no suppression marker:
+  - `tools/check_zenodo_dois.py` fetches DataCite records through an HTTPS
+    connection to the fixed host `api.datacite.org` instead of `urlopen`.
+    The fetch had no test before; it now has 100 % coverage, including
+    retries on a bad status or a dropped connection and the final error.
+  - `tools/audit_coverage_policy.py` parses coverage XML with `defusedxml`
+    and refuses a report that declares entities.
+  - `tools/studio_result_browser.py` parses exported SVG with `defusedxml`.
+  - `tools/studio_contract_ownership.py` reads workflows with
+    `yaml.safe_load`, and still refuses an error-tolerant owner job.
+  - The reference-transaction hook is published owner-only (0700) instead
+    of 0755.
+  - A contract test pins the scan command, and also checks that no tool
+    carries a B108 suppression.
   - Only `tests/test_perf_regression.py`, whose speed-up floors depend on
     the host, keeps the classification. A new test pins it as the only
     performance gate and checks that the default lane still excludes the

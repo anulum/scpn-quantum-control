@@ -18,7 +18,6 @@ import os
 from importlib.metadata import version
 from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import urlsplit
-from xml.etree import ElementTree
 
 from tools.studio_owned_worker_journey import _OBSERVE_WORKERS
 
@@ -108,6 +107,8 @@ def _exports(page: Page, inspector: Locator) -> tuple[list[dict[str, str]], dict
     rows = list(csv.reader(io.StringIO(csv_text)))
     with page.expect_download() as pending:
         inspector.get_by_role("button", name="Export SVG", exact=True).click()
+    from defusedxml import ElementTree
+
     svg = ElementTree.fromstring(pending.value.path().read_text(encoding="utf-8"))
     metadata = svg.find("{http://www.w3.org/2000/svg}metadata")
     assert metadata is not None and metadata.text is not None

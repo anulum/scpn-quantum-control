@@ -115,3 +115,113 @@ def test_main_returns_nonzero_for_unfindable_registry_record(
 
     assert main([str(tmp_path), "--retries", "1"]) == 1
     assert "not 'findable'" in capsys.readouterr().err
+
+
+class _FakeResponse:
+    """A DataCite response with a status and a raw body."""
+
+    def __init__(self, status: int, body: bytes) -> None:
+        self.status = status
+        self._body = body
+
+    def read(self) -> bytes:
+        """Return the raw body."""
+        return self._body
+
+
+class _FakeConnection:
+    """An HTTPS connection that replays scripted outcomes and records every request."""
+
+    outcomes: list[_FakeResponse | Exception] = []
+    opened: list[tuple[str, float]] = []
+    requested: list[tuple[str, str, dict[str, str]]] = []
+    closed: int = 0
+
+    def __init__(self, host: str, timeout: float) -> None:
+        _FakeConnection.opened.append((host, timeout))
+
+    def request(self, method: str, path: str, headers: dict[str, str]) -> None:
+        """Record one request."""
+        _FakeConnection.requested.append((method, path, headers))
+
+    def getresponse(self) -> _FakeResponse:
+        """Return the next scripted response, or raise the next scripted error."""
+        outcome = _FakeConnection.outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    def close(self) -> None:
+        """Count one closed connection."""
+        _FakeConnection.closed += 1
+
+
+@pytest.fixture
+def fake_https(monkeypatch: pytest.MonkeyPatch) -> type[_FakeConnection]:
+    """Route the checker's HTTPS connections to the scripted fake and skip the retry sleep."""
+    _FakeConnection.outcomes = []
+    _FakeConnection.opened = []
+    _FakeConnection.requested = []
+    _FakeConnection.closed = 0
+    monkeypatch.setattr(_MODULE.http.client, "HTTPSConnection", _FakeConnection)
+    monkeypatch.setattr(_MODULE.time, "sleep", lambda _seconds: None)
+    return _FakeConnection
+
+
+def test_fetch_asks_the_fixed_host_over_https(fake_https: type[_FakeConnection]) -> None:
+    """A good answer is returned, from the DataCite host, for the DOI's path, and closed."""
+    fake_https.outcomes = [_FakeResponse(200, b'{"data": {"id": "10.5281/zenodo.1"}}')]
+    payload = _MODULE._fetch_datacite_record("10.5281/zenodo.1", timeout=7, retries=3)
+    assert payload == {"data": {"id": "10.5281/zenodo.1"}}
+    assert fake_https.opened == [("api.datacite.org", 7)]
+    method, path, headers = fake_https.requested[0]
+    assert (method, path) == ("GET", "/dois/10.5281/zenodo.1")
+    assert headers["Accept"] == "application/vnd.api+json"
+    assert fake_https.closed == 1
+
+
+def test_fetch_retries_bad_status_and_protocol_errors(fake_https: type[_FakeConnection]) -> None:
+    """A non-200 status and a protocol error are retried until a good answer arrives."""
+    fake_https.outcomes = [
+        _FakeResponse(503, b"busy"),
+        _MODULE.http.client.RemoteDisconnected("dropped"),
+        _FakeResponse(200, b'{"data": {}}'),
+    ]
+    assert _MODULE._fetch_datacite_record("10.5281/zenodo.2", timeout=1, retries=3) == {"data": {}}
+    assert fake_https.closed == 3
+
+
+@pytest.mark.parametrize(
+    ("outcome", "message"),
+    [
+        (_FakeResponse(404, b"missing"), "HTTP 404"),
+        (_FakeResponse(200, b"[1, 2]"), "not a JSON object"),
+        (_FakeResponse(200, b"not json"), "Expecting value"),
+        (TimeoutError("slow"), "slow"),
+    ],
+)
+def test_fetch_fails_after_its_retries(
+    fake_https: type[_FakeConnection], outcome: _FakeResponse | Exception, message: str
+) -> None:
+    """Every attempt failing the same way ends in one error that names the last cause."""
+    fake_https.outcomes = [outcome, outcome]
+    with pytest.raises(RuntimeError, match=f"after 2 attempt\\(s\\): .*{message}"):
+        _MODULE._fetch_datacite_record("10.5281/zenodo.3", timeout=1, retries=2)
+    assert fake_https.closed == 2
+
+
+@pytest.mark.parametrize(
+    ("argv", "message"),
+    [
+        (["--timeout", "0"], "--timeout must be positive"),
+        (["--retries", "0"], "--retries must be at least 1"),
+    ],
+)
+def test_main_refuses_unusable_limits(
+    argv: list[str], message: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A non-positive timeout or a retry count below one is refused before any request."""
+    with pytest.raises(SystemExit) as exit_info:
+        main(argv)
+    assert exit_info.value.code == 2
+    assert message in capsys.readouterr().err

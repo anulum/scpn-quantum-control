@@ -165,12 +165,12 @@ def load_contract_cohorts(*, repo_root: Path | None = None) -> list[ContractCoho
 
 
 def _jobs(path: Path) -> dict[str, object]:
-    payload = _mapping(yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader))
+    payload = _mapping(yaml.safe_load(path.read_text(encoding="utf-8")))
     return _mapping(payload.get("jobs"))
 
 
 def _mandatory(job: dict[str, object]) -> None:
-    if "if" in job or job.get("continue-on-error", "false") != "false":
+    if "if" in job or job.get("continue-on-error", False) not in (False, "false"):
         raise ValueError("required contract owner must not be conditional or error-tolerant")
 
 

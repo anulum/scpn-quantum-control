@@ -27,7 +27,8 @@ jobs:
           cache: 'pip'
       - run: pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: python tools/audit_serialization_surface.py
-      - run: bandit -r src/ scripts/ -ll -q
+      # Production and tooling code; test code is not scanned, here as for tests/.
+      - run: bandit -r src/ scripts/ tools/ -x tools/tests -ll -q
       # --no-deps audits the complete hash-pinned dependency closure.
       - run: pip-audit -r requirements-ci-py315-linux.txt --no-deps --desc on
   rust-audit:

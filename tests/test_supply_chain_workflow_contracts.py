@@ -117,3 +117,13 @@ def test_oscillatools_framework_tier_lane_runs_every_framework_test() -> None:
     assert "-r requirements-ci-jax-py315-linux.txt" in commands
     assert "-r requirements-ci-torch-cpu-py315-linux.txt" in commands
     assert "could not import '(jax|torch)" in commands
+
+
+def test_security_scan_covers_production_and_tooling_code() -> None:
+    """Bandit at medium severity scans src, scripts and tools, leaving out only test code."""
+    workflow = yaml.safe_load(_workflow(".github/workflows/ci-security.yml"))
+    runs = [step.get("run", "") for step in workflow["jobs"]["security"]["steps"]]
+    bandit = [run for run in runs if run.startswith("bandit")]
+    assert bandit == ["bandit -r src/ scripts/ tools/ -x tools/tests -ll -q"]
+    tool_sources = Path("tools").glob("*.py")
+    assert not [path for path in tool_sources if "nosec B108" in path.read_text(encoding="utf-8")]

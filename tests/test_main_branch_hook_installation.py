@@ -97,7 +97,7 @@ def test_atomic_publication_failure_preserves_target_and_cleans_staging(
         """Inspect the complete staged executable before modelling publication failure."""
         staged = Path(source)
         assert b"refusing transaction" in staged.read_bytes()
-        assert staged.stat().st_mode & 0o777 == 0o755
+        assert staged.stat().st_mode & 0o777 == 0o700
         assert destination == hook
         if competing_target:
             hook.write_bytes(owner_content)

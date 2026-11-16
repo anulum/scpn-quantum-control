@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import re
 import sys
@@ -17,9 +18,12 @@ import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
-from urllib.request import Request, urlopen
+from urllib.parse import quote
 
-DATACITE_ENDPOINT = "https://api.datacite.org/dois/{doi}"
+DATACITE_HOST = "api.datacite.org"
+"""The only host the checker contacts, always over HTTPS."""
+DATACITE_PATH = "/dois/{doi}"
+"""DataCite REST path of one DOI record."""
 ZENODO_DOI_RE = re.compile(
     r"https://(?:doi\.org/|zenodo\.org/(?:badge/DOI/|doi/))"
     r"(10\.5281/zenodo\.\d+)(?:\.svg)?",
@@ -47,23 +51,28 @@ def collect_zenodo_dois(root: Path) -> tuple[str, ...]:
 
 
 def _fetch_datacite_record(doi: str, *, timeout: float, retries: int) -> Mapping[str, Any]:
-    """Fetch a DataCite DOI record with bounded retries."""
-    request = Request(
-        DATACITE_ENDPOINT.format(doi=doi),
-        headers={"Accept": "application/vnd.api+json", "User-Agent": "scpn-link-check/1"},
-    )
+    """Fetch a DataCite DOI record over HTTPS from the fixed host, with bounded retries."""
+    path = DATACITE_PATH.format(doi=quote(doi, safe="/"))
+    headers = {"Accept": "application/vnd.api+json", "User-Agent": "scpn-link-check/1"}
     last_error: Exception | None = None
     for attempt in range(retries):
+        connection = http.client.HTTPSConnection(DATACITE_HOST, timeout=timeout)
         try:
-            with urlopen(request, timeout=timeout) as response:  # noqa: S310 - fixed HTTPS host
-                payload = json.load(response)
+            connection.request("GET", path, headers=headers)
+            response = connection.getresponse()
+            body = response.read()
+            if response.status != 200:
+                raise ValueError(f"DataCite answered HTTP {response.status}")
+            payload = json.loads(body)
             if not isinstance(payload, Mapping):
                 raise ValueError("DataCite response is not a JSON object")
             return payload
-        except (OSError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
+        except (OSError, http.client.HTTPException, ValueError) as exc:
             last_error = exc
             if attempt + 1 < retries:
                 time.sleep(min(2**attempt, 5))
+        finally:
+            connection.close()
     raise RuntimeError(f"DataCite request failed after {retries} attempt(s): {last_error}")
 
 

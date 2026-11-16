@@ -320,6 +320,27 @@ def test_parse_coverage_xml_returns_aggregate_metrics(tmp_path: Path) -> None:
     assert metrics.branch_percent == 90.0
 
 
+def test_parse_coverage_xml_refuses_entity_declarations(tmp_path: Path) -> None:
+    """A report that declares entities is refused before any expansion.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the hostile XML report.
+
+    """
+    path = tmp_path / "coverage.xml"
+    path.write_text(
+        '<?xml version="1.0"?>\n'
+        '<!DOCTYPE coverage [<!ENTITY a "aaaaaaaaaa"><!ENTITY b "&a;&a;&a;&a;&a;">]>\n'
+        '<coverage lines-covered="&b;" lines-valid="100" line-rate="0.95"/>\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="EntitiesForbidden|entity"):
+        _audit.parse_coverage_xml(path)
+
+
 @pytest.mark.parametrize(
     ("root", "attributes", "message"),
     [

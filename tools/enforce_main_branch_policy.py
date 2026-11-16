@@ -315,7 +315,7 @@ def install_reference_transaction_hook(repo_root: Path) -> Path:
     with tempfile.NamedTemporaryFile(dir=hook_path.parent, prefix=".reference-hook-") as staged:
         staged.write(content.encode("utf-8"))
         staged.flush()
-        os.fchmod(staged.fileno(), 0o755)
+        os.fchmod(staged.fileno(), 0o700)
         os.fsync(staged.fileno())
         os.link(staged.name, hook_path)
     return hook_path
