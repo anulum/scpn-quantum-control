@@ -39,10 +39,14 @@ whole batch of `B` initial conditions in a **single** accelerator call, by `jax.
 axis. This is a vectorisation of the *entire* solve, not just the inner force evaluation, and the
 NumPy and Rust tiers cannot express it: they would loop over the ensemble one member at a time.
 
-The reproducible guarantee is that batching changes nothing but the layout — each batched member is
-identical to its single-initial-condition `jax_kuramoto_rk4_trajectory` /
-`jax_kuramoto_rk4_gradient`, and the batched gradient matches the per-member single gradient to
-machine precision (`tests/test_jax_kuramoto.py`). The committed artefact records the ensemble parity
+The reproducible guarantee is that batching changes nothing but the layout — each batched member runs
+the same solve as its single-initial-condition `jax_kuramoto_rk4_trajectory` /
+`jax_kuramoto_rk4_gradient`. On the GPU that produced the committed artefact the members are
+bit-identical (`ensemble_parity_max_abs_diff = 0.0`). On a CPU, XLA may order the batched coupling sum
+differently from the single call, and members then differ at the rounding level: at most 8 ulp of 1
+was measured with JAX 0.10.1 and 0.12.0.1. `tests/test_jax_kuramoto.py` therefore asserts agreement to
+1e-12, not bit-identity. The batched gradient matches the per-member single gradient to machine
+precision (`tests/test_jax_kuramoto.py`). The committed artefact records the ensemble parity
 alongside advisory batched-versus-sequential timings (`ensemble_forward_us` versus
 `sequential_forward_us`); the throughput factor is advisory and host/GPU-bound, the parity is the
 reproducible quantity. This is the capability that makes the tier useful for Monte-Carlo basin studies

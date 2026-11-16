@@ -288,8 +288,10 @@ def jax_kuramoto_rk4_ensemble(
 
     Solves ``B`` initial conditions that share the same frequencies and coupling in a single
     accelerator call by :func:`jax.vmap` over the batch axis — a vectorisation of the *entire* solve
-    the NumPy and Rust tiers cannot express (they would loop over the ensemble). Each member is
-    identical to the single-initial-condition :func:`jax_kuramoto_rk4_trajectory`.
+    the NumPy and Rust tiers cannot express (they would loop over the ensemble). Each member runs the
+    same solve as the single-initial-condition :func:`jax_kuramoto_rk4_trajectory`. On the reference
+    GPU the members are bit-identical to it. A different device may order the batched coupling sum
+    differently, so members can differ from the single call at the rounding level (a few ulp on CPU).
 
     Parameters
     ----------

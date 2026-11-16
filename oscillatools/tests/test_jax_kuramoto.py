@@ -332,8 +332,9 @@ def test_ensemble_forward_matches_each_single_member() -> None:
     assert ensemble.shape == (batch, _STEPS + 1, n)
     for member in range(batch):
         single = jk.jax_kuramoto_rk4_trajectory(theta0_batch[member], omega, coupling, _DT, _STEPS)
-        # the vmap batches the identical solve, so each member is bit-for-bit the single call
-        assert np.array_equal(ensemble[member], single)
+        # The vmap batches the same solve. XLA on CPU may order the batched coupling sum differently,
+        # so members agree to rounding (measured at most 8 ulp of 1), not bit for bit.
+        assert np.max(np.abs(ensemble[member] - single)) < 1e-12
 
 
 def test_ensemble_gradient_matches_each_single_member() -> None:
