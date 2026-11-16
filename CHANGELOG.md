@@ -497,6 +497,42 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains offline compilation against a stored
+  target snapshot.
+  - `compile_experiment` (`experimental/llm_qpu/data/target_compiler.py`)
+    requires a basis of Qiskit standard gates that includes `measure`. An
+    IQM `prx` basis is refused, because it needs the IQM adapter in its
+    isolated cohort.
+  - The default layout is the first simple chain of coupled qubits,
+    searched lowest qubits first (`chain_layout`).
+  - Every rendered cell is transpiled under that fixed initial layout with
+    a recorded seed and optimization level.
+  - `check_compiled_cell` (`data/compiled_cell_proof.py`) proves each
+    compiled cell:
+    - it uses only target basis gates;
+    - logical wire *w* is measured from layout qubit *w* into its declared
+      clbit;
+    - it acts on no qubit outside the layout;
+    - its unitary part, reduced to the layout, gives the independent
+      statevector's distribution within 1e-9.
+  - `data/compile_records.py` writes the private bytes the bundle names:
+    - QPY payloads, written without transpiler layout metadata and under a
+      fixed cell name, so they are identical across processes and
+      string-hash seeds;
+    - a canonical compile log with each cell's depth, gate counts and
+      payload digest;
+    - an SDK lock with the interpreter and the numpy, qiskit and rustworkx
+      versions.
+  - Each logical gate outside the basis declares what it may become, from
+    the target basis itself: any one-qubit basis gate for a one-qubit gate,
+    any unitary basis gate for a two-qubit gate.
+  - `verify_compiled_experiment` reloads every stored payload and repeats
+    the proof against the bundle, the planned cells and the target. The
+    standalone worker accepts a compiled bundle and refuses an edited one.
+  - The `compile_bundle` port names the compiler. The compiled bundle's
+    payload-digest computation is shared with the contract instead of
+    being restated.
+
 - The experimental LLM-QPU lane gains a measurement compiler with bit custody.
   - `render_measured_cell` (`experimental/llm_qpu/data/measurement_compiler.py`)
     renders a cell's gates and its H and S-dagger readout rotations into

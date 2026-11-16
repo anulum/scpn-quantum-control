@@ -951,6 +951,7 @@
         "tests/experimental/llm_qpu/test_simulated_count_set_contract.py",
         "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
         "tests/experimental/llm_qpu/test_student_artifact_contract.py",
+        "tests/experimental/llm_qpu/test_target_compiler.py",
         "tests/experimental/llm_qpu/test_target_snapshot_contract.py",
         "tests/ml_convergence_qnn_absence.py",
         "tests/neural_operator_rng_custody.py",

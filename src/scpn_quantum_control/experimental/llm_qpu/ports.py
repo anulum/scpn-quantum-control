@@ -135,8 +135,8 @@ PORTS: tuple[PortSpec, ...] = (
         ("PlannedExperiment", "TargetSnapshot"),
         "CompiledBundle",
         "offline_planning",
-        "it compiles against a stored target only; data.measurement_compiler renders the logical "
-        "measured circuits with bit custody, and target compilation does not exist yet",
+        "it compiles against a stored target only: data.target_compiler.compile_experiment for "
+        "Qiskit-standard bases; an IQM prx basis needs the IQM adapter in its isolated cohort",
     ),
     PortSpec(
         "quote_bundle",

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **883 modules** across **41 package families**
-- **4754 documented public module-level symbols**
+- **886 modules** across **41 package families**
+- **4760 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2653,6 +2653,22 @@ Fail-closed cache references across model, compressor, and SDK revisions.
 
 **Classes:** `StaleCacheError`, `CacheKey`, `ArtifactCache`
 
+### `scpn_quantum_control.experimental.llm_qpu.data.compile_records`
+
+The private bytes a compiled bundle names (QPY payloads, compile log, SDK lock) and the frozen bundle itself.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/compile_records.py) · Public symbols: **1**
+
+**Functions:** `sdk_lock()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.compiled_cell_proof`
+
+Prove that one compiled cell uses the target basis, reads its layout qubits and keeps the logical distribution.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/compiled_cell_proof.py) · Public symbols: **1**
+
+**Functions:** `check_compiled_cell()`
+
 ### `scpn_quantum_control.experimental.llm_qpu.data.compression_fit`
 
 Train-only PCA compressor fit and frozen-map compression of latent batches.
@@ -2704,6 +2720,16 @@ Freeze synthetic memory group splits and answer-free pilot inputs.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/splits.py) · Public symbols: **2**
 
 **Functions:** `build_memory_split()`, `pilot_inputs()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.target_compiler`
+
+Compile a planned experiment offline against a stored target snapshot and prove each compiled cell.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/target_compiler.py) · Public symbols: **4**
+
+**Classes:** `CompiledExperiment`
+
+**Functions:** `chain_layout()`, `compile_experiment()`, `verify_compiled_experiment()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.tasks`
 

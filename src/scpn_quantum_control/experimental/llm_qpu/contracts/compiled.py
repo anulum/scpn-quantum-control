@@ -244,14 +244,35 @@ def _pairs(values: list[object], *, nested: bool = False) -> tuple[tuple[object,
 
 def _payload_wire(bundle: CompiledBundle) -> dict[str, object]:
     """Return the ordered fields a later approval binds byte for byte."""
+    return _payload_fields(
+        bundle.cells,
+        bundle.layout,
+        bundle.logical_gates,
+        bundle.compiled_gate_counts,
+        bundle.substitutions,
+        bundle.compiled_depth,
+        bundle.provider_options,
+    )
+
+
+def _payload_fields(
+    cells: tuple[CompiledCell, ...],
+    layout: tuple[int, ...],
+    logical_gates: tuple[str, ...],
+    compiled_gate_counts: tuple[tuple[str, int], ...],
+    substitutions: tuple[tuple[str, tuple[str, ...]], ...],
+    compiled_depth: int,
+    provider_options: tuple[tuple[str, int | str | bool], ...],
+) -> dict[str, object]:
+    """Return the approvable payload of the given field values, in their bound order."""
     return {
-        "cells": [cell.to_wire() for cell in bundle.cells],
-        "layout": list(bundle.layout),
-        "logical_gates": list(bundle.logical_gates),
-        "compiled_gate_counts": [list(pair) for pair in bundle.compiled_gate_counts],
-        "substitutions": [[source, list(targets)] for source, targets in bundle.substitutions],
-        "compiled_depth": bundle.compiled_depth,
-        "provider_options": [list(pair) for pair in bundle.provider_options],
+        "cells": [cell.to_wire() for cell in cells],
+        "layout": list(layout),
+        "logical_gates": list(logical_gates),
+        "compiled_gate_counts": [list(pair) for pair in compiled_gate_counts],
+        "substitutions": [[source, list(targets)] for source, targets in substitutions],
+        "compiled_depth": compiled_depth,
+        "provider_options": [list(pair) for pair in provider_options],
     }
 
 
