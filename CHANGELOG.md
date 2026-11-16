@@ -1098,6 +1098,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The cohort environment (the 3.13 minimal-install lock plus the IQM SDK
     lock) was replayed locally first: dependencies compatible, 57 passed.
 
+- The pipeline wiring tests (`tests/test_pipeline_wiring_performance.py`)
+  run in the default Python test shards again.
+  - Their wall-clock thresholds were removed earlier, and a policy test
+    keeps every timing as telemetry. Yet the file stayed classified as a
+    performance gate, so conftest marked its tests `performance`, and the
+    default filter excludes that marker. No job selects it, so none of its
+    934 tests ran in CI. The documented local command
+    (`pytest tests/test_pipeline_wiring_performance.py -v -s`) deselected
+    them as well and ran nothing.
+  - `docs/pipeline_performance.md` and `docs/test_infrastructure.md` no
+    longer quote a stale count of 155 tests, and state where the file runs.
+  - Only `tests/test_perf_regression.py`, whose speed-up floors depend on
+    the host, keeps the classification. A new test pins it as the only
+    performance gate and checks that the default lane still excludes the
+    marker.
+  - The default shard environment (the 3.12 lock, the editable package,
+    the Studio lock and the current engine build) was replayed locally
+    first: 934 passed, none skipped, in about 16 to 28 seconds.
+
 - The Cirq adapter (`hardware/cirq_adapter.py`) now tests the import path
   with Cirq importable in every lane: the adapter file is executed under a
   private module name with a stand-in `cirq` module, which marks Cirq

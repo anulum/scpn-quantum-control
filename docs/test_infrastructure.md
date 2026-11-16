@@ -13,7 +13,7 @@ acceleration parity, and performance benchmarks.
 ```
 tests/
   conftest.py              # Shared fixtures: knm_Nq, coupling_variant, hypothesis strategies
-  test_pipeline_wiring_performance.py  # 155 tests — every __all__ export verified functional
+  test_pipeline_wiring_performance.py  # every __all__ export verified functional
                                        # (now includes TestGUESSPipeline, TestDynQPipeline,
                                        # TestPulseShapingPipeline)
   test_rust_path_benchmarks.py         # Rust path parity and benchmark coverage
@@ -409,6 +409,12 @@ Each test follows the pattern:
 3. Assert output has correct type, shape, and physical bounds
 4. Print wall-time telemetry labelled `functional_non_isolated`; shared-host
    timing never decides whether a functional wiring test passes
+
+Because no assertion reads a timing, the module carries no `performance`
+marker and runs in every default Python test shard. The marker, which the
+default filter excludes, is kept for `tests/test_perf_regression.py`, whose
+speed-up floors depend on the host. A policy test fails if a timing assertion
+returns to the wiring module.
 
 ```python
 class TestTopLevelExports:

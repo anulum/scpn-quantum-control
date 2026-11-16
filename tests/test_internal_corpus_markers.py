@@ -41,8 +41,18 @@ def test_public_tests_do_not_require_internal_corpus() -> None:
 def test_wall_clock_performance_gates_are_explicitly_classified() -> None:
     """Machine-dependent timing gates are not default correctness tests."""
     assert is_performance_gate(Path("tests/test_perf_regression.py"))
-    assert is_performance_gate(Path("tests/test_pipeline_wiring_performance.py"))
     assert not is_performance_gate(Path("tests/test_rust_path_benchmarks.py"))
+
+
+def test_pipeline_wiring_runs_with_the_default_correctness_tests() -> None:
+    """The wiring module asserts no timing, so the default marker filter keeps it."""
+    assert not is_performance_gate(Path("tests/test_pipeline_wiring_performance.py"))
+    workflow = Path(".github/workflows/ci-python-tests.yml").read_text(encoding="utf-8")
+    assert "and not performance" in workflow
+    performance_gates = sorted(
+        path.name for path in Path("tests").glob("test_*.py") if is_performance_gate(path)
+    )
+    assert performance_gates == ["test_perf_regression.py"]
 
 
 def test_pipeline_wiring_timings_are_telemetry_only() -> None:

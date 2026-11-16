@@ -1,14 +1,15 @@
 # Pipeline Performance Benchmarks
 
 Every module in scpn-quantum-control is verified as **wired into the pipeline**
-(not decorative) by `tests/test_pipeline_wiring_performance.py` (155 tests) and
-per-module pipeline tests embedded in each test file. This page documents the
-measured wall-time performance for every subsystem.
+(not decorative) by `tests/test_pipeline_wiring_performance.py`, which runs in
+every default Python test shard, and by the per-module pipeline tests embedded
+in each test file. This page documents the measured wall-time performance for
+every subsystem.
 
 ## Test infrastructure
 
 ```bash
-pytest tests/test_pipeline_wiring_performance.py -v -s   # 155 tests, prints benchmarks
+pytest tests/test_pipeline_wiring_performance.py -v -s   # prints timing telemetry
 pytest tests/test_rust_path_benchmarks.py -v -s           # 68 tests, Rust parity + timing
 ```
 

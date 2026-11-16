@@ -25,11 +25,13 @@ def requires_internal_paper0_corpus(path: Path) -> bool:
 
 
 def is_performance_gate(path: Path) -> bool:
-    """Return whether a test module is a wall-clock performance gate."""
-    return path.name in {
-        "test_perf_regression.py",
-        "test_pipeline_wiring_performance.py",
-    }
+    """Return whether a test module is a wall-clock performance gate.
+
+    Only modules whose pass or fail depends on host timing qualify. The
+    pipeline wiring module records timing as telemetry and asserts none, so it
+    runs with the default correctness tests.
+    """
+    return path.name == "test_perf_regression.py"
 
 
 __all__ = ["is_performance_gate", "requires_internal_paper0_corpus"]
