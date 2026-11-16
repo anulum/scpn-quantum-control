@@ -16,7 +16,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestNoiseAnalysis:
+    """Concurrence under noise."""
+
     def test_concurrence_bounded_01(self) -> None:
+        """Concurrence lies in [0, 1]."""
         from scpn_quantum_control.crypto.noise_analysis import _concurrence_2qubit
 
         rng = np.random.default_rng(42)
@@ -46,6 +49,7 @@ class TestNoiseAnalysis:
 
     @pytest.mark.parametrize("seed", [1, 2, 3, 4, 5])
     def test_concurrence_always_bounded(self, seed: int) -> None:
+        """Concurrence stays in [0, 1] for every input."""
         from scpn_quantum_control.crypto.noise_analysis import _concurrence_2qubit
 
         rng = np.random.default_rng(seed)
@@ -57,7 +61,10 @@ class TestNoiseAnalysis:
 
 
 class TestPercolation:
+    """Key rates, edge removal and routing on the network."""
+
     def test_key_rate_shape(self) -> None:
+        """The key-rate matrix has one entry per node pair."""
         from scpn_quantum_control.crypto.percolation import (
             concurrence_map,
             key_rate_per_channel,
@@ -70,6 +77,7 @@ class TestPercolation:
         assert rates.shape == (2, 2)
 
     def test_key_rate_nonnegative(self) -> None:
+        """Key rates are non-negative."""
         from scpn_quantum_control.crypto.percolation import (
             concurrence_map,
             key_rate_per_channel,
@@ -82,6 +90,7 @@ class TestPercolation:
         assert np.all(rates >= -1e-10)
 
     def test_targeted_removal_has_fraction(self) -> None:
+        """Targeted removal reports the edges cut and a positive fraction."""
         from scpn_quantum_control.crypto.percolation import robustness_targeted_removal
 
         K = build_knm_paper27(L=2)
@@ -91,6 +100,7 @@ class TestPercolation:
         assert result["fraction"] > 0
 
     def test_targeted_removal_fraction_bounded(self) -> None:
+        """The removed fraction lies in (0, 1]."""
         from scpn_quantum_control.crypto.percolation import robustness_targeted_removal
 
         K = build_knm_paper27(L=3)
@@ -98,6 +108,7 @@ class TestPercolation:
         assert 0.0 < result["fraction"] <= 1.0
 
     def test_routing_path_valid(self) -> None:
+        """Routing returns a path from the source and its bottleneck."""
         from scpn_quantum_control.crypto.percolation import best_entanglement_path
 
         K = build_knm_paper27(L=3)
@@ -109,6 +120,7 @@ class TestPercolation:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_routing_across_sizes(self, n: int) -> None:
+        """Routing finds a path at several sizes."""
         from scpn_quantum_control.crypto.percolation import best_entanglement_path
 
         K = build_knm_paper27(L=n)
@@ -116,6 +128,7 @@ class TestPercolation:
         assert len(result["path"]) >= 2
 
     def test_random_removal_resilience(self) -> None:
+        """Random removal returns a non-empty report."""
         from scpn_quantum_control.crypto.percolation import robustness_random_removal
 
         K = build_knm_paper27(L=3)
@@ -228,6 +241,8 @@ class TestPercolationEdgeCases:
 
 
 class TestNoiseAnalysisEdge:
+    """Edge cases of the noise analysis."""
+
     def test_concurrence_imaginary_eigenvalues(self, caplog: pytest.LogCaptureFixture) -> None:
         """Verifies 87: warning when eigenvalues have imaginary part."""
         import logging
@@ -251,6 +266,8 @@ class TestNoiseAnalysisEdge:
 
 
 class TestTopologyAuthEdge:
+    """Edge cases of topology authentication."""
+
     def test_spectral_entropy_single_positive(self) -> None:
         """Verify isolated-node normalised Laplacian entropy remains well-defined."""
         from scpn_quantum_control.crypto.topology_auth import normalized_laplacian_fingerprint
@@ -262,7 +279,10 @@ class TestTopologyAuthEdge:
 
 
 class TestCryptoPercolationEdge:
+    """Edge cases of the percolation analysis."""
+
     def test_concurrence_map(self) -> None:
+        """The concurrence map has one entry per node pair."""
         from scpn_quantum_control.crypto.percolation import concurrence_map
 
         K = np.array([[0, 0.5, 0], [0.5, 0, 0.3], [0, 0.3, 0]])
@@ -271,6 +291,7 @@ class TestCryptoPercolationEdge:
         assert result.shape == (3, 3)
 
     def test_robustness_random_removal(self) -> None:
+        """Random removal reports a mean resilience."""
         from scpn_quantum_control.crypto.percolation import robustness_random_removal
 
         K = np.array([[0, 1, 0.5], [1, 0, 0.8], [0.5, 0.8, 0]])

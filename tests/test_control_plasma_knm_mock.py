@@ -56,6 +56,7 @@ def _make_mock_module(L: int = 8) -> ModuleType:
 
 @pytest.fixture
 def mock_plasma_module(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
+    """Replace the sibling plasma module with a mock for one test."""
     mock_mod = _make_mock_module()
 
     def _mock_import(name: str) -> ModuleType:
@@ -75,16 +76,21 @@ def mock_plasma_module(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
 
 
 class TestBuildKnmPlasma:
+    """Building the plasma coupling matrix."""
+
     def test_returns_matrix(self, mock_plasma_module: ModuleType) -> None:
+        """The builder returns a float64 matrix of the requested size."""
         K = build_knm_plasma(L=4)
         assert K.shape == (4, 4)
         assert K.dtype == np.float64
 
     def test_default_L(self, mock_plasma_module: ModuleType) -> None:
+        """The default size is eight layers."""
         K = build_knm_plasma()
         assert K.shape == (8, 8)
 
     def test_values_from_mock(self, mock_plasma_module: ModuleType) -> None:
+        """The diagonal comes from the mock."""
         K = build_knm_plasma(L=4)
         np.testing.assert_allclose(np.diag(K), 0.45)
 
@@ -95,18 +101,23 @@ class TestBuildKnmPlasma:
 
 
 class TestBuildKnmPlasmaSpec:
+    """Building the plasma coupling specification."""
+
     def test_returns_dict(self, mock_plasma_module: ModuleType) -> None:
+        """The specification holds the matrix, zeta and the layer names."""
         spec = build_knm_plasma_spec(L=4)
         assert "K" in spec
         assert "zeta" in spec
         assert "layer_names" in spec
 
     def test_shapes(self, mock_plasma_module: ModuleType) -> None:
+        """The matrix and the layer names follow the requested size."""
         spec = build_knm_plasma_spec(L=4)
         assert spec["K"].shape == (4, 4)
         assert len(spec["layer_names"]) == 4
 
     def test_zeta_dtype(self, mock_plasma_module: ModuleType) -> None:
+        """Zeta is float64."""
         spec = build_knm_plasma_spec(L=4)
         assert spec["zeta"].dtype == np.float64
 
@@ -117,7 +128,10 @@ class TestBuildKnmPlasmaSpec:
 
 
 class TestBuildKnmPlasmaFromConfig:
+    """Building the plasma coupling from a configuration."""
+
     def test_returns_matrix(self, mock_plasma_module: ModuleType) -> None:
+        """The builder returns a float64 matrix of the requested size."""
         K = build_knm_plasma_from_config(R0=1.65, a=0.5, B0=5.3, Ip=15e6, n_e=1e20, L=4)
         assert K.shape == (4, 4)
         assert K.dtype == np.float64
@@ -129,12 +143,16 @@ class TestBuildKnmPlasmaFromConfig:
 
 
 class TestPlasmaOmega:
+    """Plasma natural frequencies."""
+
     def test_returns_vector(self, mock_plasma_module: ModuleType) -> None:
+        """The frequencies are a float64 vector of the requested size."""
         omega = plasma_omega(L=4)
         assert omega.shape == (4,)
         assert omega.dtype == np.float64
 
     def test_values_from_mock(self, mock_plasma_module: ModuleType) -> None:
+        """The frequencies come from the mock."""
         omega = plasma_omega(L=4)
         np.testing.assert_array_equal(omega, np.arange(4, dtype=np.float64))
 
@@ -145,7 +163,10 @@ class TestPlasmaOmega:
 
 
 class TestSysPathManagement:
+    """Managing sys.path for the sibling source tree."""
+
     def test_sys_path_insertion_and_cleanup(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The sibling source path is inserted and removed again."""
         mock_mod = _make_mock_module()
 
         def _mock_import(name: str) -> ModuleType:

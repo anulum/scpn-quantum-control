@@ -29,44 +29,56 @@ from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
 class TestMCSimulate:
+    """Monte Carlo simulation of the XY model."""
+
     def test_returns_result(self) -> None:
+        """The simulation returns a result record."""
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.05, n_thermalize=500, n_measure=500)
         assert isinstance(result, MCResult)
 
     def test_low_temp_high_order(self) -> None:
+        """At low temperature the order parameter exceeds 0.5."""
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.01, n_thermalize=1000, n_measure=1000)
         assert result.order_parameter > 0.5
 
     def test_high_temp_low_order(self) -> None:
+        """At high temperature the order parameter stays below 0.8."""
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=1.0, n_thermalize=1000, n_measure=1000)
         assert result.order_parameter < 0.8
 
     def test_energy_negative(self) -> None:
+        """The energy is negative."""
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.05, n_thermalize=500, n_measure=500)
         assert result.energy < 0
 
     def test_helicity_positive_low_temp(self) -> None:
+        """At low temperature the helicity modulus is positive."""
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.01, n_thermalize=1000, n_measure=1000)
         assert result.helicity_modulus > 0
 
 
 class TestExtractAHP:
+    """Extracting a_hp and the BKT temperature."""
+
     def test_returns_result(self) -> None:
+        """The extraction returns a result record."""
         K = build_knm_paper27(L=8)
         result = extract_a_hp(K, n_temps=8, n_thermalize=500, n_measure=500)
         assert isinstance(result, AHPResult)
 
     def test_a_hp_positive(self) -> None:
+        """The extracted a_hp is positive."""
         K = build_knm_paper27(L=8)
         result = extract_a_hp(K, n_temps=8, n_thermalize=500, n_measure=500)
         assert result.a_hp_graph > 0
 
     def test_t_bkt_positive(self) -> None:
+        """The BKT temperature is positive."""
         K = build_knm_paper27(L=8)
         result = extract_a_hp(K, n_temps=8, n_thermalize=500, n_measure=500)
         assert result.t_bkt > 0
@@ -89,6 +101,7 @@ class TestMCPythonFallback:
     """Force the Python MC path to validate fallback sampling behaviour."""
 
     def test_python_mc_sweep(self) -> None:
+        """A Python sweep keeps one angle per site."""
         import numpy as np
 
         from scpn_quantum_control.analysis.monte_carlo_xy import _mc_sweep
@@ -150,13 +163,17 @@ class TestMCPythonFallback:
 
 
 class TestFiniteSizeScaling:
+    """Finite-size scaling across lattice sizes."""
+
     def test_returns_result(self) -> None:
+        """The scaling returns a result record."""
         result = finite_size_scaling(
             n_values=[4, 8], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
         assert isinstance(result, FiniteSizeResult)
 
     def test_correct_lengths(self) -> None:
+        """There is one mean and spread per size."""
         result = finite_size_scaling(
             n_values=[4, 8], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
@@ -165,12 +182,14 @@ class TestFiniteSizeScaling:
         assert len(result.p_h1_means) == 2
 
     def test_a_hp_positive(self) -> None:
+        """The first mean a_hp is positive."""
         result = finite_size_scaling(
             n_values=[4], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
         assert result.a_hp_means[0] > 0
 
     def test_default_n_values_are_used(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The default sizes 4, 8, 16 and 32 are built and extracted."""
         from scpn_quantum_control.analysis import monte_carlo_xy as mc_mod
         from scpn_quantum_control.bridge import knm_hamiltonian as knm_mod
 

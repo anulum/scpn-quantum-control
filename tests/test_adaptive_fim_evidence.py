@@ -36,10 +36,12 @@ from scpn_quantum_control.analysis.adaptive_fim_evidence import (
 
 @pytest.fixture(scope="module")
 def payload() -> dict[str, object]:
+    """Return the adaptive feedback evidence payload."""
     return adaptive_fim_evidence_payload()
 
 
 def test_historical_custody_replay_extracts_exact_disjoint_counts() -> None:
+    """The custody replay extracts exact, disjoint counts for three witnesses."""
     witnesses = historical_replay_witnesses()
 
     assert len(witnesses) == 3
@@ -53,6 +55,7 @@ def test_historical_custody_replay_extracts_exact_disjoint_counts() -> None:
 
 
 def test_synthetic_controls_freeze_signal_boundary_and_power_cases() -> None:
+    """The synthetic controls fix the signal, boundary and power cases."""
     witnesses = synthetic_calibration_witnesses()
 
     assert [witness.leakage_events for witness in witnesses] == [60, 25, 3]
@@ -61,6 +64,7 @@ def test_synthetic_controls_freeze_signal_boundary_and_power_cases() -> None:
 
 
 def test_payload_is_functional_bounded_and_digest_valid(payload: dict[str, object]) -> None:
+    """The payload has its schema, its bounds and a valid digest."""
     assert payload["schema"] == ADAPTIVE_FIM_EVIDENCE_SCHEMA
     assert payload["literature"] == [dict(item) for item in ADAPTIVE_FIM_LITERATURE]
     assert payload["functional_passed"] is True
@@ -90,10 +94,12 @@ def test_payload_is_functional_bounded_and_digest_valid(payload: dict[str, objec
 
 
 def test_canonical_json_is_order_independent() -> None:
+    """Canonical JSON does not depend on key order."""
     assert canonical_adaptive_fim_json({"b": 2, "a": 1}) == '{"a":1,"b":2}'
 
 
 def test_markdown_reports_calibration_custody_and_boundary(payload: dict[str, object]) -> None:
+    """The Markdown report shows calibration, custody and the boundary."""
     markdown = render_adaptive_fim_evidence_markdown(payload)
 
     assert "decrease -> hold -> hold" in markdown
@@ -105,6 +111,7 @@ def test_markdown_reports_calibration_custody_and_boundary(payload: dict[str, ob
 def test_writer_and_cli_emit_valid_atomic_files(
     payload: dict[str, object], tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The writer and the command emit valid files atomically."""
     json_path = tmp_path / "nested" / "evidence.json"
     markdown_path = tmp_path / "nested" / "evidence.md"
     assert write_adaptive_fim_evidence(json_path, markdown_path, payload=payload) == payload
@@ -126,6 +133,7 @@ def test_writer_and_cli_emit_valid_atomic_files(
 
 
 def test_default_cli_paths_are_stable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The command's default paths are stable."""
     seen: list[tuple[Path, Path, Path]] = []
 
     def fake_write(
@@ -149,6 +157,7 @@ def test_default_cli_paths_are_stable(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_repository_runner_delegates_to_evidence_main(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The repository runner delegates to the evidence command and keeps its exit code."""
     monkeypatch.setattr(evidence_module, "main", lambda: 19)
     runner = Path(__file__).parents[1] / "scripts" / "run_adaptive_fim_evidence.py"
     with pytest.raises(SystemExit) as error:
@@ -180,12 +189,14 @@ def test_repository_runner_delegates_to_evidence_main(monkeypatch: pytest.Monkey
 def test_validator_rejects_top_level_drift(
     payload: dict[str, object], mutation: dict[str, object], message: str
 ) -> None:
+    """Top-level drift is rejected."""
     changed = copy.deepcopy(payload)
     changed.update(mutation)
     assert any(message in finding for finding in validate_adaptive_fim_evidence(changed))
 
 
 def test_validator_rejects_nested_promotion_and_action_drift(payload: dict[str, object]) -> None:
+    """Nested promotion and action drift is rejected."""
     source = copy.deepcopy(payload)
     cast(dict[str, object], source["historical_source"])["job_id"] = "wrong"
     assert any("job_id" in item for item in validate_adaptive_fim_evidence(source))
@@ -272,6 +283,7 @@ def test_validator_rejects_nested_promotion_and_action_drift(payload: dict[str, 
 
 
 def test_loader_rejects_invalid_custody_shapes(tmp_path: Path) -> None:
+    """Invalid custody shapes are refused."""
     invalid = tmp_path / "invalid.json"
     invalid.write_text("[]\n", encoding="utf-8")
     with pytest.raises(ValueError, match="JSON object"):
@@ -284,6 +296,7 @@ def test_loader_rejects_invalid_custody_shapes(tmp_path: Path) -> None:
 
 
 def test_loader_rejects_row_and_count_drift(tmp_path: Path) -> None:
+    """Row and count drift is refused."""
     source = json.loads(HISTORICAL_SOURCE.read_text(encoding="utf-8"))
 
     no_rows = copy.deepcopy(source)
@@ -363,6 +376,7 @@ def test_loader_rejects_row_and_count_drift(tmp_path: Path) -> None:
 def test_historical_row_parser_rejects_invalid_shapes(
     row: dict[object, object], message: str
 ) -> None:
+    """Invalid historical rows are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         evidence_module._witness_from_historical_row(cast(dict[str, object], row))
 
@@ -370,6 +384,7 @@ def test_historical_row_parser_rejects_invalid_shapes(
 def test_renderer_and_writer_reject_invalid_payload(
     payload: dict[str, object], tmp_path: Path
 ) -> None:
+    """The renderer and the writer refuse an invalid payload."""
     changed = copy.deepcopy(payload)
     changed["hardware_execution"] = True
     with pytest.raises(ValueError, match="invalid adaptive FIM evidence"):
@@ -379,4 +394,5 @@ def test_renderer_and_writer_reject_invalid_payload(
 
 
 def test_validator_rejects_non_object() -> None:
+    """A payload that is not an object is rejected."""
     assert validate_adaptive_fim_evidence([]) == ("payload must be a JSON object",)

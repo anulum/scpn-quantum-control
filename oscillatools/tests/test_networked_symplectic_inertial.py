@@ -148,6 +148,7 @@ def test_trajectory_structure_is_consistent() -> None:
 
 
 def test_rejects_non_vector_theta0() -> None:
+    """Initial phases that are not a vector are refused."""
     _, v0, omega, coupling = _problem(4, 5)
     with pytest.raises(ValueError, match="theta0 must be a non-empty one-dimensional array"):
         networked_symplectic_inertial_trajectory(
@@ -156,6 +157,7 @@ def test_rejects_non_vector_theta0() -> None:
 
 
 def test_rejects_empty_theta0() -> None:
+    """Empty initial phases are refused."""
     with pytest.raises(ValueError, match="theta0 must be a non-empty one-dimensional array"):
         networked_symplectic_inertial_trajectory(
             np.zeros(0), np.zeros(0), np.zeros(0), np.zeros((0, 0)), mass=1.0, dt=0.01, n_steps=10
@@ -163,6 +165,7 @@ def test_rejects_empty_theta0() -> None:
 
 
 def test_rejects_mismatched_velocities() -> None:
+    """Velocities of the wrong shape are refused."""
     theta0, _, omega, coupling = _problem(5, 6)
     with pytest.raises(ValueError, match="velocities must match"):
         networked_symplectic_inertial_trajectory(
@@ -171,6 +174,7 @@ def test_rejects_mismatched_velocities() -> None:
 
 
 def test_rejects_mismatched_omega() -> None:
+    """Frequencies of the wrong shape are refused."""
     theta0, v0, _, coupling = _problem(5, 7)
     with pytest.raises(ValueError, match="omega must match"):
         networked_symplectic_inertial_trajectory(
@@ -179,6 +183,7 @@ def test_rejects_mismatched_omega() -> None:
 
 
 def test_rejects_non_square_coupling() -> None:
+    """A non-square coupling matrix is refused."""
     theta0, v0, omega, _ = _problem(5, 8)
     with pytest.raises(ValueError, match="coupling must be a square matrix"):
         networked_symplectic_inertial_trajectory(
@@ -187,6 +192,7 @@ def test_rejects_non_square_coupling() -> None:
 
 
 def test_rejects_non_positive_mass() -> None:
+    """A non-positive mass is refused."""
     theta0, v0, omega, coupling = _problem(4, 9)
     with pytest.raises(ValueError, match="mass must be positive"):
         networked_symplectic_inertial_trajectory(
@@ -195,6 +201,7 @@ def test_rejects_non_positive_mass() -> None:
 
 
 def test_rejects_negative_damping() -> None:
+    """A negative damping is refused."""
     theta0, v0, omega, coupling = _problem(4, 10)
     with pytest.raises(ValueError, match="damping must be non-negative"):
         networked_symplectic_inertial_trajectory(
@@ -203,6 +210,7 @@ def test_rejects_negative_damping() -> None:
 
 
 def test_rejects_non_positive_dt() -> None:
+    """A non-positive time step is refused."""
     theta0, v0, omega, coupling = _problem(4, 11)
     with pytest.raises(ValueError, match="dt must be positive"):
         networked_symplectic_inertial_trajectory(
@@ -211,6 +219,7 @@ def test_rejects_non_positive_dt() -> None:
 
 
 def test_rejects_non_positive_n_steps() -> None:
+    """A non-positive step count is refused."""
     theta0, v0, omega, coupling = _problem(4, 12)
     with pytest.raises(ValueError, match="n_steps must be positive"):
         networked_symplectic_inertial_trajectory(
@@ -225,6 +234,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
     """The Rust → Julia → Python floor tier chain for the symplectic inertial forward trajectory."""
 
     def test_public_call_records_a_served_tier(self) -> None:
+        """A public call records which tier served it."""
         theta0, v0, omega, coupling = _problem(16, 20)
         networked_symplectic_inertial_trajectory(
             theta0, v0, omega, coupling, mass=1.0, damping=0.5, dt=0.01, n_steps=100
@@ -236,6 +246,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
         }
 
     def test_python_floor_tier_direct(self) -> None:
+        """The Python floor runs directly, with phases and velocities per step."""
         theta0, v0, omega, coupling = _problem(14, 21)
         times, phases, velocities = (
             symplectic_module._python_networked_symplectic_inertial_trajectory(
@@ -247,6 +258,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
         assert times.size == 121
 
     def test_rust_tier_matches_python_floor(self) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         assert hasattr(engine, "kuramoto_symplectic_inertial_trajectory")
         theta0, v0, omega, coupling = _problem(32, 22)
@@ -261,6 +273,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
         np.testing.assert_allclose(rust[2], floor[2], atol=1e-11)
 
     def test_julia_tier_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         theta0, v0, omega, coupling = _problem(24, 23)
         julia = symplectic_module._julia_networked_symplectic_inertial_trajectory(
@@ -274,6 +287,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
         np.testing.assert_allclose(julia[2], floor[2], atol=1e-10)
 
     def test_rust_tier_raises_when_engine_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native tier raises."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         theta0, v0, omega, coupling = _problem(8, 24)
         with pytest.raises(ModuleNotFoundError):
@@ -282,6 +296,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
             )
 
     def test_rust_tier_raises_when_symbol_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel makes the native tier raise."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: object())
         theta0, v0, omega, coupling = _problem(8, 25)
         with pytest.raises(ImportError):
@@ -292,6 +307,7 @@ class TestNetworkedSymplecticInertialTierDispatch:
     def test_fall_through_to_floor_when_engine_absent(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Without the engine the call falls through to the Python floor."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         monkeypatch.setitem(sys.modules, "oscillatools.accel.julia", None)
         theta0, v0, omega, coupling = _problem(10, 26)

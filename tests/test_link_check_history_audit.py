@@ -56,6 +56,7 @@ def _run(
 
 
 def test_link_check_audit_marks_resolved_failures_as_safe_candidates() -> None:
+    """A failure resolved by a later success is a safe deletion candidate."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -73,6 +74,7 @@ def test_link_check_audit_marks_resolved_failures_as_safe_candidates() -> None:
 
 
 def test_link_check_audit_reports_live_failure_without_later_success() -> None:
+    """A failure without a later success is live and not deletable."""
     runs = workflow_runs_from_json(json.dumps([_run(10, "failure", "2026-05-06T00:00:00Z")]))
 
     classified = classify_link_check_runs(runs)
@@ -82,6 +84,7 @@ def test_link_check_audit_reports_live_failure_without_later_success() -> None:
 
 
 def test_link_check_audit_ignores_other_workflows() -> None:
+    """Runs of other workflows are ignored."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -95,6 +98,7 @@ def test_link_check_audit_ignores_other_workflows() -> None:
 
 
 def test_link_check_audit_reports_in_progress_runs_as_not_deletable() -> None:
+    """Runs in progress are not deletable."""
     runs = workflow_runs_from_json(
         json.dumps([_run(25, "", "2026-05-06T00:00:00Z", status="in_progress")])
     )
@@ -106,6 +110,7 @@ def test_link_check_audit_reports_in_progress_runs_as_not_deletable() -> None:
 
 
 def test_link_check_audit_records_accepted_external_transient_failures() -> None:
+    """Accepted external transient failures are recorded with their reason."""
     runs = workflow_runs_from_json(json.dumps([_run(30, "failure", "2026-05-06T00:00:00Z")]))
     accepted = accepted_failures_from_json(
         json.dumps(
@@ -126,6 +131,7 @@ def test_link_check_audit_records_accepted_external_transient_failures() -> None
 
 
 def test_link_check_audit_classifies_cancelled_runs_by_later_success_evidence() -> None:
+    """A cancelled run followed by a success is superseded."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -145,6 +151,7 @@ def test_link_check_audit_classifies_cancelled_runs_by_later_success_evidence() 
 
 
 def test_link_check_audit_classifies_other_completed_conclusions() -> None:
+    """Other completed conclusions are not deletable."""
     runs = workflow_runs_from_json(json.dumps([_run(38, "skipped", "2026-05-06T00:00:00Z")]))
 
     classified = classify_link_check_runs(runs)
@@ -156,6 +163,7 @@ def test_link_check_audit_classifies_other_completed_conclusions() -> None:
 def test_link_check_audit_cli_returns_nonzero_for_live_failures(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails on live failures."""
     fixture = tmp_path / "runs.json"
     fixture.write_text(
         json.dumps([_run(40, "failure", "2026-05-06T00:00:00Z")]),
@@ -167,6 +175,7 @@ def test_link_check_audit_cli_returns_nonzero_for_live_failures(
 
 
 def test_link_check_audit_summary_lists_accepted_and_deletable_runs() -> None:
+    """The summary counts accepted and deletable runs."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -191,6 +200,7 @@ def test_link_check_audit_summary_lists_accepted_and_deletable_runs() -> None:
 
 
 def test_link_check_audit_json_output_preserves_live_failure_contract() -> None:
+    """JSON output keeps the live-failure fields."""
     runs = workflow_runs_from_json(json.dumps([_run(60, "failure", "2026-05-06T00:00:00Z")]))
 
     encoded = classified_link_runs_to_json(classify_link_check_runs(runs))
@@ -204,6 +214,7 @@ def test_link_check_audit_json_output_preserves_live_failure_contract() -> None:
 def test_link_check_audit_cli_accepts_external_transient_file(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command accepts a file of external transient failures."""
     fixture = tmp_path / "runs.json"
     accepted = tmp_path / "accepted.json"
     fixture.write_text(
@@ -222,11 +233,13 @@ def test_link_check_audit_cli_accepts_external_transient_file(
 
 
 def test_link_check_audit_accepts_empty_external_transient_file() -> None:
+    """An empty accepted-failures file gives no entries."""
     assert accepted_failures_from_json("") == {}
     assert accepted_failures_from_json("   \n") == {}
 
 
 def test_link_check_audit_cli_requires_repo_without_input() -> None:
+    """Without an input file the command needs a repository."""
     with pytest.raises(SystemExit):
         main([])
 
@@ -234,6 +247,7 @@ def test_link_check_audit_cli_requires_repo_without_input() -> None:
 def test_link_check_audit_cli_loads_runs_from_gh_when_input_is_absent(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Without an input file the command loads runs through gh."""
     runs = workflow_runs_from_json(json.dumps([_run(75, "success", "2026-05-06T00:00:00Z")]))
     monkeypatch.setattr(_MODULE, "_load_runs_from_gh", lambda _repo, _limit: runs)
 
@@ -245,10 +259,12 @@ def test_link_check_audit_cli_loads_runs_from_gh_when_input_is_absent(
 
 
 def test_link_check_audit_rejects_non_array_accepted_failure_json() -> None:
+    """Accepted failures that are not a JSON array are refused."""
     with pytest.raises(ValueError, match="must be a JSON array"):
         accepted_failures_from_json(json.dumps({"databaseId": 80}))
 
 
 def test_link_check_audit_rejects_non_object_accepted_failure_entries() -> None:
+    """Accepted-failure entries that are not objects are refused."""
     with pytest.raises(ValueError, match="entries must be JSON objects"):
         accepted_failures_from_json(json.dumps([80]))

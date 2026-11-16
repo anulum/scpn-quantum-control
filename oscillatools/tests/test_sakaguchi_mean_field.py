@@ -48,7 +48,10 @@ def _finite_difference_jacobian(
 
 
 class TestPythonSakaguchiMeanFieldFloor:
+    """The Python floor of the Sakaguchi mean-field force and Jacobian."""
+
     def test_force_matches_closed_form(self) -> None:
+        """The force matches its closed form."""
         rng = np.random.default_rng(13)
         theta = rng.uniform(-math.pi, math.pi, size=9)
         coupling, alpha = 1.7, 0.8
@@ -68,6 +71,7 @@ class TestPythonSakaguchiMeanFieldFloor:
     def test_zero_frustration_reduces_to_mean_field(
         self, n: int, coupling: float, seed: int
     ) -> None:
+        """Zero frustration reduces to the classical mean field."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -91,6 +95,7 @@ class TestPythonSakaguchiMeanFieldFloor:
     def test_jacobian_matches_finite_difference(
         self, n: int, coupling: float, alpha: float, seed: int
     ) -> None:
+        """The Jacobian agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -109,12 +114,14 @@ class TestPythonSakaguchiMeanFieldFloor:
     def test_jacobian_rows_sum_to_zero(
         self, n: int, coupling: float, alpha: float, seed: int
     ) -> None:
+        """Each Jacobian row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         jacobian = smf._python_sakaguchi_mean_field_jacobian(theta, coupling, alpha)
         np.testing.assert_allclose(jacobian.sum(axis=1), np.zeros(n), atol=1e-10)
 
     def test_frustration_breaks_symmetry(self) -> None:
+        """Frustration makes the Jacobian asymmetric; without it the Jacobian is symmetric."""
         rng = np.random.default_rng(5)
         theta = rng.uniform(-math.pi, math.pi, size=8)
         symmetric = smf._python_sakaguchi_mean_field_jacobian(theta, 1.5, 0.0)
@@ -123,11 +130,14 @@ class TestPythonSakaguchiMeanFieldFloor:
         assert np.max(np.abs(frustrated - frustrated.T)) > 1e-3
 
     def test_empty(self) -> None:
+        """No oscillators give an empty force and Jacobian."""
         assert smf._python_sakaguchi_mean_field_force(np.array([]), 1.0, 0.5).shape == (0,)
         assert smf._python_sakaguchi_mean_field_jacobian(np.array([]), 1.0, 0.5).shape == (0, 0)
 
 
 class TestSakaguchiMeanFieldTiersAndDispatch:
+    """Compute tiers and dispatch of the Sakaguchi mean field."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -138,6 +148,7 @@ class TestSakaguchiMeanFieldTiersAndDispatch:
     def test_rust_matches_python_floor(
         self, n: int, coupling: float, alpha: float, seed: int
     ) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "sakaguchi_mean_field_force", None)):
             pytest.skip("scpn_quantum_engine.sakaguchi_mean_field_force unavailable")
@@ -155,6 +166,7 @@ class TestSakaguchiMeanFieldTiersAndDispatch:
         )
 
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import sakaguchi_mean_field_force as julia_force
         from oscillatools.accel.julia import (
@@ -177,16 +189,20 @@ class TestSakaguchiMeanFieldTiersAndDispatch:
                 )
 
     def test_rust_force_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native force raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             smf._rust_sakaguchi_mean_field_force(np.zeros(3), 1.0, 0.5)
 
     def test_rust_jacobian_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Jacobian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             smf._rust_sakaguchi_mean_field_jacobian(np.zeros(3), 1.0, 0.5)
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -211,6 +227,7 @@ class TestSakaguchiMeanFieldTiersAndDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, alpha: float, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         for chain, floor in (
@@ -229,6 +246,7 @@ class TestSakaguchiMeanFieldTiersAndDispatch:
                 np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected shapes."""
         from oscillatools.accel import (
             last_sakaguchi_mean_field_force_tier_used,
             last_sakaguchi_mean_field_jacobian_tier_used,
@@ -246,5 +264,6 @@ class TestSakaguchiMeanFieldTiersAndDispatch:
         assert last_sakaguchi_mean_field_jacobian_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert smf._SAKAGUCHI_MEAN_FIELD_FORCE_CHAIN[-1][0] == "python"
         assert smf._SAKAGUCHI_MEAN_FIELD_JACOBIAN_CHAIN[-1][0] == "python"
