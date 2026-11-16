@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Program AD captured-state coverage gate now runs the exception-rule
+  and structural-metadata tests.
+  - Those two test files came with the admission changes for exception
+    handlers and array shape metadata, but were not added to the gate's
+    cohort. The gate therefore missed the lines they cover in
+    `program_ad_effect_admission.py` (99.51 %).
+  - They are now in the preflight helper and in the CI type-check,
+    docstring and coverage lists, and the gate is back at 100 %.
+
 - **Security: the offline compile check decodes QPY only through the
   reviewed wrapper.**
   - `verify_compiled_experiment` reloads each stored payload after its digest

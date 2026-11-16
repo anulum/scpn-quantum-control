@@ -40,6 +40,8 @@ PROGRAM_AD_CAPTURED_TESTS = [
     "tests/test_program_ad_effect_call_binding.py",
     "tests/test_program_ad_effect_dispatch.py",
     "tests/test_program_ad_effect_values.py",
+    "tests/test_program_ad_exception_rule.py",
+    "tests/test_program_ad_structural_metadata.py",
     "tests/test_whole_program_trace_scatter.py",
 ]
 PROGRAM_AD_ADJOINT_COVERAGE_COHORT = [

@@ -120,6 +120,8 @@ jobs:
           tests/test_program_ad_effect_call_binding.py
           tests/test_program_ad_effect_dispatch.py
           tests/test_program_ad_effect_values.py
+          tests/test_program_ad_exception_rule.py
+          tests/test_program_ad_structural_metadata.py
           tests/test_whole_program_trace_scatter.py
           tests/test_effectful_program_semantics.py
           tests/test_effectful_ad_replay.py
@@ -157,6 +159,8 @@ jobs:
           tests/test_program_ad_effect_call_binding.py
           tests/test_program_ad_effect_dispatch.py
           tests/test_program_ad_effect_values.py
+          tests/test_program_ad_exception_rule.py
+          tests/test_program_ad_structural_metadata.py
           tests/test_whole_program_trace_scatter.py
           tests/test_effectful_program_semantics.py
           tests/test_effectful_ad_replay.py
@@ -183,6 +187,8 @@ jobs:
           tests/test_program_ad_effect_call_binding.py
           tests/test_program_ad_effect_dispatch.py
           tests/test_program_ad_effect_values.py
+          tests/test_program_ad_exception_rule.py
+          tests/test_program_ad_structural_metadata.py
           tests/test_whole_program_trace_scatter.py
           tests/test_effectful_program_semantics.py
           tests/test_effectful_ad_replay.py
