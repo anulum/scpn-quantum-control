@@ -114,7 +114,7 @@ PORTS: tuple[PortSpec, ...] = (
         ("ReservoirSpec", "CompressedLatentBatch"),
         "CircuitPlanSet",
         "offline_planning",
-        _NOT_BUILT,
+        "the builder also needs the angle bytes and the arms; use build_circuit_plan_set",
     ),
     PortSpec(
         "plan_measurements",

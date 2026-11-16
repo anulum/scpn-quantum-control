@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **877 modules** across **41 package families**
-- **4727 documented public module-level symbols**
+- **878 modules** across **41 package families**
+- **4731 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2514,6 +2514,16 @@ Frozen model and hidden-state tap identity.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py) · Public symbols: **1**
 
 **Classes:** `ModelDescriptor`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.plan_set`
+
+Circuit plan sets: one static plan per compressed row and arm, rebuilt exactly.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/plan_set.py) · Public symbols: **4**
+
+**Classes:** `CircuitPlanSet`
+
+**Functions:** `build_circuit_plan_set()`, `validate_circuit_plan_set()`, `decode_circuit_plan_set()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.protocol`
 

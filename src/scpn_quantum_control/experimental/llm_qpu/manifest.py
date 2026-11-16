@@ -35,6 +35,7 @@ _INVENTORY = (
     "llm_qpu/contracts/latent.py",
     "llm_qpu/contracts/measurement.py",
     "llm_qpu/contracts/model.py",
+    "llm_qpu/contracts/plan_set.py",
     "llm_qpu/contracts/protocol.py",
     "llm_qpu/contracts/receipt.py",
     "llm_qpu/contracts/results.py",

@@ -60,6 +60,12 @@ if TYPE_CHECKING:
         estimate_sampled_basis,
     )
     from .model import ModelDescriptor
+    from .plan_set import (
+        CircuitPlanSet,
+        build_circuit_plan_set,
+        decode_circuit_plan_set,
+        validate_circuit_plan_set,
+    )
     from .protocol import ExperimentProtocol, validate_experiment_protocol
     from .receipt import (
         ProviderBatchReceipt,
@@ -89,6 +95,7 @@ if TYPE_CHECKING:
     from .task import SplitManifest, TaskSpec, validate_task_split
     from .wire import (
         ARRAY_SCHEMA,
+        CIRCUIT_PLAN_SET_SCHEMA,
         COMPILED_BUNDLE_SCHEMA,
         COMPRESSED_SCHEMA,
         COMPRESSOR_SCHEMA,
@@ -357,6 +364,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.student",
         "decode_student_artifact",
     ),
+    "CircuitPlanSet": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+        "CircuitPlanSet",
+    ),
+    "build_circuit_plan_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+        "build_circuit_plan_set",
+    ),
+    "validate_circuit_plan_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+        "validate_circuit_plan_set",
+    ),
+    "decode_circuit_plan_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+        "decode_circuit_plan_set",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -435,6 +458,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "STUDENT_ARTIFACT_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "STUDENT_ARTIFACT_SCHEMA",
+    ),
+    "CIRCUIT_PLAN_SET_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "CIRCUIT_PLAN_SET_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -673,4 +700,9 @@ __all__ = (
     "StudentArtifact",
     "validate_student_artifact",
     "decode_student_artifact",
+    "CIRCUIT_PLAN_SET_SCHEMA",
+    "CircuitPlanSet",
+    "build_circuit_plan_set",
+    "validate_circuit_plan_set",
+    "decode_circuit_plan_set",
 )

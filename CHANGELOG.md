@@ -497,6 +497,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `CircuitPlanSet` contract
+  (`experimental/llm_qpu/contracts/plan_set.py`, schema
+  `circuit_plan_set.v1`). It binds the reservoir and compressed-batch
+  digests, the row count, the sorted arms, and one `StaticCircuitPlan` for
+  every compressed row in every arm, in row-then-arm order. A missing,
+  repeated, reordered or foreign plan is refused.
+  `build_circuit_plan_set` builds the set from the exact angle bytes;
+  `validate_circuit_plan_set` refuses another reservoir, batch or origin
+  and rebuilds every plan from its recipe. The standalone worker
+  revalidates the whole compression chain, validates the reservoir
+  independently and rebuilds every gate list with its own copy of the
+  recipe. The `build_circuit_plan` port now names the builder.
+
 - The experimental LLM-QPU lane gains its packaged compressor fit
   (`experimental/llm_qpu/data/compression_fit.py`).
   - `fit_train_compressor` validates the latent batch and requires a

@@ -42,6 +42,9 @@ _RESULT_SET_SCHEMA = "scpn.experimental.llm_qpu.raw_result_set.v1"
 _FEATURE_SCHEMA = "scpn.experimental.llm_qpu.feature_batch.v1"
 _REPORT_SCHEMA = "scpn.experimental.llm_qpu.evaluation_report.v1"
 _STUDENT_SCHEMA = "scpn.experimental.llm_qpu.student_artifact.v1"
+_RESERVOIR_SCHEMA = "scpn.experimental.llm_qpu.reservoir_spec.v1"
+_STATIC_SCHEMA = "scpn.experimental.llm_qpu.static_circuit_plan.v1"
+_PLAN_SET_SCHEMA = "scpn.experimental.llm_qpu.circuit_plan_set.v1"
 _TEACHER_ORIGINS = {
     "hardware_features": "provider_result",
     "simulated_features": "synthetic_classical",
@@ -2580,6 +2583,193 @@ def _roundtrip_student_artifact(request: dict[str, object]) -> dict[str, object]
     }
 
 
+_RESERVOIR_FIELDS = {
+    "schema",
+    "object_kind",
+    "kernel_id",
+    "n_qubits",
+    "edges",
+    "couplings_hex",
+    "fields_hex",
+    "tau_hex",
+    "repetitions",
+    "initial_state",
+    "angle_unit",
+    "gate_order",
+}
+
+
+def _canonical_hex(value: object, name: str, limit: float, *, positive: bool = False) -> float:
+    if type(value) is not str:
+        raise ValueError(f"{name} must be canonical hex float")
+    parsed = float.fromhex(value)
+    if not math.isfinite(parsed) or abs(parsed) > limit or (positive and parsed <= 0.0):
+        raise ValueError(f"{name} must be bounded canonical hex float")
+    if (0.0 if parsed == 0.0 else parsed).hex() != value:
+        raise ValueError(f"{name} must be bounded canonical hex float")
+    return parsed
+
+
+def _validate_reservoir(spec: object) -> dict[str, object]:
+    if type(spec) is not dict or set(spec) != _RESERVOIR_FIELDS:
+        raise ValueError("reservoir spec fields mismatch")
+    if spec["schema"] != _RESERVOIR_SCHEMA or spec["object_kind"] != "reservoir_spec":
+        raise ValueError("unsupported reservoir spec schema")
+    width = spec["n_qubits"]
+    if (
+        spec["kernel_id"] != "xy_static_digital_v1"
+        or type(width) is not int
+        or width not in (4, 8)
+    ):
+        raise ValueError("static reservoir requires a supported n4/n8 kernel")
+    if spec["edges"] != [[wire, wire + 1] for wire in range(width - 1)]:
+        raise ValueError("reservoir edges must be the explicit open chain")
+    couplings, fields = spec["couplings_hex"], spec["fields_hex"]
+    if type(couplings) is not list or len(couplings) != width - 1:
+        raise ValueError("one coupling is required per ordered edge")
+    if type(fields) is not list or len(fields) != width:
+        raise ValueError("one local field is required per qubit")
+    for value in (*couplings, *fields):
+        _canonical_hex(value, "reservoir parameter", 10.0)
+    _canonical_hex(spec["tau_hex"], "tau", 10.0, positive=True)
+    repetitions = spec["repetitions"]
+    if type(repetitions) is not int or not 0 < repetitions <= 32:
+        raise ValueError("repetitions must be a bounded positive integer")
+    if (spec["initial_state"], spec["angle_unit"], spec["gate_order"]) != (
+        "zero",
+        "radian",
+        "encode_then_fields_even_odd_v1",
+    ):
+        raise ValueError("unsupported static preparation or gate convention")
+    return spec
+
+
+def _hex0(value: float) -> str:
+    return (0.0 if value == 0.0 else value).hex()
+
+
+def _static_operations(
+    spec: dict[str, object], row: tuple[float, ...], arm: str
+) -> list[dict[str, object]]:
+    operations: list[dict[str, object]] = [
+        {"gate": "ry", "wires": [wire], "parameter_hex": _hex0(angle)}
+        for wire, angle in enumerate(row)
+    ]
+    repetitions = int(str(spec["repetitions"]))
+    dt = float.fromhex(str(spec["tau_hex"])) / repetitions
+    fields, couplings, edges = spec["fields_hex"], spec["couplings_hex"], spec["edges"]
+    if type(fields) is not list or type(couplings) is not list or type(edges) is not list:
+        raise ValueError("reservoir lists must be lists")
+    for _ in range(repetitions):
+        for wire, local_field in enumerate(fields):
+            angle = _hex0(-2.0 * float.fromhex(str(local_field)) * dt)
+            operations.append({"gate": "rz", "wires": [wire], "parameter_hex": angle})
+        if arm != "xy":
+            continue
+        for parity in (0, 1):
+            for edge, coupling in zip(edges, couplings, strict=True):
+                if edge[0] % 2 == parity:
+                    angle = _hex0(-2.0 * float.fromhex(str(coupling)) * dt)
+                    for gate in ("rxx", "ryy"):
+                        operations.append(
+                            {"gate": gate, "wires": list(edge), "parameter_hex": angle}
+                        )
+    return operations
+
+
+def _check_plan_set_fields(plan_set: object, compressed: dict[str, object]) -> dict[str, object]:
+    fields = {"schema", "object_kind", "reservoir_digest", "compressed_digest", "row_count"}
+    if type(plan_set) is not dict or set(plan_set) != fields | {"arms", "plans", "header"}:
+        raise ValueError("CircuitPlanSet fields mismatch")
+    if plan_set["schema"] != _PLAN_SET_SCHEMA or plan_set["object_kind"] != "circuit_plan_set":
+        raise ValueError("unknown CircuitPlanSet schema")
+    rows, arms, plans = plan_set["row_count"], plan_set["arms"], plan_set["plans"]
+    samples = compressed["sample_ids"]
+    if type(samples) is not list or rows != len(samples):
+        raise ValueError("the plan set does not cover every compressed row")
+    allowed = ["encoding_plus_fields_no_coupling", "xy"]
+    if type(arms) is not list or not arms or arms != sorted(set(map(str, arms))):
+        raise ValueError("arms must be a sorted unique list")
+    if any(arm not in allowed for arm in arms):
+        raise ValueError("unknown static arm")
+    if type(plans) is not list or len(plans) != len(samples) * len(arms):
+        raise ValueError("plans must cover every row in every arm once")
+    return plan_set
+
+
+def _expected_plans(
+    spec: dict[str, object],
+    compressed: dict[str, object],
+    angles: tuple[float, ...],
+    arms: list[str],
+    digests: tuple[str, str],
+) -> list[dict[str, object]]:
+    samples, width = compressed["sample_ids"], int(str(spec["n_qubits"]))
+    if type(samples) is not list:
+        raise ValueError("compressed sample IDs must be a list")
+    return [
+        {
+            "schema": _STATIC_SCHEMA,
+            "object_kind": "static_circuit_plan",
+            "reservoir_digest": digests[0],
+            "compressed_digest": digests[1],
+            "row_index": row,
+            "sample_id": samples[row],
+            "arm_id": arm,
+            "operations": _static_operations(spec, angles[row * width : (row + 1) * width], arm),
+        }
+        for row in range(len(samples))
+        for arm in arms
+    ]
+
+
+def _roundtrip_circuit_plan_set(request: dict[str, object]) -> dict[str, object]:
+    chain = (
+        "task",
+        "split",
+        "model",
+        "latent",
+        "latent_base64",
+        "compressor",
+        "centering_base64",
+        "projection_base64",
+        "scales_base64",
+        "compressed",
+        "angles_base64",
+    )
+    if set(request) != {"op", *chain, "reservoir", "plan_set"}:
+        raise ValueError("plan-set request fields mismatch")
+    _roundtrip_compression({"op": "roundtrip_compression", **{n: request[n] for n in chain}})
+    compressed, spec = request["compressed"], _validate_reservoir(request["reservoir"])
+    if type(compressed) is not dict or compressed["layout"] != "contextual":
+        raise ValueError("static plans need a contextual compressed batch")
+    plan_set = _check_plan_set_fields(request["plan_set"], compressed)
+    shape = [int(str(plan_set["row_count"])), int(str(spec["n_qubits"]))]
+    angles = _float_array(compressed["tensor"], request["angles_base64"], shape)
+    digests = (
+        hashlib.sha256(_canonical_bytes(spec)).hexdigest(),
+        hashlib.sha256(_canonical_bytes(compressed)).hexdigest(),
+    )
+    if (plan_set["reservoir_digest"], plan_set["compressed_digest"]) != digests:
+        raise ValueError("the plan set names a different reservoir or compressed batch")
+    header = compressed["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    _validate_artifact_header(plan_set, digests, origin)
+    arms = plan_set["arms"]
+    if type(arms) is not list or plan_set["plans"] != _expected_plans(
+        spec, compressed, angles, arms, digests
+    ):
+        raise ValueError("a static plan differs from its frozen source and recipe")
+    wire = _canonical_bytes(plan_set)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "plan_set": json.loads(wire),
+        "plan_set_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -2608,6 +2798,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
         (ValueError, TypeError, KeyError),
     ),
     "roundtrip_student_artifact": (_roundtrip_student_artifact, (ValueError, TypeError, KeyError)),
+    "roundtrip_circuit_plan_set": (
+        _roundtrip_circuit_plan_set,
+        (ValueError, TypeError, KeyError, OverflowError),
+    ),
 }
 
 

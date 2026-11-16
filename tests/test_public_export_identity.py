@@ -427,6 +427,26 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_student_artifact",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.student",
             ),
+            (
+                "CIRCUIT_PLAN_SET_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "CircuitPlanSet",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+            ),
+            (
+                "build_circuit_plan_set",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+            ),
+            (
+                "validate_circuit_plan_set",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+            ),
+            (
+                "decode_circuit_plan_set",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
+            ),
         ),
     ),
 }
