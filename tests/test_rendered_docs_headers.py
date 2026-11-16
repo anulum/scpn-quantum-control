@@ -29,6 +29,7 @@ def _rendered_markdown_files() -> list[Path]:
     list of Path
         All ``docs/**/*.md`` outside ``docs/internal`` plus root-level
         ``*.md`` files.
+
     """
     docs = [path for path in (_REPO_ROOT / "docs").rglob("*.md") if "internal" not in path.parts]
     return sorted(docs) + sorted(_REPO_ROOT.glob("*.md"))

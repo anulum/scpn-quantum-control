@@ -29,6 +29,7 @@ def _load_module() -> ModuleType:
 
 
 def test_analyse_iqm_minimal_uses_sanitized_public_input() -> None:
+    """The minimal IQM parity analysis reads the sanitised public input and compares three depths."""
     module = _load_module()
 
     summary = module.analyse()
@@ -42,6 +43,7 @@ def test_analyse_iqm_minimal_uses_sanitized_public_input() -> None:
 
 
 def test_depth_four_counts_match_recorded_iqm_run() -> None:
+    """Depth-four even and odd leakage counts equal those of the recorded IQM run."""
     module = _load_module()
 
     summary = module.analyse()

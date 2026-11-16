@@ -28,7 +28,6 @@ def test_static_alias_lattice_branch_ir_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Static alias-lattice benchmark should reject missing branch IR evidence."""
-
     view_component = SimpleNamespace(
         edge_kinds=("view_alias",),
         members=("%array[0]", "view:transpose:0"),

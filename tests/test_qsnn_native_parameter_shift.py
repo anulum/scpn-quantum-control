@@ -28,13 +28,11 @@ ScalarObjective = Callable[[FloatArray], float]
 
 def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected)
 
 
 def test_qsnn_trainer_uses_native_parameter_shift(monkeypatch: pytest.MonkeyPatch) -> None:
     """QSNN training should delegate gradient evaluation to the core primitive."""
-
     import scpn_quantum_control.qsnn.training as training
 
     calls: list[tuple[tuple[float, ...], tuple[str, ...]]] = []

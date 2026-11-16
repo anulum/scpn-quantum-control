@@ -155,6 +155,7 @@ def test_high_error_rate_fails_often() -> None:
 
 def test_pipeline_qec_full_cycle() -> None:
     """Full pipeline: create code → inject errors → syndrome → decode → correct.
+
     Verifies QEC is not decorative — full error correction cycle.
     """
     import time

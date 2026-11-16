@@ -20,6 +20,7 @@ def test_project_data_root_prefers_explicit_environment_root(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    """An explicit data-root environment variable wins when it holds the requested marker."""
     marker = Path("data/public_application_benchmarks")
     (tmp_path / marker).mkdir(parents=True)
     monkeypatch.setenv(DATA_ROOT_ENV, str(tmp_path))
@@ -32,6 +33,7 @@ def test_project_data_root_falls_back_to_current_working_tree(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    """Without the environment variable the working tree that holds the marker is used."""
     marker = Path("docker-only-fixture/marker.txt")
     (tmp_path / marker.parent).mkdir(parents=True)
     (tmp_path / marker).write_text("fixture\n", encoding="utf-8")

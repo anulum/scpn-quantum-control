@@ -17,6 +17,7 @@ from scripts.bench_s2_scaling_lite import build_rows
 
 
 def test_build_rows_emits_required_protocol_baselines() -> None:
+    """Lite scaling rows cover every baseline the scaling protocol requires and validate against it."""
     rows = build_rows((4,))
     validation = validate_scaling_rows(default_s2_scaling_protocol(), rows)
 
@@ -45,6 +46,7 @@ def test_build_rows_emits_required_protocol_baselines() -> None:
 
 
 def test_build_rows_respects_size_gates() -> None:
+    """Solvers above their qubit limit are skipped while the classical ODE row still runs."""
     rows = build_rows(
         (6,),
         max_dense_qubits=4,

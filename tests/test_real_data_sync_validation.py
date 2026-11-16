@@ -81,7 +81,7 @@ def test_validate_rejects_non_square_coupling() -> None:
 
 
 def test_validate_rejects_dimension_mismatch() -> None:
-    """omega and theta0 must match the coupling dimension."""
+    """Both omega and theta0 must match the coupling dimension."""
     with pytest.raises(ValueError, match="must match coupling dimension"):
         _validate_dataset(_dataset(omega=np.array([1.0, 2.0, 3.0], dtype=np.float64)))
 

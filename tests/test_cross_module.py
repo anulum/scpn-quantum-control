@@ -163,6 +163,7 @@ def test_classical_kuramoto_theta_finite() -> None:
 
 def test_pipeline_cross_module_full() -> None:
     """Full cross-module pipeline: Knm → solver H → bridge H → exact diag → classical.
+
     Verifies all three computation paths agree and are wired end-to-end.
     """
     import time

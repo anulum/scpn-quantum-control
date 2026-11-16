@@ -207,6 +207,7 @@ def test_ground_energy_negative_4q() -> None:
 
 def test_pipeline_full_physics_accuracy() -> None:
     """Full pipeline: Knm → H → Trotter → sv → energy expectation.
+
     Verifies physics accuracy module is wired end-to-end.
     """
     import time

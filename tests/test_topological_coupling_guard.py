@@ -16,6 +16,7 @@ import pytest
 
 
 def test_step_requires_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The topological coupling builds without ripser but refuses a step until ripser is installed."""
     module = importlib.import_module(
         "scpn_quantum_control.control.topological_" + "optimiz" + "er"
     )

@@ -27,7 +27,6 @@ def test_alias_metadata_benchmarks_fail_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Alias metadata benchmarks should reject missing or incomplete alias evidence."""
-
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",

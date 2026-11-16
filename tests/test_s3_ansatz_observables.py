@@ -13,6 +13,7 @@ from scripts.validate_s3_ansatz_observables import _aggregate, _rows
 
 
 def test_rows_validate_promoted_ansatz_candidates_without_hardware() -> None:
+    """Promoted ansatz candidates validate in simulation with non-negative energy errors."""
     rows = _rows([3], top_k=2)
 
     assert len(rows) == 2
@@ -22,6 +23,7 @@ def test_rows_validate_promoted_ansatz_candidates_without_hardware() -> None:
 
 
 def test_aggregate_reports_best_candidate() -> None:
+    """The aggregate names the candidate with the smallest energy error."""
     aggregate = _aggregate(_rows([3], top_k=2))
 
     assert aggregate["row_count"] == 2

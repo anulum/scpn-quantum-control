@@ -35,6 +35,7 @@ def _load_module() -> ModuleType:
 
 
 def test_q13_layout_repeat_analysis_matches_recorded_counts() -> None:
+    """The pinned-layout repeat on qubits 13, 8, 9 and 14 reproduces the recorded counts."""
     module = _load_module()
 
     summary = module.analyse_layout_repeat(Q13_INPUT)
@@ -51,6 +52,7 @@ def test_q13_layout_repeat_analysis_matches_recorded_counts() -> None:
 
 
 def test_layout_slug_is_stable() -> None:
+    """A qubit layout always maps to the same file-name slug."""
     module = _load_module()
 
     assert module._layout_slug([13, 8, 9, 14]) == "q13-8-9-14"

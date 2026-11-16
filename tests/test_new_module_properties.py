@@ -203,8 +203,7 @@ def test_pec_identity_coefficient_dominant(p: float) -> None:
 
 
 def test_pipeline_property_cross_module() -> None:
-    """Pipeline: verify all property-tested modules produce consistent data
-    when wired together end-to-end."""
+    """Verify that all property-tested modules produce consistent data when wired end to end."""
     import time
 
     from scpn_quantum_control.bridge.knm_hamiltonian import (

@@ -46,6 +46,7 @@ def _undocumented_public_symbols(source: str) -> tuple[str, ...]:
 
 
 def test_notebook_workflows_are_valid_static_artefacts() -> None:
+    """Every shipped notebook is valid nbformat 4 with typed, non-empty cells."""
     notebooks = _notebook_paths()
 
     assert len(notebooks) >= 40

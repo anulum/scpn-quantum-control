@@ -101,6 +101,7 @@ def test_knm_non_negative() -> None:
 
 @pytest.mark.parametrize("L", [2, 4, 6, 8, 12])
 def test_hamiltonian_qubit_count(L: int) -> None:
+    """The coupling Hamiltonian has one qubit per oscillator at every tested size."""
     K = build_knm_paper27(L=L)
     omega = OMEGA_N_16[:L]
     H = knm_to_hamiltonian(K, omega)
@@ -151,6 +152,7 @@ def test_16q_hamiltonian_hermitian() -> None:
 
 def test_pipeline_stress_16q() -> None:
     """Full pipeline: 16-qubit Knm → Hamiltonian → Pauli structure.
+
     Verifies the system compiles at full SCPN scale.
     """
     import time

@@ -30,7 +30,7 @@ from scpn_quantum_control.qec.biological_surface_code import BiologicalSurfaceCo
 
 
 def _triangle() -> nx.Graph:
-    """A weighted triangle graph for community/modularity tests."""
+    """Build a weighted triangle graph for community/modularity tests."""
     graph = nx.Graph()
     graph.add_edge(0, 1, weight=1.0)
     graph.add_edge(1, 2, weight=1.0)

@@ -19,6 +19,7 @@ from scpn_quantum_control.qec.biological_surface_code import (
 
 def test_biological_surface_code_commutation() -> None:
     # Simple 4-node ring graph
+    """A four-node ring yields four data qubits, four X and one Z stabiliser, all commuting."""
     K = np.array(
         [[0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0]]
     )
@@ -33,6 +34,7 @@ def test_biological_surface_code_commutation() -> None:
 
 def test_biological_mwpm_decoder_single_error() -> None:
     # 4-node string (line graph)
+    """The matching decoder returns exactly the single injected Z error as its correction."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
     )

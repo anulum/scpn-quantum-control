@@ -44,7 +44,7 @@ class TestProperties:
     """Configured metadata is exposed for the streaming harness."""
 
     def test_kind_and_bits_per_shot(self) -> None:
-        """kind echoes the configured source; bits_per_shot equals the register width."""
+        """The source kind echoes the configuration; bits_per_shot equals the register width."""
         source = AerQuantumEntropySource(kind="xy_measurement", register_qubits=4, seed=7)
         assert source.kind == "xy_measurement"
         assert source.bits_per_shot == 4

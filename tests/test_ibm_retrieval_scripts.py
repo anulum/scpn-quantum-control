@@ -15,6 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_retrieve_completed_jobs_has_no_embedded_ibm_instance() -> None:
+    """The job-retrieval script names no IBM instance and reads it from the environment."""
     script = REPO_ROOT / "scripts" / "retrieve_completed_jobs.py"
     text = script.read_text(encoding="utf-8")
 
@@ -24,6 +25,7 @@ def test_retrieve_completed_jobs_has_no_embedded_ibm_instance() -> None:
 
 
 def test_retrieve_completed_jobs_uses_repo_root_results_dir() -> None:
+    """The job-retrieval script resolves its results directory from the repository root."""
     script = REPO_ROOT / "scripts" / "retrieve_completed_jobs.py"
     text = script.read_text(encoding="utf-8")
 

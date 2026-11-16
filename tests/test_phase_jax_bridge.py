@@ -26,6 +26,8 @@ from scpn_quantum_control.phase import (
 
 
 def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX the bridge reports itself unavailable and its gradient call raises ImportError."""
+
     def unavailable() -> None:
         raise ImportError("blocked")
 

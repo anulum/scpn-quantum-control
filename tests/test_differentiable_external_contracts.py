@@ -147,7 +147,6 @@ def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
 
 def test_external_comparison_contracts_are_exact_facade_aliases() -> None:
     """The compatibility facade should re-export the exact contract objects."""
-
     assert FacadeExternalComparisonRow is ExternalComparisonRow
     assert FacadeExternalComparisonArtifact is ExternalComparisonArtifact
     assert FacadeIdenticalCircuitRow is IdenticalCircuitGradientComparisonRow

@@ -146,9 +146,7 @@ def test_torch_maturity_audit_rejects_invalid_lowering_matrix(
 def test_torch_ecosystem_maturity_audit_records_broad_module_func_compile_device_gaps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Verify that PyTorch ecosystem maturity audit records broad module func compile
-    device gaps.
-    """
+    """Verify that the PyTorch maturity audit records module, function, compile and device gaps."""
     fake_torch = _FakeTorch()
     fake_torch.__version__ = "2.11.0+cpu"
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
@@ -206,9 +204,7 @@ def test_torch_maturity_audit_rejects_incomplete_live_overlay_artifact(
 
 
 def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
-    """Verify that PyTorch phase QNode lowering matrix fails closed for arbitrary
-    qnodes.
-    """
+    """Verify that the PyTorch phase-QNode lowering matrix fails closed for arbitrary QNodes."""
     result = run_torch_phase_qnode_lowering_matrix()
 
     assert isinstance(result, PhaseTorchPhaseQNodeLoweringMatrixResult)

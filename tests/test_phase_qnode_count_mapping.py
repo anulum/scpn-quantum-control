@@ -57,6 +57,7 @@ def _canonical_index(displayed_key: str, wires: Sequence[int]) -> int:
     -------
     int
         Index of the outcome in canonical qubit-zero-most-significant order.
+
     """
     canonical = [""] * len(wires)
     for character, wire in zip(displayed_key, wires, strict=True):
@@ -81,6 +82,7 @@ def _counts(n_qubits: int, wires: Sequence[int]) -> dict[str, int]:
     -------
     dict of str to int
         Complete computational-basis record with unique positive counts.
+
     """
     keys = ["".join(bits) for bits in itertools.product("01", repeat=n_qubits)]
     return {key: 100 + 7 * _canonical_index(key, wires) for key in keys}

@@ -18,6 +18,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "provider-isolated-smoke.yml"
 
 
 def test_isolated_provider_workflow_matches_generated_lanes() -> None:
+    """Each workflow matrix row names the backend, SDK and environment of its generated lane."""
     matrix_by_extra = _workflow_matrix_rows(WORKFLOW.read_text(encoding="utf-8"))
 
     for lane in isolated_provider_smoke_lanes():
@@ -28,6 +29,7 @@ def test_isolated_provider_workflow_matches_generated_lanes() -> None:
 
 
 def test_isolated_provider_workflow_is_manual_offline_and_non_secret() -> None:
+    """The provider workflow runs only on manual dispatch, reads only and uses no secrets."""
     text = WORKFLOW.read_text(encoding="utf-8")
 
     assert "workflow_dispatch:" in text

@@ -211,6 +211,7 @@ def test_quantum_and_classical_same_ground_energy() -> None:
 
 def test_pipeline_full_integration() -> None:
     """Full integration pipeline: Knm → quantum Trotter → ZNE → classical comparison.
+
     Verifies all three subsystems (quantum, classical, mitigation) are wired together.
     """
     import time

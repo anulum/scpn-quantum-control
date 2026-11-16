@@ -37,6 +37,7 @@ def _rows() -> list[dict[str, object]]:
 
 
 def test_claim_boundary_report_forbids_advantage_from_lite_rows() -> None:
+    """Lite rows support no advantage claim and keep a hardware advantage run blocked."""
     report = build_claim_boundary_report(_rows())
 
     assert report["validation"]["valid"] is True

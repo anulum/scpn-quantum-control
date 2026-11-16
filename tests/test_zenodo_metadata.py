@@ -66,6 +66,7 @@ ZENODO_RELATION_TYPES = frozenset(
 
 @pytest.mark.parametrize("path", ZENODO_FILES, ids=lambda p: str(p.relative_to(REPO_ROOT)))
 def test_zenodo_related_identifier_relations_are_in_zenodo_vocabulary(path: Path) -> None:
+    """Every related-identifier relation in the archive metadata is one Zenodo accepts."""
     metadata = json.loads(path.read_text(encoding="utf-8"))
     relations = [item["relation"] for item in metadata["related_identifiers"]]
     assert relations

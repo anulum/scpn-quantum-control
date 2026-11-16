@@ -32,7 +32,7 @@ def test_probability_to_angle_clamps_negative() -> None:
 
 
 def test_probability_to_angle_clamps_above_one() -> None:
-    """p > 1 clamps to 1 → angle = pi."""
+    """A probability above 1 clamps to 1, so the angle is pi."""
     theta = probability_to_angle(1.5)
     assert theta == pytest.approx(np.pi, abs=1e-10)
 

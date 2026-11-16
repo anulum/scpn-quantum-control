@@ -27,7 +27,6 @@ def test_static_alias_lattice_benchmark_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Static alias-lattice benchmark should reject incomplete lattice evidence."""
-
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",

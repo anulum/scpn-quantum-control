@@ -110,6 +110,6 @@ class TestJarzynski:
 
     @pytest.mark.parametrize("beta", [0.0, -1.0, math.inf])
     def test_rejects_non_positive_or_non_finite_beta(self, beta: float) -> None:
-        """beta must be finite and strictly positive."""
+        """The inverse temperature beta must be finite and strictly positive."""
         with pytest.raises(ValueError, match="beta_per_joule must be finite and positive"):
             ThermodynamicWitness()(work_joule=1.0, beta_per_joule=beta)

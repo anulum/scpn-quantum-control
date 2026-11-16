@@ -27,7 +27,6 @@ _ZERO_POWER_WEIGHTS = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)
 
 def _weighted_matrix_power_objective(values: Any) -> Any:
     """Return a scalar objective that exercises positive, negative, and zero powers."""
-
     matrix = np.reshape(values, (2, 2))
     return (
         np.sum(np.linalg.matrix_power(matrix, 3) * _POSITIVE_POWER_WEIGHTS)
@@ -38,7 +37,6 @@ def _weighted_matrix_power_objective(values: Any) -> Any:
 
 def test_rust_bridge_replays_program_ad_matrix_power_nodes() -> None:
     """Rust Program AD replay should match Python adjoints for static matrix powers."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 

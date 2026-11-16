@@ -72,6 +72,7 @@ def _write_inputs(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def test_resource_gate_blocks_interactive_promotion(tmp_path: Path) -> None:
+    """The resource gate keeps the fourteen-qubit run out of interactive promotion and off hardware."""
     module = _load_module()
     plan_rows, progress = _write_inputs(tmp_path)
 
@@ -86,6 +87,7 @@ def test_resource_gate_blocks_interactive_promotion(tmp_path: Path) -> None:
 
 
 def test_write_report_records_boundary(tmp_path: Path) -> None:
+    """The written report states that it is a gate decision, not an execution result."""
     module = _load_module()
     plan_rows, progress = _write_inputs(tmp_path)
     report = module.build_report(plan_rows_path=plan_rows, progress_path=progress)

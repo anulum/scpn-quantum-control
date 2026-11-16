@@ -23,5 +23,5 @@ def dt(request: pytest.FixtureRequest) -> float:
 
 @pytest.fixture
 def rng() -> np.random.Generator:
-    """A reproducible NumPy random generator."""
+    """Return a reproducible NumPy random generator."""
     return np.random.default_rng(42)

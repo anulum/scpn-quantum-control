@@ -14,6 +14,7 @@ from scripts.train_s3_design_surrogate import _rows_for_sizes, _train_holdout
 
 
 def test_generate_s3_candidate_grid_contains_both_families() -> None:
+    """The candidate grid holds at least twenty designs from both the ansatz and the pulse family."""
     candidates = generate_s3_candidate_grid()
 
     assert {candidate.family for candidate in candidates} == {"ansatz", "pulse"}
@@ -21,6 +22,7 @@ def test_generate_s3_candidate_grid_contains_both_families() -> None:
 
 
 def test_train_holdout_reports_finite_metrics() -> None:
+    """The surrogate split keeps a non-empty holdout and reports finite metrics per family."""
     rows = _rows_for_sizes([3, 4])
     summary = _train_holdout(rows)
 

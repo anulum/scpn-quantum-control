@@ -23,6 +23,7 @@ from scpn_quantum_control import (
 
 
 def test_physics_first_tutorial_workflow_compiles_and_measures() -> None:
+    """The tutorial workflow builds a four-oscillator problem, compiles it and measures its order."""
     K_nm = np.array(
         [
             [0.0, 0.7, 0.0, 0.2],

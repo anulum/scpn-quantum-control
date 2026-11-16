@@ -53,6 +53,7 @@ class _Backend:
 def test_build_live_readiness_document_is_no_submit_and_ready_for_pair_runner(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A ready backend yields a no-submit readiness document with no blockers."""
     monkeypatch.setattr(
         readiness,
         "_transpile_summary",
@@ -88,6 +89,7 @@ def test_build_live_readiness_document_is_no_submit_and_ready_for_pair_runner(
 
 
 def test_write_readiness_markdown_preserves_no_submission_boundary(tmp_path: Path) -> None:
+    """The readiness page keeps the no-submission boundary and every OpenPulse blocker."""
     document = {
         "date": "2026-05-06",
         "preregistration_date": "2026-05-06",

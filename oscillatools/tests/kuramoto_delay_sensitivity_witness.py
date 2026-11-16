@@ -50,7 +50,7 @@ Array = jax.Array
 
 
 def _history_prefix_length(delay: float, dt: float) -> int:
-    r"""Number of constant-history rows to prepend so every stage lag brackets two stored rows.
+    r"""Count the constant-history rows to prepend so every stage lag brackets two stored rows.
 
     The deepest lookback is the first step's opening stage at ``t = 0``, whose lag reaches back
     ``τ`` in time, i.e. ``⌈τ/dt⌉`` grid rows; two extra rows cover the bracketing ``index + 1`` and

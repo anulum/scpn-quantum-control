@@ -17,9 +17,10 @@ from scpn_quantum_control.phase.lindblad_engine import LindbladSyncEngine
 
 
 class TestLindbladTrajectory:
+    """Quantum-trajectory unravelling of the Lindblad dynamics against the density-matrix solution."""
+
     def test_trajectory_matches_density_matrix(self) -> None:
         """Verify trajectory average converges to density matrix solution for N=2."""
-
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
         omega = np.array([0.5, 0.5])
         gamma = 0.2

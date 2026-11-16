@@ -103,7 +103,7 @@ def _adiabatic_sweep(
 
 
 def _loop_area(forward: _Branch, backward: _Branch) -> float:
-    """Summed forward↔backward gap over the coupling grid — the hysteresis loop 'area'."""
+    """Sum the forward↔backward gap over the coupling grid — the hysteresis loop 'area'."""
     return float(sum(backward[k] - forward[k] for k in _COUPLINGS))
 
 

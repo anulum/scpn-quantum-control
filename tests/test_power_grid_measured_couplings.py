@@ -37,6 +37,7 @@ symmetrised_edge_value_and_uncertainty = power_grid_module.symmetrised_edge_valu
 
 
 def test_symmetrised_edge_uncertainty_tracks_nonzero_and_absent_lines() -> None:
+    """A connected bus pair has a positive uncertainty; an absent line has value and uncertainty zero."""
     value, uncertainty = symmetrised_edge_value_and_uncertainty(0, 1)
 
     assert value == pytest.approx(0.0012533881486833107)
@@ -48,6 +49,7 @@ def test_symmetrised_edge_uncertainty_tracks_nonzero_and_absent_lines() -> None:
 
 
 def test_build_payload_records_all_upper_triangle_edges_with_locked_normalisation() -> None:
+    """The coupling payload lists all ten upper-triangle edges under a locked normalisation and unit."""
     payload = build_payload(command=["python", "script.py"])
 
     assert payload["schema_version"] == "scpn-quantum-control.measured-couplings.v1"

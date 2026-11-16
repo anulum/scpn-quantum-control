@@ -20,6 +20,7 @@ from scripts.export_s3_hardware_dossiers import (
 
 
 def test_ansatz_dossier_is_no_submit_and_has_claim_boundary() -> None:
+    """The ansatz dossier budgets no submission and states that it authorises none."""
     dossier = _ansatz_dossier(
         _best_ansatz_row(
             _load_json(PULSE_PATH.with_name("s3_ansatz_observable_validation_2026-05-06.json"))
@@ -32,6 +33,7 @@ def test_ansatz_dossier_is_no_submit_and_has_claim_boundary() -> None:
 
 
 def test_pulse_dossier_uses_ready_targets() -> None:
+    """The pulse dossier is built from ready targets, budgets no submission and records platform fit."""
     targets = _ready_pulse_targets(_load_json(PULSE_PATH))
     dossier = _pulse_dossier(targets)
 

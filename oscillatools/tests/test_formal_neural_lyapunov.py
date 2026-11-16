@@ -60,7 +60,7 @@ def _symmetric_coupling(strength: float) -> np.ndarray:
 
 @pytest.fixture(scope="module")
 def certificate() -> NeuralLyapunovCertificate:
-    """A single-hidden-layer certificate for a symmetric, attractive, certifiable regime."""
+    """Fit a single-hidden-layer certificate for a symmetric, attractive, certifiable regime."""
     return fit_neural_lyapunov_certificate(
         np.zeros(_N), np.zeros(_N), _symmetric_coupling(0.9), seed=1, **_CONFIG
     )
@@ -69,7 +69,7 @@ def certificate() -> NeuralLyapunovCertificate:
 def _dense_region(
     phases_star: np.ndarray, outer: float, inner: float, count: int, seed: int
 ) -> np.ndarray:
-    """A dense sample of the box annulus (oscillator 0 fixed) the certificate reasons over."""
+    """Sample the box annulus (oscillator 0 fixed) densely; the certificate reasons over it."""
     rng = np.random.default_rng(seed)
     offsets = np.zeros((count, phases_star.size))
     offsets[:, 1:] = rng.uniform(-outer, outer, (count, phases_star.size - 1))

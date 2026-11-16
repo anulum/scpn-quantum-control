@@ -144,6 +144,7 @@ def test_ansatz_qubit_count_matches_K(
 
 def test_pipeline_depth_regression() -> None:
     """Full pipeline: build_knm → Trotter circuit → transpile → depth metrics.
+
     Verifies circuit depth module is wired and produces actionable data.
     """
     import time

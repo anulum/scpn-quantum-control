@@ -15,6 +15,7 @@ import scpn_quantum_control.topology_kernel_product as product
 
 
 def test_public_facade_trains_and_predicts_without_provider_calls() -> None:
+    """The public kernel facade trains and predicts locally and keeps its claim boundary."""
     config = product.TopologyKernelConfig(n_qubits=3, max_samples=4)
     topology = product.ring_topology(config.n_qubits)
     train = np.array([[0.1, 0.2, 0.3], [-0.1, -0.2, -0.3]])

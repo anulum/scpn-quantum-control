@@ -29,6 +29,7 @@ def _load_module() -> ModuleType:
 
 
 def test_campaign_summary_separates_completed_and_cancelled_blocks() -> None:
+    """The campaign summary counts completed blocks, circuits and shots apart from cancelled ones."""
     module = _load_module()
 
     summary = module.summarise_campaign()

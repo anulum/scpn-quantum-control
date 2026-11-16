@@ -121,6 +121,7 @@ def _write_counts(path: Path) -> None:
 
 
 def test_zne_reducer_groups_by_noise_scale_and_extrapolates(tmp_path: Path) -> None:
+    """Counts are grouped by noise scale and extrapolated linearly and quadratically to zero noise."""
     module = _load_module()
     counts = tmp_path / "counts.json"
     refs = tmp_path / "refs.csv"
@@ -145,6 +146,7 @@ def test_zne_reducer_groups_by_noise_scale_and_extrapolates(tmp_path: Path) -> N
 
 
 def test_write_outputs_uses_result_tag_and_hashes_rows(tmp_path: Path) -> None:
+    """Output files carry the result tag in their names and the summary binds both row digests."""
     module = _load_module()
     scale_rows = [
         {

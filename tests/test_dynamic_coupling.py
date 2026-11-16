@@ -21,6 +21,8 @@ from scpn_quantum_control.qsnn.dynamic_coupling import DynamicCouplingEngine
 
 
 class TestDynamicCoupling:
+    """Co-evolution of the coupling matrix with the quantum correlations it drives."""
+
     def test_dynamic_coupling_engine_step(self) -> None:
         """Verify one cycle of the strange loop."""
         n = 3
@@ -42,6 +44,7 @@ class TestDynamicCoupling:
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T)
 
     def test_run_coevolution(self) -> None:
+        """A co-evolution run records one history entry per requested step."""
         n = 2
         # Fully disconnected initially
         initial_K = np.zeros((n, n))

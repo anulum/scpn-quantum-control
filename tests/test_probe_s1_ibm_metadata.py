@@ -19,6 +19,7 @@ from scripts.probe_s1_ibm_metadata import (
 
 
 def test_load_snapshot_from_metadata_json_and_build_decision(tmp_path: Path) -> None:
+    """A stored IBM metadata snapshot yields a ready, no-submit decision without credentials."""
     metadata_path = tmp_path / "metadata.json"
     metadata_path.write_text(
         json.dumps(

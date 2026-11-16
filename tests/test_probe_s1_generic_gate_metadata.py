@@ -13,6 +13,7 @@ from scripts.probe_s1_generic_gate_metadata import build_decision_document
 
 
 def test_build_decision_document_from_generic_gate_metadata() -> None:
+    """Generic gate metadata yields a ready decision without network access or submission."""
     document = build_decision_document(
         {
             "provider": "generic_gate",

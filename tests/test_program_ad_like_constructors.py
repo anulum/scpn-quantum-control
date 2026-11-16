@@ -24,7 +24,6 @@ from scpn_quantum_control.differentiable import (
 
 def _assert_allclose(actual: object, expected: object, *, atol: float = 0.0) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, atol=atol)
 
 
@@ -55,7 +54,6 @@ def test_program_ad_like_constant_constructors_have_zero_derivatives() -> None:
 
 def test_program_ad_like_constant_constructors_reject_shape_overrides() -> None:
     """Program AD like-constructors should fail closed on unsupported shape overrides."""
-
     with pytest.raises(ValueError, match="shape overrides"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.zeros_like)(values, shape=(2, 2))),

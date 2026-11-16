@@ -66,6 +66,8 @@ def _cost_zero(p: np.ndarray) -> float:
 
 
 class TestParameterShiftGradient:
+    """Parameter-shift gradients against analytic derivatives of trigonometric costs."""
+
     def test_sin_gradient(self) -> None:
         """∂sin(θ)/∂θ = cos(θ), exact for parameter-shift with shift=π/2."""
         params = np.array([0.7])
@@ -133,6 +135,8 @@ class TestParameterShiftGradient:
 
 
 class TestVQEWithParamShift:
+    """Variational minimisation driven by parameter-shift gradients."""
+
     def test_converges_to_minimum(self) -> None:
         """VQE should find minimum of sum-of-cosines cost."""
         result = vqe_with_param_shift(

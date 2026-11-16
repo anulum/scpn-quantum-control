@@ -80,7 +80,6 @@ def test_native_llvm_jit_rejects_nondifferentiable_selection_boundary() -> None:
 
 def test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries() -> None:
     """Published support metadata must declare native linalg crash-safety cutoffs."""
-
     support = native_whole_program_ad_linalg_support()
 
     assert support["determinant_fail_closed_from"] == 20

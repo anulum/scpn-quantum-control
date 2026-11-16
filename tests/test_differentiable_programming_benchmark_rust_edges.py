@@ -27,7 +27,6 @@ def test_program_ad_rust_scalar_interpreter_fails_closed_and_checks_replay(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Rust scalar replay benchmark should fail closed on unsupported or divergent replay."""
-
     valid_result = _whole_program_result(
         program_ir=_program_ir(
             effects=(SimpleNamespace(kind="primitive", ordering=0),),
@@ -163,7 +162,6 @@ def test_program_ad_rust_scalar_interpreter_rejects_invalid_ir(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Rust scalar replay benchmark should reject malformed emitted IR contracts."""
-
     for result, match in (
         (_whole_program_result(program_ir=None), "requires program IR"),
         (
