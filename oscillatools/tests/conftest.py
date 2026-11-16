@@ -5,12 +5,23 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # oscillatools — Shared test fixtures
-"""Shared fixtures for the oscillatools test suite."""
+"""Shared fixtures and the Hypothesis profile of the oscillatools test suite."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
+from hypothesis import HealthCheck, settings
+
+#: Shared-host timing never decides a property test: no per-example deadline and
+#: no too-slow health check. Example counts stay with each test, and a test that
+#: sets its own deadline keeps it.
+settings.register_profile(
+    "shared-host",
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+settings.load_profile("shared-host")
 
 DT_VALUES = [0.01, 0.05, 0.1]
 

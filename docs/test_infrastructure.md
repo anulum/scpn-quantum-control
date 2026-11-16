@@ -564,6 +564,15 @@ def test_hamiltonian_hermitian(n: int) -> None:
     assert np.allclose(mat, mat.conj().T, atol=1e-12)
 ```
 
+Both test trees load the Hypothesis profile `shared-host` from their
+`conftest.py`. It sets no per-example deadline and suppresses the `too_slow`
+health check, so host load never decides a property test: on a loaded
+workstation a single input draw has taken about two seconds and a trivial
+example about 360 ms, while no assertion failed. The profile leaves the example
+count alone, so `max_examples` stays with each test, and a test that sets its
+own `deadline` keeps it. `test_hypothesis_shared_host_profile.py` in each tree
+checks that the profile is active.
+
 Files using hypothesis:
 - `test_knm_properties.py` — Hermiticity, eigenvalues, ansatz params
 - `test_qec_properties.py` — Zero-error syndrome, correction shapes

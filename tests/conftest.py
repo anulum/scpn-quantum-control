@@ -12,6 +12,8 @@ Provides:
   - Coupling matrix variants (zero, identity, ring, paper27)
   - dt / t_max grids
   - Hypothesis strategies for quantum states, coupling matrices, frequencies
+  - Hypothesis profile ``shared-host``: no deadline and no too-slow health
+    check, so host load never decides a property test
   - AerSimulator runner (sim_runner)
   - Reproducible RNG
   - Git location isolation: inherited repository-location variables are
@@ -31,6 +33,7 @@ import pytest
 from _git_location_isolation import drop_inherited_git_location
 from _internal_corpus_markers import is_performance_gate, requires_internal_paper0_corpus
 from _test_identifier_limits import refuse_overlong_identifiers
+from hypothesis import HealthCheck, settings
 from hypothesis import strategies as st
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
@@ -89,6 +92,21 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
             item.add_marker(internal_marker)
         if is_performance_gate(item_path):
             item.add_marker(performance_marker)
+
+
+# ---------------------------------------------------------------------------
+# Hypothesis profile
+# ---------------------------------------------------------------------------
+
+#: Shared-host timing never decides a property test: no per-example deadline and
+#: no too-slow health check. Example counts stay with each test, and a test that
+#: sets its own deadline keeps it.
+settings.register_profile(
+    "shared-host",
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+settings.load_profile("shared-host")
 
 
 # ---------------------------------------------------------------------------

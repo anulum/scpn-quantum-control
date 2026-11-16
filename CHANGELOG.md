@@ -1118,6 +1118,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     recorded 7,384 findings in 594 files when it was introduced.
   - With no rows left, the ceiling gate refuses any test file that has a
     documentation finding, so new or changed tests must arrive documented.
+
+- Both test trees now load a Hypothesis profile, `shared-host`, from their
+  `conftest.py`.
+  - The profile sets no per-example deadline and suppresses the `too_slow`
+    health check. Host timing therefore no longer decides a property test.
+  - It leaves the example count alone, and a test that sets its own
+    deadline keeps it.
+  - Under a load of about 10, `test_R_bounded_01` failed twice in three
+    local runs on timing alone (a 1.96 s input draw, and 360 ms against the
+    200 ms default deadline) while no assertion failed.
+  - The failed logs of the hosted CI and oscillatools CI runs since
+    29 October (35 runs) contain no Hypothesis timing error.
+  - The profile replaces a per-test patchwork: 13 tests set
+    `deadline=None` and 7 suppressed `too_slow` by hand.
+  - `test_hypothesis_shared_host_profile.py` in each tree checks that the
+    profile is active and that per-test settings inherit it.
   - Only `tests/test_perf_regression.py`, whose speed-up floors depend on
     the host, keeps the classification. A new test pins it as the only
     performance gate and checks that the default lane still excludes the
