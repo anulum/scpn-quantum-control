@@ -91,9 +91,9 @@ def _request() -> tuple[Any, list[Any], Any]:
     # The SDK's own CircuitJob.payload() leaves out the request's computed fields
     # before it builds CircuitJobParameters; this mirrors that conversion.
     computed = set(iqm_models.RunRequest.model_computed_fields)
-    normalized = request.model_dump(mode="python", exclude=computed)
-    circuits = normalized.pop("circuits")
-    parameters = iqm_client.CircuitJobParameters(**normalized)
+    normalised = request.model_dump(mode="python", exclude=computed)
+    circuits = normalised.pop("circuits")
+    parameters = iqm_client.CircuitJobParameters(**normalised)
     assert dataclasses.is_dataclass(parameters)
     return request, circuits, parameters
 

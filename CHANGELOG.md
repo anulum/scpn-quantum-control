@@ -1547,7 +1547,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   older tests gain docstrings, so the test documentation ceiling falls to
   6938 findings in 542 files.
 
-- **Fixed: a diverging optimizer aborted the QNN optimizer benchmark.** Each
+- **Fixed: a diverging optimiser aborted the QNN optimiser benchmark.** Each
   baseline in `run_parameter_shift_qnn_optimizer_benchmark_suite` was meant to
   stop when its step left the finite range. The guard tested the loss after
   the step, but the loss refuses non-finite parameters before it returns. An
@@ -1555,33 +1555,33 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   values" and lost every other baseline's result. With `learning_rate=1e308`,
   Adam's normalised step overflows within two steps. The guards now test the
   candidate parameters before the loss is evaluated, so the diverging
-  optimizer stops and the suite reports every baseline. Results for finite
+  optimiser stops and the suite reports every baseline. Results for finite
   steps are unchanged. The SGD, natural-gradient, SPSA and finite-difference
   loops keep the same guard, but cannot reach it: at about 1e308 the
   parameter shift is lost to rounding and their gradient is zero.
-  - New tests cover that divergence, lookups by case and optimizer name with
+  - New tests cover that divergence, lookups by case and optimiser name with
     unknown names refused, an empty suite, boolean or negative integer
     controls, and malformed derivative-free candidates. Five older tests gain
     docstrings, so the test documentation ceiling falls to 6944 findings in
     543 files. Coverage rises from 93.19% to 98.24%.
 
-- The optimizer comparison audit (`phase/optimizer_audit.py`) now tests:
+- The optimiser comparison audit (`phase/optimizer_audit.py`) now tests:
   - non-finite starts, a non-integer or zero step count, and a target
     tolerance without a target;
   - one one-dimensional start with unit weights, certified against a
     target;
-  - strict certificate tolerances, which fail both optimizers;
+  - strict certificate tolerances, which fail both optimisers;
   - a target tolerance that decides certification (0.129 above a zero target
     passes within 0.4 and fails with none);
   - a poor caller metric that leaves natural gradient worse and fails the
     comparison.
 
   Two refusals that no input could reach are gone: a best-value lookup for an
-  optimizer without records (every start records both, and `min()` would
+  optimiser without records (every start records both, and `min()` would
   refuse an empty selection anyway), and a check for a missing objective
   that the default construction always fills. Coverage rises from 87.14% to
   99.00%. One defensive line stays: the default objective's own shape
-  check, which the optimizers never trip. Four older tests gain docstrings,
+  check, which the optimisers never trip. Four older tests gain docstrings,
   so the test documentation ceiling falls to 6949 findings in 544 files.
 
 - The JAX gradient routes (`phase/jax_gradients.py`) now have tests for every

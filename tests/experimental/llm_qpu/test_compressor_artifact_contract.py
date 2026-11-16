@@ -218,7 +218,7 @@ def _compressor(
     split: SplitManifest, model: ModelDescriptor, *, scales: tuple[float, ...] = (10.0,) * 4
 ) -> tuple[CompressorArtifact, bytes, bytes, bytes]:
     """Return an identity-projection compressor fitted on the train groups and its payloads."""
-    center, center_payload = _array((0.0,) * 4, (4,))
+    centre, centre_payload = _array((0.0,) * 4, (4,))
     projection, projection_payload = _array(
         (1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0),
         (4, 4),
@@ -236,7 +236,7 @@ def _compressor(
         "input_width": 4,
         "output_width": 4,
         "epsilon_hex": (1e-6).hex(),
-        "centering": center,
+        "centering": centre,
         "projection": projection,
         "scales": scale,
     }
@@ -258,14 +258,14 @@ def _compressor(
                 fields["split_digest"],
                 fields["train_group_digest"],
                 fields["software_digest"],
-                center.sha256,
+                centre.sha256,
                 projection.sha256,
                 scale.sha256,
             ),
             "synthetic_classical",
         ),
     )
-    return compressor, center_payload, projection_payload, scales_payload
+    return compressor, centre_payload, projection_payload, scales_payload
 
 
 def _compressed(
@@ -346,7 +346,7 @@ def _request(
     payloads: tuple[bytes, bytes, bytes, bytes, bytes],
 ) -> dict[str, object]:
     """Return the worker request that round-trips one compression."""
-    latent_payload, center_payload, projection_payload, scales_payload, angles_payload = payloads
+    latent_payload, centre_payload, projection_payload, scales_payload, angles_payload = payloads
     return {
         "op": "roundtrip_compression",
         "task": task.to_wire(),
@@ -355,7 +355,7 @@ def _request(
         "latent": latent.to_wire(),
         "latent_base64": base64.b64encode(latent_payload).decode(),
         "compressor": compressor.to_wire(),
-        "centering_base64": base64.b64encode(center_payload).decode(),
+        "centering_base64": base64.b64encode(centre_payload).decode(),
         "projection_base64": base64.b64encode(projection_payload).decode(),
         "scales_base64": base64.b64encode(scales_payload).decode(),
         "compressed": compressed.to_wire(),
@@ -379,7 +379,7 @@ def _worker(request: dict[str, object], tmp_path: Path) -> subprocess.CompletedP
 def test_compressor_train_lineage_and_worker_roundtrip(tmp_path: Path) -> None:
     """Check the train-only lineage of a compressor and its worker round trip."""
     task, split, model, latent, latent_payload = _records()
-    compressor, center, projection, scales = _compressor(split, model)
+    compressor, centre, projection, scales = _compressor(split, model)
     compressed, angles = _compressed(latent, compressor, latent_payload)
     validate_compressed_latent_batch(
         task,
@@ -389,7 +389,7 @@ def test_compressor_train_lineage_and_worker_roundtrip(tmp_path: Path) -> None:
         compressor,
         compressed,
         latent_payload,
-        center,
+        centre,
         projection,
         scales,
         angles,
@@ -404,7 +404,7 @@ def test_compressor_train_lineage_and_worker_roundtrip(tmp_path: Path) -> None:
             latent,
             compressor,
             compressed,
-            (latent_payload, center, projection, scales, angles),
+            (latent_payload, centre, projection, scales, angles),
         ),
         tmp_path,
     )
@@ -417,7 +417,7 @@ def test_compressor_train_lineage_and_worker_roundtrip(tmp_path: Path) -> None:
 def test_compressor_refuses_dev_fit_and_zero_scale() -> None:
     """Refuse a compressor fitted on dev groups and a zero scale."""
     _, split, model, _, _ = _records()
-    compressor, center, projection, scales = _compressor(split, model)
+    compressor, centre, projection, scales = _compressor(split, model)
     forged_group_digest = _digest(list(split.dev_groups))
     forged_fields = {
         **compressor._scientific_wire(),
@@ -439,16 +439,16 @@ def test_compressor_refuses_dev_fit_and_zero_scale() -> None:
     )
     forged = replace(compressor, train_group_digest=forged_group_digest, header=forged_header)
     with pytest.raises(ValueError, match="fit groups"):
-        validate_compressor_artifact(split, model, forged, center, projection, scales)
+        validate_compressor_artifact(split, model, forged, centre, projection, scales)
     zero_scale, _, _, zero_scales = _compressor(split, model, scales=(10.0, 0.0, 10.0, 10.0))
     with pytest.raises(ValueError, match="positive"):
-        validate_compressor_artifact(split, model, zero_scale, center, projection, zero_scales)
+        validate_compressor_artifact(split, model, zero_scale, centre, projection, zero_scales)
 
 
 def test_compressed_batch_refuses_extra_pi_and_row_drift(tmp_path: Path) -> None:
     """Refuse a compressed batch with an extra pi or rows that drift from the latent batch."""
     task, split, model, latent, latent_payload = _records()
-    compressor, center, projection, scales = _compressor(split, model)
+    compressor, centre, projection, scales = _compressor(split, model)
     wrong, wrong_payload = _compressed(latent, compressor, latent_payload, extra_pi=True)
     with pytest.raises(ValueError, match="frozen map"):
         validate_compressed_latent_batch(
@@ -459,7 +459,7 @@ def test_compressed_batch_refuses_extra_pi_and_row_drift(tmp_path: Path) -> None
             compressor,
             wrong,
             latent_payload,
-            center,
+            centre,
             projection,
             scales,
             wrong_payload,
@@ -472,7 +472,7 @@ def test_compressed_batch_refuses_extra_pi_and_row_drift(tmp_path: Path) -> None
             latent,
             compressor,
             wrong,
-            (latent_payload, center, projection, scales, wrong_payload),
+            (latent_payload, centre, projection, scales, wrong_payload),
         ),
         tmp_path,
     )
@@ -498,7 +498,7 @@ def test_compressed_batch_refuses_extra_pi_and_row_drift(tmp_path: Path) -> None
             compressor,
             drift,
             latent_payload,
-            center,
+            centre,
             projection,
             scales,
             wrong_payload,
@@ -553,7 +553,7 @@ def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
             "synthetic_classical",
         ),
     )
-    compressor, center, projection, scales = _compressor(split, model)
+    compressor, centre, projection, scales = _compressor(split, model)
     compressed, angles = _compressed(latent, compressor, latent_payload)
     validate_compressed_latent_batch(
         task,
@@ -563,7 +563,7 @@ def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
         compressor,
         compressed,
         latent_payload,
-        center,
+        centre,
         projection,
         scales,
         angles,
@@ -576,7 +576,7 @@ def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
             latent,
             compressor,
             compressed,
-            (latent_payload, center, projection, scales, angles),
+            (latent_payload, centre, projection, scales, angles),
         ),
         tmp_path,
     )
@@ -606,7 +606,7 @@ def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
             compressor,
             forged,
             latent_payload,
-            center,
+            centre,
             projection,
             scales,
             bytes(corrupted),
@@ -644,12 +644,12 @@ def _compression() -> tuple[
 ]:
     """Return the frozen records, a valid compressed batch, and every payload in validation order."""
     task, split, model, latent, latent_payload = _records()
-    compressor, center, projection, scales = _compressor(split, model)
+    compressor, centre, projection, scales = _compressor(split, model)
     compressed, angles = _compressed(latent, compressor, latent_payload)
     return (
         (task, split, model, latent, compressor),
         compressed,
-        (latent_payload, center, projection, scales, angles),
+        (latent_payload, centre, projection, scales, angles),
     )
 
 
@@ -830,10 +830,10 @@ def test_compressor_refuses_another_header_and_an_edited_wire() -> None:
 def test_compressor_validation_refuses_a_compressor_that_does_not_bind() -> None:
     """Validation needs the frozen compressor bound to the split, model, width and origin."""
     _, split, model, _, _ = _records()
-    compressor, center, projection, scales = _compressor(split, model)
+    compressor, centre, projection, scales = _compressor(split, model)
     loose: Any = compressor.to_wire()
     with pytest.raises(ValueError, match="^compressor validation requires frozen contracts$"):
-        validate_compressor_artifact(split, model, loose, center, projection, scales)
+        validate_compressor_artifact(split, model, loose, centre, projection, scales)
     wider_center = ArrayDescriptor("<f4", (8,), 32, "5" * 64)
     wider_projection = ArrayDescriptor("<f4", (8, 4), 128, "6" * 64)
     cases: list[tuple[CompressorArtifact, str]] = [
@@ -858,4 +858,4 @@ def test_compressor_validation_refuses_a_compressor_that_does_not_bind() -> None
     ]
     for candidate, message in cases:
         with pytest.raises(ValueError, match=f"^{message}$"):
-            validate_compressor_artifact(split, model, candidate, center, projection, scales)
+            validate_compressor_artifact(split, model, candidate, centre, projection, scales)

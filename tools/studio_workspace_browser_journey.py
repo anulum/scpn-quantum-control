@@ -348,14 +348,14 @@ def _two_tabs(page: Page, run: _Run) -> None:
         database_name = page.evaluate("() => 'workspace-two-tabs-' + crypto.randomUUID()")
         prepare = (
             f"async args => (await import('{_TABS}'))"
-            ".prepareNativeTab(args.corpus, args.databaseName, args.initialize)"
+            ".prepareNativeTab(args.corpus, args.databaseName, args.initialise)"
         )
         prepared_tabs = [
             tab.evaluate(
                 prepare,
-                {"corpus": run.corpus, "databaseName": database_name, "initialize": initialize},
+                {"corpus": run.corpus, "databaseName": database_name, "initialise": initialise},
             )
-            for tab, initialize in ((page, True), (other_tab, False))
+            for tab, initialise in ((page, True), (other_tab, False))
         ]
         assert prepared_tabs[0] == prepared_tabs[1], (
             "Actual independent tabs did not start from the same original head"

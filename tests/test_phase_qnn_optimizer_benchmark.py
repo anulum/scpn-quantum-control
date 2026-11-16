@@ -130,7 +130,7 @@ def test_qnn_optimizer_benchmark_derivative_free_baseline_uses_declared_candidat
 
 
 def test_qnn_optimizer_benchmark_stops_a_diverging_optimizer_instead_of_failing() -> None:
-    """An Adam step that overflows stops that optimizer; the suite still reports every baseline.
+    """An Adam step that overflows stops that optimiser; the suite still reports every baseline.
 
     Regression: the divergence guard tested the loss, but the loss refuses non-finite
     parameters first, so an overflow aborted the whole suite with a misleading error.

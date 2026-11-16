@@ -404,7 +404,7 @@ def _sgd_training(
         gradient = _parameter_shift_gradient(case, params)
         evaluations += 4 * params.size
         candidate = params - learning_rate * gradient
-        # A diverged step stops this optimizer; the loss refuses non-finite parameters.
+        # A diverged step stops this optimiser; the loss refuses non-finite parameters.
         if not np.all(np.isfinite(candidate)):
             break
         candidate_loss = _loss(case, candidate)
@@ -452,7 +452,7 @@ def _adam_training(
         candidate = params - learning_rate * corrected_first / (
             np.sqrt(corrected_second) + epsilon
         )
-        # A diverged step stops this optimizer; the loss refuses non-finite parameters.
+        # A diverged step stops this optimiser; the loss refuses non-finite parameters.
         if not np.all(np.isfinite(candidate)):
             break
         candidate_loss = _loss(case, candidate)
@@ -546,7 +546,7 @@ def _natural_gradient_training(
         metric = _qnn_diagonal_fisher_metric(case, params, damping=damping)
         direction = solve_natural_gradient_direction(gradient, metric, damping=damping)
         candidate = params - learning_rate * direction.direction
-        # A diverged step stops this optimizer; the loss refuses non-finite parameters.
+        # A diverged step stops this optimiser; the loss refuses non-finite parameters.
         if not np.all(np.isfinite(candidate)):
             break
         candidate_loss = _loss(case, candidate)
@@ -593,7 +593,7 @@ def _spsa_training(
         gradient = ((loss_forward - loss_backward) / (2.0 * radius)) * delta
         step_rate = learning_rate / np.sqrt(index + 1.0)
         candidate = params - step_rate * gradient
-        # A diverged step stops this optimizer; the loss refuses non-finite parameters.
+        # A diverged step stops this optimiser; the loss refuses non-finite parameters.
         if not np.all(np.isfinite(candidate)):
             break
         candidate_loss = _loss(case, candidate)
@@ -651,7 +651,7 @@ def _finite_difference_training(
         )
         evaluations += gradient_evaluations
         candidate = params - learning_rate * gradient
-        # A diverged step stops this optimizer; the loss refuses non-finite parameters.
+        # A diverged step stops this optimiser; the loss refuses non-finite parameters.
         if not np.all(np.isfinite(candidate)):
             break
         candidate_loss = _loss(case, candidate)

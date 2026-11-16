@@ -294,7 +294,7 @@ def _record_natural_gradient(
 
 
 def _best_value(records: Sequence[OptimizerConvergenceRecord], optimizer: str) -> float:
-    # Every start records both optimizers, so the selection is never empty.
+    # Every start records both optimisers, so the selection is never empty.
     return float(min(record.best_value for record in records if record.optimizer == optimizer))
 
 
