@@ -10,6 +10,7 @@
 from tools import application_honesty_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gates_cover_typing_docs_and_evidence() -> None:
@@ -30,13 +31,15 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     gates = dict(quality_gates.build_coverage_gates("/python"))
     run = gates["application-honesty focused coverage"]
     assert "--branch" in run
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert (
         run[-len(quality_gates.APPLICATION_HONESTY_COVERAGE_COHORT) :]
         == quality_gates.APPLICATION_HONESTY_COVERAGE_COHORT
     )
     threshold = gates["application-honesty exact coverage threshold"]
-    assert any(argument.startswith("--data-file=/tmp/") for argument in threshold)
+    assert any(
+        argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in threshold
+    )
     assert "--fail-under=100" in threshold
     assert f"--include={quality_gates.APPLICATION_HONESTY_COVERAGE_INCLUDE}" in threshold
 

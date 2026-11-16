@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PROVIDER_GRADIENT_AUDIT_SOURCE = "src/scpn_quantum_control/phase/provider_gradient_audit.py"
 PROVIDER_GRADIENT_AUDIT_TEST = "tests/test_phase_provider_gradient_audit.py"
@@ -63,8 +65,8 @@ PROVIDER_GRADIENT_AUDIT_DOCSTRING_RATCHET = [
 """Whole owner cohort held to complete NumPy docstrings."""
 PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT = PROVIDER_GRADIENT_AUDIT_TESTS
 """Public readiness-audit suite that owns source branch coverage."""
-PROVIDER_GRADIENT_AUDIT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-provider-gradient-audit-quality.coverage"  # nosec B108
+PROVIDER_GRADIENT_AUDIT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-provider-gradient-audit-quality.coverage"
 )
 PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE = (
     "*/phase/provider_gradient_audit.py,*/phase/provider_hardware_gradient_audit.py,"

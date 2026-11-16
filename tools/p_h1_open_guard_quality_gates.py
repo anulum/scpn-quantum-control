@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 P_H1_OPEN_GUARD_SOURCE = "src/scpn_quantum_control/analysis/p_h1_open_guard.py"
 PERSISTENT_HOMOLOGY_SOURCE = "src/scpn_quantum_control/analysis/persistent_homology.py"
@@ -67,7 +69,9 @@ P_H1_OPEN_GUARD_DOCSTRING_RATCHET = [
     "tools/p_h1_open_guard_quality_gates.py",
     "tests/test_p_h1_open_guard_quality_gate.py",
 ]
-P_H1_OPEN_GUARD_COVERAGE_DATA_FILE = "/tmp/scpn-qc-p-h1-open-guard-quality.coverage"  # nosec B108
+P_H1_OPEN_GUARD_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-p-h1-open-guard-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

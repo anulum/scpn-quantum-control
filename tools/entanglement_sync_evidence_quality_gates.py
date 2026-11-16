@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_INCLUDE = (
@@ -43,8 +45,8 @@ ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT = [
 ]
 """Tests that own exact entanglement-sync evidence coverage."""
 
-ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-entanglement-sync-evidence-quality.coverage"  # nosec B108
+ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-entanglement-sync-evidence-quality.coverage"
 )
 """Isolated coverage database for the entanglement-sync evidence owner."""
 

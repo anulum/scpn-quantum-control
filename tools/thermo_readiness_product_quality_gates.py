@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 THERMO_READINESS_PRODUCT_SOURCE = "src/scpn_quantum_control/thermo_readiness_product.py"
@@ -58,8 +60,8 @@ THERMO_READINESS_PRODUCT_COVERAGE_COHORT = [
 ]
 """Tests that own exact product and ambient-readiness branch coverage."""
 
-THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-thermo-readiness-product-quality.coverage"  # nosec B108
+THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-thermo-readiness-product-quality.coverage"
 )
 """Isolated coverage database for the thermo-readiness source owner."""
 THERMO_READINESS_PRODUCT_COVERAGE_INCLUDE = (

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ENTROPY_RANDOMNESS_SOURCES = [
     "src/scpn_quantum_control/entropy/nist_sp800_22.py",
@@ -40,7 +42,9 @@ ENTROPY_RANDOMNESS_DOCSTRING_RATCHET = [
     "tests/test_preflight_tool.py",
 ]
 """Whole owner cohort held to complete NumPy docstrings."""
-ENTROPY_RANDOMNESS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-entropy-randomness-quality.coverage"  # nosec B108
+ENTROPY_RANDOMNESS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-entropy-randomness-quality.coverage"
+)
 ENTROPY_RANDOMNESS_COVERAGE_INCLUDE = "*/entropy/nist_sp800_22.py,*/entropy/qrng_stream.py"
 
 

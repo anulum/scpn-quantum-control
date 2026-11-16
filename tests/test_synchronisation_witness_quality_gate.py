@@ -10,6 +10,7 @@
 from tools import preflight
 from tools import synchronisation_witness_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gates_cover_typing_and_docs() -> None:
@@ -36,7 +37,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         run[-len(quality_gates.SYNCHRONISATION_WITNESS_COVERAGE_COHORT) :]
         == quality_gates.SYNCHRONISATION_WITNESS_COVERAGE_COHORT
     )
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     threshold = gates["synchronisation-witness exact coverage threshold"]
     assert "--fail-under=100" in threshold
     assert any("executive_analyse.py" in argument for argument in threshold)

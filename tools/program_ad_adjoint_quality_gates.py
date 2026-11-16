@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PROGRAM_AD_ADJOINT_SOURCE = "src/scpn_quantum_control/program_ad_adjoint.py"
 PROGRAM_AD_ADJOINT_GENERATION_SOURCE = "src/scpn_quantum_control/program_ad_adjoint_generation.py"
@@ -76,7 +78,9 @@ PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET = [
     *PROGRAM_AD_CAPTURED_SOURCES,
     *PROGRAM_AD_CAPTURED_TESTS,
 ]
-PROGRAM_AD_ADJOINT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-program-ad-adjoint-quality.coverage"  # nosec B108
+PROGRAM_AD_ADJOINT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-program-ad-adjoint-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

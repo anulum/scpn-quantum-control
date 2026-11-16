@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 HLS_COSIMULATION_EVIDENCE_SOURCE = (
     "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
@@ -38,8 +40,8 @@ HLS_COSIMULATION_EVIDENCE_DOCSTRING_RATCHET = [
     "tools/hls_cosimulation_evidence_quality_gates.py",
     "tests/test_hls_cosimulation_evidence_quality_gate.py",
 ]
-HLS_COSIMULATION_EVIDENCE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-hls-cosimulation-evidence-quality.coverage"  # nosec B108
+HLS_COSIMULATION_EVIDENCE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-hls-cosimulation-evidence-quality.coverage"
 )
 
 

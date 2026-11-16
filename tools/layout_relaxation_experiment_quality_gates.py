@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 LAYOUT_RELAXATION_EXPERIMENT_SOURCE = (
     "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py"
@@ -24,8 +26,8 @@ LAYOUT_RELAXATION_EXPERIMENT_TYPING_RATCHET = [
     "tests/test_layout_relaxation_experiment_quality_gate.py",
 ]
 LAYOUT_RELAXATION_EXPERIMENT_DOCSTRING_RATCHET = [*LAYOUT_RELAXATION_EXPERIMENT_TYPING_RATCHET]
-LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-layout-relaxation-experiment-quality.coverage"
+LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-layout-relaxation-experiment-quality.coverage"
 )
 
 

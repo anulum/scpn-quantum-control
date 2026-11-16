@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 FEEDBACK_LOOP_SOURCE = "src/scpn_quantum_control/hardware/feedback_loop.py"
@@ -49,7 +51,7 @@ FEEDBACK_LOOP_DOCSTRING_RATCHET = [
 ]
 """Complete production, owner-test, and gate-contract docstring cohort."""
 
-FEEDBACK_LOOP_COVERAGE_DATA_FILE = "/tmp/scpn-qc-feedback-loop-quality.coverage"  # nosec B108
+FEEDBACK_LOOP_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-feedback-loop-quality.coverage")
 """Isolated coverage database for the feedback-loop owner."""
 FEEDBACK_LOOP_COVERAGE_INCLUDE = (
     "*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py,*/control/realtime_feedback.py"

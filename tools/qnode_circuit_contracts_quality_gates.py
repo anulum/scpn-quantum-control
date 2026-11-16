@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 QNODE_CIRCUIT_CONTRACTS_SOURCE = "src/scpn_quantum_control/phase/qnode_circuit_contracts.py"
@@ -45,8 +47,8 @@ QNODE_CIRCUIT_CONTRACTS_DOCSTRING_RATCHET = [
 ]
 """Complete contract-leaf and gate-contract docstring cohort."""
 
-QNODE_CIRCUIT_CONTRACTS_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-qnode-circuit-contracts-quality.coverage"  # nosec B108
+QNODE_CIRCUIT_CONTRACTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-qnode-circuit-contracts-quality.coverage"
 )
 """Isolated coverage database for the QNode circuit-contract owner."""
 

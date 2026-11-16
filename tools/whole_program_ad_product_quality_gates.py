@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
     "examples/whole_program_replay.py",
@@ -39,8 +41,8 @@ WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = [
     "tests/test_whole_program_ad_product_quality_gate.py",
 ]
 """Tests that own exact whole-program AD product coverage."""
-WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-whole-program-ad-product-quality.coverage"  # nosec B108
+WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-whole-program-ad-product-quality.coverage"
 )
 """Isolated coverage database for the whole-program AD product owner."""
 

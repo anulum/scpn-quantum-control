@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUANTUM_SENSING_SOURCE = "src/scpn_quantum_control/analysis/sensing.py"
 """No-submit S11 quantum-sensing readiness surface."""
@@ -73,7 +75,9 @@ QUANTUM_SENSING_COVERAGE_COHORT = [
     "tests/test_export_s11_quantum_sensing_readiness.py",
 ]
 """Public, contract, and executable-export tests that own source coverage."""
-QUANTUM_SENSING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-quantum-sensing-quality.coverage"  # nosec B108
+QUANTUM_SENSING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-quantum-sensing-quality.coverage"
+)
 """Isolated coverage database for the quantum-sensing owner."""
 QUANTUM_SENSING_COVERAGE_INCLUDE = (
     "*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py,*/sensing/domain_evidence.py"

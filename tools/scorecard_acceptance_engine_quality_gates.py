@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 SCORECARD_ACCEPTANCE_ENGINE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/scorecard_acceptance_engine.py",
@@ -21,8 +23,8 @@ SCORECARD_ACCEPTANCE_ENGINE_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_COHORT = ["tests/test_scorecard_acceptance_engine.py"]
 """Tests that own exact scorecard-acceptance-engine coverage."""
-SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-scorecard-acceptance-engine.coverage"  # nosec B108
+SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-scorecard-acceptance-engine.coverage"
 )
 """Isolated coverage database for scorecard-acceptance-engine diagnostics."""
 

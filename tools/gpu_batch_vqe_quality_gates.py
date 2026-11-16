@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 GPU_BATCH_VQE_SOURCE = "src/scpn_quantum_control/phase/gpu_batch_vqe.py"
 GPU_BATCH_VQE_PRIMARY_TEST = "tests/test_gpu_batch_vqe.py"
@@ -22,7 +24,7 @@ GPU_BATCH_VQE_TYPING_RATCHET = [
     "tests/test_gpu_batch_vqe_quality_gate.py",
 ]
 GPU_BATCH_VQE_DOCSTRING_RATCHET = [*GPU_BATCH_VQE_TYPING_RATCHET]
-GPU_BATCH_VQE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-gpu-batch-vqe-quality.coverage"  # nosec B108
+GPU_BATCH_VQE_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-gpu-batch-vqe-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

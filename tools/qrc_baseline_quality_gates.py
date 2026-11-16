@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QRC_BASELINE_SOURCE = "src/scpn_quantum_control/applications/qrc_baseline.py"
 QUANTUM_RESERVOIR_SOURCE = "src/scpn_quantum_control/applications/quantum_reservoir.py"
@@ -38,7 +40,7 @@ QRC_BASELINE_TYPING_RATCHET = [
     "tests/test_qrc_baseline_quality_gate.py",
 ]
 QRC_BASELINE_DOCSTRING_RATCHET = [*QRC_BASELINE_TYPING_RATCHET]
-QRC_BASELINE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-qrc-baseline-quality.coverage"  # nosec B108
+QRC_BASELINE_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-qrc-baseline-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

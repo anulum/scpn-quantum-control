@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE = (
     "src/scpn_quantum_control/differentiable_parameter_shift.py"
@@ -51,8 +53,8 @@ DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET = [
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]
-DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-parameter-shift-quality.coverage"  # nosec B108
+DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-parameter-shift-quality.coverage"
 )
 DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_INCLUDE = (
     "--include=*/differentiable_parameter_shift.py,*/phase/param_shift.py,"

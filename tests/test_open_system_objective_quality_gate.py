@@ -7,9 +7,12 @@
 # SCPN Quantum Control — open-system-objective quality-gate tests
 """Lock open-system-objective quality gates into preflight and CI."""
 
+from pathlib import Path
+
 from tools import open_system_objective_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -28,7 +31,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     report = gates["open-system-objective exact coverage threshold"]
     assert "--branch" in run
     assert run[-2:] == quality_gates.OPEN_SYSTEM_OBJECTIVE_COVERAGE_COHORT
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.OPEN_SYSTEM_OBJECTIVE_COVERAGE_INCLUDE}" in report
 
@@ -49,5 +52,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  external-validation-manifest-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.OPEN_SYSTEM_OBJECTIVE_QUALITY_RATCHET)
-    assert quality_gates.OPEN_SYSTEM_OBJECTIVE_COVERAGE_DATA_FILE in block
+    assert f"/tmp/{Path(quality_gates.OPEN_SYSTEM_OBJECTIVE_COVERAGE_DATA_FILE).name}" in block
     assert "open-system-objective-quality" in workflow[workflow.index("  ci-gate:") :]

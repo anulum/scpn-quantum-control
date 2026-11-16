@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import preflight
 from tools import topology_control_objectives_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -38,7 +39,7 @@ def test_coverage_gate_runs_real_owner_and_is_exact() -> None:
     assert (
         run[-len(quality_gates.TOPOLOGY_CONTROL_TESTS) :] == quality_gates.TOPOLOGY_CONTROL_TESTS
     )
-    assert quality_gates.TOPOLOGY_CONTROL_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert Path(quality_gates.TOPOLOGY_CONTROL_COVERAGE_DATA_FILE).parent == quality_coverage_dir()
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.TOPOLOGY_CONTROL_COVERAGE_INCLUDE}" in report
 

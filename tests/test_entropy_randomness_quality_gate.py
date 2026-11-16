@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import entropy_randomness_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -39,7 +40,9 @@ def test_coverage_gate_runs_real_entropy_suite_and_is_exact() -> None:
     assert run[-len(quality_gates.ENTROPY_RANDOMNESS_TESTS) :] == (
         quality_gates.ENTROPY_RANDOMNESS_TESTS
     )
-    assert quality_gates.ENTROPY_RANDOMNESS_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.ENTROPY_RANDOMNESS_COVERAGE_DATA_FILE).parent == quality_coverage_dir()
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.ENTROPY_RANDOMNESS_COVERAGE_INCLUDE}" in report
 

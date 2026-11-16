@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 HAMILTONIAN_LEARNING_SOURCE = "src/scpn_quantum_control/analysis/hamiltonian_learning.py"
 HAMILTONIAN_LEARNING_COVERAGE_COHORT = ["tests/test_hamiltonian_learning.py"]
@@ -21,7 +23,9 @@ HAMILTONIAN_LEARNING_TYPING_RATCHET = [
     "tests/test_hamiltonian_learning_quality_gate.py",
 ]
 HAMILTONIAN_LEARNING_DOCSTRING_RATCHET = [*HAMILTONIAN_LEARNING_TYPING_RATCHET]
-HAMILTONIAN_LEARNING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hamiltonian-learning-quality.coverage"  # nosec B108
+HAMILTONIAN_LEARNING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-hamiltonian-learning-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

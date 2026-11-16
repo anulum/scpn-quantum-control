@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 AVQDS_SOURCE = "src/scpn_quantum_control/phase/avqds.py"
 AVQDS_PRIMARY_TEST = "tests/test_avqds.py"
@@ -22,7 +24,7 @@ AVQDS_TYPING_RATCHET = [
     "tests/test_avqds_quality_gate.py",
 ]
 AVQDS_DOCSTRING_RATCHET = [*AVQDS_TYPING_RATCHET]
-AVQDS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-avqds-quality.coverage"  # nosec B108
+AVQDS_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-avqds-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

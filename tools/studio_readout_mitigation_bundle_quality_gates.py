@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE = (
     "src/scpn_quantum_control/studio/readout_mitigation_bundle.py"
@@ -79,8 +81,8 @@ STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET = [
 STUDIO_READOUT_MITIGATION_BUNDLE_DOCSTRING_RATCHET = [
     *STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET,
 ]
-STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-studio-readout-mitigation-bundle-quality.coverage"  # nosec B108
+STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-readout-mitigation-bundle-quality.coverage"
 )
 
 

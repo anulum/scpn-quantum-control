@@ -7,9 +7,12 @@
 # SCPN Quantum Control — error-aware chain quality-gate tests
 """Lock error-aware chain quality gates into preflight and CI."""
 
+from pathlib import Path
+
 from tools import error_aware_chain_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_helper_builds_strict_preview_and_exact_gates() -> None:
@@ -25,7 +28,9 @@ def test_helper_builds_strict_preview_and_exact_gates() -> None:
     assert run[-1:] == quality_gates.ERROR_AWARE_CHAIN_COVERAGE_COHORT
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.ERROR_AWARE_CHAIN_COVERAGE_INCLUDE}" in report
-    assert quality_gates.ERROR_AWARE_CHAIN_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.ERROR_AWARE_CHAIN_COVERAGE_DATA_FILE).parent == quality_coverage_dir()
+    )
 
 
 def test_preflight_uses_helper_commands_verbatim() -> None:

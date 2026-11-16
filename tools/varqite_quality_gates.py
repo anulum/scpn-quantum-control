@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 VARQITE_SOURCE = "src/scpn_quantum_control/phase/varqite.py"
 VARQITE_OWNER_TEST = "tests/test_varqite.py"
@@ -23,7 +25,7 @@ VARQITE_TYPING_RATCHET = [
 ]
 VARQITE_DOCSTRING_RATCHET = [*VARQITE_TYPING_RATCHET]
 VARQITE_COVERAGE_COHORT = [VARQITE_OWNER_TEST, VARQITE_DOWNSTREAM_TEST]
-VARQITE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-varqite-quality.coverage"  # nosec B108
+VARQITE_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-varqite-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

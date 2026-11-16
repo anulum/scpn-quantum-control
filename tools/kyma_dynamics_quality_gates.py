@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KYMA_DYNAMICS_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/dynamics.py"
 KYMA_TASK_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/task.py"
@@ -39,7 +41,7 @@ KYMA_DYNAMICS_DOCSTRING_RATCHET = [
     "tools/kyma_dynamics_quality_gates.py",
     "tests/test_kyma_dynamics_quality_gate.py",
 ]
-KYMA_DYNAMICS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-dynamics-quality.coverage"  # nosec B108
+KYMA_DYNAMICS_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-kyma-dynamics-quality.coverage")
 KYMA_DYNAMICS_COVERAGE_INCLUDE = (
     "--include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py,*/benchmarks/kyma/probe.py"
 )

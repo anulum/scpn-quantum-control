@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 SCIENTIFIC_PROBLEM_SOURCES = [
@@ -37,7 +39,7 @@ SCIENTIFIC_PROBLEM_TYPING = [
     "tests/test_scientific_problem_quality_gate.py",
 ]
 """Strict typing and native documentation cohort, without relaxing old tests."""
-SCIENTIFIC_PROBLEM_COVERAGE = "/tmp/scpn-qc-scientific-problem.coverage"  # nosec B108
+SCIENTIFIC_PROBLEM_COVERAGE = quality_coverage_file("scpn-qc-scientific-problem.coverage")
 """Separate scientific-input coverage database."""
 SCIENTIFIC_PROBLEM_INCLUDE = "*/kuramoto_core.py,*/scientific_design.py,*/scientific_problem_parameters.py,*/tools/scientific_problem_quality_gates.py"
 """Every changed owning module, including the reachable quality command builder."""

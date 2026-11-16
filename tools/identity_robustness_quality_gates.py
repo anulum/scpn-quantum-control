@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 IDENTITY_ROBUSTNESS_QUALITY_RATCHET = [
@@ -26,7 +28,9 @@ IDENTITY_ROBUSTNESS_COVERAGE_COHORT = [
 ]
 """Tests that own exact identity robustness coverage."""
 
-IDENTITY_ROBUSTNESS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-identity-robustness-quality.coverage"  # nosec B108
+IDENTITY_ROBUSTNESS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-identity-robustness-quality.coverage"
+)
 """Isolated coverage database for the identity robustness owner."""
 
 

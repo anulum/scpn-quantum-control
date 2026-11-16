@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import adaptive_branching_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -40,7 +41,9 @@ def test_coverage_gate_executes_export_and_is_exact() -> None:
         quality_gates.ADAPTIVE_BRANCHING_COVERAGE_COHORT
     )
     assert "tests/test_export_s8_adaptive_branching_readiness.py" in run
-    assert quality_gates.ADAPTIVE_BRANCHING_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.ADAPTIVE_BRANCHING_COVERAGE_DATA_FILE).parent == quality_coverage_dir()
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.ADAPTIVE_BRANCHING_COVERAGE_INCLUDE}" in report
 

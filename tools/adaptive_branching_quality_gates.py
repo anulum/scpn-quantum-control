@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ADAPTIVE_BRANCHING_SOURCE = "src/scpn_quantum_control/control/adaptive_branching.py"
 """No-submit S8 branch-planning and readiness surface."""
@@ -45,7 +47,9 @@ ADAPTIVE_BRANCHING_COVERAGE_COHORT = [
     "tests/test_export_s8_adaptive_branching_readiness.py",
 ]
 """Public and executable-export tests that own source branch coverage."""
-ADAPTIVE_BRANCHING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-adaptive-branching-quality.coverage"  # nosec B108
+ADAPTIVE_BRANCHING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-adaptive-branching-quality.coverage"
+)
 """Isolated coverage database for the adaptive-branching owner."""
 ADAPTIVE_BRANCHING_COVERAGE_INCLUDE = "*/control/adaptive_branching.py"
 """Exact production source include for the coverage report."""

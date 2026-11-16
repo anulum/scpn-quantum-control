@@ -7,9 +7,12 @@
 # SCPN Quantum Control — Studio executive benchmark quality-gate tests
 """Lock Studio benchmark-handler quality gates into preflight and CI."""
 
+from pathlib import Path
+
 from tools import preflight
 from tools import studio_executive_benchmark_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gates_cover_typing_and_docs() -> None:
@@ -35,7 +38,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         "--include=*/studio/executive_benchmark.py,*/studio/benchmark_databank_bundle.py"
         in threshold
     )
-    assert quality_gates.STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE).parent
+        == quality_coverage_dir()
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

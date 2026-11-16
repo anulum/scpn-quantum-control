@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 TN_MPS_CROSSOVER_ADMISSION_SOURCE = (
     "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py"
@@ -35,8 +37,8 @@ TN_MPS_CROSSOVER_ADMISSION_TYPING_RATCHET = [
     "tests/test_tn_mps_crossover_admission_quality_gate.py",
 ]
 TN_MPS_CROSSOVER_ADMISSION_DOCSTRING_RATCHET = [*TN_MPS_CROSSOVER_ADMISSION_TYPING_RATCHET]
-TN_MPS_CROSSOVER_ADMISSION_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-tn-mps-crossover-admission-quality.coverage"
+TN_MPS_CROSSOVER_ADMISSION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-tn-mps-crossover-admission-quality.coverage"
 )
 
 

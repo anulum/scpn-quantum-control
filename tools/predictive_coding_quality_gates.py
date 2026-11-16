@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PREDICTIVE_CODING_SOURCE = "src/scpn_quantum_control/fep/predictive_coding.py"
 PREDICTIVE_CODING_PRIMARY_TEST = "tests/test_fep.py"
@@ -22,7 +24,9 @@ PREDICTIVE_CODING_TYPING_RATCHET = [
     "tests/test_predictive_coding_quality_gate.py",
 ]
 PREDICTIVE_CODING_DOCSTRING_RATCHET = [*PREDICTIVE_CODING_TYPING_RATCHET]
-PREDICTIVE_CODING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-predictive-coding-quality.coverage"  # nosec B108
+PREDICTIVE_CODING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-predictive-coding-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

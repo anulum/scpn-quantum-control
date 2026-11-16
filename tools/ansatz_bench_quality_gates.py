@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ANSATZ_BENCH_SOURCE = "src/scpn_quantum_control/phase/ansatz_bench.py"
 ANSATZ_BENCH_PRIMARY_TEST = "tests/test_ansatz_bench.py"
@@ -30,7 +32,9 @@ ANSATZ_BENCH_TYPING_RATCHET = [
     "tests/test_ansatz_bench_quality_gate.py",
 ]
 ANSATZ_BENCH_DOCSTRING_RATCHET = [*ANSATZ_BENCH_TYPING_RATCHET]
-ANSATZ_BENCH_COVERAGE_DATA_FILE = "/tmp/scpn-qc-ansatz-benchmark-quality.coverage"  # nosec B108
+ANSATZ_BENCH_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-ansatz-benchmark-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

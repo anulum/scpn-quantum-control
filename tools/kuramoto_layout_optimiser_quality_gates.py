@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KURAMOTO_LAYOUT_OPTIMISER_SOURCE = "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py"
 KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_COHORT = [
@@ -25,8 +27,8 @@ KURAMOTO_LAYOUT_OPTIMISER_TYPING_RATCHET = [
 KURAMOTO_LAYOUT_OPTIMISER_DOCSTRING_RATCHET = [
     *KURAMOTO_LAYOUT_OPTIMISER_TYPING_RATCHET,
 ]
-KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-kuramoto-layout-optimiser-quality.coverage"  # nosec B108
+KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-kuramoto-layout-optimiser-quality.coverage"
 )
 
 

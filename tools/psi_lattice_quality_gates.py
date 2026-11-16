@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PSI_LATTICE_SOURCE = "src/scpn_quantum_control/psi_field/lattice.py"
 PSI_LATTICE_OBSERVABLES_SOURCE = "src/scpn_quantum_control/psi_field/observables.py"
@@ -39,7 +41,7 @@ PSI_LATTICE_TYPING_RATCHET = [
 ]
 PSI_LATTICE_DOCSTRING_RATCHET = [*PSI_LATTICE_TYPING_RATCHET]
 PSI_LATTICE_COVERAGE_COHORT = [PSI_LATTICE_OWNER_TEST, PSI_LATTICE_IMPORT_TEST]
-PSI_LATTICE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-psi-lattice-quality.coverage"  # nosec B108
+PSI_LATTICE_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-psi-lattice-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

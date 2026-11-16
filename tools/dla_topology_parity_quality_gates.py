@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DLA_TOPOLOGY_PARITY_SOURCE = "src/scpn_quantum_control/dla_topology_control/parity.py"
 """Production source owned by the parity projector."""
@@ -112,7 +114,9 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
 """Complete projector and gate-contract docstring cohort."""
-DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-topology-parity-quality.coverage"  # nosec B108
+DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-dla-topology-parity-quality.coverage"
+)
 """Isolated coverage database for the parity projector owner."""
 DLA_TOPOLOGY_PARITY_COVERAGE_INCLUDE = (
     "*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,"

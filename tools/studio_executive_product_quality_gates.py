@@ -14,6 +14,8 @@ from pathlib import Path
 from tempfile import gettempdir
 from time import time_ns
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio_executive_product.py",
@@ -34,8 +36,8 @@ STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT = [
     "tests/test_studio_executive_cli.py",
 ]
 """Tests that own exact Studio-executive product coverage."""
-STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-studio-executive-product-quality.coverage"  # nosec B108
+STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-executive-product-quality.coverage"
 )
 """Isolated coverage database for the Studio-executive product owner."""
 
@@ -143,7 +145,7 @@ def build_program_authoring_quality_gates(python: str) -> list[Gate]:
         "tools/tests/test_studio_compiler_trace_browser.py",
         "tools/studio_executive_product_quality_gates.py",
     ]
-    data_file = "/tmp/scpn-qc-studio-program-authoring.coverage"  # nosec B108
+    data_file = quality_coverage_file("scpn-qc-studio-program-authoring.coverage")
     return [
         (
             "studio-program-authoring-strict",
@@ -229,7 +231,7 @@ def build_backend_profiles_quality_gates(python: str) -> list[Gate]:
         "tools/studio_executive_product_quality_gates.py",
         "tests/test_studio_executive_product_quality_gate.py",
     ]
-    data_file = "/tmp/scpn-qc-studio-backend-profiles.coverage"  # nosec B108
+    data_file = quality_coverage_file("scpn-qc-studio-backend-profiles.coverage")
     return [
         (
             "studio-backend-profiles-strict",

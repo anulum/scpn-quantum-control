@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_BENCHMARK_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio/executive_benchmark.py",
@@ -26,8 +28,8 @@ STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_COHORT = [
     "tests/test_studio_benchmark_databank_bundle.py",
 ]
 """Tests that own exact Studio benchmark-handler coverage."""
-STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-studio-executive-benchmark-quality.coverage"
+STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-executive-benchmark-quality.coverage"
 )
 """Isolated coverage database for Studio benchmark diagnostics."""
 

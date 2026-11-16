@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KURAMOTO_CORE_SOURCE = "src/scpn_quantum_control/kuramoto_core.py"
 """Stable public Kuramoto facade guarded by this owner."""
@@ -45,7 +47,7 @@ KURAMOTO_CORE_COVERAGE_COHORT = [
     "tests/test_hybrid_digital_analog.py",
 ]
 """Connected public-facade tests that exercise every production branch."""
-KURAMOTO_CORE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kuramoto-core-quality.coverage"  # nosec B108
+KURAMOTO_CORE_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-kuramoto-core-quality.coverage")
 """Isolated coverage database for the Kuramoto core owner."""
 KURAMOTO_CORE_COVERAGE_INCLUDE = "*/kuramoto_core.py"
 """Exact production source include for the coverage report."""

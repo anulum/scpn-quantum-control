@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 HARDWARE_RESULT_PACKS_SOURCE = "src/scpn_quantum_control/hardware_result_packs.py"
 STUDIO_REPLAY_SOURCE = "src/scpn_quantum_control/studio/executive_replay.py"
@@ -39,7 +41,7 @@ STUDIO_REPLAY_DOCSTRING_RATCHET = [
     "tools/studio_replay_quality_gates.py",
     "tests/test_studio_replay_quality_gate.py",
 ]
-STUDIO_REPLAY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-studio-replay-quality.coverage"  # nosec B108
+STUDIO_REPLAY_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-studio-replay-quality.coverage")
 STUDIO_REPLAY_COVERAGE_INCLUDE = ",".join(
     [
         "*/hardware_result_packs.py",

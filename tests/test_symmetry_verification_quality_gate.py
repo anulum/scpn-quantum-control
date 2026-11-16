@@ -13,6 +13,7 @@ from pathlib import Path
 from tools import preflight
 from tools import symmetry_verification_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_explicit_package_gate_has_one_tooling_namespace() -> None:
@@ -50,7 +51,7 @@ def test_coverage_gate_is_isolated_public_and_exact() -> None:
         run[-len(quality_gates.SYMMETRY_VERIFICATION_COVERAGE_COHORT) :]
         == quality_gates.SYMMETRY_VERIFICATION_COVERAGE_COHORT
     )
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/mitigation/symmetry_verification.py" in report
 

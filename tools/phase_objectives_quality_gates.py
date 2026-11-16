@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PHASE_OBJECTIVES_SOURCE = "src/scpn_quantum_control/phase/objectives.py"
 PHASE_OBJECTIVES_TEST = "tests/test_phase_objectives.py"
@@ -33,7 +35,9 @@ PHASE_OBJECTIVES_DOCSTRING_RATCHET = [
 """Whole owner cohort held to complete NumPy docstrings."""
 PHASE_OBJECTIVES_COVERAGE_COHORT = [PHASE_OBJECTIVES_TEST]
 """Public phase-objective suite that owns source branch coverage."""
-PHASE_OBJECTIVES_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-objectives-quality.coverage"  # nosec B108
+PHASE_OBJECTIVES_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-phase-objectives-quality.coverage"
+)
 PHASE_OBJECTIVES_COVERAGE_INCLUDE = "*/phase/objectives.py"
 
 

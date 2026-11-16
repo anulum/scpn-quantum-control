@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 INVERSE_PROBLEM_SOURCES = [
     "oscillatools/src/oscillatools/accel/kuramoto_bayesian_inference.py",
@@ -33,7 +35,9 @@ INVERSE_PROBLEM_TYPING_RATCHET = [
     "tests/test_inverse_problem_quality_gate.py",
 ]
 INVERSE_PROBLEM_DOCSTRING_RATCHET = [*INVERSE_PROBLEM_TYPING_RATCHET]
-INVERSE_PROBLEM_COVERAGE_DATA_FILE = "/tmp/scpn-qc-inverse-problem-quality.coverage"  # nosec B108
+INVERSE_PROBLEM_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-inverse-problem-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

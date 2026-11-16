@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUANTUM_GEOMETRY_SOURCES = [
     "src/scpn_quantum_control/analysis/qfi.py",
@@ -34,7 +36,9 @@ QUANTUM_GEOMETRY_TYPING_RATCHET = [
     "tests/test_quantum_geometry_quality_gate.py",
 ]
 QUANTUM_GEOMETRY_DOCSTRING_RATCHET = [*QUANTUM_GEOMETRY_TYPING_RATCHET]
-QUANTUM_GEOMETRY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-quantum-geometry-quality.coverage"  # nosec B108
+QUANTUM_GEOMETRY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-quantum-geometry-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

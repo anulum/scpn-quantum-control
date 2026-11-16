@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 TOPOLOGY_KERNEL_SCHEMA_SOURCE = "src/scpn_quantum_control/topology_kernel_product/schema.py"
@@ -41,7 +43,9 @@ TOPOLOGY_KERNEL_SCHEMA_DOCSTRING_RATCHET = [
 ]
 """Complete production, owner-test, and gate-contract docstring cohort."""
 
-TOPOLOGY_KERNEL_SCHEMA_COVERAGE_DATA_FILE = "/tmp/scpn-qc-topology-kernel-schema-quality.coverage"  # nosec B108
+TOPOLOGY_KERNEL_SCHEMA_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-topology-kernel-schema-quality.coverage"
+)
 """Isolated coverage database for the topology-kernel schema owner."""
 TOPOLOGY_KERNEL_SCHEMA_COVERAGE_INCLUDE = (
     "*/topology_kernel_product/schema.py,*/topology_kernel_product/synthetic.py"

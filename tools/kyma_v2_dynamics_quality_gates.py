@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KYMA_V2_DYNAMICS_SOURCE = "src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py"
 """Production source owned by the per-trial Kuramoto dynamics."""
@@ -62,7 +64,9 @@ KYMA_V2_DYNAMICS_DOCSTRING_RATCHET = [
     "tests/test_kyma_v2_dynamics_quality_gate.py",
 ]
 """Complete dynamics, teacher-consumer, and gate docstring cohort."""
-KYMA_V2_DYNAMICS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-v2-dynamics-quality.coverage"  # nosec B108
+KYMA_V2_DYNAMICS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-kyma-v2-dynamics-quality.coverage"
+)
 """Isolated coverage database for KYMA v2 dynamics."""
 KYMA_V2_DYNAMICS_COVERAGE_INCLUDE = (
     "--include=*/benchmarks/kyma_v2/dynamics.py,*/benchmarks/kyma_v2/task.py,"

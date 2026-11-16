@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_EXACT_MODES_SOURCE = "src/scpn_quantum_control/differentiable_exact_modes.py"
 DIFFERENTIABLE_EXACT_MODES_COVERAGE_COHORT = ["tests/test_differentiable_exact_modes.py"]
@@ -23,8 +25,8 @@ DIFFERENTIABLE_EXACT_MODES_TYPING_RATCHET = [
 DIFFERENTIABLE_EXACT_MODES_DOCSTRING_RATCHET = [
     *DIFFERENTIABLE_EXACT_MODES_TYPING_RATCHET,
 ]
-DIFFERENTIABLE_EXACT_MODES_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-exact-modes-quality.coverage"  # nosec B108
+DIFFERENTIABLE_EXACT_MODES_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-exact-modes-quality.coverage"
 )
 
 

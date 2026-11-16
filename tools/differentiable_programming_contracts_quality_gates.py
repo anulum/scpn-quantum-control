@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_SOURCE = (
@@ -39,8 +41,8 @@ DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_COHORT = [
     DIFFERENTIABLE_PROGRAMMING_QUANTUM_TEST,
 ]
 """Real public-surface suites that own exact contract and quantum coverage."""
-DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-programming-contracts-quality.coverage"  # nosec B108
+DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-programming-contracts-quality.coverage"
 )
 """Isolated coverage database for the benchmark-contract owner."""
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_INCLUDE = (

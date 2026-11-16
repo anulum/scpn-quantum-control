@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QPU_COMPUTE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/qpu_compute_product.py",
@@ -21,7 +23,9 @@ QPU_COMPUTE_PRODUCT_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 QPU_COMPUTE_PRODUCT_COVERAGE_COHORT = ["tests/test_qpu_compute_product.py"]
 """Tests that own exact qpu-compute product coverage."""
-QPU_COMPUTE_PRODUCT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-qpu-compute-product-quality.coverage"  # nosec B108
+QPU_COMPUTE_PRODUCT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-qpu-compute-product-quality.coverage"
+)
 """Isolated coverage database for the qpu-compute product owner."""
 
 

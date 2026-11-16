@@ -7,9 +7,12 @@
 # SCPN Quantum Control — differentiable external-validation quality-gate tests
 """Lock differentiable external-validation gates into preflight and CI."""
 
+from pathlib import Path
+
 from tools import external_validation_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -28,7 +31,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     report = gates["external-validation exact coverage threshold"]
     assert "--branch" in run
     assert run[-1:] == quality_gates.EXTERNAL_VALIDATION_COVERAGE_COHORT
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/differentiable_external_validation.py" in report
 
@@ -49,5 +52,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  gradient-tape-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.EXTERNAL_VALIDATION_QUALITY_RATCHET)
-    assert quality_gates.EXTERNAL_VALIDATION_COVERAGE_DATA_FILE in block
+    assert f"/tmp/{Path(quality_gates.EXTERNAL_VALIDATION_COVERAGE_DATA_FILE).name}" in block
     assert "external-validation-manifest-quality" in workflow[workflow.index("  ci-gate:") :]

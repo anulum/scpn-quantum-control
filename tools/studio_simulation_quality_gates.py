@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_SIMULATION_SOURCE = "src/scpn_quantum_control/studio/executive_simulate.py"
 STUDIO_EXECUTIVE_CLI_SOURCE = "src/scpn_quantum_control/studio/executive_cli.py"
@@ -33,7 +35,9 @@ STUDIO_SIMULATION_DOCSTRING_RATCHET = [
     "tools/studio_simulation_quality_gates.py",
     "tests/test_studio_simulation_quality_gate.py",
 ]
-STUDIO_SIMULATION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-studio-simulation-quality.coverage"  # nosec B108
+STUDIO_SIMULATION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-simulation-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

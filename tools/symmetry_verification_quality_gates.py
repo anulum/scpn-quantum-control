@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 SYMMETRY_VERIFICATION_SOURCE = "src/scpn_quantum_control/mitigation/symmetry_verification.py"
 SYMMETRY_VERIFICATION_PRIMARY_TEST = "tests/test_symmetry_verification.py"
@@ -22,7 +24,9 @@ SYMMETRY_VERIFICATION_TYPING_RATCHET = [
     "tests/test_symmetry_verification_quality_gate.py",
 ]
 SYMMETRY_VERIFICATION_DOCSTRING_RATCHET = [*SYMMETRY_VERIFICATION_TYPING_RATCHET]
-SYMMETRY_VERIFICATION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-symmetry-verification-quality.coverage"  # nosec B108
+SYMMETRY_VERIFICATION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-symmetry-verification-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 CONTROL_STRUCTURED_ANSATZ_SOURCE = "src/scpn_quantum_control/control/structured_ansatz.py"
 PHASE_STRUCTURED_ANSATZ_SOURCE = "src/scpn_quantum_control/phase/structured_ansatz.py"
@@ -30,8 +32,8 @@ CONTROL_STRUCTURED_ANSATZ_TYPING_RATCHET = [
     "tests/test_control_structured_ansatz_quality_gate.py",
 ]
 CONTROL_STRUCTURED_ANSATZ_DOCSTRING_RATCHET = [*CONTROL_STRUCTURED_ANSATZ_TYPING_RATCHET]
-CONTROL_STRUCTURED_ANSATZ_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-control-structured-ansatz-quality.coverage"  # nosec B108
+CONTROL_STRUCTURED_ANSATZ_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-control-structured-ansatz-quality.coverage"
 )
 
 

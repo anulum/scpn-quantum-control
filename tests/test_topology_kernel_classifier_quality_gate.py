@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import preflight
 from tools import topology_kernel_classifier_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -39,7 +40,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
         run[-len(quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT) :]
         == quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT
     )
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert (
         "--include=*/applications/quantum_kernel.py,*/topology_kernel_product/kernels.py,*/topology_kernel_product/classifier.py"

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 LOGGING_SETUP_QUALITY_RATCHET = [
@@ -26,7 +28,7 @@ LOGGING_SETUP_COVERAGE_COHORT = [
 ]
 """Tests that own exact logging-setup coverage."""
 
-LOGGING_SETUP_COVERAGE_DATA_FILE = "/tmp/scpn-qc-logging-setup-quality.coverage"  # nosec B108
+LOGGING_SETUP_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-logging-setup-quality.coverage")
 """Isolated coverage database for the logging-setup owner."""
 
 

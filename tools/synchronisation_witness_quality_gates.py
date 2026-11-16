@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 SYNCHRONISATION_WITNESS_SOURCE = "src/scpn_quantum_control/phase/synchronisation_witness.py"
 SYNC_WITNESS_EVIDENCE_SOURCE = "src/scpn_quantum_control/benchmarks/sync_witness_evidence.py"
@@ -53,8 +55,8 @@ SYNCHRONISATION_WITNESS_COVERAGE_COHORT = [
     STUDIO_EXECUTIVE_CLI_TEST,
 ]
 """Tests that own synchronisation computation, evidence, and Studio routing."""
-SYNCHRONISATION_WITNESS_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-synchronisation-witness-quality.coverage"
+SYNCHRONISATION_WITNESS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-synchronisation-witness-quality.coverage"
 )
 """Isolated coverage database for synchronisation-witness diagnostics."""
 SYNCHRONISATION_WITNESS_COVERAGE_INCLUDE = ",".join(

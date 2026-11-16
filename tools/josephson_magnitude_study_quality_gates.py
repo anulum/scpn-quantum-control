@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 JOSEPHSON_MAGNITUDE_STUDY_SOURCE = (
     "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
@@ -27,8 +29,8 @@ JOSEPHSON_MAGNITUDE_STUDY_TYPING_RATCHET = [
 JOSEPHSON_MAGNITUDE_STUDY_DOCSTRING_RATCHET = [
     *JOSEPHSON_MAGNITUDE_STUDY_TYPING_RATCHET,
 ]
-JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-josephson-magnitude-study-quality.coverage"  # nosec B108
+JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-josephson-magnitude-study-quality.coverage"
 )
 
 

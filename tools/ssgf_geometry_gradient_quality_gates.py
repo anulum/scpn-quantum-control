@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET = [
@@ -42,7 +44,9 @@ SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT = [
 ]
 """Tests that own exact SSGF geometry-gradient coverage."""
 
-SSGF_GEOMETRY_GRADIENT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage"  # nosec B108
+SSGF_GEOMETRY_GRADIENT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-ssgf-geometry-gradient-quality.coverage"
+)
 """Isolated coverage database for the SSGF geometry-gradient owner."""
 SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE = (
     "*/ssgf_geometry_gradient_product.py,*/ssgf/quantum_gradient.py,"

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KYMA_V3_SOURCES = [
     "src/scpn_quantum_control/benchmarks/kyma_v3/__init__.py",
@@ -38,7 +40,7 @@ KYMA_V3_QUALITY_RATCHET = [
     "tests/test_kyma_v3_quality_gate.py",
 ]
 """Strict-typing and NumPy-docstring cohort."""
-KYMA_V3_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-v3-quality.coverage"  # nosec B108
+KYMA_V3_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-kyma-v3-quality.coverage")
 """Isolated coverage database for KYMA v3."""
 KYMA_V3_COVERAGE_INCLUDE = (
     "*/benchmarks/kyma_v3/*.py,*/scripts/run_kyma_v3_probe.py,*/scripts/run_kyma_v3_ablation.py"

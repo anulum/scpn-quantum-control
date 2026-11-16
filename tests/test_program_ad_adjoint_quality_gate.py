@@ -13,6 +13,7 @@ from tools import preflight
 from tools import program_ad_adjoint_quality_gates as quality_gates
 from tools.audit_test_typing_policy import load_policy
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -41,7 +42,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         run[-len(quality_gates.PROGRAM_AD_ADJOINT_COVERAGE_COHORT) :]
         == quality_gates.PROGRAM_AD_ADJOINT_COVERAGE_COHORT
     )
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py" in report
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KNM_KEY_SOURCE = "src/scpn_quantum_control/crypto/knm_key.py"
 KNM_KEY_PRIMARY_TEST = "tests/test_crypto_knm_key.py"
@@ -30,7 +32,7 @@ KNM_KEY_TYPING_RATCHET = [
     "tests/test_knm_key_quality_gate.py",
 ]
 KNM_KEY_DOCSTRING_RATCHET = [*KNM_KEY_TYPING_RATCHET]
-KNM_KEY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-knm-key-quality.coverage"  # nosec B108
+KNM_KEY_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-knm-key-quality.coverage")
 KNM_KEY_COVERAGE_INCLUDE = "*/crypto/knm_key.py,*/crypto/noise_analysis.py"
 
 

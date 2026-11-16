@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUANTUM_NEUROMORPHIC_BRIDGE_SOURCE = "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
 QUANTUM_DENSE_LAYER_SOURCE = "src/scpn_quantum_control/qsnn/qlayer.py"
@@ -44,8 +46,8 @@ QUANTUM_NEUROMORPHIC_BRIDGE_DOCSTRING_RATCHET = [
     "tools/quantum_neuromorphic_bridge_quality_gates.py",
     "tests/test_quantum_neuromorphic_bridge_quality_gate.py",
 ]
-QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-quantum-neuromorphic-bridge-quality.coverage"  # nosec B108
+QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-quantum-neuromorphic-bridge-quality.coverage"
 )
 QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_INCLUDE = (
     "*/qsnn/quantum_neuromorphic_bridge.py,*/qsnn/qlayer.py,"

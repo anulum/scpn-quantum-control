@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import phase_coupling_learning_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -37,7 +38,10 @@ def test_coverage_gate_runs_real_simulator_suite_and_is_exact() -> None:
     report = gates["phase-coupling-learning exact coverage threshold"]
     assert "--branch" in run
     assert run[-1:] == quality_gates.PHASE_COUPLING_LEARNING_COVERAGE_COHORT
-    assert quality_gates.PHASE_COUPLING_LEARNING_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.PHASE_COUPLING_LEARNING_COVERAGE_DATA_FILE).parent
+        == quality_coverage_dir()
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.PHASE_COUPLING_LEARNING_COVERAGE_INCLUDE}" in report
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 CONTROL_STACK_COMPOSE_QUALITY_RATCHET = [
@@ -36,7 +38,9 @@ CONTROL_STACK_COMPOSE_COVERAGE_COHORT = [
 ]
 """Tests that own exact control-stack compose product coverage."""
 
-CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-control-stack-compose-quality.coverage"  # nosec B108
+CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-control-stack-compose-quality.coverage"
+)
 """Isolated coverage database for the control-stack compose owner."""
 CONTROL_STACK_COMPOSE_COVERAGE_INCLUDE = (
     "*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py,*/control/qaoa_mpc.py"

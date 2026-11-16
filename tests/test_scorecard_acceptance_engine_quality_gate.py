@@ -10,6 +10,7 @@
 from tools import preflight
 from tools import scorecard_acceptance_engine_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -27,7 +28,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     gates = dict(quality_gates.build_coverage_gates("/python"))
     run = gates["scorecard-acceptance-engine focused coverage"]
     assert "--branch" in run
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in gates["scorecard-acceptance-engine exact coverage threshold"]
 
 

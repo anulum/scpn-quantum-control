@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 APPLICATION_HONESTY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/applications/honesty_kits.py",
@@ -28,7 +30,9 @@ APPLICATION_HONESTY_QUALITY_RATCHET = [
     "tests/test_application_honesty_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-APPLICATION_HONESTY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-application-honesty-quality.coverage"
+APPLICATION_HONESTY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-application-honesty-quality.coverage"
+)
 """Isolated coverage database for the application honesty module."""
 APPLICATION_HONESTY_COVERAGE_COHORT = [
     "tests/test_application_honesty_kits.py",

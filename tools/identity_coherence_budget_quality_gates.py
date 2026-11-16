@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 IDENTITY_COHERENCE_BUDGET_QUALITY_RATCHET = [
@@ -26,8 +28,8 @@ IDENTITY_COHERENCE_BUDGET_COVERAGE_COHORT = [
 ]
 """Tests that own exact identity coherence-budget coverage."""
 
-IDENTITY_COHERENCE_BUDGET_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-identity-coherence-budget-quality.coverage"  # nosec B108
+IDENTITY_COHERENCE_BUDGET_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-identity-coherence-budget-quality.coverage"
 )
 """Isolated coverage database for the identity coherence-budget owner."""
 

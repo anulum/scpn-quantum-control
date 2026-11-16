@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 RESULT_PACK_SEAL_SOURCE = "src/scpn_quantum_control/studio/result_pack_seal.py"
 RESULT_PACK_SEAL_COVERAGE_COHORT = ["tests/test_result_pack_seal.py"]
@@ -21,8 +23,8 @@ RESULT_PACK_SEAL_TYPING_RATCHET = [
     "tests/test_result_pack_seal_quality_gate.py",
 ]
 RESULT_PACK_SEAL_DOCSTRING_RATCHET = [*RESULT_PACK_SEAL_TYPING_RATCHET]
-RESULT_PACK_SEAL_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-result-pack-seal-quality.coverage"
+RESULT_PACK_SEAL_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-result-pack-seal-quality.coverage"
 )
 
 

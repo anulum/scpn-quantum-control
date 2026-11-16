@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PHASE_ARTIFACT_SOURCE = "src/scpn_quantum_control/bridge/phase_artifact.py"
 SCPN_UPDE_EDGE_SOURCE = "src/scpn_quantum_control/bridge/scpn_upde_edge.py"
@@ -30,7 +32,9 @@ PHASE_ARTIFACT_TYPING_RATCHET = [
 PHASE_ARTIFACT_DOCSTRING_RATCHET = [
     *PHASE_ARTIFACT_TYPING_RATCHET,
 ]
-PHASE_ARTIFACT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-artifact-quality.coverage"  # nosec B108
+PHASE_ARTIFACT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-phase-artifact-quality.coverage"
+)
 PHASE_ARTIFACT_COVERAGE_INCLUDE = "*/bridge/phase_artifact.py,*/bridge/scpn_upde_edge.py"
 
 

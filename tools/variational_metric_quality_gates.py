@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 VARIATIONAL_METRIC_SOURCE = "src/scpn_quantum_control/phase/variational_metric.py"
@@ -34,7 +36,9 @@ VARIATIONAL_METRIC_DOCSTRING_RATCHET = [
 ]
 """Complete production, owner-test, and gate-contract docstring cohort."""
 
-VARIATIONAL_METRIC_COVERAGE_DATA_FILE = "/tmp/scpn-qc-variational-metric-quality.coverage"  # nosec B108
+VARIATIONAL_METRIC_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-variational-metric-quality.coverage"
+)
 """Isolated coverage database for the variational-metric owner."""
 
 

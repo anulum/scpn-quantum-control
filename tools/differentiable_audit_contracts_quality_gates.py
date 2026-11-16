@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_AUDIT_CONTRACTS_SOURCE = (
     "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
@@ -37,8 +39,8 @@ DIFFERENTIABLE_AUDIT_CONTRACTS_DOCSTRING_RATCHET = [
     "tools/differentiable_audit_contracts_quality_gates.py",
     "tests/test_differentiable_audit_contracts_quality_gate.py",
 ]
-DIFFERENTIABLE_AUDIT_CONTRACTS_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-audit-contracts-quality.coverage"  # nosec B108
+DIFFERENTIABLE_AUDIT_CONTRACTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-audit-contracts-quality.coverage"
 )
 
 

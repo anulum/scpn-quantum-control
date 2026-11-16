@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PHASE_RESULTS_SOURCE = "src/scpn_quantum_control/phase/results.py"
 XY_KURAMOTO_SOURCE = "src/scpn_quantum_control/phase/xy_kuramoto.py"
@@ -55,7 +57,7 @@ PHASE_RESULTS_DOCSTRING_RATCHET = [
     "tools/phase_results_quality_gates.py",
     "tests/test_phase_results_quality_gate.py",
 ]
-PHASE_RESULTS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-results-quality.coverage"  # nosec B108
+PHASE_RESULTS_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-phase-results-quality.coverage")
 PHASE_RESULTS_COVERAGE_INCLUDE = (
     "*/phase/results.py,*/phase/xy_kuramoto.py,*/phase/lindblad.py,"
     "*/phase/lindblad_engine.py,*/phase/density_input.py"

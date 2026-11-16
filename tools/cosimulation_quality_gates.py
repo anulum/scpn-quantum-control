@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 COSIMULATION_TYPING_RATCHET = [
@@ -35,7 +37,7 @@ COSIMULATION_COVERAGE_COHORT = [
     "tests/test_knm_partition_branches.py",
 ]
 """Real tests that own exact K_nm partition coverage."""
-COSIMULATION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-cosimulation-quality.coverage"  # nosec B108
+COSIMULATION_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-cosimulation-quality.coverage")
 """Isolated coverage database for quantum/classical cosimulation."""
 COSIMULATION_COVERAGE_INCLUDE = (
     "*/cosimulation/knm_partition.py,*/cosimulation/quantum_classical.py"

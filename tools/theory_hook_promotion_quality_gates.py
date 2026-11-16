@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 THEORY_HOOK_PROMOTION_SOURCE = "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
 MAGIC_NONSTABILIZERNESS_SOURCE = "src/scpn_quantum_control/analysis/magic_nonstabilizerness.py"
@@ -32,7 +34,9 @@ THEORY_HOOK_PROMOTION_COVERAGE_COHORT = [
     "tests/test_magic_nonstabilizerness.py",
 ]
 """Tests that own exact theory-hook-promotion coverage."""
-THEORY_HOOK_PROMOTION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-theory-hook-promotion-quality.coverage"  # nosec B108
+THEORY_HOOK_PROMOTION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-theory-hook-promotion-quality.coverage"
+)
 """Isolated coverage database for theory-hook-promotion diagnostics."""
 
 

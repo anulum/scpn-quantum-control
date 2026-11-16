@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KURAMOTO_VARIANTS_SOURCE = "src/scpn_quantum_control/phase/kuramoto_variants.py"
 KURAMOTO_VARIANTS_MIXED_CONSUMER = "tests/test_commutator_bounds.py"
@@ -37,7 +39,9 @@ KURAMOTO_VARIANTS_DOCSTRING_RATCHET = [
     "tools/kuramoto_variants_quality_gates.py",
     "tests/test_kuramoto_variants_quality_gate.py",
 ]
-KURAMOTO_VARIANTS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kuramoto-variants-quality.coverage"  # nosec B108
+KURAMOTO_VARIANTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-kuramoto-variants-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

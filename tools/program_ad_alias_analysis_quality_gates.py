@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PROGRAM_AD_ALIAS_ANALYSIS_SOURCE = "src/scpn_quantum_control/program_ad_alias_analysis.py"
 PROGRAM_AD_ALIAS_ANALYSIS_TESTS = [
@@ -25,8 +27,8 @@ PROGRAM_AD_ALIAS_ANALYSIS_TYPING_RATCHET = [
     "tests/test_program_ad_alias_analysis_quality_gate.py",
 ]
 PROGRAM_AD_ALIAS_ANALYSIS_DOCSTRING_RATCHET = [*PROGRAM_AD_ALIAS_ANALYSIS_TYPING_RATCHET]
-PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-program-ad-alias-analysis-quality.coverage"  # nosec B108
+PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-program-ad-alias-analysis-quality.coverage"
 )
 
 

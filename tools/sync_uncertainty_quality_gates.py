@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 SYNC_UNCERTAINTY_SOURCE = "src/scpn_quantum_control/analysis/sync_uncertainty.py"
 ZNE_UNCERTAINTY_SOURCE = "src/scpn_quantum_control/mitigation/zne_uncertainty.py"
@@ -47,7 +49,9 @@ SYNC_UNCERTAINTY_DOCSTRING_RATCHET = [
     "tools/sync_uncertainty_quality_gates.py",
     "tests/test_sync_uncertainty_quality_gate.py",
 ]
-SYNC_UNCERTAINTY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-sync-uncertainty-quality.coverage"  # nosec B108
+SYNC_UNCERTAINTY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-sync-uncertainty-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

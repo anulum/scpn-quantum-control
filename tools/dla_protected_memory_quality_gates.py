@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DLA_PROTECTED_MEMORY_SOURCES = [
     "src/scpn_quantum_control/qec/dla_protected_scar.py",
@@ -40,7 +42,9 @@ DLA_PROTECTED_MEMORY_DOCSTRING_RATCHET = [
     "tests/test_dla_protected_memory_quality_gate.py",
 ]
 """Direct owner surfaces held to complete NumPy docstrings."""
-DLA_PROTECTED_MEMORY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-protected-memory-quality.coverage"  # nosec B108
+DLA_PROTECTED_MEMORY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-dla-protected-memory-quality.coverage"
+)
 """Isolated coverage database for the protected-memory owner."""
 DLA_PROTECTED_MEMORY_COVERAGE_INCLUDE = (
     "*/qec/dla_protected_scar.py,*/qec/dla_protected_subspace.py"

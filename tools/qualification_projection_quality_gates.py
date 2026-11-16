@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUALIFICATION_PROJECTION_QUALITY_RATCHET = [
     "src/scpn_quantum_control/qualification_status_projection.py",
@@ -43,8 +45,8 @@ QUALIFICATION_PROJECTION_COVERAGE_INCLUDE = (
     "*/tools/ci_workflow_inventory.py,*/differentiable_baseline_scorecard.py"
 )
 """Source modules measured at exact branch coverage."""
-QUALIFICATION_PROJECTION_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-qualification-projection-quality.coverage"  # nosec B108
+QUALIFICATION_PROJECTION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-qualification-projection-quality.coverage"
 )
 """Isolated coverage database for the qualification projection owner."""
 

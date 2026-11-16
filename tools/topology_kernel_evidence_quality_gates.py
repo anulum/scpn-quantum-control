@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 TOPOLOGY_KERNEL_EVIDENCE_SOURCE = "src/scpn_quantum_control/topology_kernel_product/evidence.py"
 """Production source owned by deterministic topology-kernel evidence."""
@@ -31,8 +33,8 @@ TOPOLOGY_KERNEL_EVIDENCE_DOCSTRING_RATCHET = [
     "tests/test_topology_kernel_evidence_quality_gate.py",
 ]
 """Complete evidence-owner and gate-contract docstring cohort."""
-TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-topology-kernel-evidence-quality.coverage"  # nosec B108
+TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-topology-kernel-evidence-quality.coverage"
 )
 """Isolated coverage database for the topology-kernel evidence owner."""
 

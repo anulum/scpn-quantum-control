@@ -12,6 +12,7 @@ from __future__ import annotations
 from tools import preflight
 from tools import public_api_stability_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -33,7 +34,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["public-api-stability focused coverage"]
     report = gates["public-api-stability exact coverage threshold"]
     assert f"--data-file={quality_gates.PUBLIC_API_STABILITY_COVERAGE_DATA_FILE}" in run
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--branch" in run
     assert run[-1:] == quality_gates.PUBLIC_API_STABILITY_COVERAGE_COHORT
     assert "--fail-under=100" in report

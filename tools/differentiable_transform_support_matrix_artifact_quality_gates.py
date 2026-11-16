@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 TRANSFORM_SUPPORT_MATRIX_ARTIFACT_SOURCE = (
     "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py"
@@ -34,8 +36,8 @@ TRANSFORM_SUPPORT_MATRIX_ARTIFACT_DOCSTRING_RATCHET = [
     "tools/differentiable_transform_support_matrix_artifact_quality_gates.py",
     "tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py",
 ]
-TRANSFORM_SUPPORT_MATRIX_ARTIFACT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-transform-support-matrix-artifact-quality.coverage"  # nosec B108
+TRANSFORM_SUPPORT_MATRIX_ARTIFACT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-transform-support-matrix-artifact-quality.coverage"
 )
 
 

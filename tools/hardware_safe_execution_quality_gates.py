@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 HARDWARE_SAFE_EXECUTION_TYPING_RATCHET = [
     "src/scpn_quantum_control/hardware_safe_execution.py",
@@ -80,8 +82,8 @@ HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT = [
     "tests/test_s1_feedback_ibm_branches.py",
 ]
 """Tests that own hardware-safe, active-sensing, and capability coverage."""
-HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-hardware-safe-execution-quality.coverage"  # nosec B108
+HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-hardware-safe-execution-quality.coverage"
 )
 """Isolated coverage database for the hardware-safe execution owner."""
 HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE = (

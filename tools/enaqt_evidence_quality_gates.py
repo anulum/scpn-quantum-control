@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 ENAQT_EVIDENCE_QUALITY_RATCHET = [
@@ -27,7 +29,9 @@ ENAQT_EVIDENCE_COVERAGE_COHORT = [
 ]
 """Tests that own exact ENAQT evidence coverage."""
 
-ENAQT_EVIDENCE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-enaqt-evidence-quality.coverage"  # nosec B108
+ENAQT_EVIDENCE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-enaqt-evidence-quality.coverage"
+)
 """Isolated coverage database for the ENAQT evidence owner."""
 
 

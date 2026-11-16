@@ -40,6 +40,20 @@ pytest tests/ -v --tb=short -m "not slow"
 pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
 ```
 
+## Quality-gate coverage databases
+
+Each `tools/*_quality_gates.py` builder runs its focused coverage cohort against
+an isolated coverage database, then reports from that database. Locally, through
+`tools/preflight.py` or a direct import, every database lives in one private
+directory per process, given by `tools/quality_coverage_paths.py`. The directory
+is created with `tempfile.mkdtemp` (random name, owner-only permissions) and
+removed when the process exits. Two local runs of the same gate therefore never
+share a database, and no other user can create one in their place. The hosted
+workflows keep their literal `/tmp/<name>.coverage` paths, because every job runs
+on a fresh single-tenant runner. Each gate's contract test checks that the
+database lies in the private directory and that the workflow uses the same file
+name.
+
 ## Advanced-witnesses quality gate
 
 The Krylov, OTOC, classical-shadow, and harmonic-order-parameter product has a

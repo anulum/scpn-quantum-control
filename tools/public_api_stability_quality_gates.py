@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 PUBLIC_API_STABILITY_QUALITY_RATCHET = [
@@ -24,7 +26,9 @@ PUBLIC_API_STABILITY_QUALITY_RATCHET = [
 PUBLIC_API_STABILITY_COVERAGE_COHORT = ["tests/test_public_api_stability.py"]
 """Tests that own exact public API stability coverage."""
 
-PUBLIC_API_STABILITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-public-api-stability.coverage"  # nosec B108
+PUBLIC_API_STABILITY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-public-api-stability.coverage"
+)
 """Isolated coverage database for the public API stability owner."""
 
 

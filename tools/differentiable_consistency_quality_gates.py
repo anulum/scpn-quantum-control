@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_CONSISTENCY_SOURCE = "src/scpn_quantum_control/differentiable_consistency.py"
 DIFFERENTIABLE_CONSISTENCY_PRIMARY_TEST = "tests/test_differentiable_consistency.py"
@@ -22,8 +24,8 @@ DIFFERENTIABLE_CONSISTENCY_TYPING_RATCHET = [
     "tests/test_differentiable_consistency_quality_gate.py",
 ]
 DIFFERENTIABLE_CONSISTENCY_DOCSTRING_RATCHET = [*DIFFERENTIABLE_CONSISTENCY_TYPING_RATCHET]
-DIFFERENTIABLE_CONSISTENCY_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-consistency-quality.coverage"  # nosec B108
+DIFFERENTIABLE_CONSISTENCY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-consistency-quality.coverage"
 )
 
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 XY_COMPILER_SOURCE = "src/scpn_quantum_control/phase/xy_compiler.py"
 XY_COMPILER_OWNER_TEST = "tests/test_xy_compiler.py"
@@ -23,7 +25,7 @@ XY_COMPILER_TYPING_RATCHET = [
 ]
 XY_COMPILER_DOCSTRING_RATCHET = [*XY_COMPILER_TYPING_RATCHET]
 XY_COMPILER_COVERAGE_COHORT = [XY_COMPILER_OWNER_TEST, XY_COMPILER_CONTRACT_TEST]
-XY_COMPILER_COVERAGE_DATA_FILE = "/tmp/scpn-qc-xy-compiler-quality.coverage"  # nosec B108
+XY_COMPILER_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-xy-compiler-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 OPEN_SYSTEM_OBJECTIVE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py",
@@ -27,7 +29,9 @@ OPEN_SYSTEM_OBJECTIVE_COVERAGE_COHORT = [
     "tests/test_phase_open_system_objectives.py",
 ]
 """Tests that own exact open-system-objective coverage."""
-OPEN_SYSTEM_OBJECTIVE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-open-system-objective.coverage"  # nosec B108
+OPEN_SYSTEM_OBJECTIVE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-open-system-objective.coverage"
+)
 """Isolated coverage database for the open-system-objective owner."""
 OPEN_SYSTEM_OBJECTIVE_COVERAGE_INCLUDE = (
     "*/benchmarks/open_system_objective_evidence.py,*/phase/open_system_objectives.py"

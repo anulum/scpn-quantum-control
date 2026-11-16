@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 CODESIGN_COMPONENTS_QUALITY_RATCHET = [
@@ -37,7 +39,9 @@ CODESIGN_COMPONENTS_COVERAGE_COHORT = [
 ]
 """Tests that own exact co-design component coverage."""
 
-CODESIGN_COMPONENTS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-codesign-components-quality.coverage"  # nosec B108
+CODESIGN_COMPONENTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-codesign-components-quality.coverage"
+)
 """Isolated coverage database for the co-design components owner."""
 
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ACCELERATED_BATCH_EXECUTION_SOURCE = "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
 ACCELERATED_BATCH_EXECUTION_COVERAGE_COHORT = [
@@ -24,8 +26,8 @@ ACCELERATED_BATCH_EXECUTION_TYPING_RATCHET = [
     "tests/test_accelerated_batch_execution_quality_gate.py",
 ]
 ACCELERATED_BATCH_EXECUTION_DOCSTRING_RATCHET = [*ACCELERATED_BATCH_EXECUTION_TYPING_RATCHET]
-ACCELERATED_BATCH_EXECUTION_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-accelerated-batch-execution-quality.coverage"
+ACCELERATED_BATCH_EXECUTION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-accelerated-batch-execution-quality.coverage"
 )
 
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 DIFF_CONTRACT_AUDIT_QUALITY_RATCHET = [
@@ -29,7 +31,9 @@ DIFF_CONTRACT_AUDIT_COVERAGE_COHORT = [
 ]
 """Tests that own exact differentiable-circuit audit coverage."""
 
-DIFF_CONTRACT_AUDIT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-diff-contract-audit-quality.coverage"  # nosec B108
+DIFF_CONTRACT_AUDIT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-diff-contract-audit-quality.coverage"
+)
 """Isolated coverage database for the differentiable-circuit audit owner."""
 
 

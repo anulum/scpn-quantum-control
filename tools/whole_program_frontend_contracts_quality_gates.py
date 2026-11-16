@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_CONFIG = "tools/whole_program_frontend.coveragerc"
 """Shared real-subprocess coverage configuration for source admission."""
 
@@ -52,8 +54,8 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_DOCSTRING_RATCHET = [
 ]
 """Complete production, owner-test, and gate-contract docstring cohort."""
 
-WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage"  # nosec B108
+WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-whole-program-frontend-contracts-quality.coverage"
 )
 """Isolated coverage database for the frontend-contract owner."""
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE = (

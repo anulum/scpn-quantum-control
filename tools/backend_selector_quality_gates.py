@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 BACKEND_SELECTOR_QUALITY_RATCHET = [
@@ -24,7 +26,9 @@ BACKEND_SELECTOR_QUALITY_RATCHET = [
 BACKEND_SELECTOR_COVERAGE_COHORT = ["tests/test_backend_selector.py"]
 """Tests that own exact backend-selector coverage."""
 
-BACKEND_SELECTOR_COVERAGE_DATA_FILE = "/tmp/scpn-qc-backend-selector-quality.coverage"  # nosec B108
+BACKEND_SELECTOR_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-backend-selector-quality.coverage"
+)
 """Isolated coverage database for the backend-selector owner."""
 
 

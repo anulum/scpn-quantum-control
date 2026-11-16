@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 COUPLING_RECOVERY_QUALITY_RATCHET = [
@@ -30,7 +32,9 @@ COUPLING_RECOVERY_COVERAGE_COHORT = [
 ]
 """Tests that own exact coupling-recovery coverage."""
 
-COUPLING_RECOVERY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-coupling-recovery-quality.coverage"  # nosec B108
+COUPLING_RECOVERY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-coupling-recovery-quality.coverage"
+)
 """Isolated coverage database for the coupling-recovery owner."""
 
 

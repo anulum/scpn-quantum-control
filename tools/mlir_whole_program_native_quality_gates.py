@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 MLIR_WHOLE_PROGRAM_NATIVE_SOURCE = "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
 MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE = (
@@ -39,8 +41,8 @@ MLIR_WHOLE_PROGRAM_NATIVE_TYPING_RATCHET = [
 MLIR_WHOLE_PROGRAM_NATIVE_DOCSTRING_RATCHET = [
     *MLIR_WHOLE_PROGRAM_NATIVE_TYPING_RATCHET,
 ]
-MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-mlir-whole-program-native-quality.coverage"  # nosec B108
+MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-mlir-whole-program-native-quality.coverage"
 )
 
 

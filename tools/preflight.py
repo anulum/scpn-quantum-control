@@ -39,7 +39,6 @@ from importlib import import_module
 from os import X_OK, access, devnull, environ, pathsep
 from pathlib import Path
 from shutil import which
-from tempfile import gettempdir
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -399,10 +398,12 @@ if TYPE_CHECKING:
         xy_compile_recompute_artifact_quality_gates as _xy_compile_recompute_artifact_quality_gates,
     )
     from tools import xy_compiler_quality_gates as _xy_compiler_quality_gates
+    from tools.quality_coverage_paths import quality_coverage_file
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    quality_coverage_file = import_module("tools.quality_coverage_paths").quality_coverage_file
     _adaptive_branching_quality_gates = import_module("tools.adaptive_branching_quality_gates")
     _advanced_witnesses_quality_gates = import_module("tools.advanced_witnesses_quality_gates")
     _quantum_sensing_quality_gates = import_module("tools.quantum_sensing_quality_gates")
@@ -1936,9 +1937,7 @@ HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES = (
 COSIMULATION_COVERAGE_GATES = _cosimulation_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_MODEL_COVERAGE_GATES = _kuramoto_model_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_SOLVER_COVERAGE_GATES = _kuramoto_solver_quality_gates.build_coverage_gates(_PY)
-CIRCUIT_PRESERVATION_COVERAGE_DATA = str(
-    Path(gettempdir()) / "scpn-qc-circuit-preservation.coverage"
-)
+CIRCUIT_PRESERVATION_COVERAGE_DATA = quality_coverage_file("scpn-qc-circuit-preservation.coverage")
 CIRCUIT_PRESERVATION_COVERAGE_GATES = _circuit_preservation_quality_gates.build_coverage_gates(
     _PY, CIRCUIT_PRESERVATION_COVERAGE_DATA
 )

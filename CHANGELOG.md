@@ -1134,6 +1134,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     `deadline=None` and 7 suppressed `too_slow` by hand.
   - `test_hypothesis_shared_host_profile.py` in each tree checks that the
     profile is active and that per-test settings inherit it.
+
+- The quality-gate coverage databases no longer use hard-coded `/tmp` paths
+  locally.
+  - Before: 141 `tools/*_quality_gates.py` builders and one preflight gate
+    named their databases directly under `/tmp`. Two local runs of the same
+    gate wrote the same file, and the predictable names were open to
+    pre-creation in a shared directory. 135 of the 143 literals carried a
+    bare `# nosec B108`; Bandit flagged the other 8.
+  - Now: the new `tools/quality_coverage_paths.py` gives every process one
+    private directory (`mkdtemp`: random name, owner-only, removed at exit),
+    and each builder names its database inside it.
+  - The `nosec B108` markers are gone, and Bandit reports no B108 in
+    `tools/`.
+  - The hosted workflows keep their `/tmp` paths, since every job runs on a
+    fresh single-tenant runner. The 136 contract tests now check the
+    private directory, and compare the workflow by database name.
   - Only `tests/test_perf_regression.py`, whose speed-up floors depend on
     the host, keeps the classification. A new test pins it as the only
     performance gate and checks that the default lane still excludes the

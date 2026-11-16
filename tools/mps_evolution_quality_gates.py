@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 MPS_EVOLUTION_SOURCE = "src/scpn_quantum_control/phase/mps_evolution.py"
 MPS_EVOLUTION_COVERAGE_COHORT = [
@@ -52,7 +54,7 @@ MPS_EVOLUTION_DOCSTRING_RATCHET = [
     "tools/mps_evolution_quality_gates.py",
     "tests/test_mps_evolution_quality_gate.py",
 ]
-MPS_EVOLUTION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-mps-evolution-quality.coverage"  # nosec B108
+MPS_EVOLUTION_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-mps-evolution-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

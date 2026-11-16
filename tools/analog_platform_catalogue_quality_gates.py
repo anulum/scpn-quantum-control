@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 ANALOG_PLATFORM_CATALOGUE_SOURCE = "src/scpn_quantum_control/analog_mapping/platforms.py"
@@ -46,8 +48,8 @@ ANALOG_PLATFORM_CATALOGUE_COVERAGE_COHORT = [
 ]
 """Real catalogue, readiness, provider-plan, and exporter suites."""
 
-ANALOG_PLATFORM_CATALOGUE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-analog-platform-catalogue-quality.coverage"  # nosec B108
+ANALOG_PLATFORM_CATALOGUE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-analog-platform-catalogue-quality.coverage"
 )
 """Isolated coverage database for the analog platform catalogue."""
 

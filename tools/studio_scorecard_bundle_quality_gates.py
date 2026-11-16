@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_SCORECARD_BUNDLE_SOURCE = "src/scpn_quantum_control/studio/scorecard_bundle.py"
 STUDIO_SCORECARD_BUNDLE_COVERAGE_COHORT = ["tests/test_studio_scorecard_bundle.py"]
@@ -23,8 +25,8 @@ STUDIO_SCORECARD_BUNDLE_TYPING_RATCHET = [
 STUDIO_SCORECARD_BUNDLE_DOCSTRING_RATCHET = [
     *STUDIO_SCORECARD_BUNDLE_TYPING_RATCHET,
 ]
-STUDIO_SCORECARD_BUNDLE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-studio-scorecard-bundle-quality.coverage"  # nosec B108
+STUDIO_SCORECARD_BUNDLE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-scorecard-bundle-quality.coverage"
 )
 
 

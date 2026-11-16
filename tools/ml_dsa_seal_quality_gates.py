@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ML_DSA_SEAL_SOURCE = "src/scpn_quantum_control/crypto/ml_dsa_seal.py"
 """Production source owned by the ML-DSA signer and verifier."""
@@ -34,7 +36,7 @@ ML_DSA_SEAL_DOCSTRING_RATCHET = [
     "tests/test_ml_dsa_seal_quality_gate.py",
 ]
 """Complete signer, integration, and gate-contract docstring cohort."""
-ML_DSA_SEAL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-ml-dsa-seal-quality.coverage"  # nosec B108
+ML_DSA_SEAL_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-ml-dsa-seal-quality.coverage")
 """Isolated coverage database for the ML-DSA seal owner."""
 
 

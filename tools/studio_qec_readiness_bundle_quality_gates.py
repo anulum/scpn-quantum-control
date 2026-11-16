@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_QEC_READINESS_BUNDLE_SOURCE = "src/scpn_quantum_control/studio/qec_readiness_bundle.py"
 STUDIO_QEC_INSTRUMENT_SOURCE = (
@@ -33,8 +35,8 @@ STUDIO_QEC_READINESS_BUNDLE_TYPING_RATCHET = [
 STUDIO_QEC_READINESS_BUNDLE_DOCSTRING_RATCHET = [
     *STUDIO_QEC_READINESS_BUNDLE_TYPING_RATCHET,
 ]
-STUDIO_QEC_READINESS_BUNDLE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-studio-qec-readiness-bundle-quality.coverage"  # nosec B108
+STUDIO_QEC_READINESS_BUNDLE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-qec-readiness-bundle-quality.coverage"
 )
 
 

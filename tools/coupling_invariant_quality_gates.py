@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 COUPLING_INVARIANT_SOURCE = "src/scpn_quantum_control/studio/coupling_invariant.py"
 COUPLING_INVARIANT_COVERAGE_COHORT = [
@@ -25,7 +27,9 @@ COUPLING_INVARIANT_TYPING_RATCHET = [
 COUPLING_INVARIANT_DOCSTRING_RATCHET = [
     *COUPLING_INVARIANT_TYPING_RATCHET,
 ]
-COUPLING_INVARIANT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-coupling-invariant-quality.coverage"  # nosec B108
+COUPLING_INVARIANT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-coupling-invariant-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

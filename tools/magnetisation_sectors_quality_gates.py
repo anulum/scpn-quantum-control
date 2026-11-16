@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 MAGNETISATION_SECTORS_SOURCE = "src/scpn_quantum_control/analysis/magnetisation_sectors.py"
 SPECTRAL_FORM_FACTOR_SOURCE = "src/scpn_quantum_control/analysis/spectral_form_factor.py"
@@ -72,7 +74,9 @@ MAGNETISATION_SECTORS_DOCSTRING_RATCHET = [
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
-MAGNETISATION_SECTORS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-magnetisation-sectors-quality.coverage"  # nosec B108
+MAGNETISATION_SECTORS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-magnetisation-sectors-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

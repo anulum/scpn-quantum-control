@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 GRADIENT_PLAN_EXPLANATION_ARTIFACT_SOURCE = (
     "src/scpn_quantum_control/gradient_plan_explanation_artifact.py"
@@ -29,8 +31,8 @@ GRADIENT_PLAN_EXPLANATION_ARTIFACT_DOCSTRING_RATCHET = [
     "tools/gradient_plan_explanation_artifact_quality_gates.py",
     "tests/test_gradient_plan_explanation_artifact_quality_gate.py",
 ]
-GRADIENT_PLAN_EXPLANATION_ARTIFACT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-gradient-plan-explanation-artifact-quality.coverage"  # nosec B108
+GRADIENT_PLAN_EXPLANATION_ARTIFACT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-gradient-plan-explanation-artifact-quality.coverage"
 )
 
 

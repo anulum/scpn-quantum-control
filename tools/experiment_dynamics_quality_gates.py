@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 EXPERIMENT_DYNAMICS_SOURCE = "src/scpn_quantum_control/hardware/experiment_dynamics.py"
 EXPERIMENT_DYNAMICS_COVERAGE_COHORT = ["tests/test_experiment_dynamics.py"]
@@ -25,7 +27,9 @@ EXPERIMENT_DYNAMICS_DOCSTRING_RATCHET = [
     "tools/experiment_dynamics_quality_gates.py",
     "tests/test_experiment_dynamics_quality_gate.py",
 ]
-EXPERIMENT_DYNAMICS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-experiment-dynamics-quality.coverage"  # nosec B108
+EXPERIMENT_DYNAMICS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-experiment-dynamics-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

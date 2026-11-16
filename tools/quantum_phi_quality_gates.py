@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUANTUM_PHI_SOURCE = "src/scpn_quantum_control/analysis/quantum_phi.py"
 INTEGRATED_INFORMATION_PHI_SOURCE = (
@@ -57,7 +59,7 @@ QUANTUM_PHI_DOCSTRING_RATCHET = [
     "tools/quantum_phi_quality_gates.py",
     "tests/test_quantum_phi_quality_gate.py",
 ]
-QUANTUM_PHI_COVERAGE_DATA_FILE = "/tmp/scpn-qc-quantum-phi-quality.coverage"  # nosec B108
+QUANTUM_PHI_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-quantum-phi-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KYMA_V2_COUPLING_SOURCE = "src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py"
 KYMA_V2_COUPLING_COVERAGE_COHORT = [
@@ -25,7 +27,9 @@ KYMA_V2_COUPLING_TYPING_RATCHET = [
 KYMA_V2_COUPLING_DOCSTRING_RATCHET = [
     *KYMA_V2_COUPLING_TYPING_RATCHET,
 ]
-KYMA_V2_COUPLING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-v2-coupling-quality.coverage"  # nosec B108
+KYMA_V2_COUPLING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-kyma-v2-coupling-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

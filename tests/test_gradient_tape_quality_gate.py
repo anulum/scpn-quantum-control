@@ -7,9 +7,12 @@
 # SCPN Quantum Control — phase tape quality-gate tests
 """Lock the phase gradient/QNode tape gate into preflight and CI."""
 
+from pathlib import Path
+
 from tools import gradient_tape_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -28,7 +31,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     report = gates["gradient-tape exact coverage threshold"]
     assert "--branch" in run
     assert run[-2:] == quality_gates.GRADIENT_TAPE_COVERAGE_COHORT
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/phase/gradient_tape.py,*/phase/qnode_tape.py" in report
 
@@ -49,5 +52,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  fault-tolerant-resource-product-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.GRADIENT_TAPE_QUALITY_RATCHET)
-    assert quality_gates.GRADIENT_TAPE_COVERAGE_DATA_FILE in block
+    assert f"/tmp/{Path(quality_gates.GRADIENT_TAPE_COVERAGE_DATA_FILE).name}" in block
     assert "gradient-tape-quality" in workflow[workflow.index("  ci-gate:") :]

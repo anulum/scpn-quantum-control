@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
     "src/scpn_quantum_control/competitive_baseline_watch.py",
@@ -39,7 +41,9 @@ COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT = [
     "tests/test_kuramoto_external_competitors.py",
 ]
 """Tests that own exact competitive-baseline-watch coverage."""
-COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE = "/tmp/.coverage.competitive-baseline-watch-quality"
+COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE = quality_coverage_file(
+    ".coverage.competitive-baseline-watch-quality"
+)
 """Isolated coverage database for the competitive-baseline-watch owner."""
 
 

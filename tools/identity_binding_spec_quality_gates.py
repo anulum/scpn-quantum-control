@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 IDENTITY_BINDING_SPEC_QUALITY_RATCHET = [
@@ -28,7 +30,9 @@ IDENTITY_BINDING_SPEC_COVERAGE_COHORT = [
 ]
 """Tests that own exact identity binding-spec coverage."""
 
-IDENTITY_BINDING_SPEC_COVERAGE_DATA_FILE = "/tmp/scpn-qc-identity-binding-spec-quality.coverage"  # nosec B108
+IDENTITY_BINDING_SPEC_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-identity-binding-spec-quality.coverage"
+)
 """Isolated coverage database for the identity binding-spec owner."""
 
 

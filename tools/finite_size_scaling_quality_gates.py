@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 FINITE_SIZE_SCALING_SOURCE = "src/scpn_quantum_control/analysis/finite_size_scaling.py"
 PHASE_DIAGRAM_SOURCE = "src/scpn_quantum_control/analysis/phase_diagram.py"
@@ -36,7 +38,9 @@ FINITE_SIZE_SCALING_TYPING_RATCHET = [
     "tests/test_finite_size_scaling_quality_gate.py",
 ]
 FINITE_SIZE_SCALING_DOCSTRING_RATCHET = list(FINITE_SIZE_SCALING_TYPING_RATCHET)
-FINITE_SIZE_SCALING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-finite-size-scaling-quality.coverage"  # nosec B108
+FINITE_SIZE_SCALING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-finite-size-scaling-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

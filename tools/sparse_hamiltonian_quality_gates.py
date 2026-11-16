@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 SPARSE_HAMILTONIAN_SOURCE = "src/scpn_quantum_control/bridge/sparse_hamiltonian.py"
 KNM_HAMILTONIAN_SOURCE = "src/scpn_quantum_control/bridge/knm_hamiltonian.py"
@@ -43,8 +45,8 @@ SPARSE_HAMILTONIAN_TYPING_RATCHET = [
     "tests/test_sparse_hamiltonian_quality_gate.py",
 ]
 SPARSE_HAMILTONIAN_DOCSTRING_RATCHET = [*SPARSE_HAMILTONIAN_TYPING_RATCHET]
-SPARSE_HAMILTONIAN_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-sparse-hamiltonian-quality.coverage"
+SPARSE_HAMILTONIAN_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-sparse-hamiltonian-quality.coverage"
 )
 
 

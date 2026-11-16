@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PHASE_COUPLING_LEARNING_SOURCE = "src/scpn_quantum_control/phase/coupling_learning.py"
 PHASE_COUPLING_LEARNING_TEST = "tests/test_phase_coupling_learning.py"
@@ -33,8 +35,8 @@ PHASE_COUPLING_LEARNING_DOCSTRING_RATCHET = [
 """Whole owner cohort held to complete NumPy docstrings."""
 PHASE_COUPLING_LEARNING_COVERAGE_COHORT = [PHASE_COUPLING_LEARNING_TEST]
 """Public simulator suite that owns source branch coverage."""
-PHASE_COUPLING_LEARNING_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-phase-coupling-learning-quality.coverage"  # nosec B108
+PHASE_COUPLING_LEARNING_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-phase-coupling-learning-quality.coverage"
 )
 PHASE_COUPLING_LEARNING_COVERAGE_INCLUDE = "*/phase/coupling_learning.py"
 

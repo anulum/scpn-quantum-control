@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_DIFFERENTIATE_SOURCE = (
     "src/scpn_quantum_control/studio/executive_differentiate.py"
@@ -25,8 +27,8 @@ STUDIO_EXECUTIVE_DIFFERENTIATE_TYPING_RATCHET = [
 STUDIO_EXECUTIVE_DIFFERENTIATE_DOCSTRING_RATCHET = list(
     STUDIO_EXECUTIVE_DIFFERENTIATE_TYPING_RATCHET
 )
-STUDIO_EXECUTIVE_DIFFERENTIATE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-studio-executive-differentiate-quality.coverage"  # nosec B108
+STUDIO_EXECUTIVE_DIFFERENTIATE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-studio-executive-differentiate-quality.coverage"
 )
 
 

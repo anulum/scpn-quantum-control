@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCE = (
     "src/scpn_quantum_control/differentiable_sparse_derivatives.py"
@@ -36,8 +38,8 @@ DIFFERENTIABLE_SPARSE_DERIVATIVES_DOCSTRING_RATCHET = [
     "tools/differentiable_sparse_derivatives_quality_gates.py",
     "tests/test_differentiable_sparse_derivatives_quality_gate.py",
 ]
-DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-sparse-derivatives-quality.coverage"  # nosec B108
+DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-sparse-derivatives-quality.coverage"
 )
 
 

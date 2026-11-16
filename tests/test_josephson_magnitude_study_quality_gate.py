@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import josephson_magnitude_study_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -36,7 +37,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     report = gates["Josephson magnitude-study exact coverage threshold"]
     assert "--branch" in run
     assert run[-1:] == quality_gates.JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_COHORT
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/applications/josephson_magnitude_study.py" in report
 

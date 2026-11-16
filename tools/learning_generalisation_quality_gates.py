@@ -18,6 +18,8 @@ from pathlib import Path
 
 import coverage
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 LEARNING_GENERALISATION_SOURCES = [
     "src/scpn_quantum_control/qsnn/training.py",
@@ -87,8 +89,8 @@ LEARNING_GENERALISATION_COVERAGE_INCLUDE = ",".join(
     "*/" + path for path in LEARNING_GENERALISATION_TYPING_RATCHET
 )
 LEARNING_GENERALISATION_DOCSTRING_RATCHET = [*LEARNING_GENERALISATION_TYPING_RATCHET]
-LEARNING_GENERALISATION_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-learning-generalisation-quality.coverage"  # nosec B108
+LEARNING_GENERALISATION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-learning-generalisation-quality.coverage"
 )
 
 

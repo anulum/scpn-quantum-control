@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 GENERALISED_PARAMETER_SHIFT_QUALITY_RATCHET = [
@@ -24,8 +26,8 @@ GENERALISED_PARAMETER_SHIFT_QUALITY_RATCHET = [
 GENERALISED_PARAMETER_SHIFT_COVERAGE_COHORT = ["tests/test_phase_generalised_parameter_shift.py"]
 """Real finite-spectrum parameter-shift suite used for exact coverage."""
 
-GENERALISED_PARAMETER_SHIFT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-generalised-parameter-shift-quality.coverage"
+GENERALISED_PARAMETER_SHIFT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-generalised-parameter-shift-quality.coverage"
 )
 """Isolated coverage database for the finite-spectrum shift owner."""
 

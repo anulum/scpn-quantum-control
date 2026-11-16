@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_RESIDUAL_WEIGHTS_SOURCE = (
     "src/scpn_quantum_control/differentiable_residual_weights.py"
@@ -26,8 +28,8 @@ DIFFERENTIABLE_RESIDUAL_WEIGHTS_TYPING_RATCHET = [
 DIFFERENTIABLE_RESIDUAL_WEIGHTS_DOCSTRING_RATCHET = [
     *DIFFERENTIABLE_RESIDUAL_WEIGHTS_TYPING_RATCHET
 ]
-DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-residual-weights-quality.coverage"  # nosec B108
+DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-residual-weights-quality.coverage"
 )
 
 

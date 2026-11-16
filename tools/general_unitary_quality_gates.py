@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 GENERAL_UNITARY_SOURCE = "src/scpn_quantum_control/phase/general_unitary.py"
 GENERAL_UNITARY_PRIMARY_TEST = "tests/test_phase_general_unitary_gates.py"
@@ -22,7 +24,9 @@ GENERAL_UNITARY_TYPING_RATCHET = [
     "tests/test_general_unitary_quality_gate.py",
 ]
 GENERAL_UNITARY_DOCSTRING_RATCHET = [*GENERAL_UNITARY_TYPING_RATCHET]
-GENERAL_UNITARY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-general-unitary-quality.coverage"  # nosec B108
+GENERAL_UNITARY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-general-unitary-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

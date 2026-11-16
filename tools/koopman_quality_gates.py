@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 KOOPMAN_SOURCE = "src/scpn_quantum_control/analysis/koopman.py"
 KOOPMAN_COVERAGE_COHORT = [
@@ -30,7 +32,7 @@ KOOPMAN_DOCSTRING_RATCHET = [
     "tools/koopman_quality_gates.py",
     "tests/test_koopman_quality_gate.py",
 ]
-KOOPMAN_COVERAGE_DATA_FILE = "/tmp/scpn-qc-koopman-quality.coverage"  # nosec B108
+KOOPMAN_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-koopman-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

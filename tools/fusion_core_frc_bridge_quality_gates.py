@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 FUSION_CORE_FRC_BRIDGE_SOURCE = "src/scpn_quantum_control/bridge/fusion_core_frc.py"
 FRC_PULSED_COST_SOURCE = "src/scpn_quantum_control/control/qaoa_pulsed_cost.py"
@@ -35,7 +37,9 @@ FUSION_CORE_FRC_BRIDGE_DOCSTRING_RATCHET = [
     "tools/fusion_core_frc_bridge_quality_gates.py",
     "tests/test_fusion_core_frc_bridge_quality_gate.py",
 ]
-FUSION_CORE_FRC_BRIDGE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-fusion-core-frc-bridge-quality.coverage"  # nosec B108
+FUSION_CORE_FRC_BRIDGE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-fusion-core-frc-bridge-quality.coverage"
+)
 FUSION_CORE_FRC_BRIDGE_COVERAGE_INCLUDE = (
     "*/bridge/fusion_core_frc.py,*/control/qaoa_pulsed_cost.py"
 )

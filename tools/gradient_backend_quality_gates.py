@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 GRADIENT_BACKEND_SOURCE = "src/scpn_quantum_control/phase/gradient_backend.py"
 PROVIDER_GRADIENT_SOURCE = "src/scpn_quantum_control/phase/provider_gradient.py"
@@ -50,7 +52,9 @@ GRADIENT_BACKEND_DOCSTRING_RATCHET = [
     "tools/gradient_backend_quality_gates.py",
     "tests/test_gradient_backend_quality_gate.py",
 ]
-GRADIENT_BACKEND_COVERAGE_DATA_FILE = "/tmp/scpn-qc-gradient-backend-quality.coverage"  # nosec B108
+GRADIENT_BACKEND_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-gradient-backend-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

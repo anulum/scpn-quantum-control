@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ADVANTAGE_LANGUAGE_PROTOCOL_QUALITY_RATCHET = [
     "src/scpn_quantum_control/advantage_language_protocol.py",
@@ -28,8 +30,8 @@ ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_COHORT = [
     "tests/test_advantage_protocol_guards.py",
 ]
 """Tests that own exact advantage-language protocol coverage."""
-ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-advantage-language-protocol-quality.coverage"
+ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-advantage-language-protocol-quality.coverage"
 )
 """Isolated coverage database for the advantage-language protocol owner."""
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_INCLUDE = (

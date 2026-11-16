@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DIFFERENTIABLE_IMPLICIT_SENSITIVITY_SOURCE = (
     "src/scpn_quantum_control/differentiable_implicit_sensitivity.py"
@@ -41,8 +43,8 @@ DIFFERENTIABLE_IMPLICIT_SENSITIVITY_TYPING_RATCHET = [
 DIFFERENTIABLE_IMPLICIT_SENSITIVITY_DOCSTRING_RATCHET = [
     *DIFFERENTIABLE_IMPLICIT_SENSITIVITY_TYPING_RATCHET
 ]
-DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-differentiable-implicit-sensitivity-quality.coverage"  # nosec B108
+DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-differentiable-implicit-sensitivity-quality.coverage"
 )
 
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 RESOURCE_BUDGET_GATE_COVERAGE_CONFIG = "tools/resource_budget_gate.coveragerc"
 """Shared parent/child configuration for real multiprocessing coverage."""
 
@@ -39,7 +41,9 @@ RESOURCE_BUDGET_GATE_COVERAGE_COHORT = [
     "tests/test_hamiltonian_native.py::test_native_required_memory_admission_executes_available_entry_and_releases",
 ]
 """Tests that own exact resource-budget gate coverage."""
-RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-resource-budget-gate-quality.coverage"  # nosec B108
+RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-resource-budget-gate-quality.coverage"
+)
 """Isolated coverage database for the resource-budget gate owner."""
 
 

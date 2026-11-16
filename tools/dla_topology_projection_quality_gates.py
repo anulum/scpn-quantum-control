@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DLA_TOPOLOGY_PROJECTION_SOURCE = "src/scpn_quantum_control/dla_topology_control/projection.py"
 DLA_TOPOLOGY_PROJECTION_COVERAGE_COHORT = [
@@ -27,8 +29,8 @@ DLA_TOPOLOGY_PROJECTION_DOCSTRING_RATCHET = [
     "tools/dla_topology_projection_quality_gates.py",
     "tests/test_dla_topology_projection_quality_gate.py",
 ]
-DLA_TOPOLOGY_PROJECTION_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-dla-topology-projection-quality.coverage"  # nosec B108
+DLA_TOPOLOGY_PROJECTION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-dla-topology-projection-quality.coverage"
 )
 
 

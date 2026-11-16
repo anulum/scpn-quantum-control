@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PULSE_SHAPING_SOURCE = "src/scpn_quantum_control/phase/pulse_shaping.py"
 PULSE_SHAPING_COVERAGE_COHORT = [
@@ -28,7 +30,7 @@ PULSE_SHAPING_DOCSTRING_RATCHET = [
     "tools/pulse_shaping_quality_gates.py",
     "tests/test_pulse_shaping_quality_gate.py",
 ]
-PULSE_SHAPING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-pulse-shaping-quality.coverage"  # nosec B108
+PULSE_SHAPING_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-pulse-shaping-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

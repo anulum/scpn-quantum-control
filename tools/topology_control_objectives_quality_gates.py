@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 TOPOLOGY_CONTROL_SOURCES = [
     "src/scpn_quantum_control/topology_control/constraints.py",
@@ -40,7 +42,9 @@ TOPOLOGY_CONTROL_DOCSTRING_RATCHET = [
     "tests/test_preflight_tool.py",
 ]
 """Whole owner cohort held to complete NumPy documentation."""
-TOPOLOGY_CONTROL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-topology-control-quality.coverage"  # nosec B108
+TOPOLOGY_CONTROL_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-topology-control-quality.coverage"
+)
 TOPOLOGY_CONTROL_COVERAGE_INCLUDE = (
     "*/topology_control/constraints.py,*/topology_control/objectives.py"
 )

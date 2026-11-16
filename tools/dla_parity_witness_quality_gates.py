@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 DLA_PARITY_WITNESS_SOURCE = "src/scpn_quantum_control/analysis/dla_parity_witness.py"
 DLA_PARITY_WITNESS_COVERAGE_COHORT = ["tests/test_observables.py"]
@@ -21,7 +23,9 @@ DLA_PARITY_WITNESS_TYPING_RATCHET = [
     "tests/test_dla_parity_witness_quality_gate.py",
 ]
 DLA_PARITY_WITNESS_DOCSTRING_RATCHET = [*DLA_PARITY_WITNESS_TYPING_RATCHET]
-DLA_PARITY_WITNESS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-parity-witness-quality.coverage"  # nosec B108
+DLA_PARITY_WITNESS_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-dla-parity-witness-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

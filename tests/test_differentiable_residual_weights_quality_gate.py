@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import differentiable_residual_weights_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -39,7 +40,10 @@ def test_coverage_gate_is_isolated_local_and_exact() -> None:
         run[-len(quality_gates.DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_COHORT) :]
         == quality_gates.DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_COHORT
     )
-    assert quality_gates.DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_DATA_FILE).parent
+        == quality_coverage_dir()
+    )
     assert "--fail-under=100" in report
     assert "--include=*/differentiable_residual_weights.py" in report
 

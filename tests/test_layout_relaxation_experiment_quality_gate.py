@@ -12,6 +12,7 @@ from pathlib import Path
 from tools import layout_relaxation_experiment_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -37,7 +38,7 @@ def test_coverage_gate_is_stubbed_and_exact() -> None:
     assert "--branch" in run
     assert run[-1:] == quality_gates.LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_COHORT
     assert "tests/test_run_layout_relaxation_experiment.py" not in run
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/benchmarks/layout_relaxation_experiment.py" in report
 

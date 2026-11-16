@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 LAYOUT_METHOD_COMPARISON_QUALITY_RATCHET = [
     "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
@@ -26,8 +28,8 @@ LAYOUT_METHOD_COMPARISON_COVERAGE_COHORT = [
     "tests/test_run_layout_method_comparison.py",
 ]
 """Tests that own exact layout-method-comparison coverage."""
-LAYOUT_METHOD_COMPARISON_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-layout-method-comparison-quality.coverage"  # nosec B108
+LAYOUT_METHOD_COMPARISON_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-layout-method-comparison-quality.coverage"
 )
 """Isolated coverage database for layout-method-comparison diagnostics."""
 

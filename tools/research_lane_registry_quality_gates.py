@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 RESEARCH_LANE_REGISTRY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/analysis/research_lane_registry.py",
@@ -38,7 +40,9 @@ RESEARCH_LANE_REGISTRY_COVERAGE_COHORT = [
     "tests/test_frontier_interface_guards.py",
 ]
 """Tests that own exact research-lane registry coverage."""
-RESEARCH_LANE_REGISTRY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-research-lane-registry-quality.coverage"  # nosec B108
+RESEARCH_LANE_REGISTRY_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-research-lane-registry-quality.coverage"
+)
 """Isolated coverage database for research-lane registry diagnostics."""
 RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE = (
     "*/analysis/research_lane_registry.py,*/analysis/rl_discovery_agent.py,"

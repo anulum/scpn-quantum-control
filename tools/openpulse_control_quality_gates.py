@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 OPENPULSE_CONTROL_SOURCE = "src/scpn_quantum_control/hardware/openpulse_control.py"
 OPENPULSE_CONTROL_COVERAGE_COHORT = ["tests/test_openpulse_control.py"]
@@ -25,7 +27,9 @@ OPENPULSE_CONTROL_DOCSTRING_RATCHET = [
     "tools/openpulse_control_quality_gates.py",
     "tests/test_openpulse_control_quality_gate.py",
 ]
-OPENPULSE_CONTROL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-openpulse-control-quality.coverage"  # nosec B108
+OPENPULSE_CONTROL_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-openpulse-control-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

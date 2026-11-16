@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 ERROR_AWARE_CHAIN_QUALITY_RATCHET = [
@@ -24,7 +26,9 @@ ERROR_AWARE_CHAIN_QUALITY_RATCHET = [
 ERROR_AWARE_CHAIN_COVERAGE_COHORT = ["tests/test_error_aware_chain.py"]
 """Real calibrated-graph, greedy, and bounded-DFS execution suite."""
 
-ERROR_AWARE_CHAIN_COVERAGE_DATA_FILE = "/tmp/scpn-qc-error-aware-chain-quality.coverage"
+ERROR_AWARE_CHAIN_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-error-aware-chain-quality.coverage"
+)
 """Isolated coverage database for the chain-selection owner."""
 
 ERROR_AWARE_CHAIN_COVERAGE_INCLUDE = "*/hardware/error_aware_chain.py"

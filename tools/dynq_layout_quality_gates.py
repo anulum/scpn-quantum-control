@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUBIT_MAPPER_SOURCE = "src/scpn_quantum_control/hardware/qubit_mapper.py"
 DYNQ_LAYOUT_PASS_SOURCE = "src/scpn_quantum_control/hardware/dynq_layout_pass.py"
@@ -26,7 +28,7 @@ DYNQ_LAYOUT_TYPING_RATCHET = [
     "tests/test_dynq_layout_quality_gate.py",
 ]
 DYNQ_LAYOUT_DOCSTRING_RATCHET = [*DYNQ_LAYOUT_TYPING_RATCHET]
-DYNQ_LAYOUT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dynq-layout-quality.coverage"  # nosec B108
+DYNQ_LAYOUT_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-dynq-layout-quality.coverage")
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

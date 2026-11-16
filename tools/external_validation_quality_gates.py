@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 EXTERNAL_VALIDATION_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_external_validation.py",
@@ -22,7 +24,9 @@ EXTERNAL_VALIDATION_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 EXTERNAL_VALIDATION_COVERAGE_COHORT = ["tests/test_differentiable_external_validation.py"]
 """Tests that own exact differentiable external-validation coverage."""
-EXTERNAL_VALIDATION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-external-validation.coverage"  # nosec B108
+EXTERNAL_VALIDATION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-external-validation.coverage"
+)
 """Isolated coverage database for differentiable external validation."""
 
 

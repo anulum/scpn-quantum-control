@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 PHASE_QNODE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase_qnode_product.py",
@@ -26,7 +28,9 @@ PHASE_QNODE_PRODUCT_COVERAGE_COHORT = [
     "tests/test_phase_torch_autograd_function.py",
 ]
 """Tests that own exact Phase-QNode product coverage."""
-PHASE_QNODE_PRODUCT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-qnode-product-quality.coverage"  # nosec B108
+PHASE_QNODE_PRODUCT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-phase-qnode-product-quality.coverage"
+)
 """Isolated coverage database for the Phase-QNode product."""
 
 

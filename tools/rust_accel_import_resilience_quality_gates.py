@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 RUST_ACCEL_IMPORT_RESILIENCE_QUALITY_RATCHET = [
@@ -25,8 +27,8 @@ RUST_ACCEL_IMPORT_RESILIENCE_QUALITY_RATCHET = [
 RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_COHORT = ["tests/test_rust_accel_import_resilience.py"]
 """Real optional-accelerator and standalone-verifier import-resilience suite."""
 
-RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-rust-accel-import-resilience-quality.coverage"
+RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-rust-accel-import-resilience-quality.coverage"
 )
 """Isolated coverage database for the optional accelerator owner."""
 

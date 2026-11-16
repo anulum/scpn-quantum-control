@@ -10,6 +10,7 @@
 from tools import preflight
 from tools import whole_program_ad_product_quality_gates as quality_gates
 from tools.ci_workflow_inventory import load_ci_workflow_policy, read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -33,7 +34,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert run[-len(quality_gates.WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT) :] == (
         quality_gates.WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT
     )
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert (
         "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/differentiable.py,*/program_ad_builtin_contracts.py,*/tests/test_program_ad_builtin_contracts.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"

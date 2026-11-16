@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 MULTIMODAL_SCHEMA_QUALITY_RATCHET = [
@@ -32,7 +34,9 @@ MULTIMODAL_SCHEMA_COVERAGE_COHORT = [
 ]
 """Real immutable custody and partial-observation objective suites."""
 
-MULTIMODAL_SCHEMA_COVERAGE_DATA_FILE = "/tmp/scpn-qc-multimodal-schema-quality.coverage"
+MULTIMODAL_SCHEMA_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-multimodal-schema-quality.coverage"
+)
 """Isolated coverage database for the multimodal schema."""
 
 MULTIMODAL_SCHEMA_COVERAGE_INCLUDE = (

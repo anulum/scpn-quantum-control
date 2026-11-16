@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 HARDWARE_EXPERIMENT_CONTROL_SOURCE = "src/scpn_quantum_control/hardware/experiment_control.py"
 HARDWARE_EXPERIMENT_CONTROL_COVERAGE_COHORT = [
@@ -28,8 +30,8 @@ HARDWARE_EXPERIMENT_CONTROL_DOCSTRING_RATCHET = [
     "tools/hardware_experiment_control_quality_gates.py",
     "tests/test_hardware_experiment_control_quality_gate.py",
 ]
-HARDWARE_EXPERIMENT_CONTROL_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-hardware-experiment-control-quality.coverage"  # nosec B108
+HARDWARE_EXPERIMENT_CONTROL_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-hardware-experiment-control-quality.coverage"
 )
 
 

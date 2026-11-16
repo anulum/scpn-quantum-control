@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QPU_COMPUTE_TYPES_SOURCE = "src/scpn_quantum_control/qpu_compute_types.py"
 QPU_DATA_ARTIFACT_SOURCE = "src/scpn_quantum_control/bridge/qpu_data_artifact.py"
@@ -37,7 +39,9 @@ QPU_COMPUTE_TYPES_DOCSTRING_RATCHET = [
     "tools/qpu_compute_types_quality_gates.py",
     "tests/test_qpu_compute_types_quality_gate.py",
 ]
-QPU_COMPUTE_TYPES_COVERAGE_DATA_FILE = "/tmp/scpn-qc-qpu-compute-types-quality.coverage"  # nosec B108
+QPU_COMPUTE_TYPES_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-qpu-compute-types-quality.coverage"
+)
 QPU_COMPUTE_TYPES_COVERAGE_INCLUDE = "*/qpu_compute_types.py,*/bridge/qpu_data_artifact.py"
 
 

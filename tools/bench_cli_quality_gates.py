@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 BENCH_CLI_QUALITY_RATCHET = [
@@ -46,7 +48,7 @@ BENCH_CLI_COVERAGE_COHORT = [
 ]
 """Tests that own exact benchmark CLI coverage."""
 
-BENCH_CLI_COVERAGE_DATA_FILE = "/tmp/scpn-qc-bench-cli-quality.coverage"  # nosec B108
+BENCH_CLI_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-bench-cli-quality.coverage")
 """Isolated coverage database for the benchmark CLI owner."""
 
 BENCH_CLI_COVERAGE_INCLUDE = "*/bench_cli.py,*/benchmarks/s3_design_protocol.py"

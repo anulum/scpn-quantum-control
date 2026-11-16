@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QPU_RESULT_PACK_SOURCE = "src/scpn_quantum_control/studio/qpu_result_pack.py"
 QPU_RESULT_PACK_BRIDGE = "src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py"
@@ -46,7 +48,9 @@ QPU_RESULT_PACK_DOCSTRING_RATCHET = [
     "tools/qpu_result_pack_quality_gates.py",
     "tests/test_qpu_result_pack_quality_gate.py",
 ]
-QPU_RESULT_PACK_COVERAGE_DATA_FILE = "/tmp/scpn-qc-qpu-result-pack-quality.coverage"  # nosec B108
+QPU_RESULT_PACK_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-qpu-result-pack-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

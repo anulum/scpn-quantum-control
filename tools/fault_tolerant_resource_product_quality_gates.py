@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/fault_tolerant_resource_product.py",
@@ -29,8 +31,8 @@ FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT = [
     "tests/test_control_module_contracts.py",
 ]
 """Tests that own exact fault-tolerant resource and error-budget coverage."""
-FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-fault-tolerant-resource-product.coverage"  # nosec B108
+FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-fault-tolerant-resource-product.coverage"
 )
 """Isolated coverage database for the fault-tolerant resource and QEC budget sources."""
 

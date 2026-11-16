@@ -9,9 +9,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from tools import preflight
 from tools import thermo_readiness_product_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_owns_product_and_ambient_readiness_surfaces() -> None:
@@ -44,7 +47,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert run[-len(quality_gates.THERMO_READINESS_PRODUCT_COVERAGE_COHORT) :] == (
         quality_gates.THERMO_READINESS_PRODUCT_COVERAGE_COHORT
     )
-    assert quality_gates.THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE).parent
+        == quality_coverage_dir()
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.THERMO_READINESS_PRODUCT_COVERAGE_INCLUDE}" in report
 

@@ -7,9 +7,12 @@
 # SCPN Quantum Control — analog platform catalogue quality-gate tests
 """Lock analog platform catalogue quality gates into preflight and CI."""
 
+from pathlib import Path
+
 from tools import analog_platform_catalogue_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_helper_builds_strict_preview_and_exact_gates() -> None:
@@ -29,7 +32,10 @@ def test_helper_builds_strict_preview_and_exact_gates() -> None:
     )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.ANALOG_PLATFORM_CATALOGUE_COVERAGE_INCLUDE}" in report
-    assert quality_gates.ANALOG_PLATFORM_CATALOGUE_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.ANALOG_PLATFORM_CATALOGUE_COVERAGE_DATA_FILE).parent
+        == quality_coverage_dir()
+    )
 
 
 def test_preflight_uses_helper_commands_verbatim() -> None:

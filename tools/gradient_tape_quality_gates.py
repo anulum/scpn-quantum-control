@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 GRADIENT_TAPE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/gradient_tape.py",
@@ -26,7 +28,7 @@ GRADIENT_TAPE_COVERAGE_COHORT = [
     "tests/test_phase_qnode_tape.py",
 ]
 """Tests that own exact phase gradient and QNode tape coverage."""
-GRADIENT_TAPE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-gradient-tape.coverage"  # nosec B108
+GRADIENT_TAPE_COVERAGE_DATA_FILE = quality_coverage_file("scpn-qc-gradient-tape.coverage")
 """Isolated coverage database for phase gradient and QNode tapes."""
 
 

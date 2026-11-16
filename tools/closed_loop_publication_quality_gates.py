@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 CLOSED_LOOP_PUBLICATION_SOURCE = (
     "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
@@ -35,8 +37,8 @@ CLOSED_LOOP_PUBLICATION_TYPING_RATCHET = [
 CLOSED_LOOP_PUBLICATION_DOCSTRING_RATCHET = [
     *CLOSED_LOOP_PUBLICATION_TYPING_RATCHET,
 ]
-CLOSED_LOOP_PUBLICATION_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-closed-loop-publication-quality.coverage"  # nosec B108
+CLOSED_LOOP_PUBLICATION_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-closed-loop-publication-quality.coverage"
 )
 
 

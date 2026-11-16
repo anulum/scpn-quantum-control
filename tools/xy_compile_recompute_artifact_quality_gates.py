@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 XY_COMPILE_RECOMPUTE_ARTIFACT_SOURCE = (
     "src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py"
@@ -40,8 +42,8 @@ XY_COMPILE_RECOMPUTE_ARTIFACT_DOCSTRING_RATCHET = [
     "tools/xy_compile_recompute_artifact_quality_gates.py",
     "tests/test_xy_compile_recompute_artifact_quality_gate.py",
 ]
-XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_DATA_FILE = (  # nosec B108
-    "/tmp/scpn-qc-xy-compile-recompute-artifact-quality.coverage"
+XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-xy-compile-recompute-artifact-quality.coverage"
 )
 
 

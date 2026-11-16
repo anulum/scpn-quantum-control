@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 
 CHIMERA_CONTROL_SOURCE_COHORT = [
@@ -50,7 +52,9 @@ CHIMERA_CONTROL_DOCSTRING_RATCHET = [
 ]
 """Complete production, owner-test, and gate-contract docstring cohort."""
 
-CHIMERA_CONTROL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-chimera-control-quality.coverage"  # nosec B108
+CHIMERA_CONTROL_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-chimera-control-quality.coverage"
+)
 """Isolated coverage database for the Chimera-control owner."""
 
 

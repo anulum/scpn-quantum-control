@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 QUANTUM_KERNEL_SOURCE = "src/scpn_quantum_control/applications/quantum_kernel.py"
 TOPOLOGY_KERNEL_SOURCE = "src/scpn_quantum_control/topology_kernel_product/kernels.py"
@@ -34,8 +36,8 @@ TOPOLOGY_KERNEL_CLASSIFIER_TYPING_RATCHET = [
 TOPOLOGY_KERNEL_CLASSIFIER_DOCSTRING_RATCHET = [
     *TOPOLOGY_KERNEL_CLASSIFIER_TYPING_RATCHET,
 ]
-TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-topology-kernel-classifier-quality.coverage"  # nosec B108
+TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-topology-kernel-classifier-quality.coverage"
 )
 
 

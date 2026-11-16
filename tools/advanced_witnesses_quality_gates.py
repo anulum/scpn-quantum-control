@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from os import devnull
 
+from tools.quality_coverage_paths import quality_coverage_file
+
 Gate = tuple[str, list[str]]
 ADVANCED_WITNESSES_SOURCE = "src/scpn_quantum_control/advanced_witnesses_product.py"
 OTOC_SOURCE = "src/scpn_quantum_control/analysis/otoc.py"
@@ -35,7 +37,9 @@ ADVANCED_WITNESSES_TEST_COHORT = [
     "tests/test_shadow_tomography.py",
 ]
 """Tests that own exact advanced-witnesses source coverage."""
-ADVANCED_WITNESSES_COVERAGE_DATA_FILE = "/tmp/scpn-qc-advanced-witnesses-quality.coverage"  # nosec B108
+ADVANCED_WITNESSES_COVERAGE_DATA_FILE = quality_coverage_file(
+    "scpn-qc-advanced-witnesses-quality.coverage"
+)
 """Isolated coverage database for the advanced-witnesses owner."""
 
 

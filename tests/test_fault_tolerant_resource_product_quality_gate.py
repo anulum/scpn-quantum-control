@@ -7,9 +7,12 @@
 # SCPN Quantum Control — fault-tolerant resource product quality-gate tests
 """Lock the fault-tolerant resource product gate into preflight and CI."""
 
+from pathlib import Path
+
 from tools import fault_tolerant_resource_product_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.quality_coverage_paths import quality_coverage_dir
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -31,7 +34,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     cohort = quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT
     assert run[-len(cohort) :] == cohort
     assert "tests/test_qec_resource_claim_boundaries.py" in cohort
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert any(argument.startswith(f"--data-file={quality_coverage_dir()}/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/fault_tolerant_resource_product.py,*/qec/error_budget.py" in report
 
@@ -54,7 +57,10 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert all(
         path in block for path in quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET
     )
-    assert quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE in block
+    assert (
+        f"/tmp/{Path(quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE).name}"
+        in block
+    )
     assert all(
         path in block for path in quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT
     )
