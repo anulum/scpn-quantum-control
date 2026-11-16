@@ -138,6 +138,7 @@ def _args(
 def test_all_sizes_submits_exact_frozen_two_job_split(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The all-sizes block submits exactly the frozen two-job split."""
     runner = _load_runner()
     labels, circuits = _matrix()
     labels_path, circuits_path, plan_path = _write_inputs(
@@ -159,6 +160,7 @@ def test_all_sizes_submits_exact_frozen_two_job_split(
 
 
 def test_all_sizes_rejects_plan_outside_per_size_campaign(tmp_path: Path) -> None:
+    """A plan outside the frozen per-size campaign is refused."""
     runner = _load_runner()
     labels, circuits = _matrix()
     with pytest.raises(ValueError, match="restricted to the frozen per-size"):
@@ -172,6 +174,7 @@ def test_all_sizes_rejects_plan_outside_per_size_campaign(tmp_path: Path) -> Non
 
 
 def test_submit_refuses_without_current_owner_go(tmp_path: Path) -> None:
+    """Submission is refused without the owner's current go."""
     runner = _load_runner()
     labels, _circuits = _matrix()
     labels_path, circuits_path, plan_path = _write_inputs(
@@ -192,6 +195,7 @@ def test_submit_refuses_without_current_owner_go(tmp_path: Path) -> None:
 
 
 def test_live_depth_gate_rejects_unbalanced_size() -> None:
+    """The live depth gate refuses a size with unbalanced depth parity."""
     runner = _load_runner()
     labels, circuits = _matrix()
     for label, circuit in zip(labels, circuits, strict=True):
@@ -203,6 +207,7 @@ def test_live_depth_gate_rejects_unbalanced_size() -> None:
 
 
 def test_reviewed_standalone_loaders_resolve_real_modules() -> None:
+    """The reviewed standalone loaders resolve the real modules."""
     runner = _load_runner()
     assert runner._load_adapter()._qubit_index("QB12") == 11
     assert callable(runner._load_qpy_wrapper().reviewed_qpy_load_circuits)
@@ -212,6 +217,7 @@ def test_reviewed_standalone_loaders_resolve_real_modules() -> None:
 def test_standalone_loaders_fail_closed_when_module_cannot_resolve(
     loader_name: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The loaders fail closed when a module cannot be resolved."""
     runner = _load_runner()
     monkeypatch.setattr(runner.importlib.util, "spec_from_file_location", lambda *_args: None)
     with pytest.raises(ImportError, match="cannot load"):
@@ -221,6 +227,7 @@ def test_standalone_loaders_fail_closed_when_module_cannot_resolve(
 def test_credentials_are_scoped_to_iqm_section(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Credentials come only from the IQM section."""
     runner = _load_runner()
     vault = tmp_path / "credentials.md"
     test_token = "".join(("te", "st"))
@@ -278,6 +285,7 @@ def test_submission_matrix_fails_closed(
     all_sizes: bool,
     message: str,
 ) -> None:
+    """An invalid submission matrix is refused with its reason."""
     runner = _load_runner()
     labels, circuits = _matrix()
     plan: dict[str, Any] = {
@@ -297,6 +305,7 @@ def test_submission_matrix_fails_closed(
 
 
 def test_legacy_one_size_selection_remains_available() -> None:
+    """The legacy one-size selection still works."""
     runner = _load_runner()
     labels, circuits = _matrix()
     block, selected = runner._select_submission_matrix(
@@ -328,6 +337,7 @@ def test_legacy_one_size_selection_remains_available() -> None:
     ],
 )
 def test_live_depth_matrix_rejects_malformed_content(mutator: Any, message: str) -> None:
+    """A malformed live depth matrix is refused with its reason."""
     runner = _load_runner()
     labels, circuits = _matrix()
     mutator(labels, circuits)
@@ -338,6 +348,7 @@ def test_live_depth_matrix_rejects_malformed_content(mutator: Any, message: str)
 def test_provider_constructors_receive_vault_credentials(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The provider constructors receive the vault credentials."""
     runner = _load_runner()
     calls: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
 
@@ -396,6 +407,7 @@ def _calibration_fixture(*, missing: str | None = None) -> tuple[Any, Any]:
 def test_dump_calibration_writes_adapter_schema(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The calibration dump uses the adapter's schema."""
     runner = _load_runner()
     architecture, metrics = _calibration_fixture()
     client = SimpleNamespace(
@@ -423,6 +435,7 @@ def test_dump_calibration_rejects_incomplete_metrics(
     missing: str,
     message: str,
 ) -> None:
+    """Incomplete calibration metrics are refused."""
     runner = _load_runner()
     architecture, metrics = _calibration_fixture(missing=missing)
     client = SimpleNamespace(
@@ -441,6 +454,7 @@ def test_dump_calibration_rejects_incomplete_metrics(
 def test_legacy_submit_skips_empty_readout_group_and_accepts_property_job_id(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Legacy submission skips an empty readout group and accepts a job id given as a property."""
     runner = _load_runner()
     labels = ["main_n8_optimised_rep1"]
     labels_path = tmp_path / "labels.json"
@@ -480,6 +494,7 @@ def test_legacy_submit_skips_empty_readout_group_and_accepts_property_job_id(
 def test_retrieve_polls_and_normalises_single_and_list_counts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Retrieval polls the jobs and normalises single and list counts."""
     runner = _load_runner()
     record = {
         "quantum_computer": "garnet:mock",
@@ -511,6 +526,7 @@ def test_retrieve_polls_and_normalises_single_and_list_counts(
 
 
 def test_retrieve_timeout_is_fail_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A retrieval timeout fails closed and writes nothing."""
     runner = _load_runner()
     record_path = tmp_path / "record.json"
     record_path.write_text(
@@ -574,6 +590,7 @@ def test_retrieve_timeout_is_fail_closed(tmp_path: Path, monkeypatch: pytest.Mon
 def test_main_dispatches_each_cli_boundary(
     argv: list[str], target: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The command dispatches each subcommand."""
     runner = _load_runner()
     calls: list[argparse.Namespace] = []
 
@@ -587,6 +604,7 @@ def test_main_dispatches_each_cli_boundary(
 
 
 def test_main_rejects_non_integer_subcommand_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A subcommand that returns a non-integer is refused."""
     runner = _load_runner()
     monkeypatch.setattr(runner, "_retrieve", lambda _args: "invalid")
     with pytest.raises(TypeError, match="integer process exit code"):

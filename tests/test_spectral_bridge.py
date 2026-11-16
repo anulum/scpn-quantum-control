@@ -24,30 +24,39 @@ from scpn_quantum_control.ssgf.quantum_spectral import (
 
 
 class TestLaplacianSpectrum:
+    """The Laplacian spectrum of the coupling graph."""
+
     def test_first_eigenvalue_zero(self) -> None:
+        """The first eigenvalue is zero."""
         K = build_knm_paper27(L=4)
         spec = laplacian_spectrum(K)
         assert spec[0] == pytest.approx(0.0, abs=1e-10)
 
     def test_all_non_negative(self) -> None:
+        """Every eigenvalue is non-negative."""
         K = build_knm_paper27(L=4)
         spec = laplacian_spectrum(K)
         assert np.all(spec >= -1e-10)
 
     def test_sorted(self) -> None:
+        """Eigenvalues are in ascending order."""
         K = build_knm_paper27(L=4)
         spec = laplacian_spectrum(K)
         for i in range(len(spec) - 1):
             assert spec[i] <= spec[i + 1] + 1e-10
 
     def test_length(self) -> None:
+        """There is one eigenvalue per node."""
         K = build_knm_paper27(L=6)
         spec = laplacian_spectrum(K)
         assert len(spec) == 6
 
 
 class TestEntrainmentCriterion:
+    """The entrainment stability criterion."""
+
     def test_strong_coupling_stable(self) -> None:
+        """Strong coupling is stable with a positive margin."""
         K = build_knm_paper27(L=4, K_base=10.0)
         omega = OMEGA_N_16[:4]
         stable, margin = entrainment_criterion(K, omega)
@@ -55,6 +64,7 @@ class TestEntrainmentCriterion:
         assert margin > 0
 
     def test_weak_coupling_unstable(self) -> None:
+        """Weak coupling is unstable with a negative margin."""
         K = build_knm_paper27(L=4, K_base=0.001)
         omega = OMEGA_N_16[:4]
         stable, margin = entrainment_criterion(K, omega)
@@ -63,32 +73,41 @@ class TestEntrainmentCriterion:
 
 
 class TestQPEResourceEstimate:
+    """Phase-estimation resource estimates."""
+
     def test_bits_increase_with_precision(self) -> None:
+        """Higher precision needs more bits."""
         K = build_knm_paper27(L=4)
         b1, _ = qpe_resource_estimate(K, epsilon=0.1)
         b2, _ = qpe_resource_estimate(K, epsilon=0.001)
         assert b2 > b1
 
     def test_depth_positive(self) -> None:
+        """The depth is positive."""
         K = build_knm_paper27(L=4)
         _, depth = qpe_resource_estimate(K)
         assert depth > 0
 
 
 class TestSpectralBridgeAnalysis:
+    """The spectral bridge analysis."""
+
     def test_returns_result(self) -> None:
+        """The analysis returns a result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = spectral_bridge_analysis(K, omega)
         assert isinstance(result, SpectralBridgeResult)
 
     def test_fiedler_positive(self) -> None:
+        """The Fiedler value is positive."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = spectral_bridge_analysis(K, omega)
         assert result.fiedler_value > 0
 
     def test_spectrum_length(self) -> None:
+        """The spectrum has one value per node."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = spectral_bridge_analysis(K, omega)
@@ -109,7 +128,10 @@ class TestSpectralBridgeAnalysis:
 
 
 class TestSpectralBridgeVsCoupling:
+    """Scanning the spectral bridge across couplings."""
+
     def test_returns_keys(self) -> None:
+        """The Fiedler series has one value per coupling."""
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 1.0, 3.0])
         results = spectral_bridge_vs_coupling(omega, k_vals)
@@ -117,6 +139,7 @@ class TestSpectralBridgeVsCoupling:
         assert len(results["fiedler"]) == 3
 
     def test_fiedler_increases(self) -> None:
+        """The Fiedler value grows with the coupling."""
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 1.0, 5.0])
         results = spectral_bridge_vs_coupling(omega, k_vals)

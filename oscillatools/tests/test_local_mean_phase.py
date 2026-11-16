@@ -60,7 +60,10 @@ def _unwrapped_finite_difference(
 
 
 class TestPythonLocalMeanPhaseFloor:
+    """The Python floor of the local mean phase and its Jacobian."""
+
     def test_matches_closed_form(self) -> None:
+        """The local mean phase matches its closed form."""
         rng = np.random.default_rng(7)
         adjacency = _random_adjacency(6, 7)
         theta = rng.uniform(-math.pi, math.pi, size=6)
@@ -77,6 +80,7 @@ class TestPythonLocalMeanPhaseFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_to_all_excludes_only_self(self, n: int, seed: int) -> None:
+        """All-to-all coupling averages every oscillator but itself."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         adjacency = np.ones((n, n), dtype=np.float64)
@@ -93,6 +97,7 @@ class TestPythonLocalMeanPhaseFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_jacobian_matches_finite_difference(self, n: int, seed: int) -> None:
+        """The Jacobian agrees with finite differences."""
         rng = np.random.default_rng(seed)
         adjacency = _random_adjacency(n, seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
@@ -108,6 +113,7 @@ class TestPythonLocalMeanPhaseFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_jacobian_is_sparse_in_adjacency_pattern(self, n: int, seed: int) -> None:
+        """The Jacobian is zero wherever the adjacency is."""
         rng = np.random.default_rng(seed)
         adjacency = _random_adjacency(n, seed, density=0.35)
         theta = rng.uniform(-math.pi, math.pi, size=n)
@@ -116,6 +122,7 @@ class TestPythonLocalMeanPhaseFloor:
         assert np.all(jacobian[adjacency == 0.0] == 0.0)
 
     def test_local_complex_order_consistent_with_local_order(self) -> None:
+        """The local complex order agrees with the local order."""
         rng = np.random.default_rng(31)
         adjacency = _random_adjacency(8, 31)
         theta = rng.uniform(-math.pi, math.pi, size=8)
@@ -127,6 +134,7 @@ class TestPythonLocalMeanPhaseFloor:
         np.testing.assert_allclose(reconstructed, reference, atol=1e-12)
 
     def test_zero_degree_node(self) -> None:
+        """A node without neighbours gets a zero phase and a zero Jacobian row."""
         theta = np.array([0.3, 1.2, 2.1])
         adjacency = np.ones((3, 3), dtype=np.float64)
         adjacency[1, :] = 0.0
@@ -136,24 +144,29 @@ class TestPythonLocalMeanPhaseFloor:
         )
 
     def test_rejects_non_square_adjacency(self) -> None:
+        """A non-square adjacency is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             lp._python_local_mean_phase(np.zeros(3), np.ones((3, 2)))
         with pytest.raises(ValueError, match="square matrix of order 3"):
             lp._python_local_mean_phase_jacobian(np.zeros(3), np.ones((2, 2)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty phase and Jacobian."""
         empty = np.zeros((0, 0))
         assert lp._python_local_mean_phase(np.array([]), empty).shape == (0,)
         assert lp._python_local_mean_phase_jacobian(np.array([]), empty).shape == (0, 0)
 
 
 class TestLocalMeanPhaseTiersAndDispatch:
+    """Compute tiers and dispatch of the local mean phase."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=24),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "local_mean_phase", None)):
             pytest.skip("scpn_quantum_engine.local_mean_phase unavailable")
@@ -172,6 +185,7 @@ class TestLocalMeanPhaseTiersAndDispatch:
         )
 
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import local_mean_phase as julia_phase
         from oscillatools.accel.julia import (
@@ -193,16 +207,20 @@ class TestLocalMeanPhaseTiersAndDispatch:
         )
 
     def test_rust_phase_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native phase raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             lp._rust_local_mean_phase(np.zeros(3), np.ones((3, 3)))
 
     def test_rust_jacobian_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Jacobian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             lp._rust_local_mean_phase_jacobian(np.zeros(3), np.ones((3, 3)))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -224,6 +242,7 @@ class TestLocalMeanPhaseTiersAndDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         adjacency = _random_adjacency(n, seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
@@ -240,6 +259,7 @@ class TestLocalMeanPhaseTiersAndDispatch:
                 np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected shapes."""
         from oscillatools.accel import (
             last_local_mean_phase_jacobian_tier_used,
             last_local_mean_phase_tier_used,
@@ -258,5 +278,6 @@ class TestLocalMeanPhaseTiersAndDispatch:
         assert last_local_mean_phase_jacobian_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert lp._LOCAL_MEAN_PHASE_CHAIN[-1][0] == "python"
         assert lp._LOCAL_MEAN_PHASE_JACOBIAN_CHAIN[-1][0] == "python"

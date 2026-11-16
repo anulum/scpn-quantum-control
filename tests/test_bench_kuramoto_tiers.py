@@ -50,12 +50,14 @@ runner = _load("bench_kuramoto_tiers", "scripts/bench_kuramoto_tiers.py")
 
 
 def test_spec_table_covers_exactly_the_registered_dispatchers() -> None:
+    """The spec table covers exactly the registered dispatchers."""
     spec_names = {spec.operation for spec in runner._SPECS}
     registered = set(_dispatcher.registered_dispatchers())
     assert spec_names == registered
 
 
 def test_every_spec_has_a_known_cost_class() -> None:
+    """Every spec has a known cost class."""
     for spec in runner._SPECS:
         assert spec.cost in runner._INNER_BY_COST
 
@@ -66,6 +68,7 @@ def test_every_spec_has_a_known_cost_class() -> None:
 
 
 def test_input_builders_match_dispatcher_signatures() -> None:
+    """Each input builder fits its dispatcher's signature."""
     rng = np.random.default_rng(0)
     n = 12
     for spec in runner._SPECS:
@@ -77,6 +80,7 @@ def test_input_builders_match_dispatcher_signatures() -> None:
 
 
 def test_symmetric_coupling_is_symmetric_zero_diagonal() -> None:
+    """The coupling builder gives a symmetric matrix with a zero diagonal."""
     rng = np.random.default_rng(1)
     coupling = runner._symmetric_coupling(10, rng)
     assert coupling.shape == (10, 10)
@@ -85,6 +89,7 @@ def test_symmetric_coupling_is_symmetric_zero_diagonal() -> None:
 
 
 def test_adjacency_is_binary_symmetric_zero_diagonal() -> None:
+    """The adjacency builder gives a binary symmetric matrix with a zero diagonal."""
     rng = np.random.default_rng(2)
     adjacency = runner._adjacency(16, rng)
     assert set(np.unique(adjacency)).issubset({0.0, 1.0})
@@ -93,6 +98,7 @@ def test_adjacency_is_binary_symmetric_zero_diagonal() -> None:
 
 
 def test_vjp_builders_use_terminal_cotangent() -> None:
+    """The VJP builders use a terminal cotangent for both integrators."""
     rng = np.random.default_rng(3)
     euler = runner._build_euler_vjp_args(9, rng)
     assert euler[-1].shape == (9,)
@@ -106,21 +112,25 @@ def test_vjp_builders_use_terminal_cotangent() -> None:
 
 
 def test_max_abs_diff_zero_for_identical_outputs() -> None:
+    """Identical outputs differ by zero."""
     a = np.arange(5.0)
     assert runner._max_abs_diff(a, a.copy()) == 0.0
 
 
 def test_max_abs_diff_handles_tuple_returns() -> None:
+    """Tuple outputs are compared element by element."""
     ref = (np.array([1.0, 2.0]), np.array([3.0]))
     cand = (np.array([1.0, 2.5]), np.array([3.0]))
     assert runner._max_abs_diff(ref, cand) == pytest.approx(0.5)
 
 
 def test_max_abs_diff_none_on_structural_mismatch() -> None:
+    """Outputs of different structure give None."""
     assert runner._max_abs_diff((np.array([1.0]), np.array([2.0])), np.array([1.0])) is None
 
 
 def test_max_abs_diff_none_on_shape_mismatch() -> None:
+    """Outputs of different shape give None."""
     assert runner._max_abs_diff(np.zeros(3), np.zeros(4)) is None
 
 
@@ -130,6 +140,7 @@ def test_max_abs_diff_none_on_shape_mismatch() -> None:
 
 
 def test_benchmark_primitive_measures_floor_and_excludes_others() -> None:
+    """The Python floor is measured and excluded tiers are marked unavailable."""
     result = runner.benchmark_primitive(
         runner.PrimitiveSpec("order_parameter", runner._build_phases, "scalar"),
         16,
@@ -149,6 +160,7 @@ def test_benchmark_primitive_records_absent_tier_reason() -> None:
     # The locally installed engine wheel lacks most Kuramoto kernels, so the
     # Rust tier for mean_phase is absent and must surface as an unavailable row
     # carrying the exception text — never a silent drop.
+    """An absent native tier is reported as unavailable with its own reason, never dropped."""
     result = runner.benchmark_primitive(
         runner.PrimitiveSpec("mean_phase", runner._build_phases, "scalar"),
         16,
@@ -167,23 +179,27 @@ def test_benchmark_primitive_records_absent_tier_reason() -> None:
 
 
 def test_selected_tiers_preserves_chain_order() -> None:
+    """Selected tiers keep the chain's order."""
     chain = [("rust", lambda: None), ("julia", lambda: None), ("python", lambda: None)]
     assert runner._selected_tiers(chain, {"python", "rust"}) == ["rust", "python"]
 
 
 def test_tier_availability_marks_python_available() -> None:
+    """Python is available and an absent tier is marked unavailable."""
     summary = runner._tier_availability({"python", "go"})
     assert summary["python"] == "available"
     assert summary["go"].startswith("unavailable")
 
 
 def test_run_suite_covers_all_primitives_at_each_size() -> None:
+    """The suite covers every primitive."""
     results = runner.run_suite(tiers={"python"}, sizes=[8], seed=5, warmup=1, repeats=1)
     assert len(results) == len(runner._SPECS)
     assert {r.operation for r in results} == {s.operation for s in runner._SPECS}
 
 
 def test_run_suite_rejects_incomplete_spec_table(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A dispatcher without a spec is refused."""
     subset = runner._SPECS[:1]
     monkeypatch.setattr(runner, "_SPECS", subset)
     with pytest.raises(RuntimeError, match="without a benchmark spec"):
@@ -196,6 +212,7 @@ def test_run_suite_rejects_incomplete_spec_table(monkeypatch: pytest.MonkeyPatch
 
 
 def test_main_writes_artifact_and_manifest(tmp_path: Path) -> None:
+    """The command writes the artefact and its manifest."""
     out = tmp_path / "tiers"
     code = runner.main(
         [
@@ -222,6 +239,7 @@ def test_main_writes_artifact_and_manifest(tmp_path: Path) -> None:
 
 
 def test_parse_args_defaults() -> None:
+    """The command defaults to the local environment, all three tiers and nine repeats."""
     args = runner._parse_args([])
     assert args.environment == "local"
     assert args.tiers == "rust,julia,python"

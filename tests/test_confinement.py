@@ -24,31 +24,42 @@ from scpn_quantum_control.gauge.confinement import (
 
 
 class TestExtractStringTension:
+    """Extracting the string tension from Wilson loops."""
+
     def test_equal_wilson_zero_tension(self) -> None:
+        """Equal Wilson loops give zero tension."""
         sigma = extract_string_tension(0.5, 0.5)
         assert sigma is not None
         assert sigma == pytest.approx(0.0, abs=1e-10)
 
     def test_decaying_wilson_positive_tension(self) -> None:
+        """Decaying Wilson loops give a positive tension."""
         sigma = extract_string_tension(0.8, 0.5)
         assert sigma is not None
         assert sigma > 0
 
     def test_none_for_zero_wilson(self) -> None:
+        """A zero Wilson loop gives no tension."""
         sigma = extract_string_tension(0.0, 0.5)
         assert sigma is None
 
     def test_none_for_equal_areas(self) -> None:
+        """Equal areas give no tension."""
         sigma = extract_string_tension(0.5, 0.3, area_small=1.0, area_large=1.0)
         assert sigma is None
 
     def test_none_for_zero_ratio(self) -> None:
+        """A zero ratio gives no tension."""
         sigma = extract_string_tension(np.inf, 0.5)
         assert sigma is None
 
 
 class TestAverageWilsonByLength:
+    """Averaging Wilson loops by length."""
+
     def test_zero_when_requested_length_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A length with no loops averages to zero."""
+
         class Loop:
             loop_length = 2
             magnitude = 0.75
@@ -62,19 +73,24 @@ class TestAverageWilsonByLength:
 
 
 class TestConfinementAnalysis:
+    """The confinement analysis."""
+
     def test_returns_result(self) -> None:
+        """The analysis returns a result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert isinstance(result, ConfinementResult)
 
     def test_n_qubits(self) -> None:
+        """The result records the qubit count."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert result.n_qubits == 4
 
     def test_wilson_averages_non_negative(self) -> None:
+        """The triangle and square averages are non-negative."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
@@ -82,12 +98,14 @@ class TestConfinementAnalysis:
         assert result.wilson_square_avg >= 0
 
     def test_confinement_ratio_type(self) -> None:
+        """The confinement ratio is a float."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert isinstance(result.confinement_ratio, float)
 
     def test_is_confined_bool(self) -> None:
+        """The confinement flag is a boolean."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
@@ -107,7 +125,10 @@ class TestConfinementAnalysis:
 
 
 class TestConfinementVsCoupling:
+    """Scanning confinement across couplings."""
+
     def test_scan_returns_keys(self) -> None:
+        """Each series has one value per coupling."""
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 0.5, 1.0])
         results = confinement_vs_coupling(omega, k_vals)
@@ -116,6 +137,7 @@ class TestConfinementVsCoupling:
             assert len(results[key]) == 3
 
     def test_string_tension_non_negative(self) -> None:
+        """Every string tension is non-negative."""
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.5, 1.0])
         results = confinement_vs_coupling(omega, k_vals)
@@ -123,6 +145,7 @@ class TestConfinementVsCoupling:
             assert st >= 0
 
     def test_default_scan_uses_fifteen_points(self) -> None:
+        """The default scan uses 15 couplings from 0.1 to 3.0."""
         omega = OMEGA_N_16[:4]
         results = confinement_vs_coupling(omega)
         assert len(results["k_base"]) == 15

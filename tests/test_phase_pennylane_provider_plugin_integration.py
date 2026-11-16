@@ -45,7 +45,6 @@ def test_pennylane_provider_plugin_execution_artifact_rejects_non_integer_shots(
     shots: Any,
 ) -> None:
     """Provider-plugin execution artifacts must not coerce shot counts."""
-
     with pytest.raises(ValueError, match="shots"):
         PennyLaneProviderPluginExecutionArtifact(
             artifact_id="pl-provider-sim-20260616",
@@ -69,6 +68,7 @@ def test_pennylane_provider_plugin_execution_artifact_rejects_non_integer_shots(
 def test_pennylane_maturity_audit_records_export_metadata_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The maturity audit records export metadata and the provider gaps."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -135,6 +135,7 @@ def test_pennylane_maturity_audit_records_export_metadata_and_provider_gaps(
 
 
 def test_pennylane_plugin_matrix_fails_closed_for_provider_plugins() -> None:
+    """The plugin matrix fails closed for provider plugins while local parity is ready."""
     result = run_pennylane_plugin_matrix()
 
     assert isinstance(result, PennyLanePluginMatrixResult)
@@ -152,6 +153,7 @@ def test_pennylane_plugin_matrix_fails_closed_for_provider_plugins() -> None:
 
 
 def test_pennylane_plugin_matrix_route_normalises_metadata() -> None:
+    """A plugin-matrix route normalises its metadata."""
     route = PennyLanePluginMatrixRoute(
         name="  provider_plugin_execution  ",
         status="blocked",
@@ -217,7 +219,6 @@ def test_pennylane_plugin_matrix_route_rejects_malformed_metadata(
     match: str,
 ) -> None:
     """Plugin matrix routes must not carry malformed evidence states."""
-
     with pytest.raises(ValueError, match=match):
         factory()
 
@@ -311,6 +312,7 @@ def _hardware_plugin_execution_artifact(
 
 
 def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_promotion() -> None:
+    """A provider execution artefact is accepted without promotion."""
     artifact = _provider_plugin_execution_artifact()
 
     result = run_pennylane_plugin_matrix(provider_execution_artifact=artifact)
@@ -332,6 +334,7 @@ def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_pro
 
 
 def test_pennylane_plugin_matrix_accepts_provider_gradient_parity_without_promotion() -> None:
+    """Provider gradient parity is accepted without promotion."""
     execution_artifact = _provider_plugin_execution_artifact(
         interface="tf",
         diff_method="adjoint",
@@ -365,6 +368,7 @@ def test_pennylane_plugin_matrix_accepts_provider_gradient_parity_without_promot
 
 
 def test_pennylane_plugin_matrix_accepts_hardware_execution_without_promotion() -> None:
+    """Hardware execution is accepted without promotion."""
     hardware_artifact = _hardware_plugin_execution_artifact()
 
     result = run_pennylane_plugin_matrix(hardware_execution_artifact=hardware_artifact)
@@ -385,6 +389,7 @@ def test_pennylane_plugin_matrix_accepts_hardware_execution_without_promotion() 
 
 
 def test_pennylane_plugin_matrix_rejects_unpaired_provider_gradient_parity() -> None:
+    """Gradient parity without a provider execution artefact is refused."""
     gradient_artifact = _provider_gradient_parity_artifact()
 
     with pytest.raises(ValueError, match="provider execution artefact"):
@@ -392,6 +397,7 @@ def test_pennylane_plugin_matrix_rejects_unpaired_provider_gradient_parity() -> 
 
 
 def test_pennylane_plugin_matrix_rejects_mismatched_provider_gradient_parity() -> None:
+    """Gradient parity for a different circuit is refused."""
     execution_artifact = _provider_plugin_execution_artifact()
     gradient_artifact = _provider_gradient_parity_artifact(
         circuit_fingerprint="phase-qnode:other:v1",
@@ -467,6 +473,7 @@ def test_pennylane_provider_gradient_parity_artifact_rejects_malformed_evidence(
     factory: Callable[[], PennyLaneProviderGradientParityArtifact],
     match: str,
 ) -> None:
+    """Malformed gradient-parity evidence is refused with its reason."""
     with pytest.raises(ValueError, match=match):
         factory()
 
@@ -560,6 +567,7 @@ def test_pennylane_hardware_plugin_execution_artifact_rejects_malformed_evidence
     factory: Callable[[], PennyLaneHardwarePluginExecutionArtifact],
     match: str,
 ) -> None:
+    """Malformed hardware execution evidence is refused with its reason."""
     with pytest.raises(ValueError, match=match):
         factory()
 
@@ -569,7 +577,6 @@ def test_pennylane_provider_plugin_execution_artifact_requires_provider_mode(
     execution_mode: str,
 ) -> None:
     """Provider artefacts must identify provider-plugin execution explicitly."""
-
     with pytest.raises(ValueError, match="provider-plugin execution"):
         PennyLaneProviderPluginExecutionArtifact(
             artifact_id="pl-provider-sim-20260616",
@@ -591,6 +598,7 @@ def test_pennylane_provider_plugin_execution_artifact_requires_provider_mode(
 
 
 def test_pennylane_provider_plugin_execution_artifact_rejects_hardware_claim() -> None:
+    """A provider execution artefact may not claim hardware execution."""
     with pytest.raises(ValueError, match="must not claim hardware execution"):
         PennyLaneProviderPluginExecutionArtifact(
             artifact_id="pl-provider-sim-20260616",
@@ -614,6 +622,7 @@ def test_pennylane_provider_plugin_execution_artifact_rejects_hardware_claim() -
 def test_pennylane_provider_plugin_execution_artifact_rejects_malformed_metadata(
     case: str,
 ) -> None:
+    """Malformed plugin metadata is refused."""
     if case == "plugin_name":
         with pytest.raises(ValueError, match="plugin_name"):
             PennyLaneProviderPluginExecutionArtifact(
@@ -695,6 +704,7 @@ def test_pennylane_provider_plugin_execution_artifact_rejects_malformed_metadata
 def test_pennylane_maturity_audit_records_provider_execution_artifact_without_promotion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The maturity audit records a provider execution artefact without promotion."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -726,6 +736,7 @@ def test_pennylane_maturity_audit_records_provider_execution_artifact_without_pr
 def test_pennylane_maturity_audit_records_provider_gradient_parity_without_promotion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The maturity audit records provider gradient parity without promotion."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -772,6 +783,7 @@ def test_pennylane_maturity_audit_records_provider_gradient_parity_without_promo
 def test_pennylane_maturity_audit_records_hardware_execution_without_benchmark_promotion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The maturity audit records hardware execution without benchmark promotion."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(

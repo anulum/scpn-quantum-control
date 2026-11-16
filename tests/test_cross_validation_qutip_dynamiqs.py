@@ -218,6 +218,8 @@ CASES: list[tuple[np.ndarray, np.ndarray, float, str]] = [
     ids=[c[3] for c in CASES],
 )
 class TestHamiltonianMatrixEquivalence:
+    """Our Hamiltonian matrix against QuTiP's."""
+
     def test_ours_matches_qutip(
         self,
         K: np.ndarray,
@@ -225,6 +227,7 @@ class TestHamiltonianMatrixEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """Our Hamiltonian matches QuTiP's."""
         H_ours = _H_ours(K, omega)
         H_qt = _H_qutip(K, omega)
         np.testing.assert_allclose(
@@ -242,6 +245,7 @@ class TestHamiltonianMatrixEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """QuTiP's Hamiltonian is Hermitian."""
         H_qt = _H_qutip(K, omega)
         np.testing.assert_allclose(H_qt, H_qt.conj().T, atol=1e-12, rtol=0)
 
@@ -252,6 +256,7 @@ class TestHamiltonianMatrixEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """Our Hamiltonian is Hermitian."""
         H_ours = _H_ours(K, omega)
         np.testing.assert_allclose(H_ours, H_ours.conj().T, atol=1e-12, rtol=0)
 
@@ -262,8 +267,11 @@ class TestHamiltonianMatrixEquivalence:
         t: float,
         label: str,
     ) -> None:
-        """Spectra must match — this is a basis-independent check that
-        would catch any residual qubit-ordering mismatch between stacks."""
+        """The spectra match.
+
+        This basis-independent check would catch any residual qubit-ordering
+        mismatch between stacks.
+        """
         eigs_ours = np.sort(np.linalg.eigvalsh(_H_ours(K, omega)))
         eigs_qt = np.sort(np.linalg.eigvalsh(_H_qutip(K, omega)))
         np.testing.assert_allclose(
@@ -297,6 +305,8 @@ def _evolve_exact(H: np.ndarray, t: float) -> np.ndarray:
     ids=[c[3] for c in CASES],
 )
 class TestExactEvolutionEquivalence:
+    """Exact evolution against QuTiP."""
+
     def test_statevectors_match(
         self,
         K: np.ndarray,
@@ -304,6 +314,7 @@ class TestExactEvolutionEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """The evolved states overlap to within 1e-8."""
         psi_ours = _evolve_exact(_H_ours(K, omega), t)
         psi_qt = _evolve_exact(_H_qutip(K, omega), t)
         # Allow a global phase difference — compare |⟨ψ₁|ψ₂⟩| ≈ 1.
@@ -317,6 +328,7 @@ class TestExactEvolutionEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """The energy expectations agree to within 1e-8."""
         H_ours = _H_ours(K, omega)
         psi_ours = _evolve_exact(H_ours, t)
         E_ours = float(np.real(np.vdot(psi_ours, H_ours @ psi_ours)))
@@ -334,8 +346,10 @@ class TestExactEvolutionEquivalence:
         t: float,
         label: str,
     ) -> None:
-        """⟨H⟩_t must equal ⟨H⟩_0 under unitary evolution — basic sanity
-        that all three solvers are physically correct."""
+        """The energy ⟨H⟩ is conserved under unitary evolution.
+
+        This is a basic sanity check that all three solvers are physically correct.
+        """
         H = _H_ours(K, omega)
         psi_0 = np.zeros(H.shape[0], dtype=complex)
         psi_0[0] = 1.0
@@ -356,6 +370,8 @@ class TestExactEvolutionEquivalence:
     ids=[c[3] for c in CASES[:3]],
 )
 class TestDynamiqsEquivalence:
+    """Agreement with dynamiqs."""
+
     def test_hamiltonian_matches_ours(
         self,
         K: np.ndarray,
@@ -363,6 +379,7 @@ class TestDynamiqsEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """The dynamiqs Hamiltonian matches ours."""
         pytest.importorskip("dynamiqs")
         H_dq = _H_dynamiqs(K, omega)
         H_ours = _H_ours(K, omega)
@@ -381,6 +398,7 @@ class TestDynamiqsEquivalence:
         t: float,
         label: str,
     ) -> None:
+        """The dynamiqs state matches ours."""
         pytest.importorskip("dynamiqs")
         psi_dq = _evolve_exact(_H_dynamiqs(K, omega), t)
         psi_ours = _evolve_exact(_H_ours(K, omega), t)
@@ -394,11 +412,14 @@ class TestDynamiqsEquivalence:
 
 
 class TestPipelineSolverIndependent:
+    """Pipeline results that do not depend on the solver."""
+
     def test_dla_parity_hamiltonian_identical_across_stacks(self) -> None:
-        """The operator used for the Phase 1 DLA-parity campaign must
-        coincide byte-for-byte (up to 1e-10) between our internal stack
-        and QuTiP. If this test ever fails, every published hardware
-        number in data/phase1_dla_parity/ is called into question."""
+        """The Phase 1 DLA-parity operator coincides with QuTiP's to within 1e-10.
+
+        If this test ever fails, every published hardware number in
+        data/phase1_dla_parity/ is called into question.
+        """
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
             build_knm_paper27,
@@ -412,6 +433,7 @@ class TestPipelineSolverIndependent:
         np.testing.assert_allclose(H_ours, H_qt, atol=1e-10, rtol=0)
 
     def test_pipeline_knm_to_evolution_agrees(self) -> None:
+        """Coupling-to-evolution results agree across stacks."""
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
             build_knm_paper27,

@@ -35,8 +35,11 @@ from oscillatools.accel import (
 
 
 class TestNoisyCriticalCoupling:
+    """The noisy critical coupling."""
+
     @pytest.mark.parametrize("diffusion", [0.0, 0.25, 0.5, 1.0, 2.0])
     def test_lorentzian_closed_form(self, diffusion: float) -> None:
+        """The Lorentzian critical coupling follows its closed form."""
         assert lorentzian_noisy_critical_coupling(1.5, diffusion) == pytest.approx(
             2.0 * (1.5 + diffusion)
         )
@@ -44,6 +47,7 @@ class TestNoisyCriticalCoupling:
     @pytest.mark.parametrize("diffusion", [0.25, 0.5, 1.0])
     def test_quadrature_matches_closed_form(self, diffusion: float) -> None:
         # K_c = 2/∫ g(ω) D/(D²+ω²) dω equals 2(γ + D) for a Lorentzian.
+        """Quadrature matches the Lorentzian closed form."""
         value = noisy_critical_coupling(
             lorentzian_density(1.0), diffusion, frequency_limit=200.0, n_frequency=4001
         )
@@ -51,6 +55,7 @@ class TestNoisyCriticalCoupling:
 
     def test_zero_diffusion_reduces_to_deterministic(self) -> None:
         # D → 0 returns the deterministic Kuramoto onset 2/(π g(0)).
+        """Without diffusion the critical coupling is the deterministic one."""
         assert noisy_critical_coupling(lorentzian_density(1.0), 0.0) == pytest.approx(2.0)
         assert noisy_critical_coupling(gaussian_density(1.0), 0.0) == pytest.approx(
             2.0 / (math.pi * gaussian_density(1.0)(0.0))
@@ -58,10 +63,12 @@ class TestNoisyCriticalCoupling:
 
     def test_degenerate_density_rejected(self) -> None:
         # A density with no mass on the frequency grid leaves the kernel integral at zero.
+        """A density with a non-positive kernel integral is refused."""
         with pytest.raises(ValueError, match="kernel integral must be positive"):
             noisy_critical_coupling(lambda omega: 0.0, 0.5)
 
     def test_gaussian_onset_rises_with_noise(self) -> None:
+        """For a Gaussian density more noise raises the onset."""
         quiet = noisy_critical_coupling(gaussian_density(1.0), 0.0)
         loud = noisy_critical_coupling(
             gaussian_density(1.0), 0.5, frequency_limit=60.0, n_frequency=2001
@@ -69,6 +76,7 @@ class TestNoisyCriticalCoupling:
         assert loud > quiet
 
     def test_lorentzian_closed_form_validation(self) -> None:
+        """A non-positive half-width or a negative diffusion is refused."""
         with pytest.raises(ValueError, match="half_width must be positive"):
             lorentzian_noisy_critical_coupling(0.0, 0.5)
         with pytest.raises(ValueError, match="diffusion must be non-negative"):
@@ -83,19 +91,24 @@ class TestNoisyCriticalCoupling:
         ],
     )
     def test_quadrature_validation(self, kwargs: dict[str, float], match: str) -> None:
+        """Invalid quadrature arguments are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             noisy_critical_coupling(lorentzian_density(1.0), **kwargs)
 
 
 class TestNoisyStationaryOrderParameter:
+    """The noisy stationary order parameter."""
+
     def test_zero_below_onset(self) -> None:
         # K below K_c(D) = 2(1 + 0.5) = 3 gives the incoherent state.
+        """Below the onset the order parameter is zero."""
         r = noisy_stationary_order_parameter(
             2.5, lorentzian_density(1.0), 0.5, n_phase=128, frequency_limit=40.0, n_frequency=161
         )
         assert r == 0.0
 
     def test_positive_and_monotone_above_onset(self) -> None:
+        """Above the onset the order parameter is positive, increasing and at most one."""
         density = lorentzian_density(1.0)
         radii = [
             noisy_stationary_order_parameter(
@@ -110,6 +123,7 @@ class TestNoisyStationaryOrderParameter:
     def test_matches_simulation(self) -> None:
         # The Fokker–Planck stationary r is the N → ∞ mean-field value; a large finite-population
         # Euler–Maruyama run (biased slightly low by finite N / dt) sits just below it.
+        """The theory matches a simulation to within 0.04."""
         density = lorentzian_density(1.0)
         diffusion, coupling = 0.5, 5.0
         r_theory = noisy_stationary_order_parameter(
@@ -132,6 +146,7 @@ class TestNoisyStationaryOrderParameter:
 
     def test_onset_recovered_from_branch(self) -> None:
         # The branch leaves zero at the noisy onset: just below K_c = 3 → 0, just above → positive.
+        """The branch is zero below the onset and positive above it."""
         density = lorentzian_density(1.0)
         below = noisy_stationary_order_parameter(
             2.9, density, 0.5, n_phase=160, frequency_limit=40.0, n_frequency=161
@@ -143,6 +158,7 @@ class TestNoisyStationaryOrderParameter:
         assert above > 0.0
 
     def test_zero_diffusion_reduces_to_deterministic(self) -> None:
+        """Without diffusion the order parameter is the deterministic one."""
         density = lorentzian_density(1.0)
         for coupling in (3.0, 5.0):
             assert noisy_stationary_order_parameter(coupling, density, 0.0) == pytest.approx(
@@ -152,6 +168,7 @@ class TestNoisyStationaryOrderParameter:
     def test_strong_coupling_approaches_but_stays_below_one(self) -> None:
         # With diffusion the noise always broadens the stationary density, so a Lorentzian never
         # locks fully: strong coupling drives r high yet strictly below one.
+        """Strong coupling brings the order parameter close to, but below, one."""
         density = lorentzian_density(1.0)
         moderate = noisy_stationary_order_parameter(
             8.0, density, 0.5, n_phase=128, frequency_limit=40.0, n_frequency=161
@@ -163,6 +180,7 @@ class TestNoisyStationaryOrderParameter:
         assert strong > 0.9
 
     def test_rejects_non_positive_coupling(self) -> None:
+        """A non-positive coupling is refused."""
         with pytest.raises(ValueError, match="coupling must be positive"):
             noisy_stationary_order_parameter(0.0, lorentzian_density(1.0), 0.5)
 
@@ -176,11 +194,13 @@ class TestNoisyStationaryOrderParameter:
         ],
     )
     def test_validation(self, kwargs: dict[str, float], match: str) -> None:
+        """Invalid arguments are refused with their reasons."""
         with pytest.raises(ValueError, match=match):
             noisy_stationary_order_parameter(4.0, lorentzian_density(1.0), **kwargs)
 
 
 def test_public_symbols_exported() -> None:
+    """The noisy mean-field symbols are exported from the accelerated package."""
     import oscillatools.accel as accel
 
     for symbol in (

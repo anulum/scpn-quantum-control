@@ -100,7 +100,6 @@ class _FakePyquilModule:
 
 def test_rigetti_qcs_adapter_runs_injected_quantum_computer_and_approval_gate() -> None:
     """Rigetti QCS adapter should wrap, compile, run, and normalise readout counts."""
-
     quantum_computer = _FakeRigettiQuantumComputer()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -151,7 +150,6 @@ def test_rigetti_qcs_adapter_runs_injected_quantum_computer_and_approval_gate() 
 
 def test_rigetti_qcs_adapter_rejects_non_quil_payloads() -> None:
     """Direct Rigetti execution should fail closed until translation into Quil is explicit."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
         RigettiQCSHALAdapter(
@@ -174,7 +172,6 @@ def test_rigetti_qcs_adapter_rejects_non_quil_payloads() -> None:
 
 def test_rigetti_qcs_adapter_rejects_wrong_profile() -> None:
     """The concrete adapter must not attach to a non-Rigetti profile."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("local_statevector")
 
     with pytest.raises(ValueError, match="rigetti_qcs"):
@@ -183,7 +180,6 @@ def test_rigetti_qcs_adapter_rejects_wrong_profile() -> None:
 
 def test_rigetti_qcs_adapter_default_pyquil_route(monkeypatch: pytest.MonkeyPatch) -> None:
     """Default construction should use pyQuil Program, shot loop, get_qc, compile, and run."""
-
     fake_pyquil = _FakePyquilModule()
     monkeypatch.setattr(rigetti_mod, "import_module", lambda name: fake_pyquil)
     hal = HardwareAbstractionLayer.with_builtin_profiles()
@@ -216,7 +212,6 @@ def test_rigetti_qcs_adapter_default_pyquil_route(monkeypatch: pytest.MonkeyPatc
 
 def test_rigetti_qcs_adapter_lazy_factory_and_readout_data_result() -> None:
     """Lazy QCS construction should support pyQuil readout_data result objects."""
-
     created: list[str] = []
 
     def factory(name: str) -> _FakeRigettiQuantumComputer:
@@ -253,7 +248,6 @@ def test_rigetti_qcs_adapter_lazy_factory_and_readout_data_result() -> None:
 
 def test_rigetti_qcs_adapter_rejects_missing_compile_when_enabled() -> None:
     """Compile remains explicit because pyQuil run expects compiled executables."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
         RigettiQCSHALAdapter(
@@ -279,7 +273,6 @@ def test_rigetti_qcs_adapter_rejects_missing_compile_when_enabled() -> None:
 
 def test_rigetti_qcs_adapter_can_run_precompiled_payloads() -> None:
     """compile_program=False should forward already executable provider payloads."""
-
     quantum_computer = _FakeNoCompileRigettiQuantumComputer()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -311,7 +304,6 @@ def test_rigetti_qcs_adapter_can_run_precompiled_payloads() -> None:
 
 def test_rigetti_qcs_adapter_rejects_unknown_jobs() -> None:
     """Unknown job handles should not fabricate state or results."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     adapter = RigettiQCSHALAdapter(
         hal.profile("rigetti_qcs"),
@@ -334,7 +326,6 @@ def test_rigetti_qcs_adapter_rejects_unknown_jobs() -> None:
 
 def test_rigetti_qcs_adapter_rejects_shot_mismatch() -> None:
     """Rigetti adapter must fail closed if observed readouts do not match requested shots."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
         RigettiQCSHALAdapter(
@@ -369,7 +360,6 @@ def test_rigetti_readout_validation_rejects_malformed_provider_results(
     raw_result: object, message: str
 ) -> None:
     """Malformed provider readout should fail before counts are reported."""
-
     with pytest.raises(ValueError, match=message):
         rigetti_mod._readout_counts(raw_result, "ro", 1)
 
@@ -412,7 +402,6 @@ def test_rigetti_default_pyquil_errors_are_actionable(monkeypatch: pytest.Monkey
 
 def test_rigetti_qcs_adapter_requires_execution_route() -> None:
     """Construction should fail closed without an injected quantum computer or QCS name."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
 
     with pytest.raises(ValueError, match="quantum_computer"):
@@ -421,7 +410,6 @@ def test_rigetti_qcs_adapter_requires_execution_route() -> None:
 
 def test_rigetti_provider_job_id_extraction_requires_identifier() -> None:
     """Rigetti provider job id extraction should fail closed when id is unavailable."""
-
     assert (
         rigetti_mod._provider_job_id(type("Result", (), {"job_id": "rigetti-provider-3"})())
         == "rigetti-provider-3"
@@ -432,7 +420,6 @@ def test_rigetti_provider_job_id_extraction_requires_identifier() -> None:
 
 def test_rigetti_provider_job_id_rejects_control_characters() -> None:
     """Rigetti provider identifiers must reject control-character payloads."""
-
     BadResult = type("Result", (), {"job_id": "rigetti-provider-\n3"})
     with pytest.raises(ValueError, match="provider job id"):
         rigetti_mod._provider_job_id(BadResult())
@@ -440,14 +427,12 @@ def test_rigetti_provider_job_id_rejects_control_characters() -> None:
 
 def test_rigetti_provider_job_id_trims_padding() -> None:
     """Rigetti provider identifiers should be canonicalised by trimming padding."""
-
     PaddedResult = type("Result", (), {"job_id": "  rigetti-provider-3  "})
     assert rigetti_mod._provider_job_id(PaddedResult()) == "rigetti-provider-3"
 
 
 def test_rigetti_quantum_computer_name_rejects_control_characters() -> None:
     """Rigetti quantum computer names must reject control-character payloads."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
     with pytest.raises(ValueError, match="Rigetti quantum computer"):
         RigettiQCSHALAdapter(profile, quantum_computer_name="Ankaa-\n3")
@@ -455,13 +440,13 @@ def test_rigetti_quantum_computer_name_rejects_control_characters() -> None:
 
 def test_rigetti_quantum_computer_name_trims_padding() -> None:
     """Rigetti quantum computer names should be canonicalised by trimming padding."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
     adapter = RigettiQCSHALAdapter(profile, quantum_computer_name="  Ankaa-3  ")
     assert adapter._quantum_computer_name == "Ankaa-3"
 
 
 def test_rigetti_readout_register_rejects_control_characters() -> None:
+    """A Rigetti readout register with control characters is refused."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
     with pytest.raises(ValueError, match="Rigetti readout register"):
         RigettiQCSHALAdapter(
@@ -472,6 +457,7 @@ def test_rigetti_readout_register_rejects_control_characters() -> None:
 
 
 def test_rigetti_readout_register_trims_padding() -> None:
+    """A Rigetti readout register is trimmed of padding."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
     adapter = RigettiQCSHALAdapter(
         profile,

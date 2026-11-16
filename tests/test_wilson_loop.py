@@ -36,7 +36,10 @@ class _SparseMatrixProtocol(Protocol):
 
 
 class TestBuildWilsonOperator:
+    """Building the Wilson loop operator."""
+
     def test_two_site_hermitian(self) -> None:
+        """A two-site operator is Hermitian."""
         W = _build_wilson_operator([0, 1], 4)
         W_mat = W.to_matrix()
         if hasattr(W_mat, "toarray"):
@@ -44,14 +47,17 @@ class TestBuildWilsonOperator:
         np.testing.assert_allclose(W_mat, W_mat.conj().T, atol=1e-12)
 
     def test_three_site_loop(self) -> None:
+        """A three-site loop builds an operator on the system's four qubits."""
         W = _build_wilson_operator([0, 1, 2], 4)
         assert W.num_qubits == 4
 
     def test_raises_for_single_site(self) -> None:
+        """A single site is refused."""
         with pytest.raises(ValueError, match="at least 2"):
             _build_wilson_operator([0], 4)
 
     def test_build_contract_uses_explicit_runtime_validation(self) -> None:
+        """The builder validates with explicit checks, not assert statements."""
         source = textwrap.dedent(inspect.getsource(_build_wilson_operator))
         syntax_tree = ast.parse(source)
 
@@ -59,6 +65,8 @@ class TestBuildWilsonOperator:
 
 
 class TestWilsonLoopExpectation:
+    """Expectation values of Wilson loops."""
+
     def test_product_state(self) -> None:
         """Product state |0000> should give well-defined Wilson value."""
         n = 4
@@ -68,6 +76,7 @@ class TestWilsonLoopExpectation:
         assert isinstance(w, complex)
 
     def test_magnitude_bounded(self) -> None:
+        """The expectation has magnitude at most one."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         exact = classical_exact_diag(4, K=K, omega=omega)
@@ -76,6 +85,8 @@ class TestWilsonLoopExpectation:
         assert abs(w) <= 1.0 + 1e-10
 
     def test_sparse_matrix_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The sparse-matrix path gives one for this state."""
+
         class SparseMatrix:
             def toarray(self) -> NDArray[np.float64]:
                 return np.diag([1.0, -1.0])
@@ -92,7 +103,10 @@ class TestWilsonLoopExpectation:
 
 
 class TestFindLoops:
+    """Finding loops in the coupling graph."""
+
     def test_complete_graph_has_triangles(self) -> None:
+        """A complete graph has triangles."""
         K = build_knm_paper27(L=4)
         loops = _find_loops(K, max_length=3)
         assert len(loops) > 0
@@ -100,19 +114,24 @@ class TestFindLoops:
             assert len(loop) == 3
 
     def test_all_to_all_has_squares(self) -> None:
+        """An all-to-all graph has squares."""
         K = build_knm_paper27(L=4)
         loops = _find_loops(K, max_length=4)
         has_square = any(len(lp) == 4 for lp in loops)
         assert has_square
 
     def test_disconnected_graph_no_loops(self) -> None:
+        """A disconnected graph has no loops."""
         K = np.zeros((4, 4))
         loops = _find_loops(K)
         assert len(loops) == 0
 
 
 class TestComputeWilsonLoops:
+    """Computing Wilson loops for a coupling."""
+
     def test_returns_list(self) -> None:
+        """The computation returns a non-empty list."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         results = compute_wilson_loops(K, omega)
@@ -120,12 +139,14 @@ class TestComputeWilsonLoops:
         assert len(results) > 0
 
     def test_result_type(self) -> None:
+        """Each entry is a result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         results = compute_wilson_loops(K, omega)
         assert isinstance(results[0], WilsonLoopResult)
 
     def test_magnitude_bounded(self) -> None:
+        """Each magnitude lies in [0, 1]."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         results = compute_wilson_loops(K, omega)
@@ -134,6 +155,7 @@ class TestComputeWilsonLoops:
             assert r.magnitude >= 0.0
 
     def test_phase_angle_range(self) -> None:
+        """Each phase angle lies in [-pi, pi]."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         results = compute_wilson_loops(K, omega)
@@ -141,6 +163,7 @@ class TestComputeWilsonLoops:
             assert -np.pi <= r.phase_angle <= np.pi
 
     def test_max_loops_limit(self) -> None:
+        """The loop limit is respected."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         results = compute_wilson_loops(K, omega, max_loops=3)

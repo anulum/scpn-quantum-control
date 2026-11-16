@@ -45,6 +45,7 @@ def _central_difference_jacobian(theta, hyperedges, coupling, step=1e-6):
 
 
 def test_force_matches_hand_sum_on_a_triangle() -> None:
+    """On a triangle the force matches the hand-written sum."""
     theta = np.array([0.2, 1.1, 2.3])
     weight = 0.8
     force = hyperedge_force(theta, [(0, 1, 2)], weight)
@@ -59,6 +60,7 @@ def test_force_matches_hand_sum_on_a_triangle() -> None:
 
 
 def test_pairwise_edges_reduce_to_symmetric_networked_force() -> None:
+    """Pairwise edges reduce to the symmetric networked force."""
     rng = np.random.default_rng(0)
     count = 6
     theta = rng.uniform(0.0, 2.0 * np.pi, count)
@@ -72,6 +74,7 @@ def test_pairwise_edges_reduce_to_symmetric_networked_force() -> None:
 
 
 def test_scalar_weight_is_broadcast_over_all_edges() -> None:
+    """A scalar weight is applied to every edge."""
     theta = np.array([0.0, 0.6, 1.4, 2.0])
     edges = [(0, 1, 2), (1, 2, 3)]
     scalar = hyperedge_force(theta, edges, 0.5)
@@ -80,6 +83,7 @@ def test_scalar_weight_is_broadcast_over_all_edges() -> None:
 
 
 def test_force_sums_over_edges_sharing_a_node() -> None:
+    """Edges that share a node add their forces."""
     theta = np.array([0.1, 0.7, 1.5, 2.2])
     triangle = hyperedge_force(theta, [(0, 1, 2)], 1.0)
     tetra = hyperedge_force(theta, [(0, 1, 2, 3)], 1.0)
@@ -88,36 +92,43 @@ def test_force_sums_over_edges_sharing_a_node() -> None:
 
 
 def test_force_rejects_empty_theta() -> None:
+    """Empty phases are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hyperedge_force(np.empty(0), [(0, 1)], 1.0)
 
 
 def test_force_rejects_non_vector_theta() -> None:
+    """Phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hyperedge_force(np.zeros((2, 2)), [(0, 1)], 1.0)
 
 
 def test_force_rejects_too_small_hyperedge() -> None:
+    """A hyperedge with fewer than two nodes is refused."""
     with pytest.raises(ValueError, match="at least two node indices"):
         hyperedge_force(np.zeros(3), [(0,)], 1.0)
 
 
 def test_force_rejects_two_dimensional_hyperedge() -> None:
+    """A two-dimensional hyperedge is refused."""
     with pytest.raises(ValueError, match="at least two node indices"):
         hyperedge_force(np.zeros(3), [[(0, 1), (1, 2)]], 1.0)
 
 
 def test_force_rejects_repeated_node_in_hyperedge() -> None:
+    """A hyperedge that repeats a node is refused."""
     with pytest.raises(ValueError, match="repeated node index"):
         hyperedge_force(np.zeros(4), [(0, 1, 1)], 1.0)
 
 
 def test_force_rejects_out_of_range_node() -> None:
+    """A node outside the phases is refused."""
     with pytest.raises(ValueError, match="outside"):
         hyperedge_force(np.zeros(3), [(0, 3)], 1.0)
 
 
 def test_force_rejects_mismatched_weight_length() -> None:
+    """Weights of the wrong length are refused."""
     with pytest.raises(ValueError, match="scalar or a length-2 sequence"):
         hyperedge_force(np.zeros(4), [(0, 1), (1, 2)], [0.5])
 
@@ -126,6 +137,7 @@ def test_force_rejects_mismatched_weight_length() -> None:
 
 
 def test_jacobian_matches_central_difference_on_mixed_orders() -> None:
+    """With mixed orders the Jacobian agrees with central differences."""
     rng = np.random.default_rng(3)
     count = 6
     theta = rng.uniform(0.0, 2.0 * np.pi, count)
@@ -137,6 +149,7 @@ def test_jacobian_matches_central_difference_on_mixed_orders() -> None:
 
 
 def test_jacobian_rows_sum_to_zero() -> None:
+    """Each Jacobian row sums to zero."""
     rng = np.random.default_rng(4)
     theta = rng.uniform(0.0, 2.0 * np.pi, 6)
     edges = [(0, 1, 2), (1, 3, 4, 5), (0, 5)]
@@ -146,6 +159,7 @@ def test_jacobian_rows_sum_to_zero() -> None:
 
 def test_jacobian_diagonal_carries_minus_order_weight() -> None:
     # A single triangle {0,1,2}: J_00 = -(m-1) w cos(arg) with m = 3, arg = θ1+θ2-2θ0.
+    """The diagonal carries minus the order times the weight."""
     theta = np.array([0.3, 1.0, 2.1])
     weight = 1.4
     jacobian = hyperedge_jacobian(theta, [(0, 1, 2)], weight)
@@ -155,20 +169,24 @@ def test_jacobian_diagonal_carries_minus_order_weight() -> None:
 
 
 def test_jacobian_rejects_empty_theta() -> None:
+    """Empty phases are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hyperedge_jacobian(np.empty(0), [(0, 1)], 1.0)
 
 
 def test_jacobian_rejects_non_vector_theta() -> None:
+    """Phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hyperedge_jacobian(np.zeros((3, 3)), [(0, 1)], 1.0)
 
 
 def test_jacobian_rejects_bad_hyperedge() -> None:
+    """A hyperedge with a node outside the phases is refused."""
     with pytest.raises(ValueError, match="outside"):
         hyperedge_jacobian(np.zeros(3), [(0, 9)], 1.0)
 
 
 def test_jacobian_rejects_mismatched_weight_length() -> None:
+    """Weights of the wrong length are refused."""
     with pytest.raises(ValueError, match="scalar or a length-1 sequence"):
         hyperedge_jacobian(np.zeros(4), [(0, 1)], [0.5, 0.6])

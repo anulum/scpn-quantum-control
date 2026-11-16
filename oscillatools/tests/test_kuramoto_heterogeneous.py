@@ -57,6 +57,7 @@ def _mixed_terms(coupling):
 
 
 def test_pairwise_term_wraps_networked_coupling() -> None:
+    """The pairwise term wraps the networked coupling force and Jacobian."""
     coupling = _symmetric_coupling(5, 0)
     theta = np.random.default_rng(1).uniform(0.0, 2.0 * np.pi, 5)
     term = pairwise_term(coupling)
@@ -66,6 +67,7 @@ def test_pairwise_term_wraps_networked_coupling() -> None:
 
 
 def test_hyperedge_term_wraps_structural_coupling() -> None:
+    """The hyperedge term wraps the structural coupling force and Jacobian."""
     theta = np.random.default_rng(2).uniform(0.0, 2.0 * np.pi, 6)
     edges = [(0, 1, 2), (2, 3, 4, 5)]
     term = hyperedge_term(edges, [0.8, -0.4], label="triangles")
@@ -75,6 +77,7 @@ def test_hyperedge_term_wraps_structural_coupling() -> None:
 
 
 def test_simplex_term_wraps_mean_field_and_labels_by_order() -> None:
+    """The simplex term wraps the mean field and is labelled by its order."""
     theta = np.random.default_rng(3).uniform(0.0, 2.0 * np.pi, 7)
     term = simplex_mean_field_term(1.3, 3)
     assert term.label == "simplex-order-3"
@@ -83,10 +86,12 @@ def test_simplex_term_wraps_mean_field_and_labels_by_order() -> None:
 
 
 def test_simplex_term_accepts_custom_label() -> None:
+    """The simplex term accepts a custom label."""
     assert simplex_mean_field_term(1.0, 2, label="triadic").label == "triadic"
 
 
 def test_coupling_term_can_be_constructed_directly() -> None:
+    """A coupling term can be built directly."""
     term = CouplingTerm(
         force=lambda theta: np.zeros(theta.size),
         jacobian=lambda theta: np.zeros((theta.size, theta.size)),
@@ -100,6 +105,7 @@ def test_coupling_term_can_be_constructed_directly() -> None:
 
 
 def test_force_is_sum_of_components() -> None:
+    """The force is the sum of its components."""
     coupling = _symmetric_coupling(6, 4)
     theta = np.random.default_rng(5).uniform(0.0, 2.0 * np.pi, 6)
     terms = _mixed_terms(coupling)
@@ -109,6 +115,7 @@ def test_force_is_sum_of_components() -> None:
 
 
 def test_force_equals_explicit_term_sum() -> None:
+    """The force equals the explicit sum of the terms."""
     coupling = _symmetric_coupling(6, 6)
     theta = np.random.default_rng(7).uniform(0.0, 2.0 * np.pi, 6)
     terms = _mixed_terms(coupling)
@@ -121,6 +128,7 @@ def test_force_equals_explicit_term_sum() -> None:
 
 
 def test_components_match_individual_terms() -> None:
+    """Each component equals its term's force."""
     coupling = _symmetric_coupling(6, 8)
     theta = np.random.default_rng(9).uniform(0.0, 2.0 * np.pi, 6)
     terms = _mixed_terms(coupling)
@@ -130,6 +138,7 @@ def test_components_match_individual_terms() -> None:
 
 
 def test_single_term_reduces_to_that_term() -> None:
+    """A single term reduces to that term."""
     coupling = _symmetric_coupling(5, 10)
     theta = np.random.default_rng(11).uniform(0.0, 2.0 * np.pi, 5)
     assert np.allclose(
@@ -142,6 +151,7 @@ def test_single_term_reduces_to_that_term() -> None:
 
 
 def test_jacobian_is_sum_of_term_jacobians() -> None:
+    """The Jacobian is the sum of the terms' Jacobians."""
     coupling = _symmetric_coupling(6, 12)
     theta = np.random.default_rng(13).uniform(0.0, 2.0 * np.pi, 6)
     terms = _mixed_terms(coupling)
@@ -150,6 +160,7 @@ def test_jacobian_is_sum_of_term_jacobians() -> None:
 
 
 def test_jacobian_matches_central_difference() -> None:
+    """The Jacobian agrees with central differences."""
     coupling = _symmetric_coupling(6, 14)
     theta = np.random.default_rng(15).uniform(0.0, 2.0 * np.pi, 6)
     terms = _mixed_terms(coupling)
@@ -169,6 +180,7 @@ def test_jacobian_matches_central_difference() -> None:
 
 
 def test_jacobian_rows_sum_to_zero() -> None:
+    """Each Jacobian row sums to zero."""
     coupling = _symmetric_coupling(6, 16)
     theta = np.random.default_rng(17).uniform(0.0, 2.0 * np.pi, 6)
     jacobian = heterogeneous_jacobian(theta, _mixed_terms(coupling))
@@ -179,26 +191,31 @@ def test_jacobian_rows_sum_to_zero() -> None:
 
 
 def test_force_rejects_empty_terms() -> None:
+    """A force without terms is refused."""
     with pytest.raises(ValueError, match="at least one coupling term"):
         heterogeneous_force(np.zeros(3), [])
 
 
 def test_force_rejects_non_vector_theta() -> None:
+    """Phases that are not a non-empty vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         heterogeneous_force(np.zeros((2, 2)), [pairwise_term(np.zeros((2, 2)))])
 
 
 def test_jacobian_rejects_empty_terms() -> None:
+    """A Jacobian without terms is refused."""
     with pytest.raises(ValueError, match="at least one coupling term"):
         heterogeneous_jacobian(np.zeros(3), [])
 
 
 def test_jacobian_rejects_empty_theta() -> None:
+    """Empty phases are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         heterogeneous_jacobian(np.empty(0), [pairwise_term(np.zeros((0, 0)))])
 
 
 def test_force_rejects_term_with_wrong_output_length() -> None:
+    """A term whose force has the wrong length is refused by name."""
     bad = CouplingTerm(
         force=lambda theta: np.zeros(theta.size + 1),
         jacobian=lambda theta: np.zeros((theta.size, theta.size)),
@@ -209,6 +226,7 @@ def test_force_rejects_term_with_wrong_output_length() -> None:
 
 
 def test_jacobian_rejects_term_with_wrong_output_shape() -> None:
+    """A term whose Jacobian has the wrong shape is refused by name."""
     bad = CouplingTerm(
         force=lambda theta: np.zeros(theta.size),
         jacobian=lambda theta: np.zeros((theta.size, theta.size + 1)),

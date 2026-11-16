@@ -75,6 +75,7 @@ def test_directed_edge_lands_in_the_receiving_row() -> None:
 
 
 def test_default_weight_applies_to_unweighted_edges() -> None:
+    """Unweighted edges get the default weight."""
     graph = _FakeGraph([0, 1], [(0, 1, {})])
     coupling = coupling_from_networkx(graph, default_weight=0.25)
     np.testing.assert_array_equal(coupling, np.array([[0.0, 0.25], [0.25, 0.0]]))
@@ -88,6 +89,7 @@ def test_self_loop_lands_once_on_the_diagonal() -> None:
 
 
 def test_parallel_multigraph_edges_sum() -> None:
+    """Parallel multigraph edges add their weights."""
     graph = _FakeGraph(
         [0, 1],
         [(0, 1, {"weight": 1.5}), (0, 1, {"weight": 0.5})],
@@ -98,6 +100,7 @@ def test_parallel_multigraph_edges_sum() -> None:
 
 
 def test_nodelist_permutation_reorders_the_matrix() -> None:
+    """A node list permutes the matrix."""
     graph = _FakeGraph(["a", "b"], [("a", "b", {"weight": 4.0})])
     coupling = coupling_from_networkx(graph, nodelist=["b", "a"])
     np.testing.assert_array_equal(coupling, np.array([[0.0, 4.0], [4.0, 0.0]]))
@@ -110,53 +113,62 @@ def test_nodelist_permutation_reorders_the_matrix() -> None:
 
 
 def test_rejects_empty_graph() -> None:
+    """An empty graph is refused."""
     with pytest.raises(ValueError, match="graph must contain at least one node"):
         coupling_from_networkx(_FakeGraph([], []))
 
 
 def test_rejects_nodelist_that_is_not_a_permutation() -> None:
+    """A node list that is not a permutation is refused."""
     graph = _FakeGraph([0, 1], [(0, 1, {})])
     with pytest.raises(ValueError, match="permutation of the graph's nodes"):
         coupling_from_networkx(graph, nodelist=[0, 2])
 
 
 def test_rejects_nodelist_with_wrong_length() -> None:
+    """A node list of the wrong length is refused."""
     graph = _FakeGraph([0, 1], [(0, 1, {})])
     with pytest.raises(ValueError, match="permutation of the graph's nodes"):
         coupling_from_networkx(graph, nodelist=[0])
 
 
 def test_rejects_nodelist_with_duplicates() -> None:
+    """A node list with duplicates is refused."""
     graph = _FakeGraph([0, 1], [(0, 1, {})])
     with pytest.raises(ValueError, match="must not contain duplicate nodes"):
         coupling_from_networkx(graph, nodelist=[0, 0])
 
 
 def test_rejects_non_numeric_weight() -> None:
+    """A non-numeric weight is refused."""
     graph = _FakeGraph([0, 1], [(0, 1, {"weight": "heavy"})])
     with pytest.raises(ValueError, match="non-numeric 'weight' attribute"):
         coupling_from_networkx(graph)
 
 
 def test_rejects_boolean_weight() -> None:
+    """A boolean weight is refused as non-numeric."""
     graph = _FakeGraph([0, 1], [(0, 1, {"weight": True})])
     with pytest.raises(ValueError, match="non-numeric 'weight' attribute"):
         coupling_from_networkx(graph)
 
 
 def test_rejects_non_finite_weight() -> None:
+    """A non-finite weight is refused."""
     graph = _FakeGraph([0, 1], [(0, 1, {"weight": float("inf")})])
     with pytest.raises(ValueError, match="non-finite weight"):
         coupling_from_networkx(graph)
 
 
 def test_export_rejects_non_square_coupling() -> None:
+    """Exporting a non-square coupling is refused."""
     pytest.importorskip("networkx")
     with pytest.raises(ValueError, match="non-empty square matrix"):
         graph_from_networked_coupling(np.zeros((2, 3)))
 
 
 def test_export_rejects_negative_threshold() -> None:
+    """A negative export threshold is refused."""
     pytest.importorskip("networkx")
     with pytest.raises(ValueError, match="threshold must be non-negative"):
         graph_from_networked_coupling(np.zeros((2, 2)), threshold=-1.0)
@@ -178,6 +190,7 @@ def test_undirected_ingestion_matches_networkx_reference() -> None:
 
 
 def test_directed_ingestion_matches_networkx_reference() -> None:
+    """Reading a directed graph matches NetworkX's reference matrix."""
     networkx = pytest.importorskip("networkx")
     rng = np.random.default_rng(1)
     graph = networkx.gnp_random_graph(10, 0.3, seed=5, directed=True)
@@ -189,6 +202,7 @@ def test_directed_ingestion_matches_networkx_reference() -> None:
 
 
 def test_multigraph_ingestion_matches_networkx_reference() -> None:
+    """Reading a multigraph matches NetworkX's reference matrix."""
     networkx = pytest.importorskip("networkx")
     graph = networkx.MultiGraph()
     graph.add_edge(0, 1, weight=1.0)
@@ -203,6 +217,7 @@ def test_multigraph_ingestion_matches_networkx_reference() -> None:
 
 
 def test_symmetric_coupling_exports_as_undirected_graph_and_round_trips() -> None:
+    """A symmetric coupling exports as an undirected graph and round-trips."""
     networkx = pytest.importorskip("networkx")
     rng = np.random.default_rng(2)
     coupling = rng.uniform(0.1, 1.0, (6, 6))
@@ -214,6 +229,7 @@ def test_symmetric_coupling_exports_as_undirected_graph_and_round_trips() -> Non
 
 
 def test_asymmetric_coupling_exports_as_directed_graph_and_round_trips() -> None:
+    """An asymmetric coupling exports as a directed graph and round-trips."""
     networkx = pytest.importorskip("networkx")
     coupling = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 2.0], [0.5, 0.0, 0.0]])
     graph = graph_from_networked_coupling(coupling)
@@ -223,6 +239,7 @@ def test_asymmetric_coupling_exports_as_directed_graph_and_round_trips() -> None
 
 
 def test_threshold_drops_weak_entries() -> None:
+    """The threshold drops weak entries but keeps the nodes."""
     pytest.importorskip("networkx")
     coupling = np.array([[0.0, 0.05], [0.05, 0.0]])
     graph = graph_from_networked_coupling(coupling, threshold=0.1)
@@ -231,6 +248,7 @@ def test_threshold_drops_weak_entries() -> None:
 
 
 def test_self_loops_round_trip_through_the_export() -> None:
+    """Self-loops round-trip through the export."""
     pytest.importorskip("networkx")
     coupling = np.array([[0.7, 1.0], [1.0, 0.0]])
     graph = graph_from_networked_coupling(coupling)

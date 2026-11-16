@@ -35,15 +35,18 @@ _TWO_PI = 2.0 * np.pi
 
 
 def test_uniform_phases_reach_the_maximum_entropy() -> None:
+    """Uniform phases reach the maximum entropy, log of the bin count."""
     angles = np.random.default_rng(0).uniform(0.0, _TWO_PI, 200_000)
     assert phase_entropy(angles, bins=36) == pytest.approx(np.log(36), abs=0.02)
 
 
 def test_identical_phases_have_zero_entropy() -> None:
+    """Identical phases have zero entropy."""
     assert phase_entropy(np.full(5000, 1.234), bins=36) == 0.0
 
 
 def test_entropy_grows_monotonically_with_spread() -> None:
+    """Entropy grows with the spread of the phases."""
     rng = np.random.default_rng(1)
     previous = -1.0
     for sigma in (0.05, 0.2, 0.5, 1.0, 3.0):
@@ -53,6 +56,7 @@ def test_entropy_grows_monotonically_with_spread() -> None:
 
 
 def test_normalised_entropy_spans_zero_to_one() -> None:
+    """Normalised entropy runs from zero for identical phases to one for uniform ones."""
     rng = np.random.default_rng(2)
     assert normalised_phase_entropy(rng.uniform(0.0, _TWO_PI, 200_000), bins=24) == pytest.approx(
         1.0, abs=0.02
@@ -62,6 +66,7 @@ def test_normalised_entropy_spans_zero_to_one() -> None:
 
 def test_entropy_series_shape_and_ordering() -> None:
     # A trajectory that starts spread and ends synchronised: entropy must fall.
+    """The entropy series has one value per time sample, in order."""
     rng = np.random.default_rng(3)
     spread = rng.uniform(0.0, _TWO_PI, (1, 400))
     converged = np.full((1, 400), 0.5)
@@ -84,6 +89,7 @@ def _phase_pair(steps: int, *, bins: int, seed: int) -> tuple[np.ndarray, np.nda
 
 
 def test_phase_locked_pair_has_mutual_information_equal_to_marginal_entropy() -> None:
+    """A phase-locked pair's mutual information equals the marginal entropy."""
     locked_a, locked_b = _phase_pair(20_000, bins=36, seed=4)
     marginal = phase_entropy(locked_a, bins=36)
     assert pairwise_mutual_information(locked_a, locked_b, bins=36) == pytest.approx(
@@ -92,6 +98,7 @@ def test_phase_locked_pair_has_mutual_information_equal_to_marginal_entropy() ->
 
 
 def test_independent_phases_have_near_zero_mutual_information() -> None:
+    """Independent phases have near-zero mutual information."""
     rng = np.random.default_rng(5)
     first = rng.uniform(0.0, _TWO_PI, 20_000)
     second = rng.uniform(0.0, _TWO_PI, 20_000)
@@ -99,6 +106,7 @@ def test_independent_phases_have_near_zero_mutual_information() -> None:
 
 
 def test_mutual_information_is_symmetric() -> None:
+    """Mutual information is symmetric."""
     locked_a, locked_b = _phase_pair(15_000, bins=24, seed=6)
     forward = pairwise_mutual_information(locked_a, locked_b, bins=24)
     backward = pairwise_mutual_information(locked_b, locked_a, bins=24)
@@ -109,6 +117,7 @@ def test_mutual_information_is_symmetric() -> None:
 
 
 def test_mutual_information_matrix_structure() -> None:
+    """The mutual-information matrix is symmetric and shows the locked pair."""
     rng = np.random.default_rng(7)
     steps, bins = 20_000, 24
     grid = np.arange(steps) * 0.01
@@ -135,45 +144,54 @@ def test_mutual_information_matrix_structure() -> None:
 
 
 def test_phase_entropy_rejects_too_few_bins() -> None:
+    """Fewer than two bins are refused."""
     with pytest.raises(ValueError, match="bins must be at least 2"):
         phase_entropy(np.zeros(10), bins=1)
 
 
 def test_phase_entropy_rejects_non_one_dimensional_angles() -> None:
+    """Angles that are not one-dimensional are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         phase_entropy(np.zeros((3, 3)))
 
 
 def test_phase_entropy_rejects_empty_angles() -> None:
+    """Empty angles are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         phase_entropy(np.empty(0))
 
 
 def test_mutual_information_rejects_unequal_lengths() -> None:
+    """Series of unequal length are refused."""
     with pytest.raises(ValueError, match="equal length"):
         pairwise_mutual_information(np.zeros(5), np.zeros(6))
 
 
 def test_entropy_series_rejects_non_two_dimensional() -> None:
+    """A trajectory that is not two-dimensional is refused."""
     with pytest.raises(ValueError, match="two-dimensional"):
         phase_entropy_series(np.zeros(5))
 
 
 def test_entropy_series_rejects_empty_axes() -> None:
+    """A trajectory without time samples is refused."""
     with pytest.raises(ValueError, match="at least one time sample"):
         phase_entropy_series(np.zeros((0, 4)))
 
 
 def test_matrix_rejects_non_two_dimensional() -> None:
+    """A trajectory that is not two-dimensional is refused."""
     with pytest.raises(ValueError, match="two-dimensional"):
         mutual_information_matrix(np.zeros(5))
 
 
 def test_matrix_rejects_too_few_bins() -> None:
+    """Fewer than two bins are refused."""
     with pytest.raises(ValueError, match="bins must be at least 2"):
         mutual_information_matrix(np.zeros((10, 3)), bins=1)
 
 
 def test_matrix_rejects_empty_axes() -> None:
+    """A trajectory without time samples is refused."""
     with pytest.raises(ValueError, match="at least one time sample"):
         mutual_information_matrix(np.zeros((0, 4)))
