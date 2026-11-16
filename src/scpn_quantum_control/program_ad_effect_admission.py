@@ -151,6 +151,9 @@ def find_objective_effects(
     )
 
 
+# Structural metadata of a traced array: plain integers that carry no derivative.
+_STRUCTURAL_METADATA = frozenset({"ndim", "shape", "size"})
+
 # One rule for exceptions in the objective and in every admitted helper: an
 # exception may leave the program, carrying no traced value, but no handler may
 # catch one, because a handler could catch a fail-closed refusal and continue.
@@ -334,6 +337,11 @@ class _Visitor(ast.NodeVisitor):
                     if _plain_namespace(namespace)
                     else _Value(captured=True)
                 )
+            if node.attr in _STRUCTURAL_METADATA:
+                # A traced array's shape, rank and size are plain integers fixed by
+                # the input's structure; a traced value reaching an integer
+                # conversion is still refused, here and by the runtime.
+                return _Value(captured=receiver.captured, local=receiver.local)
             return _Value(captured=receiver.captured, active=receiver.active, local=receiver.local)
         if isinstance(node, ast.Subscript):
             receiver = self.value(node.value)
@@ -431,6 +439,9 @@ class _Visitor(ast.NodeVisitor):
                 active=any(argument.active for argument in view_sources),
                 local=all(argument.local for argument in view_sources),
             )
+        if isinstance(node, ast.Call) and self.value(node.func).value is len:
+            # len() is a structural extent and never carries a derivative.
+            return _Value(local=True)
         children = [
             self.value(child)
             for child in ast.iter_child_nodes(node)
@@ -1167,15 +1178,19 @@ class _Visitor(ast.NodeVisitor):
                     else _NUMPY_OUTPUT_POSITIONS.get(id(callee.value))
                 )
                 self.output_storage(node, position)
-            if callee.value is int:
+            if callee.value is int or callee.value is round:
                 arguments, variadic = self.positional_values(node.args)
-                if any(argument.active for argument in arguments) or (
-                    variadic is not None and variadic.active
+                if (
+                    any(argument.active for argument in arguments)
+                    or (variadic is not None and variadic.active)
+                    or any(self.value(keyword.value).active for keyword in node.keywords)
                 ):
                     self.add(
                         node,
                         "dynamic_integer",
-                        "active integer shape or index conversion is unsupported",
+                        "active integer shape or index conversion is unsupported"
+                        if callee.value is int
+                        else "active rounding loses the derivative and is unsupported",
                     )
             return
         if id(callee.value) in _NATIVE_EXCEPTION_IDS and not node.keywords:

@@ -28,6 +28,7 @@ _PURE = (
     min,
     object,
     range,
+    round,
     slice,
     sum,
     tuple,

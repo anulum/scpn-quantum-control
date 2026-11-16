@@ -261,6 +261,13 @@ Admission also accepts these forms, each decided before the objective runs:
   admitted: a `try` statement, `except*` included, in the objective or in any
   helper is refused as `exception_control_flow`, because a handler could catch
   a fail-closed refusal and continue the trace;
+- the shape, rank and size of a traced array (`.shape`, `.ndim`, `.size`,
+  also of a derived array) and `len()`. They are plain integers fixed by the
+  input's structure, so they may size a reshape or a loop and pass through
+  `int()` or `round()`, for example
+  `side = int(round(float(np.sqrt(values.size))))`. `round()` of a passive
+  number is admitted like `abs()`. An integer conversion or a rounding of a
+  traced value stays refused as `dynamic_integer`, by keyword too;
 - `type(value)` with one operand, which reads a class; the three-operand form
   creates a class and is refused;
 - `slice(...)` and `object()`, and the step functions `np.sign` and

@@ -456,6 +456,33 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   rises from 84.19% to 100%. Three older docstrings are fixed, so the test
   documentation ceiling falls to 6988 findings in 549 files.
 
+- **Fixed: whole-program AD refused the static shape, rank and size of a
+  traced array in integer uses, and `round()` of any number.** Effect
+  admission marked every attribute of a traced array, and the result of
+  `len()`, as parameter-dependent. `int(values.shape[0])`, `int(len(values))`
+  and the common derived side `int(round(float(np.sqrt(values.size))))` were
+  therefore refused as `dynamic_integer` before the objective ran, while
+  `range(len(values))` was admitted. The runtime returns plain integers for
+  all of them. `round()` was refused as an external callback even for a
+  constant, although `abs()`, `int()` and `float()` are admitted.
+
+  The fix:
+  - `.shape`, `.ndim` and `.size` keep the receiver's storage provenance but
+    carry no derivative, and `len()` returns a passive integer.
+  - `round()` joins the admitted builtins. Rounding a traced value, by
+    position or by keyword, is refused as `dynamic_integer` with its own
+    reason, and an integer conversion of a traced value stays refused.
+  - The runtime still refuses any traced scalar that reaches `int()`,
+    `float()` or an index.
+
+  The programming guide lists the form. New tests cover:
+  - a derived-side determinant and a sum of squares, with their gradients;
+  - each metadata form in an integer conversion and in `round()`;
+  - the refusals of `int()` and `round()` of traced values.
+
+  The two native linear-algebra integration tests that were given fixed
+  sides on 2026-10-05 for this reason keep them.
+
 - **Fixed: whole-program AD let exception handlers catch a fail-closed
   refusal, and one rule now governs exceptions.** The frontend refused `try`,
   `raise` and `assert` in the objective, but effect admission inspected
