@@ -522,17 +522,25 @@ def test_iqm_cohort_runs_the_offline_iqm_compile_at_exact_coverage() -> None:
     assert len(rows) == 1 and "test_iqm_target_compiler.py" in rows[0]["exercised_by"]
 
 
-def test_iqm_cohort_extracts_the_lattice_calibration_from_the_fake_garnet() -> None:
-    """The IQM cohort runs the SDK-bound lattice-calibration tests and refuses a skip."""
+def test_iqm_cohort_runs_every_fake_garnet_test_with_the_sdk() -> None:
+    """The IQM cohort runs every SDK-guarded fake-Garnet test file and refuses a skip."""
     workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
     steps = workflow["jobs"]["provider-sdk-conformance"]["steps"]
     names = [step.get("name") for step in steps]
-    name = "Extract the lattice calibration from the SDK's fake Garnet (iqm only)"
+    name = "Run the fake-Garnet lattice and layout-transfer tests (iqm only)"
     compile_step = "Enforce exact IQM offline-compile coverage with the locked SDK (iqm only)"
     assert names.index(name) == names.index(compile_step) + 1
     step = steps[names.index(name)]
     assert step["if"] == "matrix.cohort == 'iqm'"
-    assert "python -m pytest -q -rs tests/test_iqm_lattice_calibration.py" in step["run"]
+    command = " ".join(step["run"].replace("\\\n", " ").split())
+    guarded = sorted(
+        path.as_posix()
+        for path in Path("tests").glob("test_iqm_*.py")
+        if 'find_spec("iqm") is None' in path.read_text(encoding="utf-8")
+    )
+    assert guarded == [
+        "tests/test_iqm_lattice_calibration.py",
+        "tests/test_iqm_layout_transfer_benchmark.py",
+    ]
+    assert all(path in command for path in guarded)
     assert 'grep -q "^SKIPPED"' in step["run"]
-    calibration_tests = Path("tests/test_iqm_lattice_calibration.py").read_text(encoding="utf-8")
-    assert 'find_spec("iqm") is None' in calibration_tests

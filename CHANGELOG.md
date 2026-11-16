@@ -1087,13 +1087,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The job was replayed locally on Python 3.15.2 with these locks before it
     was committed: 237 passed, none skipped.
 
-- The IQM provider cohort now runs `tests/test_iqm_lattice_calibration.py`.
-  Its fake-Garnet extraction class skips without the IQM SDK, and the
-  cohort, the only job with that SDK, did not run the file. A new iqm-only
-  step runs it after the offline-compile step and fails if any case
-  skips; a workflow contract test pins the step. The cohort environment
-  (the 3.13 minimal-install lock plus the IQM SDK lock) was replayed
-  locally first: dependencies compatible, 24 passed.
+- The IQM provider cohort now runs `tests/test_iqm_lattice_calibration.py`
+  and `tests/test_iqm_layout_transfer_benchmark.py`.
+  - Their fake-Garnet classes skip without the IQM SDK. The cohort is the
+    only job with that SDK, and it ran neither file.
+  - A new iqm-only step runs both after the offline-compile step and fails
+    if any case skips.
+  - A workflow contract test finds every IQM test file guarded on the SDK
+    and pins the step to all of them.
+  - The cohort environment (the 3.13 minimal-install lock plus the IQM SDK
+    lock) was replayed locally first: dependencies compatible, 57 passed.
 
 - The Cirq adapter (`hardware/cirq_adapter.py`) now tests the import path
   with Cirq importable in every lane: the adapter file is executed under a

@@ -903,15 +903,16 @@ jobs:
           python -m coverage report --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/iqm-offline-compile.coverage" \
             --precision=2 --show-missing --fail-under=100
-      - name: Extract the lattice calibration from the SDK's fake Garnet (iqm only)
-        # The fake-Garnet class skips without the IQM SDK, and no other job has it.
+      - name: Run the fake-Garnet lattice and layout-transfer tests (iqm only)
+        # Their fake-Garnet classes skip without the IQM SDK, and no other job has it.
         if: matrix.cohort == 'iqm'
         run: |
-          log="$RUNNER_TEMP/iqm-lattice-calibration.log"
-          python -m pytest -q -rs tests/test_iqm_lattice_calibration.py > "$log" 2>&1 || { cat "$log"; exit 1; }
+          log="$RUNNER_TEMP/iqm-fake-garnet.log"
+          python -m pytest -q -rs tests/test_iqm_lattice_calibration.py \
+            tests/test_iqm_layout_transfer_benchmark.py > "$log" 2>&1 || { cat "$log"; exit 1; }
           cat "$log"
           if grep -q "^SKIPPED" "$log"; then
-            echo "a lattice-calibration case skipped although the IQM SDK is installed"
+            echo "a fake-Garnet case skipped although the IQM SDK is installed"
             exit 1
           fi
       - name: Retain native codec diagnostics
