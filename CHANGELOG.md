@@ -497,6 +497,31 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `EvaluationReport` contract
+  (`experimental/llm_qpu/contracts/evaluation.py`, schema
+  `evaluation_report.v1`) for a paired comparison of the frozen protocol's
+  arms. It binds:
+  - the protocol and split digests and the evaluated split (dev or test,
+    never train);
+  - the execution class, with exactly one provider and its receipts for
+    hardware and none otherwise;
+  - the metric and arms, which must be the protocol's locked ones;
+  - one `SampleOutcome` per arm and sample: a non-negative per-sample
+    contribution, 0 or 1 for accuracy. Balanced accuracy and F1 are not
+    per-sample decomposable, so v1 refuses them.
+  - the arm metrics, the per-group paired deltas (positive favours the
+    quantum arm), their mean and a seeded paired-group bootstrap
+    percentile interval;
+  - whether the lower bound exceeds the protocol's minimum relevant delta;
+  - a cost breakdown whose unknowns stay unknown.
+  `validate_evaluation_report` requires every outcome to come from the
+  evaluated split's groups and every sample to have one group and an
+  outcome in every arm. It refuses mixed providers, fixture receipts
+  behind a hardware report, and a provider-result origin without
+  hardware. It recomputes every statistic exactly through
+  `paired_statistics`. The standalone worker validates the same wire and
+  recomputes the same values independently.
+
 - The experimental LLM-QPU lane gains a design-only `FeatureBatch` contract
   (`experimental/llm_qpu/contracts/features.py`, schema `feature_batch.v1`):
   the `[N, F]` sampled means and sampling covariance of one measurement basis,

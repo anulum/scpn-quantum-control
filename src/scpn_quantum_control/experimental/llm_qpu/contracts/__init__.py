@@ -39,6 +39,13 @@ if TYPE_CHECKING:
     from .compressed import CompressedLatentBatch, validate_compressed_latent_batch
     from .compressor import CompressorArtifact, validate_compressor_artifact
     from .cost import CostQuote, QuotedCount, decode_cost_quote, validate_cost_quote
+    from .evaluation import (
+        EvaluationReport,
+        SampleOutcome,
+        decode_evaluation_report,
+        paired_statistics,
+        validate_evaluation_report,
+    )
     from .features import (
         FeatureBatch,
         FeatureRow,
@@ -81,6 +88,7 @@ if TYPE_CHECKING:
         COMPRESSED_SCHEMA,
         COMPRESSOR_SCHEMA,
         COST_QUOTE_SCHEMA,
+        EVALUATION_REPORT_SCHEMA,
         EXPERIMENT_PROTOCOL_SCHEMA,
         FEATURE_BATCH_SCHEMA,
         HEADER_SCHEMA,
@@ -311,6 +319,26 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.features",
         "decode_feature_batch",
     ),
+    "SampleOutcome": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+        "SampleOutcome",
+    ),
+    "EvaluationReport": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+        "EvaluationReport",
+    ),
+    "paired_statistics": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+        "paired_statistics",
+    ),
+    "validate_evaluation_report": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+        "validate_evaluation_report",
+    ),
+    "decode_evaluation_report": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+        "decode_evaluation_report",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -381,6 +409,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "FEATURE_BATCH_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "FEATURE_BATCH_SCHEMA",
+    ),
+    "EVALUATION_REPORT_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "EVALUATION_REPORT_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -609,4 +641,10 @@ __all__ = (
     "FeatureBatch",
     "validate_feature_batch",
     "decode_feature_batch",
+    "EVALUATION_REPORT_SCHEMA",
+    "SampleOutcome",
+    "EvaluationReport",
+    "paired_statistics",
+    "validate_evaluation_report",
+    "decode_evaluation_report",
 )

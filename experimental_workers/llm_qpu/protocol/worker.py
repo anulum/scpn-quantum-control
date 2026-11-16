@@ -14,6 +14,7 @@ import binascii
 import hashlib
 import json
 import math
+import random
 import re
 import struct
 import sys
@@ -39,6 +40,8 @@ _OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
 _RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receipt.v1"
 _RESULT_SET_SCHEMA = "scpn.experimental.llm_qpu.raw_result_set.v1"
 _FEATURE_SCHEMA = "scpn.experimental.llm_qpu.feature_batch.v1"
+_REPORT_SCHEMA = "scpn.experimental.llm_qpu.evaluation_report.v1"
+_COST_ITEMS = ["provider_resource_units", "price_minor_units", "classical_compute_seconds"]
 _MEASUREMENT_SCHEMA = "scpn.experimental.llm_qpu.measurement_plan.v1"
 _RESULT_ORIGINS = {
     "provider_metadata": "provider_result",
@@ -2173,6 +2176,269 @@ def _roundtrip_feature_batch(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+_REPORT_FIELDS = {
+    "schema",
+    "object_kind",
+    "protocol_digest",
+    "split_digest",
+    "evaluated_split",
+    "execution_class",
+    "provider",
+    "receipt_digests",
+    "metric",
+    "arms",
+    "outcomes",
+    "arm_metrics",
+    "group_deltas",
+    "mean_delta",
+    "interval_method",
+    "interval_seed",
+    "interval",
+    "relevant",
+    "costs",
+    "currency",
+    "header",
+}
+
+
+def _validate_report_execution(report: dict[str, object]) -> None:
+    if report["evaluated_split"] not in ("dev", "test"):
+        raise ValueError("an evaluation reads the dev or the test split, never train")
+    execution, provider, receipts = (
+        report["execution_class"],
+        report["provider"],
+        report["receipt_digests"],
+    )
+    if execution not in ("hardware", "sampled_simulation", "exact_simulation", "classical_only"):
+        raise ValueError("unknown execution class")
+    if type(receipts) is not list or receipts != sorted(set(map(str, receipts))):
+        raise ValueError("receipt digests must be a sorted unique list")
+    for digest in receipts:
+        _worker_digest(digest, "receipt digest")
+    if execution == "hardware":
+        if provider not in ("ibm", "iqm") or not receipts:
+            raise ValueError("a hardware evaluation names one provider and its receipts")
+    elif provider is not None or receipts:
+        raise ValueError("only a hardware evaluation names a provider or receipts")
+    if report["metric"] not in ("accuracy", "mean_log_loss", "mse", "mae"):
+        raise ValueError("v1 reports per-sample decomposable metrics only")
+
+
+def _validate_outcomes(report: dict[str, object]) -> list[tuple[str, str, str, float]]:
+    arms, outcomes = report["arms"], report["outcomes"]
+    if type(arms) is not list or not 2 <= len(arms) <= 32 or arms != sorted(set(map(str, arms))):
+        raise ValueError("arms must be a sorted unique list of two to 32")
+    if type(outcomes) is not list or not outcomes:
+        raise ValueError("outcomes must be a nonempty list")
+    parsed = []
+    for outcome in outcomes:
+        if type(outcome) is not dict or set(outcome) != {
+            "sample_id",
+            "source_group",
+            "arm",
+            "value",
+        }:
+            raise ValueError("SampleOutcome fields mismatch")
+        names = [
+            _target_text(outcome[name], name) for name in ("arm", "sample_id", "source_group")
+        ]
+        value = _f64_token(outcome["value"])
+        if value < 0.0 or (report["metric"] == "accuracy" and value not in (0.0, 1.0)):
+            raise ValueError("a per-sample contribution is non-negative, and 0 or 1 for accuracy")
+        parsed.append((names[0], names[1], names[2], value))
+    keys = [(arm, sample) for arm, sample, _, _ in parsed]
+    if keys != sorted(set(keys)) or any(arm not in arms for arm, _ in keys):
+        raise ValueError("outcomes must be ordered by arm and unique sample, in registered arms")
+    return parsed
+
+
+def _validate_report_numbers(report: dict[str, object]) -> None:
+    for name in ("arm_metrics", "group_deltas"):
+        pairs = report[name]
+        if type(pairs) is not list or not pairs:
+            raise ValueError(f"{name} must be a nonempty list of named values")
+        for pair in pairs:
+            if type(pair) is not list or len(pair) != 2 or type(pair[0]) is not str:
+                raise ValueError(f"{name} must be a nonempty list of named values")
+            _f64_token(pair[1])
+    _f64_token(report["mean_delta"])
+    bounds, seed = report["interval"], report["interval_seed"]
+    if report["interval_method"] != "paired_group_bootstrap_percentile_v1":
+        raise ValueError("unknown interval method")
+    if type(seed) is not int or not 0 <= seed < 2**63:
+        raise ValueError("interval seed must be a non-negative 63-bit integer")
+    if type(bounds) is not list or len(bounds) != 2:
+        raise ValueError("interval must be a lower and an upper bound")
+    if _f64_token(bounds[0]) > _f64_token(bounds[1]):
+        raise ValueError("interval lower bound exceeds the upper bound")
+    if type(report["relevant"]) is not bool:
+        raise ValueError("relevance must be a boolean")
+    costs = report["costs"]
+    if (
+        type(costs) is not list
+        or [item[0] if type(item) is list and item else None for item in costs] != _COST_ITEMS
+    ):
+        raise ValueError("costs must name each cost item once, in order")
+    for item in costs:
+        if len(item) != 2:
+            raise ValueError("costs must be [name, QuotedCount] pairs")
+        _validate_quoted_count(item[1], str(item[0]))
+    currency = report["currency"]
+    if type(currency) is not str or re.fullmatch(r"[A-Z]{3}", currency) is None:
+        raise ValueError("currency must be an ISO 4217 code")
+
+
+def _worker_statistics(
+    parsed: list[tuple[str, str, str, float]], protocol: dict[str, object], seed: int
+) -> tuple[list[list[object]], list[list[object]], float, list[float]]:
+    by_arm: dict[str, dict[str, tuple[str, float]]] = {}
+    for arm, sample, group, value in parsed:
+        by_arm.setdefault(arm, {})[sample] = (group, value)
+    metrics: list[list[object]] = [
+        [arm, sum(by_arm[arm][s][1] for s in sorted(by_arm[arm])) / len(by_arm[arm])]
+        for arm in sorted(by_arm)
+    ]
+    classical = by_arm.get(str(protocol["classical_arm"]), {})
+    quantum = by_arm.get(str(protocol["quantum_arm"]), {})
+    if not quantum or set(classical) != set(quantum):
+        raise ValueError("the primary arms must hold paired outcomes for the same samples")
+    sign = 1.0 if protocol["contrast_direction"] == "quantum_minus_classical" else -1.0
+    groups: dict[str, list[float]] = {}
+    for sample in sorted(quantum):
+        group, value = quantum[sample]
+        groups.setdefault(group, []).append(sign * (value - classical[sample][1]))
+    deltas = [sum(groups[g]) / len(groups[g]) for g in sorted(groups)]
+    rng = random.Random(seed)
+    means = sorted(
+        sum(deltas[rng.randrange(len(deltas))] for _ in deltas) / len(deltas) for _ in range(2000)
+    )
+    named: list[list[object]] = [[g, d] for g, d in zip(sorted(groups), deltas, strict=True)]
+    return metrics, named, sum(deltas) / len(deltas), [means[50], means[1949]]
+
+
+def _check_report_pairing(
+    report: dict[str, object], parsed: list[tuple[str, str, str, float]], split: dict[str, object]
+) -> None:
+    groups = split["dev_groups"] if report["evaluated_split"] == "dev" else split["test_groups"]
+    if type(groups) is not list or any(group not in groups for _, _, group, _ in parsed):
+        raise ValueError(
+            "an evaluation cannot mix splits; every group belongs to the evaluated one"
+        )
+    samples: dict[str, set[str]] = {}
+    group_of: dict[str, str] = {}
+    for arm, sample, group, _ in parsed:
+        samples.setdefault(arm, set()).add(sample)
+        if group_of.setdefault(sample, group) != group:
+            raise ValueError("one sample belongs to one source group in every arm")
+    arms = report["arms"]
+    if type(arms) is not list or set(samples) != set(arms):
+        raise ValueError("every evaluated sample needs a paired outcome in every arm")
+    if any(found != set(group_of) for found in samples.values()):
+        raise ValueError("every evaluated sample needs a paired outcome in every arm")
+
+
+def _check_report_receipts(report: dict[str, object], receipts: object) -> None:
+    if type(receipts) is not list:
+        raise ValueError("receipts must be a list")
+    digests = []
+    for receipt in receipts:
+        record = _validate_receipt_fields(receipt)
+        header = record["header"]
+        origin = str(header["data_origin"]) if type(header) is dict else ""
+        parents = (str(record["compiled_bundle_digest"]), str(record["owner_approval_digest"]))
+        _validate_artifact_header(record, parents, origin)
+        if record["provider"] != report["provider"]:
+            raise ValueError("an evaluation cannot mix providers")
+        if origin != "provider_metadata":
+            raise ValueError("a hardware evaluation needs provider receipts, not fixtures")
+        digests.append(hashlib.sha256(_canonical_bytes(record)).hexdigest())
+    if sorted(digests) != report["receipt_digests"]:
+        raise ValueError("report receipts differ from the receipts given")
+
+
+def _cross_check_report(
+    report: dict[str, object],
+    protocol: dict[str, object],
+    split: dict[str, object],
+    parsed: list[tuple[str, str, str, float]],
+) -> None:
+    if report["protocol_digest"] != hashlib.sha256(_canonical_bytes(protocol)).hexdigest():
+        raise ValueError("the report names a different frozen protocol")
+    split_digest = hashlib.sha256(_canonical_bytes(split)).hexdigest()
+    if report["split_digest"] != split_digest or protocol["split_digest"] != split_digest:
+        raise ValueError("report, protocol and split name different splits")
+    if report["metric"] != protocol["primary_metric"] or report["arms"] != protocol["arms"]:
+        raise ValueError("the report's metric or arms differ from the protocol's locked ones")
+    _check_report_pairing(report, parsed, split)
+
+
+def _check_report_statistics(
+    report: dict[str, object],
+    parsed: list[tuple[str, str, str, float]],
+    protocol: dict[str, object],
+) -> None:
+    metrics, deltas, mean, bounds = _worker_statistics(
+        parsed, protocol, int(str(report["interval_seed"]))
+    )
+    reported = [report[name] for name in ("arm_metrics", "group_deltas")]
+    decoded = [
+        [[pair[0], _f64_token(pair[1])] for pair in pairs]
+        for pairs in reported
+        if type(pairs) is list
+    ]
+    if decoded != [metrics, deltas] or _f64_token(report["mean_delta"]) != mean:
+        raise ValueError("reported metrics or paired deltas differ from the outcomes")
+    interval = report["interval"]
+    if type(interval) is not list or [_f64_token(bound) for bound in interval] != bounds:
+        raise ValueError("reported interval differs from the seeded group bootstrap")
+    threshold = _f64_token(protocol["minimum_relevant_delta"])
+    if report["relevant"] != (bounds[0] > threshold):
+        raise ValueError("relevance must be the interval's lower bound above the protocol delta")
+
+
+def _roundtrip_evaluation_report(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "task", "split", "protocol", "receipts", "report"}:
+        raise ValueError("evaluation request fields mismatch")
+    _roundtrip_task_split(
+        {"op": "roundtrip_task_split", "task": request["task"], "split": request["split"]}
+    )
+    _roundtrip_experiment_protocol(
+        {"op": "roundtrip_experiment_protocol", "protocol": request["protocol"]}
+    )
+    protocol, split, report = request["protocol"], request["split"], request["report"]
+    if type(protocol) is not dict or type(split) is not dict:
+        raise ValueError("protocol and split must be objects")
+    if type(report) is not dict or set(report) != _REPORT_FIELDS:
+        raise ValueError("EvaluationReport fields mismatch")
+    if report["schema"] != _REPORT_SCHEMA or report["object_kind"] != "evaluation_report":
+        raise ValueError("unknown EvaluationReport schema")
+    for name in ("protocol_digest", "split_digest"):
+        _worker_digest(report[name], name)
+    _validate_report_execution(report)
+    _validate_report_numbers(report)
+    parsed = _validate_outcomes(report)
+    header = report["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    if origin not in ("provider_result", "synthetic_classical"):
+        raise ValueError("an evaluation derives from provider results or a fixture")
+    receipt_digests = report["receipt_digests"]
+    parents = (str(report["protocol_digest"]), str(report["split_digest"]))
+    _validate_artifact_header(report, (*parents, *map(str, receipt_digests or [])), origin)
+    _cross_check_report(report, protocol, split, parsed)
+    _check_report_receipts(report, request["receipts"])
+    if (origin == "provider_result") != (report["execution_class"] == "hardware"):
+        raise ValueError("only a hardware evaluation derives from provider results")
+    _check_report_statistics(report, parsed, protocol)
+    wire = _canonical_bytes(report)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "report": json.loads(wire),
+        "report_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -2196,6 +2462,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     ),
     "roundtrip_raw_result_set": (_roundtrip_raw_result_set, (ValueError, TypeError, KeyError)),
     "roundtrip_feature_batch": (_roundtrip_feature_batch, (ValueError, TypeError, KeyError)),
+    "roundtrip_evaluation_report": (
+        _roundtrip_evaluation_report,
+        (ValueError, TypeError, KeyError),
+    ),
 }
 
 

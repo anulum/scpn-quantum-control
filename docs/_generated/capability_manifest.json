@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1656,
-    "python_model_source_modules": 873,
+    "python_model_classes": 1658,
+    "python_model_source_modules": 874,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1646
+    "test_files": 1647
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 29
+        "python_modules": 30
       },
       {
         "package": "fep",
@@ -2504,6 +2504,10 @@
       {
         "name": "EstimatorProvenance",
         "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
+        "name": "EvaluationReport",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/evaluation.py"
       },
       {
         "name": "Event",
@@ -6418,6 +6422,10 @@
         "path": "src/scpn_quantum_control/codesign/policies.py"
       },
       {
+        "name": "SampleOutcome",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/evaluation.py"
+      },
+      {
         "name": "SampledBasisEstimate",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py"
       },
@@ -7783,6 +7791,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/cost.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/evaluation.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/features.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py",
@@ -9557,6 +9566,7 @@
       "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
       "tests/experimental/llm_qpu/test_contract_wire.py",
       "tests/experimental/llm_qpu/test_cost_quote_contract.py",
+      "tests/experimental/llm_qpu/test_evaluation_report_contract.py",
       "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
       "tests/experimental/llm_qpu/test_feature_batch_contract.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",

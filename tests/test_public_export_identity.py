@@ -387,6 +387,30 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_feature_batch",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.features",
             ),
+            (
+                "EVALUATION_REPORT_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "SampleOutcome",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+            ),
+            (
+                "EvaluationReport",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+            ),
+            (
+                "paired_statistics",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+            ),
+            (
+                "validate_evaluation_report",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+            ),
+            (
+                "decode_evaluation_report",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
+            ),
         ),
     ),
 }
