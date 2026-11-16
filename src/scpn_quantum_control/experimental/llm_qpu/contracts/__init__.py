@@ -46,6 +46,13 @@ if TYPE_CHECKING:
         paired_statistics,
         validate_evaluation_report,
     )
+    from .exact import (
+        ExactFeatureSet,
+        ExactRow,
+        decode_exact_feature_set,
+        exact_expectations,
+        validate_exact_feature_set,
+    )
     from .experiment import (
         MeasurementSpec,
         PlannedExperiment,
@@ -109,6 +116,7 @@ if TYPE_CHECKING:
         COMPRESSOR_SCHEMA,
         COST_QUOTE_SCHEMA,
         EVALUATION_REPORT_SCHEMA,
+        EXACT_FEATURE_SET_SCHEMA,
         EXPERIMENT_PROTOCOL_SCHEMA,
         FEATURE_BATCH_SCHEMA,
         HEADER_SCHEMA,
@@ -415,6 +423,26 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
         "decode_planned_experiment",
     ),
+    "ExactRow": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+        "ExactRow",
+    ),
+    "ExactFeatureSet": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+        "ExactFeatureSet",
+    ),
+    "exact_expectations": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+        "exact_expectations",
+    ),
+    "validate_exact_feature_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+        "validate_exact_feature_set",
+    ),
+    "decode_exact_feature_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+        "decode_exact_feature_set",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -509,6 +537,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "PLANNED_EXPERIMENT_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "PLANNED_EXPERIMENT_SCHEMA",
+    ),
+    "EXACT_FEATURE_SET_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "EXACT_FEATURE_SET_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -761,4 +793,10 @@ __all__ = (
     "plan_measurements",
     "validate_planned_experiment",
     "decode_planned_experiment",
+    "EXACT_FEATURE_SET_SCHEMA",
+    "ExactRow",
+    "ExactFeatureSet",
+    "exact_expectations",
+    "validate_exact_feature_set",
+    "decode_exact_feature_set",
 )

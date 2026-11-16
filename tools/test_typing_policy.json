@@ -934,6 +934,7 @@
         "tests/experimental/llm_qpu/test_contract_wire.py",
         "tests/experimental/llm_qpu/test_cost_quote_contract.py",
         "tests/experimental/llm_qpu/test_evaluation_report_contract.py",
+        "tests/experimental/llm_qpu/test_exact_feature_set_contract.py",
         "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
         "tests/experimental/llm_qpu/test_feature_batch_contract.py",
         "tests/experimental/llm_qpu/test_lane_manifest_policy.py",

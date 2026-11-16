@@ -483,6 +483,30 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_planned_experiment",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
             ),
+            (
+                "EXACT_FEATURE_SET_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "ExactRow",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+            ),
+            (
+                "ExactFeatureSet",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+            ),
+            (
+                "exact_expectations",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+            ),
+            (
+                "validate_exact_feature_set",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+            ),
+            (
+                "decode_exact_feature_set",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.exact",
+            ),
         ),
     ),
 }

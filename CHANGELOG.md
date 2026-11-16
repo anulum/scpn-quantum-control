@@ -497,6 +497,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains exact ideal-digital simulation.
+  - `ExactFeatureSet` (`experimental/llm_qpu/contracts/exact.py`, schema
+    `exact_feature_set.v1`) records, for every plan of a `CircuitPlanSet`,
+    the plan's lineage and its single-site and adjacent same-axis
+    expectations per sorted basis. It also names the simulator and its
+    version and carries a canonical tolerance of at most 1e-9.
+  - `simulate_exact` (`experimental/llm_qpu/data/digital_simulation.py`)
+    renders each gate list into a Qiskit circuit and reads the
+    expectations from the exact `Statevector`.
+  - `validate_exact_feature_set` checks every value against an
+    independent pure-Python statevector (`exact_expectations`), which
+    applies RY, RZ, RXX and RYY in Qiskit's `exp(-iθP/2)` little-endian
+    convention.
+  - The standalone worker recomputes every value a third time with its own
+    statevector, after revalidating the plan-set chain.
+  - The `simulate` port names the exact path; sampled simulation is not
+    built yet.
+
 - The experimental LLM-QPU lane gains design-only measurement planning
   (`experimental/llm_qpu/contracts/experiment.py`, schemas
   `measurement_spec.v1`, `sentinel_preparation.v1` and

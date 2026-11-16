@@ -1977,7 +1977,7 @@
       "source": "src/scpn_quantum_control/experimental/llm_qpu/contracts/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "2c313a5b0f0224f11e514a9a435e02b712d7de8d4d14d043338d5c8bebf6e380",
+      "source_sha256": "761116b6c6e29064c3410cec99cffa2e99efdada0adea822e248ffc8a3e5c250",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
       "count": 1

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **879 modules** across **41 package families**
-- **4737 documented public module-level symbols**
+- **881 modules** across **41 package families**
+- **4743 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2477,6 +2477,16 @@ Paired evaluation reports locked to a frozen protocol, one split and one provide
 
 **Functions:** `paired_statistics()`, `validate_evaluation_report()`, `decode_evaluation_report()`
 
+### `scpn_quantum_control.experimental.llm_qpu.contracts.exact`
+
+Exact ideal-digital feature sets, checked against an independent pure-Python statevector.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/exact.py) · Public symbols: **5**
+
+**Classes:** `ExactRow`, `ExactFeatureSet`
+
+**Functions:** `exact_expectations()`, `validate_exact_feature_set()`, `decode_exact_feature_set()`
+
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.experiment`
 
 Planned experiments: one cell per plan and basis plus readout sentinels, rebuilt exactly.
@@ -2650,6 +2660,14 @@ Check source and prompt identity before any group-safe split is admitted.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/dedup.py) · Public symbols: **2**
 
 **Functions:** `normalized_source_digest()`, `validate_source_families()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.digital_simulation`
+
+Exact ideal-digital expectations of every plan, computed with the Qiskit statevector.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/digital_simulation.py) · Public symbols: **1**
+
+**Functions:** `simulate_exact()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.lineage`
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import cmath
 import hashlib
 import json
 import math
@@ -48,6 +49,7 @@ _PLAN_SET_SCHEMA = "scpn.experimental.llm_qpu.circuit_plan_set.v1"
 _SPEC_SCHEMA = "scpn.experimental.llm_qpu.measurement_spec.v1"
 _SENTINEL_SCHEMA = "scpn.experimental.llm_qpu.sentinel_preparation.v1"
 _EXPERIMENT_SCHEMA = "scpn.experimental.llm_qpu.planned_experiment.v1"
+_EXACT_SCHEMA = "scpn.experimental.llm_qpu.exact_feature_set.v1"
 _TEACHER_ORIGINS = {
     "hardware_features": "provider_result",
     "simulated_features": "synthetic_classical",
@@ -3012,6 +3014,143 @@ def _roundtrip_planned_experiment(request: dict[str, object]) -> dict[str, objec
     }
 
 
+def _gate(state: list[complex], gate: object, wires: list[int], theta: float) -> list[complex]:
+    c, s = math.cos(theta / 2), math.sin(theta / 2)
+    mask = sum(1 << wire for wire in wires)
+    out = []
+    for index, amplitude in enumerate(state):
+        other = state[index ^ mask]
+        bit = index >> wires[0] & 1
+        if gate == "rz":
+            out.append(amplitude * cmath.exp(0.5j * theta if bit else -0.5j * theta))
+        elif gate == "ry":
+            out.append(c * amplitude + (s * other if bit else -s * other))
+        elif gate == "rxx":
+            out.append(c * amplitude - 1j * s * other)
+        else:
+            source = index ^ mask
+            equal = (source >> wires[0] & 1) == (source >> wires[1] & 1)
+            out.append(c * amplitude - 1j * s * (-1 if equal else 1) * other)
+    return out
+
+
+def _expectation(state: list[complex], axis: str, wires: list[int]) -> float:
+    flip = 0 if axis == "Z" else sum(1 << wire for wire in wires)
+    total = 0j
+    for index, amplitude in enumerate(state):
+        source = index ^ flip
+        factor: complex = 1
+        for wire in wires:
+            bit = source >> wire & 1
+            if axis == "Z":
+                factor *= 1 - 2 * bit
+            elif axis == "Y":
+                factor *= 1j if bit == 0 else -1j
+        total += amplitude.conjugate() * factor * state[source]
+    return total.real
+
+
+def _worker_exact(plan: dict[str, object], width: int, axis: str) -> list[float]:
+    state = [1 + 0j] + [0j] * ((1 << width) - 1)
+    operations = plan["operations"]
+    if type(operations) is not list:
+        raise ValueError("plan operations must be a list")
+    for op in operations:
+        state = _gate(state, op["gate"], list(op["wires"]), float.fromhex(op["parameter_hex"]))
+    groups = [[w] for w in range(width)] + [[w, w + 1] for w in range(width - 1)]
+    return [_expectation(state, axis, wires) for wires in groups]
+
+
+def _check_exact_row(row: object, plan: dict[str, object], width: int, tolerance: float) -> None:
+    fields = {"row_index", "sample_id", "arm_id", "plan_digest", "expectations"}
+    if type(row) is not dict or set(row) != fields or type(row["expectations"]) is not list:
+        raise ValueError("ExactRow fields mismatch")
+    lineage = [
+        plan["row_index"],
+        plan["sample_id"],
+        plan["arm_id"],
+        hashlib.sha256(_canonical_bytes(plan)).hexdigest(),
+    ]
+    if [row[name] for name in ("row_index", "sample_id", "arm_id", "plan_digest")] != lineage:
+        raise ValueError("an exact row does not follow its plan")
+    axes = [
+        pair[0] if type(pair) is list and len(pair) == 2 else None for pair in row["expectations"]
+    ]
+    if (
+        not axes
+        or axes != sorted(set(map(str, axes)))
+        or any(a not in ("X", "Y", "Z") for a in axes)
+    ):
+        raise ValueError("expectation bases must be sorted, unique and X, Y or Z")
+    for axis, values in row["expectations"]:
+        if type(values) is not list or len(values) != 2 * width - 1:
+            raise ValueError("an exact row has the wrong observable count")
+        expected = _worker_exact(plan, width, axis)
+        if any(abs(_f64_token(v) - e) > tolerance for v, e in zip(values, expected, strict=True)):
+            raise ValueError("an exact expectation differs from the independent statevector")
+
+
+def _check_exact_fields(
+    features: object, plan_set: dict[str, object]
+) -> tuple[dict[str, object], float]:
+    names = {"schema", "object_kind", "plan_set_digest", "simulator", "simulator_version"}
+    if type(features) is not dict or set(features) != names | {"rows", "tolerance_hex", "header"}:
+        raise ValueError("ExactFeatureSet fields mismatch")
+    if features["schema"] != _EXACT_SCHEMA or features["object_kind"] != "exact_feature_set":
+        raise ValueError("unknown ExactFeatureSet schema")
+    if features["simulator"] != "qiskit_statevector":
+        raise ValueError("unknown ideal-digital simulator")
+    _target_text(features["simulator_version"], "simulator version")
+    tolerance = _canonical_hex(features["tolerance_hex"], "tolerance", 1e-9, positive=True)
+    digest = hashlib.sha256(_canonical_bytes(plan_set)).hexdigest()
+    if features["plan_set_digest"] != digest:
+        raise ValueError("the features name a different plan set")
+    header = plan_set["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    _validate_artifact_header(features, (digest,), origin)
+    return features, tolerance
+
+
+def _roundtrip_exact_feature_set(request: dict[str, object]) -> dict[str, object]:
+    chain = (
+        "task",
+        "split",
+        "model",
+        "latent",
+        "latent_base64",
+        "compressor",
+        "centering_base64",
+        "projection_base64",
+        "scales_base64",
+        "compressed",
+        "angles_base64",
+        "reservoir",
+        "plan_set",
+    )
+    if set(request) != {"op", *chain, "features"}:
+        raise ValueError("exact request fields mismatch")
+    _roundtrip_circuit_plan_set(
+        {"op": "roundtrip_circuit_plan_set", **{n: request[n] for n in chain}}
+    )
+    plan_set, reservoir = request["plan_set"], request["reservoir"]
+    if type(plan_set) is not dict or type(reservoir) is not dict:
+        raise ValueError("plan set and reservoir must be objects")
+    features, tolerance = _check_exact_fields(request["features"], plan_set)
+    rows, plans = features["rows"], plan_set["plans"]
+    if type(rows) is not list or type(plans) is not list or len(rows) != len(plans):
+        raise ValueError("every plan needs exactly one exact row")
+    for row, plan in zip(rows, plans, strict=True):
+        _check_exact_row(row, plan, int(str(reservoir["n_qubits"])), tolerance)
+    wire = _canonical_bytes(features)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "features": json.loads(wire),
+        "features_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -3046,6 +3185,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     ),
     "roundtrip_planned_experiment": (
         _roundtrip_planned_experiment,
+        (ValueError, TypeError, KeyError, OverflowError),
+    ),
+    "roundtrip_exact_feature_set": (
+        _roundtrip_exact_feature_set,
         (ValueError, TypeError, KeyError, OverflowError),
     ),
 }
