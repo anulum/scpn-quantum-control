@@ -41,20 +41,17 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_broadcast_direct_rules_are_exposed_from_extracted_module() -> None:
     """Facade and extracted broadcast assembly factories should share identity."""
-
     assert extracted_broadcast_to_rule is program_ad_assembly_broadcast_to_derivative_rule
     assert extracted_broadcast_arrays_rule is program_ad_assembly_broadcast_arrays_derivative_rule
 
 
 def test_program_ad_broadcast_direct_rules_fail_closed_on_static_shapes() -> None:
     """Extracted broadcast direct rules should reject malformed static shapes."""
-
     assert broadcast_assembly._normalise_program_ad_broadcast_shape(3) == (3,)
     with pytest.raises(ValueError, match="requires an integer shape"):
         broadcast_assembly._normalise_program_ad_broadcast_shape("2")
@@ -70,7 +67,6 @@ def test_program_ad_broadcast_direct_rules_fail_closed_on_static_shapes() -> Non
 
 def test_program_ad_broadcast_direct_adjoint_rejects_impossible_cotangents() -> None:
     """Extracted broadcast adjoint reductions should reject impossible cotangent layouts."""
-
     _assert_allclose(
         broadcast_assembly._program_ad_assembly_broadcast_adjoint(
             np.ones((2, 3), dtype=np.float64),
@@ -92,7 +88,6 @@ def test_program_ad_broadcast_direct_adjoint_rejects_impossible_cotangents() -> 
 
 def test_program_ad_assembly_broadcast_to_contract_and_direct_rule() -> None:
     """np.broadcast_to should expose exact static broadcast adjoint contracts."""
-
     values = np.array([1.0, -2.0], dtype=np.float64)
     tangent = np.array([0.25, -0.5], dtype=np.float64)
     cotangent = np.array([[0.2, -0.4], [0.6, -0.8], [1.0, -1.2]], dtype=np.float64)
@@ -138,7 +133,6 @@ def test_program_ad_assembly_broadcast_to_contract_and_direct_rule() -> None:
 
 def test_program_ad_assembly_broadcast_arrays_contract_and_direct_rule() -> None:
     """np.broadcast_arrays should expose exact per-operand scatter adjoints."""
-
     column = np.array([[1.0], [-2.0]], dtype=np.float64)
     row = np.array([0.25, -0.5, 0.75], dtype=np.float64)
     scalar = np.array(1.5, dtype=np.float64)
@@ -214,7 +208,6 @@ def test_program_ad_assembly_broadcast_arrays_contract_and_direct_rule() -> None
 
 def test_program_ad_assembly_broadcast_batching_rules_map_outer_axes() -> None:
     """Broadcast batching should map data axes and keep shape metadata static."""
-
     broadcast_to_contract = primitive_contract_for("scpn.program_ad.assembly:broadcast_to")
     broadcast_arrays_contract = primitive_contract_for("scpn.program_ad.assembly:broadcast_arrays")
     assert broadcast_to_contract.batching_rule is not None
@@ -271,7 +264,6 @@ def test_program_ad_assembly_broadcast_batching_rules_map_outer_axes() -> None:
 
 def test_program_ad_broadcast_to_accumulates_repeated_adjoint_paths() -> None:
     """Program AD broadcast_to should accumulate derivatives from repeated uses."""
-
     weights = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]], dtype=np.float64)
 
     def objective(values: Any) -> object:
@@ -291,7 +283,6 @@ def test_program_ad_broadcast_to_accumulates_repeated_adjoint_paths() -> None:
 
 def test_program_ad_broadcast_to_rejects_subclass_propagation() -> None:
     """Program AD broadcast_to should fail closed on subclass propagation."""
-
     with pytest.raises(ValueError, match="subok"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.broadcast_to)(values, (2, 2), subok=True)),
@@ -301,7 +292,6 @@ def test_program_ad_broadcast_to_rejects_subclass_propagation() -> None:
 
 def test_program_ad_broadcast_arrays_accumulates_operand_adjoint_paths() -> None:
     """Program AD broadcast_arrays should gather each operand's repeated adjoints."""
-
     column_weights = np.array([[1.0, -2.0, 3.0], [0.5, -1.0, 2.0]], dtype=np.float64)
     row_weights = np.array([[-0.25, 0.75, 1.25], [2.0, -1.5, 0.5]], dtype=np.float64)
     scalar_weights = np.array([[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2]], dtype=np.float64)
@@ -336,7 +326,6 @@ def test_program_ad_broadcast_arrays_accumulates_operand_adjoint_paths() -> None
 
 def test_program_ad_broadcast_arrays_rejects_invalid_contracts() -> None:
     """Program AD broadcast_arrays should fail closed on unsupported broadcast contracts."""
-
     with pytest.raises(ValueError, match="broadcasting rules"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.broadcast_arrays(values[:2], values[2:5])[0]),

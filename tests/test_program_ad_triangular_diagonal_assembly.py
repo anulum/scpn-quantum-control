@@ -49,7 +49,6 @@ TriangularNumpyFn = Callable[..., FloatArray]
 
 def test_program_ad_triangular_diagonal_facade_uses_extracted_factories() -> None:
     """The compatibility facade should expose the extracted assembly factories."""
-
     assert program_ad_assembly_diagonal_derivative_rule is extracted_diagonal_derivative_rule
     assert program_ad_assembly_tril_derivative_rule is extracted_tril_derivative_rule
     assert program_ad_assembly_triu_derivative_rule is extracted_triu_derivative_rule
@@ -59,7 +58,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -110,7 +108,6 @@ def test_program_ad_triangular_masks_preserve_zeroed_adjoint() -> None:
 
 def test_program_ad_triangular_masks_reject_invalid_contracts() -> None:
     """Program AD tril/triu should fail closed on invalid rank and k contracts."""
-
     with pytest.raises(ValueError, match="rank >= 2"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.tril(values)),
@@ -159,7 +156,6 @@ def test_program_ad_diagonal_preserves_offset_axis_adjoint() -> None:
 
 def test_program_ad_diagonal_rejects_invalid_contracts() -> None:
     """Program AD np.diagonal should fail closed on invalid static contracts."""
-
     with pytest.raises(ValueError, match="rank >= 2"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.diagonal(values)),
@@ -175,7 +171,6 @@ def test_program_ad_diagonal_rejects_invalid_contracts() -> None:
 
 def test_program_ad_diagflat_flattens_source_into_offset_diagonal_adjoint() -> None:
     """Program AD np.diagflat should flatten sources before diagonal scatter adjoints."""
-
     lower_weights = np.zeros((7, 7), dtype=np.float64)
     lower_weights[1, 0] = 0.5
     lower_weights[2, 1] = -1.0
@@ -211,7 +206,6 @@ def test_program_ad_diagflat_flattens_source_into_offset_diagonal_adjoint() -> N
 
 def test_program_ad_diagflat_rejects_invalid_static_contracts() -> None:
     """Program AD np.diagflat should fail closed on invalid static offset contracts."""
-
     with pytest.raises(ValueError, match="integer offset"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.diagflat)(values, k=0.5)),
@@ -221,7 +215,6 @@ def test_program_ad_diagflat_rejects_invalid_static_contracts() -> None:
 
 def test_program_ad_linalg_diagonal_family_uses_primitive_adjoint_replay_ir() -> None:
     """Program AD diagonal-family linalg calls should emit compact primitive replay IR."""
-
     vector_diag_weights = np.zeros((4, 4), dtype=np.float64)
     vector_diag_weights[1, 0] = 0.25
     vector_diag_weights[2, 1] = -0.75
@@ -289,7 +282,6 @@ def _assert_triangular_contract_and_rule(
     numpy_fn: TriangularNumpyFn,
 ) -> None:
     """Assert triangular registry metadata and direct derivative rules."""
-
     matrix = np.array([[1.0, -2.0, 0.5], [3.0, -1.5, 2.0]], dtype=np.float64)
     tangent = np.array([[0.25, -0.5, 0.75], [-1.0, 1.25, -1.5]], dtype=np.float64)
     cotangent = np.array([[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2]], dtype=np.float64)
@@ -332,7 +324,6 @@ def _assert_triangular_contract_and_rule(
 
 def test_program_ad_assembly_triangular_contracts_and_direct_rules() -> None:
     """np.tril and np.triu should expose exact static triangular mask contracts."""
-
     _assert_triangular_contract_and_rule(
         "tril",
         -1,
@@ -349,7 +340,6 @@ def test_program_ad_assembly_triangular_contracts_and_direct_rules() -> None:
 
 def test_program_ad_assembly_diagonal_contract_and_direct_rule() -> None:
     """np.diagonal should expose exact static gather and scatter-add adjoints."""
-
     matrix = np.arange(12, dtype=np.float64).reshape(3, 4) - 2.0
     tangent = np.linspace(-0.5, 0.6, num=12, dtype=np.float64).reshape(3, 4)
     cotangent = np.array([0.25, -0.75, 1.5], dtype=np.float64)
@@ -399,7 +389,6 @@ def test_program_ad_assembly_diagonal_contract_and_direct_rule() -> None:
 
 def test_program_ad_linalg_diag_and_diagflat_direct_rules() -> None:
     """np.diag and np.diagflat should expose exact static linalg direct rules."""
-
     vector = np.array([1.0, -2.0, 0.5], dtype=np.float64)
     vector_tangent = np.array([0.25, -0.5, 0.75], dtype=np.float64)
     vector_diag_rule = program_ad_linalg_diag_derivative_rule((3,), k=-1)
@@ -479,7 +468,6 @@ def test_program_ad_linalg_diag_and_diagflat_direct_rules() -> None:
 
 def test_program_ad_assembly_triangular_and_diagonal_batching_rules_map_outer_axes() -> None:
     """Triangular and diagonal batching should map only non-structural outer axes."""
-
     triangular_contract = primitive_contract_for("scpn.program_ad.assembly:tril")
     diagonal_contract = primitive_contract_for("scpn.program_ad.assembly:diagonal")
     assert triangular_contract.batching_rule is not None

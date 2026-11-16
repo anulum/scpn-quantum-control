@@ -24,7 +24,6 @@ _LOCAL = _REPO_ROOT / "docs" / "benchmarks" / "tiers" / "kuramoto_tiers.local.js
 
 def _load(name: str, relative: str) -> ModuleType:
     """Load a tool module from its file path."""
-
     spec = importlib.util.spec_from_file_location(name, _REPO_ROOT / relative)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -72,7 +71,6 @@ def _artifact(*, fastest: str = "rust") -> dict[str, object]:
 
 def test_load_artifact_handles_missing_and_present(tmp_path: Path) -> None:
     """Artefact loading degrades cleanly when a file is absent."""
-
     assert renderer.load_artifact(None) is None
     assert renderer.load_artifact(tmp_path / "missing.json") is None
     path = tmp_path / "artifact.json"
@@ -82,7 +80,6 @@ def test_load_artifact_handles_missing_and_present(tmp_path: Path) -> None:
 
 def test_tier_evidence_summary_counts_rows_and_boundaries() -> None:
     """The summary is derived from artefact rows, not hand-written numbers."""
-
     summary = renderer.tier_evidence_summary(_artifact(), _artifact(fastest="python"))
     assert summary.ci_rows == 1
     assert summary.local_rows == 1
@@ -94,7 +91,6 @@ def test_tier_evidence_summary_counts_rows_and_boundaries() -> None:
 
 def test_tier_evidence_summary_handles_absent_artifacts() -> None:
     """Absent artefacts produce zero counts and no fabricated speedup."""
-
     summary = renderer.tier_evidence_summary(None, None)
     assert summary.ci_rows == 0
     assert summary.local_rows == 0
@@ -105,7 +101,6 @@ def test_tier_evidence_summary_handles_absent_artifacts() -> None:
 
 def test_stats_and_median_helpers_cover_unmeasured_rows() -> None:
     """Helper branches preserve unavailable rows and even medians."""
-
     assert renderer._stats(None) is None
     assert renderer._stats({"stats": None}) is None
     assert renderer._median([1.0, 5.0]) == 3.0
@@ -113,7 +108,6 @@ def test_stats_and_median_helpers_cover_unmeasured_rows() -> None:
 
 def test_capability_summary_uses_live_facade() -> None:
     """The page must describe the live exported facade."""
-
     summary = renderer.capability_summary()
     assert summary.groups == len(renderer.kuramoto.capabilities())
     assert summary.symbols == sum(
@@ -125,7 +119,6 @@ def test_capability_summary_uses_live_facade() -> None:
 
 def test_render_contains_decision_matrix_and_boundaries() -> None:
     """The rendered page includes evidence, links, and claim boundaries."""
-
     document = renderer.render(
         renderer.CapabilitySummary(
             groups=2,
@@ -146,7 +139,6 @@ def test_render_contains_decision_matrix_and_boundaries() -> None:
 
 def test_checked_in_page_matches_renderer() -> None:
     """The public page must be generated from committed artefacts."""
-
     expected = (
         renderer.render(
             renderer.capability_summary(),
@@ -164,7 +156,6 @@ def test_checked_in_page_matches_renderer() -> None:
 
 def test_main_writes_page(tmp_path: Path) -> None:
     """The CLI writes the generated page."""
-
     output = tmp_path / "why.md"
     code = renderer.main(["--ci", str(_CI), "--local", str(_LOCAL), "--output", str(output)])
     assert code == 0
@@ -173,7 +164,6 @@ def test_main_writes_page(tmp_path: Path) -> None:
 
 def test_main_requires_existing_artifacts(tmp_path: Path) -> None:
     """The CLI refuses missing required artefacts."""
-
     with pytest.raises(SystemExit):
         renderer.main(
             [
@@ -189,7 +179,6 @@ def test_main_requires_existing_artifacts(tmp_path: Path) -> None:
 
 def test_main_requires_existing_local_artifact(tmp_path: Path) -> None:
     """The CLI refuses a missing local artefact."""
-
     with pytest.raises(SystemExit):
         renderer.main(
             [

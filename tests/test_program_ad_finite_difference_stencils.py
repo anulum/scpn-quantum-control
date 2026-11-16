@@ -41,13 +41,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_stencil_gradient_contract_and_direct_rule() -> None:
     """Static gradient stencils should expose exact linear JVP/VJP rules."""
-
     matrix = np.array([[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]], dtype=np.float64)
     tangent = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
     x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
@@ -111,7 +109,6 @@ def test_program_ad_stencil_gradient_contract_and_direct_rule() -> None:
 
 def test_program_ad_stencil_gradient_rule_is_exposed_from_extracted_module() -> None:
     """The stencil facade should delegate fixed-shape direct rules to the module."""
-
     source_shape = (2, 3)
     facade_rule = program_ad_stencil_gradient_derivative_rule(source_shape, axis=1)
     module_rule = module_stencil_gradient_derivative_rule(source_shape, axis=1)
@@ -132,7 +129,6 @@ def test_program_ad_stencil_gradient_rule_is_exposed_from_extracted_module() -> 
 
 def _stencil_contract_with(**overrides: object) -> PrimitiveContract:
     """Build a minimal stencil contract for direct fail-closed guard tests."""
-
     identity = PrimitiveIdentity("scpn.program_ad.stencil.test", "gradient")
     derivative_rule = CustomDerivativeRule(
         name="test_stencil_contract_rule",
@@ -161,7 +157,6 @@ def _stencil_contract_with(**overrides: object) -> PrimitiveContract:
 
 def test_program_ad_stencil_extracted_contract_helpers_fail_closed() -> None:
     """Extracted stencil contract helpers should validate dispatch completeness."""
-
     matrix = np.array([[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]], dtype=np.float64)
     x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
     contract = program_ad_stencil_primitives._require_program_ad_stencil_contract(
@@ -379,7 +374,6 @@ def test_program_ad_stencil_gradient_direct_rule_rejects_invalid_static_boundari
 
 def test_program_ad_stencil_gradient_batching_rule_maps_outer_axes() -> None:
     """Gradient stencils should vmap only over non-differentiated batch axes."""
-
     cube = np.array(
         [
             [[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]],
@@ -426,7 +420,6 @@ def test_program_ad_stencil_gradient_batching_rule_maps_outer_axes() -> None:
 
 def test_program_ad_stencil_gradient_direct_rule_handles_multi_axis_edge_order_two() -> None:
     """Multi-axis second-order stencils should expose the exact transpose adjoint."""
-
     matrix = np.array(
         [[1.0, 2.5, 4.0], [0.25, -1.0, 3.5], [2.0, 0.75, -0.5]],
         dtype=np.float64,
@@ -527,7 +520,6 @@ def test_program_ad_finite_differences_match_linear_adjoint() -> None:
 
 def test_program_ad_finite_differences_reject_boundary_extensions() -> None:
     """Program AD finite differences should fail closed for boundary-extension modes."""
-
     with pytest.raises(ValueError, match="non-negative integer n"):
         whole_program_value_and_grad(
             lambda values: np.diff(values, n=-1)[0],
@@ -542,7 +534,6 @@ def test_program_ad_finite_differences_reject_boundary_extensions() -> None:
 
 def test_program_ad_gradient_matches_static_spacing_adjoint() -> None:
     """Program AD np.gradient should replay exact static finite-difference adjoints."""
-
     row_grid = np.array([0.0, 0.5, 1.5], dtype=np.float64)
     column_grid = np.array([-0.25, 0.0, 0.75, 1.25], dtype=np.float64)
     row_weights = np.linspace(-1.5, 2.0, 12, dtype=np.float64).reshape(3, 4)
@@ -620,7 +611,6 @@ def test_program_ad_gradient_matches_static_spacing_adjoint() -> None:
 
 def test_program_ad_gradient_fails_closed_invalid_static_contracts() -> None:
     """Program AD np.gradient should reject unsupported dynamic or singular grids."""
-
     with pytest.raises(ValueError, match="spacing must be static"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.gradient(values, values)),

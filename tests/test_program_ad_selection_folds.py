@@ -26,7 +26,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -110,7 +109,6 @@ def test_program_ad_piecewise_matches_numpy_overwrite_and_default_semantics() ->
 
 def test_program_ad_choose_routes_static_selector_adjoint_semantics() -> None:
     """Program AD np.choose should route adjoints through static selected choices."""
-
     selector = np.array([0, 1, 2, 0], dtype=np.int64)
 
     def objective(values: Any) -> object:
@@ -137,7 +135,6 @@ def test_program_ad_choose_routes_static_selector_adjoint_semantics() -> None:
 
 def test_program_ad_choose_matches_static_clip_and_wrap_modes() -> None:
     """Program AD np.choose should preserve NumPy static selector policies."""
-
     selector = np.array([-1, 0, 3], dtype=np.int64)
 
     def clip_objective(values: Any) -> object:
@@ -176,7 +173,6 @@ def test_program_ad_choose_matches_static_clip_and_wrap_modes() -> None:
 
 def test_program_ad_compress_routes_flat_static_mask_adjoint_semantics() -> None:
     """Program AD np.compress should route flat static mask adjoints as gathers."""
-
     mask = np.array([True, False, True, False], dtype=np.bool_)
 
     def objective(values: Any) -> object:
@@ -200,7 +196,6 @@ def test_program_ad_compress_routes_flat_static_mask_adjoint_semantics() -> None
 
 def test_program_ad_compress_routes_axis_static_mask_adjoint_semantics() -> None:
     """Program AD np.compress should preserve axis-specific static mask gathers."""
-
     mask = np.array([True, False, True], dtype=np.bool_)
 
     def objective(values: Any) -> object:
@@ -225,7 +220,6 @@ def test_program_ad_compress_routes_axis_static_mask_adjoint_semantics() -> None
 
 def test_program_ad_extract_routes_static_mask_adjoint_semantics() -> None:
     """Program AD np.extract should route same-size static mask adjoints as gathers."""
-
     mask = np.array([True, False, True, False], dtype=np.bool_)
 
     def objective(values: Any) -> object:
@@ -249,7 +243,6 @@ def test_program_ad_extract_routes_static_mask_adjoint_semantics() -> None:
 
 def test_program_ad_extract_routes_matrix_static_mask_adjoint_semantics() -> None:
     """Program AD np.extract should flatten same-shape matrix masks like NumPy."""
-
     mask = np.array([[True, False, True], [False, True, False]], dtype=np.bool_)
 
     def objective(values: Any) -> object:
@@ -274,7 +267,6 @@ def test_program_ad_extract_routes_matrix_static_mask_adjoint_semantics() -> Non
 
 def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
     """Program AD selection folds should fail closed on malformed branch contracts."""
-
     with pytest.raises(ValueError, match="matching condition and choice counts"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.select([values > 0.0], [values, -values])),
@@ -290,7 +282,6 @@ def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
 
 def test_program_ad_choose_rejects_dynamic_and_invalid_selector_contracts() -> None:
     """Program AD np.choose should fail closed on nondifferentiable selector contracts."""
-
     with pytest.raises(ValueError, match="static integer selector"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.choose(values > 0.0, [values, -values])),
@@ -306,7 +297,6 @@ def test_program_ad_choose_rejects_dynamic_and_invalid_selector_contracts() -> N
 
 def test_program_ad_compress_rejects_dynamic_and_invalid_mask_contracts() -> None:
     """Program AD np.compress should fail closed on nondifferentiable mask contracts."""
-
     with pytest.raises(ValueError, match="static boolean condition"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.compress(values > 0.0, values)),
@@ -322,7 +312,6 @@ def test_program_ad_compress_rejects_dynamic_and_invalid_mask_contracts() -> Non
 
 def test_program_ad_extract_rejects_dynamic_and_size_mismatched_mask_contracts() -> None:
     """Program AD np.extract should fail closed on nondifferentiable mask contracts."""
-
     with pytest.raises(ValueError, match="static boolean condition"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.extract(values > 0.0, values)),

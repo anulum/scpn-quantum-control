@@ -42,19 +42,16 @@ FloatArray = NDArray[np.float64]
 
 def _features() -> FloatArray:
     """Return a deterministic bounded phase-QNN feature matrix."""
-
     return np.array([[0.0, 0.4], [np.pi, -0.2]], dtype=np.float64)
 
 
 def _labels() -> FloatArray:
     """Return deterministic bounded phase-QNN labels."""
-
     return np.array([0.0, 1.0], dtype=np.float64)
 
 
 def _params() -> FloatArray:
     """Return deterministic bounded phase-QNN parameters."""
-
     return np.array([0.2, -0.1], dtype=np.float64)
 
 
@@ -62,7 +59,6 @@ def test_torch_bridge_reports_unavailable_import_without_importing_torch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Public availability checks should fail closed when PyTorch import fails."""
-
     real_import = builtins.__import__
 
     def guarded_import(
@@ -112,7 +108,6 @@ def test_torch_bounded_qnn_value_and_grad_rejects_malformed_inputs(
     match: str,
 ) -> None:
     """The public bounded-QNN bridge should reject malformed numeric inputs."""
-
     with pytest.raises(ValueError, match=match):
         torch_bounded_qnn_value_and_grad(
             features,
@@ -124,7 +119,6 @@ def test_torch_bounded_qnn_value_and_grad_rejects_malformed_inputs(
 
 def test_torch_phase_lowering_and_ecosystem_metadata_unknown_routes() -> None:
     """Public metadata results should fail closed for unknown route names."""
-
     lowering = run_torch_phase_qnode_lowering_matrix()
     assert isinstance(lowering, PhaseTorchPhaseQNodeLoweringMatrixResult)
     assert lowering.route_status("bounded_qnn_analytic_tensor") == "passed"
@@ -165,7 +159,6 @@ def test_torch_cloud_validation_batch_rejects_bad_inputs_and_serializes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Cloud-validation planning should validate runner and accelerator labels."""
-
     route = PhaseTorchEcosystemMaturityRoute(
         name="cuda_accelerator_device",
         status="blocked",
@@ -213,7 +206,6 @@ def test_torch_cloud_validation_batch_rejects_bad_inputs_and_serializes(
 
 def test_torch_live_overlay_loader_rejects_malformed_artifacts(tmp_path: Path) -> None:
     """Live-overlay evidence loading should reject malformed committed artifacts."""
-
     path = tmp_path / "overlay.json"
 
     for payload, match in (
@@ -252,7 +244,6 @@ def test_torch_live_overlay_loader_rejects_malformed_artifacts(tmp_path: Path) -
 
 def test_torch_live_overlay_loader_accepts_valid_artifact(tmp_path: Path) -> None:
     """Live-overlay evidence loading should preserve validated PyTorch row metadata."""
-
     path = tmp_path / "overlay.json"
     path.write_text(
         json.dumps(
@@ -288,7 +279,6 @@ def test_torch_live_overlay_loader_accepts_valid_artifact(tmp_path: Path) -> Non
 
 def test_torch_result_json_ready_handles_numpy_and_paths() -> None:
     """Maturity evidence JSON conversion should normalize arrays, scalars, and paths."""
-
     payload = torch_bridge._json_ready(
         {
             "array": np.array([1.0, 2.0], dtype=np.float64),
@@ -306,7 +296,6 @@ def test_torch_result_json_ready_handles_numpy_and_paths() -> None:
 
 def test_torch_result_to_dict_uses_object_serializer() -> None:
     """Maturity evidence serialization should use result ``to_dict`` methods."""
-
     result = SimpleNamespace(to_dict=lambda: {"route": "custom"})
 
     assert torch_bridge._result_to_dict(result) == {"route": "custom"}

@@ -49,19 +49,16 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_stack_block_direct_rules_are_exposed_from_extracted_module() -> None:
     """Facade and extracted stack/block assembly factories should share identity."""
-
     assert extracted_concatenate_rule is program_ad_assembly_concatenate_derivative_rule
 
 
 def test_program_ad_stack_block_extracted_module_fail_closed_branches() -> None:
     """Extracted stack/block helpers should reject malformed static contracts."""
-
     with pytest.raises(ValueError, match="unsupported"):
         stack_block_assembly._program_ad_assembly_stack_convenience_numpy("row_stack", ())
     with pytest.raises(ValueError, match="requires operands"):
@@ -119,7 +116,6 @@ def test_program_ad_stack_block_extracted_module_fail_closed_branches() -> None:
 
 def test_program_ad_concatenate_and_stack_general_static_axes() -> None:
     """Program AD should preserve exact adjoints for static concatenate and stack axes."""
-
     concat_weights = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], dtype=np.float64)
     stack_weights = np.array(
         [
@@ -189,7 +185,6 @@ def test_program_ad_stack_conveniences_preserve_assembly_adjoint() -> None:
 
 def test_program_ad_stack_conveniences_reject_incompatible_shapes() -> None:
     """Program AD stack conveniences should fail closed on incompatible shapes."""
-
     with pytest.raises(ValueError, match="shape-compatible"):
         whole_program_value_and_grad(
             lambda values: np.hstack((np.reshape(values[:4], (2, 2)), values[4:])),
@@ -235,7 +230,6 @@ def test_program_ad_block_preserves_nested_assembly_adjoint() -> None:
 
 def test_program_ad_block_rejects_incompatible_nested_layouts() -> None:
     """Program AD np.block should fail closed on invalid nested layouts."""
-
     with pytest.raises(ValueError, match="shape-compatible"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.block([[np.reshape(values[:4], (2, 2)), values[4:5]]])),
@@ -245,7 +239,6 @@ def test_program_ad_block_rejects_incompatible_nested_layouts() -> None:
 
 def test_program_ad_assembly_concatenate_contract_and_direct_rule() -> None:
     """np.concatenate should expose a fail-closed assembly primitive direct rule."""
-
     left = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     right = np.array([[0.25], [-0.75]], dtype=np.float64)
     tangent_left = np.array([[0.1, -0.2], [0.3, -0.4]], dtype=np.float64)
@@ -298,7 +291,6 @@ def test_program_ad_assembly_concatenate_contract_and_direct_rule() -> None:
 
 def test_program_ad_assembly_concatenate_batching_rule_maps_operand_batches() -> None:
     """Concatenate batching should map operand batches and keep axis static."""
-
     contract = primitive_contract_for("scpn.program_ad.assembly:concatenate")
     contract = cast(Any, contract)
     assert contract.batching_rule is not None
@@ -364,7 +356,6 @@ def test_program_ad_assembly_concatenate_batching_rule_maps_operand_batches() ->
 
 def test_program_ad_assembly_stack_contract_and_direct_rule() -> None:
     """np.stack should expose a fail-closed assembly primitive direct rule."""
-
     left = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     right = np.array([[0.25, -0.75], [1.5, -2.5]], dtype=np.float64)
     tangent_left = np.array([[0.1, -0.2], [0.3, -0.4]], dtype=np.float64)
@@ -420,7 +411,6 @@ def test_program_ad_assembly_stack_contract_and_direct_rule() -> None:
 
 def test_program_ad_assembly_stack_batching_rule_maps_operand_batches() -> None:
     """Stack batching should map operand batches and keep the inserted axis static."""
-
     contract = primitive_contract_for("scpn.program_ad.assembly:stack")
     contract = cast(Any, contract)
     assert contract.batching_rule is not None
@@ -486,7 +476,6 @@ def test_program_ad_assembly_stack_batching_rule_maps_operand_batches() -> None:
 
 def test_program_ad_assembly_stack_convenience_contracts_and_direct_rules() -> None:
     """Stack convenience calls should expose exact fixed-shape assembly rules."""
-
     cases = (
         (
             "hstack",
@@ -568,7 +557,6 @@ def test_program_ad_assembly_stack_convenience_contracts_and_direct_rules() -> N
 
 def test_program_ad_assembly_stack_convenience_batching_rules_map_operands() -> None:
     """Stack convenience batching should map compatible operand batch axes."""
-
     for name, function in (
         ("hstack", np.hstack),
         ("vstack", np.vstack),
@@ -592,7 +580,6 @@ def test_program_ad_assembly_stack_convenience_batching_rules_map_operands() -> 
 
 def test_program_ad_assembly_append_contract_and_direct_rule() -> None:
     """np.append should expose a fail-closed assembly primitive direct rule."""
-
     source = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     values = np.array([[0.25], [-0.75]], dtype=np.float64)
     tangent_source = np.array([[0.1, -0.2], [0.3, -0.4]], dtype=np.float64)
@@ -652,7 +639,6 @@ def test_program_ad_assembly_append_contract_and_direct_rule() -> None:
 
 def test_program_ad_assembly_append_batching_rule_maps_operand_batches() -> None:
     """Append batching should map source and values batches and keep axis static."""
-
     contract = primitive_contract_for("scpn.program_ad.assembly:append")
     contract = cast(Any, contract)
     assert contract.batching_rule is not None
@@ -708,7 +694,6 @@ def test_program_ad_assembly_append_batching_rule_maps_operand_batches() -> None
 
 def test_program_ad_assembly_block_contract_and_direct_rule() -> None:
     """np.block should expose a fail-closed nested assembly primitive direct rule."""
-
     top_left = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     top_right = np.array([[0.25], [-0.75]], dtype=np.float64)
     bottom_left = np.array([[1.5, -2.5]], dtype=np.float64)
@@ -790,7 +775,6 @@ def test_program_ad_assembly_block_contract_and_direct_rule() -> None:
 
 def test_program_ad_assembly_block_batching_rule_maps_nested_batches() -> None:
     """Block batching should map nested block leaves with matching axes."""
-
     contract = primitive_contract_for("scpn.program_ad.assembly:block")
     contract = cast(Any, contract)
     assert contract.batching_rule is not None

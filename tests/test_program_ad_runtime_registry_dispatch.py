@@ -35,7 +35,6 @@ TransformFactory = Callable[[PrimitiveContract], PrimitiveTransformRule]
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -52,7 +51,6 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
 
 def _without_batching_rule(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a transform with the batching facet removed."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -69,7 +67,6 @@ def _without_batching_rule(contract: PrimitiveContract) -> PrimitiveTransformRul
 
 def _without_boundary_metadata(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a transform with incomplete fail-closed boundary metadata."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -89,7 +86,6 @@ def _without_boundary_metadata(contract: PrimitiveContract) -> PrimitiveTransfor
 
 def _without_mlir_op(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a transform with boundary metadata but no MLIR operation key."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -109,7 +105,6 @@ def _without_mlir_op(contract: PrimitiveContract) -> PrimitiveTransformRule:
 
 def _without_dtype_rule(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a transform with the dtype facet removed."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -126,7 +121,6 @@ def _without_dtype_rule(contract: PrimitiveContract) -> PrimitiveTransformRule:
 
 def _without_static_argument_rule(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a transform with the static-argument facet removed."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -164,7 +158,6 @@ def _assembly_transform(
 
 def test_program_ad_runtime_dispatch_requires_complete_registry_contracts() -> None:
     """Program AD execution should fail closed when any runtime registry facet is missing."""
-
     scenarios: tuple[
         tuple[str, Objective, NDArray[np.float64], TransformFactory, str],
         ...,
@@ -227,7 +220,6 @@ def test_program_ad_runtime_dispatch_requires_complete_registry_contracts() -> N
 
 def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported assembly primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.assembly:{name}")
         for name in (
@@ -514,7 +506,6 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
     None
 ):
     """Supported reduction and cumulative primitives must use registry validation."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
         for name in (
@@ -643,7 +634,6 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
 
 def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported array primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.array:{name}")
         for name in ("getitem", "take", "take_along_axis", "delete", "pad", "insert")
@@ -736,7 +726,6 @@ def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> No
 
 def test_program_ad_signal_interpolation_and_stencil_validate_registry_rules_at_dispatch() -> None:
     """Signal, interpolation, and stencil primitives must use registry validation."""
-
     originals = {
         "interp": primitive_contract_for("scpn.program_ad.interpolation:interp"),
         "convolve": primitive_contract_for("scpn.program_ad.signal:convolve"),

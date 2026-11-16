@@ -37,17 +37,14 @@ class _ArrayCarrier:
 
     def detach(self) -> _ArrayCarrier:
         """Return the detached carrier."""
-
         return self
 
     def cpu(self) -> _ArrayCarrier:
         """Return the host carrier."""
-
         return self
 
     def numpy(self) -> object:
         """Return the stored NumPy-compatible value."""
-
         return self._value
 
 
@@ -56,12 +53,10 @@ class _NoGradTensor:
 
     def detach(self) -> _NoGradTensor:
         """Return a detached tensor-like object."""
-
         return self
 
     def clone(self) -> _NoGradTensor:
         """Return a cloned tensor-like object."""
-
         return self
 
 
@@ -72,7 +67,6 @@ class _TorchReturningNoGradTensor:
 
     def as_tensor(self, values: object, *, dtype: object | None = None) -> _NoGradTensor:
         """Return a tensor-like object without ``requires_grad_``."""
-
         _ = values, dtype
         return _NoGradTensor()
 
@@ -82,7 +76,6 @@ class _TorchAsTensorNoDtype:
 
     def as_tensor(self, values: object) -> tuple[str, object]:
         """Return a marker proving the no-dtype branch was used."""
-
         return ("as_tensor", values)
 
 
@@ -93,7 +86,6 @@ class _TorchTensorWithDtype:
 
     def tensor(self, values: object, *, dtype: object | None = None) -> tuple[str, object, object]:
         """Return a marker proving the tensor fallback branch was used."""
-
         return ("tensor", values, dtype)
 
 
@@ -102,7 +94,6 @@ class _TorchTensorNoDtype:
 
     def tensor(self, values: object) -> tuple[str, object]:
         """Return a marker proving the tensor no-dtype branch was used."""
-
         return ("tensor", values)
 
 
@@ -111,23 +102,19 @@ class _SmokeTensor:
 
     def __add__(self, other: object) -> _SmokeTensor:
         """Return a tensor-like sum marker."""
-
         _ = other
         return self
 
     def detach(self) -> _SmokeTensor:
         """Return the detached smoke tensor."""
-
         return self
 
     def cpu(self) -> _SmokeTensor:
         """Return the host smoke tensor."""
-
         return self
 
     def numpy(self) -> np.ndarray[Any, np.dtype[np.float64]]:
         """Return a successful smoke result."""
-
         return np.array([2.0], dtype=np.float64)
 
 
@@ -136,12 +123,10 @@ class _CudaAvailableNoNames:
 
     def is_available(self) -> bool:
         """Return CUDA availability."""
-
         return True
 
     def device_count(self) -> int:
         """Return a visible device count."""
-
         return 2
 
 
@@ -150,12 +135,10 @@ class _CudaUnavailableWithRuntime:
 
     def is_available(self) -> bool:
         """Return CUDA unavailability."""
-
         return False
 
     def device_count(self) -> int:
         """Return a count that should be ignored while unavailable."""
-
         return 3
 
 
@@ -164,17 +147,14 @@ class _CudaAvailableSmokeFailure:
 
     def is_available(self) -> bool:
         """Return CUDA availability."""
-
         return True
 
     def device_count(self) -> int:
         """Return a visible device count."""
-
         return 1
 
     def get_device_name(self, index: int) -> str:
         """Return a deterministic device name."""
-
         return f"cuda-test-{index}"
 
 
@@ -186,7 +166,6 @@ class _TorchCudaSmokePass:
 
     def device(self, kind: str, index: int) -> str:
         """Return a deterministic device token."""
-
         return f"{kind}:{index}"
 
     def ones(
@@ -197,7 +176,6 @@ class _TorchCudaSmokePass:
         device: object,
     ) -> _SmokeTensor:
         """Return a tensor-like smoke value."""
-
         _ = shape, dtype, device
         return _SmokeTensor()
 
@@ -216,12 +194,10 @@ class _TorchCudaSmokeFailure:
 
     def device(self, kind: str, index: int) -> str:
         """Return a deterministic device token."""
-
         return f"{kind}:{index}"
 
     def ones(self, shape: tuple[int, ...], *, dtype: object, device: object) -> _SmokeTensor:
         """Raise during smoke allocation."""
-
         _ = shape, dtype, device
         raise RuntimeError("smoke blocked")
 
@@ -235,14 +211,12 @@ class _CountedParameterModule:
 
     def parameters(self) -> Iterator[object]:
         """Yield deterministic parameter markers."""
-
         yield object()
         yield object()
 
 
 def test_torch_conversion_helpers_validate_tensor_like_boundaries() -> None:
     """Tensor conversion helpers should validate hooks, scalars, and fallbacks."""
-
     with pytest.raises(ValueError, match="must not be empty"):
         torch_bridge._as_parameter_matrix("matrix", np.empty((0, 2), dtype=np.float64))
     with pytest.raises(ValueError, match="width"):
@@ -278,7 +252,6 @@ def test_torch_conversion_helpers_validate_tensor_like_boundaries() -> None:
 
 def test_torch_optional_runtime_helpers_fail_closed() -> None:
     """Optional PyTorch runtime helpers should fail closed when hooks are absent."""
-
     with pytest.raises(RuntimeError, match="autograd.grad"):
         torch_bridge._torch_autograd_grad(SimpleNamespace(autograd=SimpleNamespace()))
     with pytest.raises(RuntimeError, match="torch.func"):
@@ -299,7 +272,6 @@ def test_torch_optional_runtime_helpers_fail_closed() -> None:
 
 def test_torch_cuda_metadata_branches_are_deterministic() -> None:
     """CUDA metadata probing should report missing, passing, and failing smoke states."""
-
     assert torch_bridge._torch_cuda_metadata(SimpleNamespace()) == (
         False,
         0,
@@ -330,7 +302,6 @@ def test_torch_cuda_metadata_branches_are_deterministic() -> None:
 
 def test_torch_private_qnode_guards_reject_unknown_internal_labels() -> None:
     """Private QNode matrix helpers should retain explicit unsupported-branch errors."""
-
     torch_module = torch_bridge._load_torch()
     state = torch_bridge._torch_complex_tensor(torch_module, [1.0, 0.0])
 
@@ -344,7 +315,6 @@ def test_torch_private_qnode_guards_reject_unknown_internal_labels() -> None:
 
 def test_torch_public_qnn_routes_reject_width_mismatches() -> None:
     """Public QNN routes should reject parameter widths before framework dispatch."""
-
     features = np.array([[0.0, 0.2], [0.4, 0.6]], dtype=np.float64)
     labels = np.array([0.0, 1.0], dtype=np.float64)
     short_params = np.array([0.1], dtype=np.float64)
@@ -370,7 +340,6 @@ def test_torch_ecosystem_maturity_reports_blocked_fake_runtime(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Ecosystem maturity audit should serialize blocked optional-runtime routes."""
-
     monkeypatch.setattr(
         torch_bridge,
         "_load_torch",
@@ -390,7 +359,6 @@ def test_torch_ecosystem_maturity_reports_forward_hessian_fake_runtime(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Ecosystem maturity audit should detect jacfwd/hessian when present."""
-
     monkeypatch.setattr(
         torch_bridge,
         "_load_torch",
@@ -411,7 +379,6 @@ def test_torch_ecosystem_maturity_reports_forward_hessian_fake_runtime(
 
 def test_torch_live_overlay_required_field_helpers_reject_bad_types() -> None:
     """Live-overlay scalar field validators should reject malformed field types."""
-
     with pytest.raises(ValueError, match="name"):
         torch_bridge._required_str({"name": ""}, "name")
     with pytest.raises(ValueError, match="value"):

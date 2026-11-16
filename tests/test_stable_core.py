@@ -63,7 +63,6 @@ def _backend() -> Backend:
 
 def test_problem_backend_experiment_result_round_trip() -> None:
     """Stable contracts are JSON-compatible and preserve core identities."""
-
     problem = _problem()
     backend = _backend()
     experiment = build_experiment(
@@ -105,7 +104,6 @@ def test_problem_backend_experiment_result_round_trip() -> None:
 
 def test_problem_rejects_invalid_shape_and_initial_state() -> None:
     """Problem contract fails closed on invalid Kuramoto/XY descriptors."""
-
     with pytest.raises(ValueError, match="square"):
         build_problem(
             problem_id="bad",
@@ -124,7 +122,6 @@ def test_problem_rejects_invalid_shape_and_initial_state() -> None:
 
 def test_backend_rejects_empty_capabilities_and_unsafe_submission_kind() -> None:
     """Backend contract makes capabilities and hardware boundaries explicit."""
-
     with pytest.raises(ValueError, match="capabilities"):
         build_backend(backend_id="empty", kind="classical_reference", capabilities=())
 
@@ -139,7 +136,6 @@ def test_backend_rejects_empty_capabilities_and_unsafe_submission_kind() -> None
 
 def test_experiment_requires_backend_capability() -> None:
     """Experiments cannot target objectives unsupported by the backend."""
-
     backend = build_backend(
         backend_id="limited",
         kind="classical_reference",
@@ -158,7 +154,6 @@ def test_experiment_requires_backend_capability() -> None:
 
 def test_hardware_submission_requires_preregistration_metadata() -> None:
     """Hardware-enabled experiments require preregistration metadata."""
-
     backend = build_backend(
         backend_id="ibm-runtime",
         kind="qiskit",
@@ -189,7 +184,6 @@ def test_hardware_submission_requires_preregistration_metadata() -> None:
 
 def test_result_contract_requires_observables_or_blockers() -> None:
     """Result status controls required payload fields."""
-
     with pytest.raises(ValueError, match="observables"):
         build_result(
             experiment_id="exp",
@@ -219,7 +213,6 @@ def test_result_contract_requires_observables_or_blockers() -> None:
 
 def test_root_package_exports_stable_core_contracts() -> None:
     """Root package exposes the stable first-path contract names."""
-
     import scpn_quantum_control as scpn
 
     assert scpn.Problem is Problem
@@ -231,7 +224,6 @@ def test_root_package_exports_stable_core_contracts() -> None:
 
 def test_kuramoto_facade_adapter_round_trip() -> None:
     """Stable problems bridge to and from the existing Kuramoto facade."""
-
     from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
 
     facade_problem = build_kuramoto_problem(
@@ -260,7 +252,6 @@ def test_kuramoto_facade_adapter_round_trip() -> None:
 
 def test_standard_backend_profiles_expose_expected_capabilities() -> None:
     """Backend factory helpers encode bridge-first capability profiles."""
-
     profiles = {
         "classical": classical_reference_backend(),
         "replay": hardware_replay_backend(),
@@ -281,7 +272,6 @@ def test_standard_backend_profiles_expose_expected_capabilities() -> None:
 
 def test_backend_capability_matrix_is_deterministic_and_bounded() -> None:
     """Capability matrix records profile boundaries without execution claims."""
-
     rows = backend_capability_matrix()
     by_kind = {row["kind"]: row for row in rows}
 
@@ -309,7 +299,6 @@ def test_backend_capability_matrix_is_deterministic_and_bounded() -> None:
 
 def test_backend_capability_payload_and_markdown_are_serialisable() -> None:
     """Stable core capability artifacts are deterministic and JSON-compatible."""
-
     payload = stable_core_capability_payload()
     encoded = json.dumps(payload, sort_keys=True)
     text = stable_core_capability_markdown(payload)
@@ -324,7 +313,6 @@ def test_backend_capability_payload_and_markdown_are_serialisable() -> None:
 
 def test_qiskit_backend_submission_opt_in_still_requires_preregistration() -> None:
     """Qiskit hardware opt-in does not bypass experiment preregistration."""
-
     backend = qiskit_backend(hardware_submission_allowed=True)
 
     with pytest.raises(ValueError, match="preregistration_id"):

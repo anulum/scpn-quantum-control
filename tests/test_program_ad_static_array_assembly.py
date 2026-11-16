@@ -24,7 +24,6 @@ from scpn_quantum_control.differentiable import (
 
 def _assert_allclose(actual: object, expected: object, *, atol: float = 0.0) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, atol=atol)
 
 
@@ -61,7 +60,6 @@ def test_program_ad_static_take_accumulates_gather_adjoint() -> None:
 
 def test_program_ad_static_take_modes_accumulate_gather_adjoint() -> None:
     """Static NumPy take wrap and clip modes should preserve exact scatter adjoints."""
-
     wrap_weights = np.array([0.5, -1.0, 2.0], dtype=np.float64)
     clip_weights = np.array([-0.25, 1.5, 0.75], dtype=np.float64)
 
@@ -122,7 +120,6 @@ def test_program_ad_static_advanced_indexing_accumulates_gather_adjoint() -> Non
 
 def test_program_ad_static_take_along_axis_accumulates_gather_adjoint() -> None:
     """Static take_along_axis gathers should preserve exact repeated-index adjoints."""
-
     indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
     weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)
 
@@ -155,7 +152,6 @@ def test_program_ad_static_take_along_axis_accumulates_gather_adjoint() -> None:
 
 def test_program_ad_static_delete_preserves_gather_adjoint() -> None:
     """Static NumPy delete should preserve exact gather/scatter adjoints."""
-
     axis_weights = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     flat_weights = np.array([0.25, -0.75, 1.25, -1.5], dtype=np.float64)
 
@@ -178,7 +174,6 @@ def test_program_ad_static_delete_preserves_gather_adjoint() -> None:
 
 def test_program_ad_static_constant_pad_preserves_scatter_adjoint() -> None:
     """Static constant padding should preserve exact source scatter adjoints."""
-
     matrix_weights = np.array(
         [
             [0.5, -1.0, 2.0, -0.5, 1.0],
@@ -225,7 +220,6 @@ def test_program_ad_static_constant_pad_preserves_scatter_adjoint() -> None:
 
 def test_program_ad_static_constant_insert_preserves_scatter_adjoint() -> None:
     """Static constant insertions should preserve exact source scatter adjoints."""
-
     axis_weights = np.array([[1.0, -10.0, 2.0], [3.0, 20.0, 4.0]], dtype=np.float64)
     flat_weights = np.array([0.25, -0.5, 1.25, 2.0, -0.75, 3.0], dtype=np.float64)
     values = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
@@ -253,7 +247,6 @@ def test_program_ad_static_constant_insert_preserves_scatter_adjoint() -> None:
 
 def test_program_ad_append_preserves_traceable_assembly_adjoint() -> None:
     """NumPy append should preserve exact flat and axis-aware assembly adjoints."""
-
     values = np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)
     axis_weights = np.array([[1.5, -0.25], [2.0, -1.0]], dtype=np.float64)
     flat_weights = np.array([0.75, -1.5, 2.5, -0.5, 4.0, -2.0], dtype=np.float64)
@@ -290,7 +283,6 @@ def test_program_ad_append_preserves_traceable_assembly_adjoint() -> None:
 
 def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     """Program AD take should fail closed outside static integer gather semantics."""
-
     with pytest.raises(ValueError, match="static integer indices"):
         whole_program_value_and_grad(
             lambda values: np.take(values, values[0]),
@@ -305,7 +297,6 @@ def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
 
 def test_program_ad_static_delete_rejects_dynamic_indices() -> None:
     """Program AD delete should fail closed on derivative-carrying deletion indices."""
-
     with pytest.raises(ValueError, match="static integer"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.delete(values, values[0])),
@@ -315,7 +306,6 @@ def test_program_ad_static_delete_rejects_dynamic_indices() -> None:
 
 def test_program_ad_static_constant_pad_rejects_dynamic_parameters() -> None:
     """Program AD pad should fail closed on derivative-carrying pad parameters."""
-
     with pytest.raises(ValueError, match="static non-negative integer pad widths"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.pad(values, (values[0], 1))),
@@ -335,7 +325,6 @@ def test_program_ad_static_constant_pad_rejects_dynamic_parameters() -> None:
 
 def test_program_ad_static_constant_insert_rejects_dynamic_parameters() -> None:
     """Program AD insert should fail closed on derivative-carrying insert parameters."""
-
     with pytest.raises(ValueError, match="static integer insertion"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.insert(values, values[0], 1.0)),
@@ -350,7 +339,6 @@ def test_program_ad_static_constant_insert_rejects_dynamic_parameters() -> None:
 
 def test_program_ad_append_rejects_dynamic_or_incompatible_axes() -> None:
     """Program AD append should fail closed outside static axis-compatible assembly."""
-
     with pytest.raises(ValueError, match="static integer axis"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.append(values[:1], values[1:], axis=values[0])),

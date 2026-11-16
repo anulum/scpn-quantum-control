@@ -35,13 +35,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_signal_direct_factories_have_dedicated_module_path() -> None:
     """Signal direct-rule factories should be available outside the facade."""
-
     from scpn_quantum_control import differentiable as differentiable_facade
     from scpn_quantum_control import program_ad_signal_primitives
 
@@ -74,7 +72,6 @@ def test_program_ad_signal_direct_factories_have_dedicated_module_path() -> None
 
 def test_program_ad_convolve_matches_signal_kernel_adjoint() -> None:
     """Program AD np.convolve should replay exact signal and kernel adjoints."""
-
     static_kernel = np.array([0.75, -1.25, 0.5], dtype=np.float64)
     static_signal = np.array([1.5, -0.5, 2.0, 0.25], dtype=np.float64)
     full_weights = np.array([0.2, -0.4, 0.6, -0.8, 1.0, -1.2], dtype=np.float64)
@@ -120,7 +117,6 @@ def test_program_ad_convolve_matches_signal_kernel_adjoint() -> None:
 
 def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     """np.convolve should expose a fail-closed signal primitive direct rule."""
-
     left = np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)
     right = np.array([0.25, -0.75, 1.5], dtype=np.float64)
     tangent_left = np.array([0.1, -0.2, 0.3, -0.4], dtype=np.float64)
@@ -200,7 +196,6 @@ def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
 
 def test_program_ad_signal_convolve_batching_rule_maps_outer_axis() -> None:
     """Signal convolve batching should map left operands with static kernels."""
-
     contract = primitive_contract_for("scpn.program_ad.signal:convolve")
     assert contract.batching_rule is not None
 
@@ -247,7 +242,6 @@ def test_program_ad_signal_convolve_batching_rule_maps_outer_axis() -> None:
 
 def test_program_ad_convolve_fails_closed_invalid_contracts() -> None:
     """Program AD np.convolve should reject invalid rank, mode, and empty operands."""
-
     with pytest.raises(ValueError, match="mode must be"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.convolve)(values, np.array([1.0]), mode=True)),
@@ -271,7 +265,6 @@ def test_program_ad_convolve_fails_closed_invalid_contracts() -> None:
 
 def test_program_ad_signal_convolve_direct_rule_fails_closed_invalid_static_contracts() -> None:
     """Convolve direct rules should reject invalid static signatures and payloads."""
-
     with pytest.raises(ValueError, match="rank-1 operands"):
         program_ad_signal_convolve_derivative_rule((2, 2), (3,), mode="full")
     with pytest.raises(ValueError, match="non-empty operands"):
@@ -290,7 +283,6 @@ def test_program_ad_signal_convolve_direct_rule_fails_closed_invalid_static_cont
 
 def test_program_ad_correlate_matches_signal_reference_adjoint() -> None:
     """Program AD np.correlate should replay exact signal and reference adjoints."""
-
     static_reference = np.array([0.5, -1.0, 0.25], dtype=np.float64)
     static_signal = np.array([1.25, -0.75, 2.5, 0.5], dtype=np.float64)
     full_weights = np.array([-0.3, 0.55, -0.8, 1.05, -1.3, 1.55], dtype=np.float64)
@@ -338,7 +330,6 @@ def test_program_ad_correlate_matches_signal_reference_adjoint() -> None:
 
 def test_program_ad_signal_correlate_contract_and_direct_rule() -> None:
     """np.correlate should expose a fail-closed signal primitive direct rule."""
-
     left = np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)
     right = np.array([0.25, -0.75, 1.5], dtype=np.float64)
     tangent_left = np.array([0.1, -0.2, 0.3, -0.4], dtype=np.float64)
@@ -410,7 +401,6 @@ def test_program_ad_signal_correlate_contract_and_direct_rule() -> None:
 
 def test_program_ad_signal_correlate_batching_rule_maps_outer_axis() -> None:
     """Signal correlate batching should map left operands with static references."""
-
     contract = primitive_contract_for("scpn.program_ad.signal:correlate")
     assert contract.batching_rule is not None
 
@@ -457,7 +447,6 @@ def test_program_ad_signal_correlate_batching_rule_maps_outer_axis() -> None:
 
 def test_program_ad_correlate_fails_closed_invalid_contracts() -> None:
     """Program AD np.correlate should reject invalid rank, mode, and empty operands."""
-
     with pytest.raises(ValueError, match="mode must be"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.correlate)(values, np.array([1.0]), mode=True)),
@@ -481,7 +470,6 @@ def test_program_ad_correlate_fails_closed_invalid_contracts() -> None:
 
 def test_program_ad_signal_correlate_direct_rule_fails_closed_invalid_static_contracts() -> None:
     """Correlate direct rules should reject invalid static signatures and payloads."""
-
     with pytest.raises(ValueError, match="rank-1 operands"):
         program_ad_signal_correlate_derivative_rule((2, 2), (3,), mode="full")
     with pytest.raises(ValueError, match="non-empty operands"):
