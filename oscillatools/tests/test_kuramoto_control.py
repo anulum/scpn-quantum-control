@@ -57,7 +57,10 @@ def _finite_difference(cost: object, base: np.ndarray, step: float = 1e-6) -> np
 
 
 class TestObjectives:
+    """Terminal objectives and their cotangents."""
+
     def test_coherence_value_and_cotangent(self) -> None:
+        """The coherence objective's value is one minus R squared and its cotangent agrees with finite differences."""
         rng = np.random.default_rng(1)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         cost, cotangent = kc.coherence_objective(theta)
@@ -67,6 +70,7 @@ class TestObjectives:
         np.testing.assert_allclose(cotangent, fd, atol=1e-6)
 
     def test_phase_target_value_and_cotangent(self) -> None:
+        """The phase-target objective's value and cotangent agree with finite differences."""
         rng = np.random.default_rng(2)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         target = rng.uniform(-math.pi, math.pi, size=6)
@@ -77,11 +81,13 @@ class TestObjectives:
         np.testing.assert_allclose(cotangent, fd, atol=1e-6)
 
     def test_phase_target_rejects_shape_mismatch(self) -> None:
+        """A target of the wrong shape is refused."""
         objective = kc.phase_target_objective(np.zeros(4))
         with pytest.raises(ValueError, match="target must have shape"):
             objective(np.zeros(3))
 
     def test_interaction_energy_value_and_cotangent(self) -> None:
+        """The interaction-energy objective's value and cotangent agree with finite differences."""
         rng = np.random.default_rng(3)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = rng.uniform(0.0, 1.0, size=(6, 6))
@@ -98,6 +104,8 @@ class TestObjectives:
 
 
 class TestValueAndGrad:
+    """Gradients of terminal objectives through the integrator."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=7),
@@ -108,6 +116,7 @@ class TestValueAndGrad:
     def test_coherence_gradients_match_finite_difference(
         self, n: int, n_steps: int, seed: int, integrator: str
     ) -> None:
+        """Coherence gradients agree with finite differences."""
         theta0, omega, coupling = _random_problem(n, seed)
         dt = 0.05
         cost, grad_theta0, grad_omega, grad_coupling = kc.terminal_objective_value_and_grad(
@@ -137,6 +146,7 @@ class TestValueAndGrad:
         )
 
     def test_phase_target_gradients_match_finite_difference(self) -> None:
+        """Phase-target gradients agree with finite differences."""
         theta0, omega, coupling = _random_problem(5, 9)
         target = np.zeros(5)
         dt, n_steps = 0.05, 12
@@ -152,6 +162,7 @@ class TestValueAndGrad:
         np.testing.assert_allclose(grad_coupling, _finite_difference(loss, coupling), atol=1e-5)
 
     def test_synchronisation_wrapper_matches_objective_path(self) -> None:
+        """The synchronisation wrapper equals the generic objective path."""
         theta0, omega, coupling = _random_problem(6, 4)
         dt, n_steps = 0.05, 10
         direct = kc.terminal_objective_value_and_grad(
@@ -163,6 +174,7 @@ class TestValueAndGrad:
             np.testing.assert_array_equal(a, b)
 
     def test_rejects_unknown_integrator(self) -> None:
+        """An unknown integrator is refused."""
         theta0, omega, coupling = _random_problem(3, 1)
         with pytest.raises(ValueError, match="integrator must be 'rk4' or 'euler'"):
             kc.terminal_objective_value_and_grad(
@@ -171,6 +183,7 @@ class TestValueAndGrad:
 
     def test_gradient_descent_drives_synchronisation(self) -> None:
         # End-to-end optimal-coupling control: gradient descent on K raises the order parameter.
+        """Gradient descent on the coupling raises synchrony."""
         theta0, omega, coupling = _random_problem(10, 21)
         dt, n_steps, rate = 0.05, 30, 2.0
         radius_initial = float(
@@ -194,8 +207,11 @@ class TestValueAndGrad:
 
 
 class TestTerminalObjectiveValue:
+    """The terminal objective without gradients."""
+
     @pytest.mark.parametrize("integrator", ["rk4", "euler"])
     def test_matches_value_and_grad_cost(self, integrator: str) -> None:
+        """The value equals the cost returned with the gradient."""
         theta0, omega, coupling = _random_problem(6, 31)
         dt, n_steps = 0.05, 12
         value = kc.terminal_objective_value(
@@ -207,6 +223,7 @@ class TestTerminalObjectiveValue:
         assert abs(value - cost) < 1e-12
 
     def test_rejects_unknown_integrator(self) -> None:
+        """An unknown integrator is refused."""
         theta0, omega, coupling = _random_problem(3, 1)
         with pytest.raises(ValueError, match="integrator must be 'rk4' or 'euler'"):
             kc.terminal_objective_value(

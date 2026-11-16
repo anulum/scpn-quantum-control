@@ -162,24 +162,28 @@ def test_trajectory_structure_and_metadata() -> None:
 
 
 def test_rejects_non_positive_dt() -> None:
+    """A non-positive time step is refused."""
     history, omega, coupling, delay, _ = _problem(4, 5)
     with pytest.raises(ValueError, match="dt must be positive"):
         networked_delayed_trajectory(history, omega, coupling, delay=delay, dt=0.0, n_steps=10)
 
 
 def test_rejects_non_positive_delay() -> None:
+    """A non-positive delay is refused."""
     history, omega, coupling, _, dt = _problem(4, 6)
     with pytest.raises(ValueError, match="delay must be positive"):
         networked_delayed_trajectory(history, omega, coupling, delay=0.0, dt=dt, n_steps=10)
 
 
 def test_rejects_non_positive_n_steps() -> None:
+    """A non-positive step count is refused."""
     history, omega, coupling, delay, dt = _problem(4, 7)
     with pytest.raises(ValueError, match="n_steps must be positive"):
         networked_delayed_trajectory(history, omega, coupling, delay=delay, dt=dt, n_steps=0)
 
 
 def test_rejects_delay_not_an_integer_multiple_of_dt() -> None:
+    """A delay that is not a multiple of the step is refused."""
     history, omega, coupling, delay, dt = _problem(4, 8)
     with pytest.raises(ValueError, match="integer multiple of dt"):
         networked_delayed_trajectory(
@@ -188,6 +192,7 @@ def test_rejects_delay_not_an_integer_multiple_of_dt() -> None:
 
 
 def test_rejects_non_vector_omega() -> None:
+    """Frequencies that are not a non-empty vector are refused."""
     history, _, coupling, delay, dt = _problem(4, 9)
     with pytest.raises(ValueError, match="omega must be a non-empty one-dimensional array"):
         networked_delayed_trajectory(
@@ -196,12 +201,14 @@ def test_rejects_non_vector_omega() -> None:
 
 
 def test_rejects_mismatched_history_shape() -> None:
+    """A history of the wrong shape is refused."""
     history, omega, coupling, delay, dt = _problem(5, 10)
     with pytest.raises(ValueError, match="initial_history must have shape"):
         networked_delayed_trajectory(history[:-1], omega, coupling, delay=delay, dt=dt, n_steps=10)
 
 
 def test_rejects_non_square_coupling() -> None:
+    """A non-square coupling matrix is refused."""
     history, omega, _, delay, dt = _problem(5, 11)
     with pytest.raises(ValueError, match="coupling must be a square matrix"):
         networked_delayed_trajectory(
@@ -216,11 +223,13 @@ class TestNetworkedDelayedTierDispatch:
     """The Rust → Julia → Python floor tier chain for the delayed forward trajectory."""
 
     def test_public_call_records_a_served_tier(self) -> None:
+        """A public call records which tier served it."""
         history, omega, coupling, delay, dt = _problem(16, 20)
         networked_delayed_trajectory(history, omega, coupling, delay=delay, dt=dt, n_steps=100)
         assert last_networked_delayed_trajectory_tier_used() in {"rust", "julia", "python"}
 
     def test_python_floor_tier_direct(self) -> None:
+        """The Python floor runs directly with the expected shapes."""
         history, omega, coupling, delay, dt = _problem(14, 21)
         times, phases = delayed_module._python_networked_delayed_trajectory(
             history, omega, coupling, delay, dt, 120
@@ -229,6 +238,7 @@ class TestNetworkedDelayedTierDispatch:
         assert times.size == 121
 
     def test_rust_tier_matches_python_floor(self) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         assert hasattr(engine, "kuramoto_delayed_trajectory")
         history, omega, coupling, delay, dt = _problem(32, 22, delay_steps=6)
@@ -242,6 +252,7 @@ class TestNetworkedDelayedTierDispatch:
         np.testing.assert_allclose(rust[1], floor[1], atol=1e-11)
 
     def test_julia_tier_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         history, omega, coupling, delay, dt = _problem(24, 23, delay_steps=5)
         julia = delayed_module._julia_networked_delayed_trajectory(
@@ -254,6 +265,7 @@ class TestNetworkedDelayedTierDispatch:
         np.testing.assert_allclose(julia[1], floor[1], atol=1e-10)
 
     def test_rust_tier_raises_when_engine_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native tier raises."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         history, omega, coupling, delay, dt = _problem(8, 24)
         with pytest.raises(ModuleNotFoundError):
@@ -262,6 +274,7 @@ class TestNetworkedDelayedTierDispatch:
             )
 
     def test_rust_tier_raises_when_symbol_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel makes the native tier raise."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: object())
         history, omega, coupling, delay, dt = _problem(8, 25)
         with pytest.raises(ImportError):
@@ -272,6 +285,7 @@ class TestNetworkedDelayedTierDispatch:
     def test_fall_through_to_floor_when_engine_absent(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Without the engine the call falls through to the Python floor."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         monkeypatch.setitem(sys.modules, "oscillatools.accel.julia", None)
         history, omega, coupling, delay, dt = _problem(10, 26)

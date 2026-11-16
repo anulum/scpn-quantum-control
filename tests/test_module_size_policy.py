@@ -63,6 +63,7 @@ def _entry(
 
 
 def test_count_physical_lines_handles_empty_and_unterminated_files(tmp_path: Path) -> None:
+    """Physical lines are counted for empty, terminated and unterminated files."""
     empty = tmp_path / "empty.py"
     empty.write_bytes(b"")
     terminated = tmp_path / "terminated.py"
@@ -76,6 +77,7 @@ def test_count_physical_lines_handles_empty_and_unterminated_files(tmp_path: Pat
 
 
 def test_reviewed_inventory_ignores_unregistered_files_and_reports_loc(tmp_path: Path) -> None:
+    """The inventory lists only reviewed files, with their line counts."""
     (tmp_path / "reviewed.py").write_text("1\n2\n3\n4\n", encoding="utf-8")
     (tmp_path / "unreviewed.py").write_text("1\n2\n3\n4\n5\n", encoding="utf-8")
 
@@ -89,6 +91,7 @@ def test_reviewed_inventory_ignores_unregistered_files_and_reports_loc(tmp_path:
 
 
 def test_parse_policy_rejects_duplicate_and_unsorted_paths() -> None:
+    """Duplicate or unsorted paths are refused."""
     with pytest.raises(ValueError, match="duplicate paths"):
         _audit.parse_policy(_policy_payload(_entry(), _entry()))
     with pytest.raises(ValueError, match="sorted by path"):
@@ -96,6 +99,7 @@ def test_parse_policy_rejects_duplicate_and_unsorted_paths() -> None:
 
 
 def test_parse_policy_rejects_loc_gate_configuration() -> None:
+    """A line-count gate configuration is refused."""
     payload = {
         "threshold_lines": 1000,
         "extensions": [".py"],
@@ -117,6 +121,7 @@ def test_parse_policy_rejects_loc_gate_configuration() -> None:
     ],
 )
 def test_parse_policy_rejects_invalid_review_rows(field: str, value: str, message: str) -> None:
+    """Invalid review rows are refused with their reasons."""
     row = _entry()
     row[field] = value
 
@@ -125,6 +130,7 @@ def test_parse_policy_rejects_invalid_review_rows(field: str, value: str, messag
 
 
 def test_parse_policy_requires_a_target_for_open_refactors() -> None:
+    """An open refactor needs a target."""
     row = _entry(disposition="refactor_required")
 
     with pytest.raises(ValueError, match="need refactor_target"):
@@ -132,6 +138,7 @@ def test_parse_policy_requires_a_target_for_open_refactors() -> None:
 
 
 def test_audit_policy_does_not_gate_unregistered_or_line_count_drift() -> None:
+    """Unregistered files and line-count drift are not gated; ratchet drift is."""
     policy = _audit.parse_policy(_policy_payload(_entry(), open_refactor_limit=1))
 
     result = _audit.audit_policy(
@@ -143,6 +150,7 @@ def test_audit_policy_does_not_gate_unregistered_or_line_count_drift() -> None:
 
 
 def test_audit_policy_reports_stale_registry_rows() -> None:
+    """A registry row for an untracked file is reported."""
     policy = _audit.parse_policy(_policy_payload(_entry()))
 
     result = _audit.audit_policy((), policy)
@@ -151,6 +159,7 @@ def test_audit_policy_reports_stale_registry_rows() -> None:
 
 
 def test_open_refactors_pass_inventory_gate_but_fail_strict_mode() -> None:
+    """Open refactors pass the inventory gate but fail strict mode."""
     row = _entry(
         disposition="refactor_required",
         refactor_target="split parser from execution",
@@ -167,6 +176,7 @@ def test_open_refactors_pass_inventory_gate_but_fail_strict_mode() -> None:
 def test_main_reports_registry_errors_without_traceback(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Registry errors are reported without a traceback."""
     registry = tmp_path / "invalid.json"
     registry.write_text("{}", encoding="utf-8")
 
@@ -177,6 +187,7 @@ def test_main_reports_registry_errors_without_traceback(
 
 
 def test_live_registry_validates_reviewed_module_responsibilities() -> None:
+    """The live registry validates."""
     repo_root = Path(__file__).resolve().parents[1]
     registry = repo_root / "tools" / "module_size_policy.json"
 
@@ -189,6 +200,7 @@ def test_live_registry_validates_reviewed_module_responsibilities() -> None:
 
 
 def test_architecture_quotes_the_reviewed_inventory_and_open_count() -> None:
+    """The architecture page quotes the reviewed and open counts."""
     repo_root = Path(__file__).resolve().parents[1]
     registry = repo_root / "tools" / "module_size_policy.json"
     result = _audit.audit_repository(repo_root, registry)
@@ -199,6 +211,7 @@ def test_architecture_quotes_the_reviewed_inventory_and_open_count() -> None:
 
 
 def test_ci_and_preflight_run_the_inventory_gate() -> None:
+    """CI and preflight run the inventory gate."""
     repo_root = Path(__file__).resolve().parents[1]
     workflow = workflow_path_for_job("lint").read_text(encoding="utf-8")
     preflight = (repo_root / "tools" / "preflight.py").read_text(encoding="utf-8")
@@ -209,6 +222,7 @@ def test_ci_and_preflight_run_the_inventory_gate() -> None:
 
 
 def test_registry_is_valid_json() -> None:
+    """The registry is a JSON object."""
     repo_root = Path(__file__).resolve().parents[1]
     registry = repo_root / "tools" / "module_size_policy.json"
 

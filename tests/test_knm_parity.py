@@ -103,6 +103,7 @@ def test_wrong_module_origin_fails_and_restores_search_path(
 
 
 def test_knm_parity_with_scpn_control() -> None:
+    """The coupling matrix and frequencies match the sibling control package."""
     mod = _import_local_module("scpn-control", "scpn_control.phase.knm")
     np.testing.assert_allclose(OMEGA_N_16, np.asarray(mod.OMEGA_N_16, dtype=np.float64))
 
@@ -114,6 +115,7 @@ def test_knm_parity_with_scpn_control() -> None:
 
 
 def test_base_exponential_decay_matches_phase_orchestrator_builder() -> None:
+    """The base decay matches the phase orchestrator's builder."""
     mod = _import_local_module(
         "scpn-phase-orchestrator",
         "scpn_phase_orchestrator.coupling.knm",
@@ -131,6 +133,7 @@ def test_base_exponential_decay_matches_phase_orchestrator_builder() -> None:
 
 
 def test_quantum_knm_matches_decay_kernel_on_untouched_edges() -> None:
+    """Edges without calibration anchors follow the decay kernel."""
     n_layers = 16
     idx = np.arange(n_layers)
     expected = 0.45 * np.exp(-0.3 * np.abs(idx[:, None] - idx[None, :]))
@@ -160,6 +163,7 @@ def test_quantum_knm_matches_decay_kernel_on_untouched_edges() -> None:
 
 @pytest.mark.parametrize("mode", ["baseline", "elm", "ntm", "sawtooth", "hybrid"])
 def test_plasma_knm_bridge_parity_with_scpn_control(mode: str) -> None:
+    """The plasma coupling bridge matches the sibling package."""
     mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
     repo_src = _scpn_control_src_path()
     k_quantum = build_knm_plasma(mode=mode, repo_src=repo_src)
@@ -168,6 +172,7 @@ def test_plasma_knm_bridge_parity_with_scpn_control(mode: str) -> None:
 
 
 def test_plasma_omega_bridge_parity_with_scpn_control() -> None:
+    """The plasma frequency bridge matches the sibling package."""
     mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
     repo_src = _scpn_control_src_path()
     for n_layers in (*range(1, 9), 16):
@@ -188,6 +193,7 @@ def test_plasma_omega_bridge_preserves_unsupported_layer_errors(n_layers: int) -
 
 
 def test_plasma_knm_from_config_bridge_parity_with_scpn_control() -> None:
+    """The configured plasma coupling matches the sibling package."""
     mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
     repo_src = _scpn_control_src_path()
     cfg: PlasmaConfig = {"R0": 6.2, "a": 2.0, "B0": 5.3, "Ip": 15.0, "n_e": 10.1}
@@ -205,27 +211,33 @@ class TestKnmSelfContainedProperties:
     """Knm invariants that must hold regardless of external implementations."""
 
     def test_knm_paper27_symmetric(self) -> None:
+        """The coupling matrix is symmetric."""
         for L in (4, 8, 16):
             K = build_knm_paper27(L=L)
             np.testing.assert_allclose(K, K.T, atol=1e-12)
 
     def test_knm_paper27_non_negative(self) -> None:
+        """The coupling matrix is non-negative."""
         for L in (4, 8, 16):
             K = build_knm_paper27(L=L)
             assert np.all(K >= 0)
 
     def test_knm_paper27_shape(self) -> None:
+        """The coupling matrix is square in the layer count."""
         for L in (2, 4, 8, 16):
             K = build_knm_paper27(L=L)
             assert K.shape == (L, L)
 
     def test_omega_n_16_length(self) -> None:
+        """There are sixteen frequencies."""
         assert len(OMEGA_N_16) == 16
 
     def test_omega_n_16_finite(self) -> None:
+        """Every frequency is finite."""
         assert np.all(np.isfinite(OMEGA_N_16))
 
     def test_omega_n_16_positive(self) -> None:
+        """Every frequency is positive."""
         assert np.all(OMEGA_N_16 > 0)
 
     @pytest.mark.parametrize("L", [4, 8, 16])
@@ -235,10 +247,12 @@ class TestKnmSelfContainedProperties:
         assert K[0, 1] > K[0, L // 2]
 
     def test_knm_deterministic(self) -> None:
+        """Building the matrix twice gives identical arrays."""
         K1 = build_knm_paper27(L=8)
         K2 = build_knm_paper27(L=8)
         np.testing.assert_array_equal(K1, K2)
 
     def test_knm_dtype_float64(self) -> None:
+        """The matrix is float64."""
         K = build_knm_paper27(L=4)
         assert K.dtype == np.float64

@@ -34,25 +34,33 @@ def _pub(target_prob: float, target: str = "0000", shots: int = 1000) -> dict[st
 
 
 class TestObservables:
+    """Survival observables of the recovered counts."""
+
     def test_bitstring_survival(self) -> None:
+        """Bitstring survival is the target's share of the counts."""
         assert script._bitstring_survival({"0000": 850, "1111": 150}, "0000") == 0.85
 
     def test_bitstring_survival_empty(self) -> None:
+        """Empty counts give zero survival."""
         assert script._bitstring_survival({}, "0000") == 0.0
 
     def test_odd_parity_survival(self) -> None:
         # 0001 and 0111 are odd weight; 0000 and 0011 are even.
+        """Odd-parity survival is the odd-parity share."""
         counts = {"0001": 300, "0111": 100, "0000": 500, "0011": 100}
         assert script._odd_parity_survival(counts) == pytest.approx(0.4)
 
     def test_odd_parity_survival_empty(self) -> None:
+        """Empty counts give zero odd-parity survival."""
         assert script._odd_parity_survival({}) == 0.0
 
     def test_per_pub_survival_bitstring(self) -> None:
+        """Bitstring survival is computed per publication."""
         vals = script.per_pub_survival("C_fim", [_pub(0.9), _pub(0.92)])
         assert vals == pytest.approx([0.9, 0.92])
 
     def test_per_pub_survival_odd_parity(self) -> None:
+        """Odd-parity survival is computed per publication."""
         vals = script.per_pub_survival("A_odd", [{"0001": 900, "0000": 100}])
         assert vals == pytest.approx([0.9])
 
@@ -80,7 +88,10 @@ def _synthetic_pack() -> dict[str, Any]:
 
 
 class TestReproduce:
+    """Reproducing the committed means."""
+
     def test_reproduces_and_flags_dual_protection(self) -> None:
+        """The analysis reproduces the means and flags the dual-protection ordering."""
         report = script.reproduce(_synthetic_pack())
         assert report["n_experiments"] == 3
         # C_xy and C_fim reproduce exactly; A_odd has no committed mean to compare.
@@ -91,12 +102,14 @@ class TestReproduce:
         assert "NOT evidence of coherence protection" in obs["claim_boundary"]
 
     def test_absent_committed_mean_is_not_reproduced(self) -> None:
+        """A mean with no committed value is not counted as reproduced."""
         report = script.reproduce(_synthetic_pack())
         a_odd = next(r for r in report["rows"] if r["experiment"] == "A_odd")
         assert a_odd["abs_delta"] is None
         assert a_odd["reproduced"] is False
 
     def test_committed_pack_reproduces_eight_of_nine(self) -> None:
+        """The committed pack reproduces eight of nine means."""
         pack = json.loads(
             (COMMITTED_PACK / "recovered_raw_counts.json").read_text(encoding="utf-8")
         )
@@ -107,13 +120,17 @@ class TestReproduce:
 
 
 class TestCli:
+    """The analysis command."""
+
     def test_cli_on_committed_pack(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """The command reports the ordering and its interpretation."""
         assert script.main([]) == 0
         out = capsys.readouterr().out
         assert "F_FIM=0.9158 > F_XY=0.8484" in out
         assert "NOT coherence protection" in out
 
     def test_cli_writes_output(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """The command writes the analysis file."""
         out_path = tmp_path / "analysis.json"
         assert script.main(["--output", str(out_path)]) == 0
         payload = json.loads(out_path.read_text(encoding="utf-8"))

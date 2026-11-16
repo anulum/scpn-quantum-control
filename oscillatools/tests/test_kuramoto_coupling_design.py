@@ -43,7 +43,10 @@ def _final_radius(theta0: np.ndarray, omega: np.ndarray, coupling: np.ndarray) -
 
 
 class TestProjection:
+    """Projecting a coupling matrix onto the admissible set."""
+
     def test_enforces_symmetry_nonnegativity_zero_diagonal(self) -> None:
+        """Projection makes the matrix symmetric, non-negative and zero on the diagonal."""
         rng = np.random.default_rng(1)
         matrix = rng.uniform(-1.0, 1.0, size=(6, 6))
         projected = design.symmetric_nonnegative_projection(matrix)
@@ -52,6 +55,7 @@ class TestProjection:
         np.testing.assert_array_equal(np.diag(projected), np.zeros(6))
 
     def test_is_idempotent(self) -> None:
+        """Projecting twice equals projecting once."""
         rng = np.random.default_rng(2)
         matrix = rng.uniform(-1.0, 1.0, size=(5, 5))
         once = design.symmetric_nonnegative_projection(matrix)
@@ -60,7 +64,10 @@ class TestProjection:
 
 
 class TestOptimiser:
+    """The coupling optimiser."""
+
     def test_cost_history_is_monotone_non_increasing(self) -> None:
+        """The cost never increases."""
         theta0, omega, coupling = _random_problem(8, 7)
         result = design.optimise_coupling(
             kc.coherence_objective,
@@ -81,6 +88,7 @@ class TestOptimiser:
     def test_converged_flag_at_local_optimum(self) -> None:
         # Starting fully synchronised with zero detuning, the coherence cost is already 0 and the
         # line search cannot improve, so the optimiser converges immediately.
+        """At a local optimum the optimiser converges after one iteration."""
         n = 5
         theta0 = np.zeros(n)
         omega = np.zeros(n)
@@ -100,6 +108,7 @@ class TestOptimiser:
         assert result.iterations == 1
 
     def test_iteration_budget_is_respected(self) -> None:
+        """The iteration budget is respected."""
         theta0, omega, coupling = _random_problem(8, 11)
         result = design.optimise_coupling(
             kc.coherence_objective,
@@ -116,6 +125,7 @@ class TestOptimiser:
         assert len(result.cost_history) <= 3
 
     def test_unconstrained_path_runs(self) -> None:
+        """The unconstrained path returns a full coupling matrix."""
         theta0, omega, coupling = _random_problem(5, 13)
         result = design.optimise_coupling(
             kc.coherence_objective, theta0, omega, coupling, 0.05, 20, max_iterations=5
@@ -124,6 +134,7 @@ class TestOptimiser:
         assert result.coupling.shape == (5, 5)
 
     def test_rejects_non_positive_iterations(self) -> None:
+        """A non-positive iteration budget is refused."""
         theta0, omega, coupling = _random_problem(4, 1)
         with pytest.raises(ValueError, match="max_iterations must be positive"):
             design.optimise_coupling(
@@ -131,6 +142,7 @@ class TestOptimiser:
             )
 
     def test_invalid_integrator_propagates(self) -> None:
+        """An invalid integrator is refused."""
         theta0, omega, coupling = _random_problem(4, 1)
         with pytest.raises(ValueError, match="integrator must be 'rk4' or 'euler'"):
             design.optimise_coupling(
@@ -144,6 +156,7 @@ class TestOptimiser:
             )
 
     def test_reproducible(self) -> None:
+        """Two runs give identical histories and couplings."""
         theta0, omega, coupling = _random_problem(6, 5)
         first = design.optimise_coupling(
             kc.coherence_objective, theta0, omega, coupling, 0.05, 25, max_iterations=20
@@ -156,7 +169,10 @@ class TestOptimiser:
 
 
 class TestSynchronisingDesign:
+    """Designing a coupling that synchronises the network."""
+
     def test_raises_order_parameter_and_respects_projection(self) -> None:
+        """The design raises synchrony and stays admissible."""
         theta0, omega, coupling = _random_problem(10, 21)
         radius_before = _final_radius(theta0, omega, coupling)
         result = design.design_synchronising_coupling(
@@ -170,6 +186,7 @@ class TestSynchronisingDesign:
         np.testing.assert_array_equal(np.diag(result.coupling), np.zeros(10))
 
     def test_default_projection_is_symmetric_nonnegative(self) -> None:
+        """The default projection gives a symmetric, non-negative coupling."""
         theta0, omega, coupling = _random_problem(5, 2)
         # An asymmetric, signed start is projected before optimisation begins.
         rng = np.random.default_rng(99)

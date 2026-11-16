@@ -20,7 +20,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestOTOCSyncScan:
+    """Scanning OTOC and classical synchrony across couplings."""
+
     def test_returns_result(self) -> None:
+        """The scan returns one entry per coupling."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=10, t_max=1.0)
@@ -31,6 +34,7 @@ class TestOTOCSyncScan:
         assert result.n_qubits == 3
 
     def test_R_classical_increases_with_K(self) -> None:
+        """The classical order parameter has one value per coupling."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = otoc_sync_scan(
@@ -45,6 +49,7 @@ class TestOTOCSyncScan:
         assert len(result.R_classical) == 3
 
     def test_otoc_final_values_real(self) -> None:
+        """The final OTOC values are finite."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = otoc_sync_scan(K, omega, n_K_values=3, n_time_points=5, t_max=0.5)
@@ -52,6 +57,7 @@ class TestOTOCSyncScan:
             assert np.isfinite(v)
 
     def test_two_qubit_scan(self) -> None:
+        """The scan runs on two qubits."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = otoc_sync_scan(K, omega, n_K_values=4, n_time_points=8, t_max=0.5)
@@ -60,7 +66,10 @@ class TestOTOCSyncScan:
 
 
 class TestCompareOTOCvsR:
+    """Comparing the OTOC and classical transitions."""
+
     def test_returns_expected_keys(self) -> None:
+        """The comparison names both transitions and their difference."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         scan = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=10, t_max=1.0)
@@ -71,6 +80,7 @@ class TestCompareOTOCvsR:
         assert "otoc_detects_transition" in comparison
 
     def test_detection_flag_is_bool(self) -> None:
+        """The detection flag is a boolean."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         scan = otoc_sync_scan(K, omega, n_K_values=8, n_time_points=10, t_max=1.0)
@@ -78,6 +88,7 @@ class TestCompareOTOCvsR:
         assert isinstance(comparison["otoc_detects_transition"], bool)
 
     def test_k_c_values_finite(self) -> None:
+        """The classical transition is finite."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         scan = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=8, t_max=0.5)
@@ -85,6 +96,7 @@ class TestCompareOTOCvsR:
         assert np.isfinite(comparison["K_c_classical"])
 
     def test_delta_k_c_nonnegative(self) -> None:
+        """The difference between transitions is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         scan = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=8, t_max=0.5)
@@ -93,7 +105,10 @@ class TestCompareOTOCvsR:
 
 
 class TestOTOCProperties:
+    """Properties of the scanned values."""
+
     def test_lyapunov_values_finite(self) -> None:
+        """Every Lyapunov value is present and finite."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = otoc_sync_scan(K, omega, n_K_values=3, n_time_points=5, t_max=0.5)
@@ -102,6 +117,7 @@ class TestOTOCProperties:
             assert np.isfinite(v)
 
     def test_R_classical_bounded(self) -> None:
+        """The classical order parameter lies in [0, 1]."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = otoc_sync_scan(K, omega, n_K_values=4, n_time_points=8, t_max=0.5)
@@ -110,6 +126,8 @@ class TestOTOCProperties:
 
 
 class TestOTOCPipeline:
+    """The coupling-to-OTOC pipeline."""
+
     def test_pipeline_knm_to_otoc(self) -> None:
         """Full pipeline: Knm → OTOC scan → compare → K_c detection."""
         import time

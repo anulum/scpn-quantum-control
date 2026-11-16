@@ -120,17 +120,20 @@ def mock_pl(monkeypatch: pytest.MonkeyPatch) -> _MockQml:
 
 
 def test_is_pennylane_available_true(mock_pl: _MockQml, monkeypatch: pytest.MonkeyPatch) -> None:
+    """PennyLane reports itself available when installed."""
     del mock_pl
     monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", True)
     assert pl_mod.is_pennylane_available() is True
 
 
 def test_is_pennylane_available_false(monkeypatch: pytest.MonkeyPatch) -> None:
+    """PennyLane reports itself unavailable when absent."""
     monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", False)
     assert pl_mod.is_pennylane_available() is False
 
 
 def test_xy_hamiltonian_pl_raises_without_pl(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without PennyLane the Hamiltonian builder raises."""
     monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", False)
     with pytest.raises(ImportError, match="PennyLane"):
         pl_mod._xy_hamiltonian_pl(np.eye(2), np.ones(2))
@@ -178,6 +181,7 @@ def test_module_import_guard_sets_pl_available_when_import_succeeds(
 
 
 def test_xy_hamiltonian_pl(mock_pl: _MockQml) -> None:
+    """With PennyLane the Hamiltonian builder returns a Hamiltonian."""
     del mock_pl
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
@@ -186,12 +190,14 @@ def test_xy_hamiltonian_pl(mock_pl: _MockQml) -> None:
 
 
 def test_runner_init_raises_without_pl(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without PennyLane the runner raises."""
     monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", False)
     with pytest.raises(ImportError, match="PennyLane"):
         pl_mod.PennyLaneRunner(np.eye(2), np.ones(2))
 
 
 def test_runner_init(mock_pl: _MockQml) -> None:
+    """The runner records its size and device."""
     del mock_pl
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
@@ -218,6 +224,7 @@ def test_runner_rejects_invalid_physics_inputs(
     omega: FloatArray,
     match: str,
 ) -> None:
+    """Invalid physics inputs are refused before any device is created."""
     with pytest.raises(ValueError, match=match):
         pl_mod.PennyLaneRunner(K, omega)
     assert mock_pl.device_calls == []
@@ -228,12 +235,14 @@ def test_runner_rejects_invalid_shots_before_device_dispatch(
     mock_pl: _MockQml,
     shots: int | bool,
 ) -> None:
+    """An invalid shot count is refused before any device is created."""
     with pytest.raises(ValueError, match="shots"):
         pl_mod.PennyLaneRunner(np.eye(2, dtype=np.float64), np.ones(2), shots=shots)
     assert mock_pl.device_calls == []
 
 
 def test_runner_run_trotter(mock_pl: _MockQml) -> None:
+    """A Trotter run returns a result for its size and device."""
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
     runner = pl_mod.PennyLaneRunner(K, omega)
@@ -248,6 +257,7 @@ def test_runner_run_trotter(mock_pl: _MockQml) -> None:
 
 
 def test_runner_run_vqe(mock_pl: _MockQml) -> None:
+    """A VQE run returns a result with an order parameter in [0, 1]."""
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
     runner = pl_mod.PennyLaneRunner(K, omega)
@@ -264,7 +274,6 @@ def test_runner_run_vqe(mock_pl: _MockQml) -> None:
 
 def test_runner_exposes_vqe_value_and_grad(mock_pl: _MockQml) -> None:
     """PennyLane adapter should expose differentiable VQE parameters."""
-
     K = np.array([[0.0, 0.25], [0.25, 0.0]], dtype=np.float64)
     omega = np.array([0.1, -0.2], dtype=np.float64)
     runner = pl_mod.PennyLaneRunner(K, omega, device="default.qubit")
@@ -282,6 +291,7 @@ def test_runner_exposes_vqe_value_and_grad(mock_pl: _MockQml) -> None:
 
 
 def test_runner_shots_param(mock_pl: _MockQml) -> None:
+    """The runner keeps its shot count."""
     K = np.array([[0, 0.3], [0.3, 0]])
     omega = np.array([1.0, 1.5])
     runner = pl_mod.PennyLaneRunner(K, omega, shots=1024)
@@ -289,6 +299,7 @@ def test_runner_shots_param(mock_pl: _MockQml) -> None:
 
 
 def test_runner_3qubit(mock_pl: _MockQml) -> None:
+    """The runner works on three qubits."""
     del mock_pl
     K = np.array([[0, 0.5, 0.2], [0.5, 0, 0.3], [0.2, 0.3, 0]])
     omega = np.array([1.0, 2.0, 3.0])
@@ -344,6 +355,7 @@ def test_vqe_order_parameter_is_measured_from_ansatz(mock_pl: _MockQml) -> None:
 
 
 def test_pipeline_knm_to_pennylane(mock_pl: _MockQml) -> None:
+    """A coupling matrix runs through the PennyLane runner."""
     del mock_pl
     """Full pipeline: build_knm → PennyLane runner → Trotter → result.
     Verifies PennyLane adapter is wired end-to-end (via mock).

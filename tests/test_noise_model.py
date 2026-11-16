@@ -31,6 +31,7 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 @pytest.fixture
 def noisy_runner(tmp_path: Path) -> HardwareRunner:
+    """Return a connected simulator runner with the Heron noise model."""
     nm = heron_r2_noise_model()
     runner = HardwareRunner(
         use_simulator=True, noise_model=nm, results_dir=str(tmp_path / "results")
@@ -41,6 +42,7 @@ def noisy_runner(tmp_path: Path) -> HardwareRunner:
 
 @pytest.fixture
 def clean_runner(tmp_path: Path) -> HardwareRunner:
+    """Return a connected noiseless simulator runner."""
     runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
     runner.connect()
     return runner
@@ -52,22 +54,28 @@ def clean_runner(tmp_path: Path) -> HardwareRunner:
 
 
 class TestNoiseModelConstruction:
+    """Building the noise model."""
+
     def test_returns_noise_model(self) -> None:
+        """The builder returns a noise model."""
         nm = heron_r2_noise_model()
         assert isinstance(nm, NoiseModel)
 
     def test_default_params_match_constants(self) -> None:
         # ibm_fez 2026-03-29 median snapshot (retrieved read-only 2026-07-18)
+        """The defaults match the published device constants."""
         assert T1_US == 146.7
         assert T2_US == 109.3
         assert CZ_ERROR_RATE == 0.00262
         assert READOUT_ERROR_RATE == 0.01508
 
     def test_custom_params(self) -> None:
+        """Custom parameters build a noise model."""
         nm = heron_r2_noise_model(t1_us=100.0, t2_us=80.0, cz_error=0.02)
         assert isinstance(nm, NoiseModel)
 
     def test_different_params_different_model(self) -> None:
+        """Different parameters give a different model."""
         nm1 = heron_r2_noise_model(cz_error=0.001)
         nm2 = heron_r2_noise_model(cz_error=0.05)
         # Models should be structurally different (different error rates)
@@ -80,10 +88,14 @@ class TestNoiseModelConstruction:
 
 
 class TestNoisyRunner:
+    """A runner with the noise model attached."""
+
     def test_connects(self, noisy_runner: HardwareRunner) -> None:
+        """The noisy runner connects."""
         assert noisy_runner.backend is not None
 
     def test_transpile_works(self, noisy_runner: HardwareRunner) -> None:
+        """The noisy runner transpiles."""
         qc = QuantumCircuit(2)
         qc.h(0)
         qc.cx(0, 1)
@@ -98,6 +110,8 @@ class TestNoisyRunner:
 
 
 class TestNoiseEffects:
+    """Effects of noise on observables."""
+
     def test_noisy_produces_error_events(self, noisy_runner: HardwareRunner) -> None:
         """GHZ on noisy sim should show non-ideal counts."""
         qc = QuantumCircuit(4)
@@ -165,6 +179,8 @@ class TestNoiseEffects:
 
 
 class TestNoisePhysics:
+    """Noise strength against observed degradation."""
+
     def test_higher_error_more_noise(self) -> None:
         """Higher CZ error rate → more non-ideal counts in Bell pair."""
         from scpn_quantum_control.hardware.noise_model import heron_r2_noise_model
@@ -200,10 +216,13 @@ class TestNoisePhysics:
 
 
 class TestNoisePipeline:
+    """The coupling-to-noisy-observable pipeline."""
+
     def test_pipeline_knm_noise_degradation(
         self, noisy_runner: HardwareRunner, clean_runner: HardwareRunner
     ) -> None:
         """Full pipeline: Knm → Trotter → noisy/clean → R comparison.
+
         Verifies noise model is wired and degrades observables as expected.
         """
         import time

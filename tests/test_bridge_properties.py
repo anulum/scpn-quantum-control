@@ -31,6 +31,7 @@ _DEADLINE = 2000
 
 @given(p=st.floats(min_value=0.0, max_value=1.0))
 def test_prob_angle_roundtrip(p: float) -> None:
+    """Probability to angle and back is the identity."""
     theta = probability_to_angle(p)
     p_back = angle_to_probability(theta)
     assert abs(p_back - p) < 1e-10
@@ -38,6 +39,7 @@ def test_prob_angle_roundtrip(p: float) -> None:
 
 @given(theta=st.floats(min_value=0.0, max_value=np.pi))
 def test_angle_prob_roundtrip(theta: float) -> None:
+    """Angle to probability and back is the identity."""
     p = angle_to_probability(theta)
     theta_back = probability_to_angle(p)
     assert abs(theta_back - theta) < 1e-10
@@ -45,12 +47,14 @@ def test_angle_prob_roundtrip(theta: float) -> None:
 
 @given(p=st.floats(min_value=0.0, max_value=1.0))
 def test_angle_in_valid_range(p: float) -> None:
+    """Angles lie in [0, pi]."""
     theta = probability_to_angle(p)
     assert 0.0 <= theta <= np.pi + 1e-12
 
 
 @given(p=st.floats(min_value=-10.0, max_value=10.0))
 def test_probability_to_angle_clamps(p: float) -> None:
+    """Out-of-range probabilities clamp into [0, pi]."""
     assume(bool(np.isfinite(p)))
     theta = probability_to_angle(p)
     assert 0.0 <= theta <= np.pi + 1e-12
@@ -62,6 +66,7 @@ def test_probability_to_angle_clamps(p: float) -> None:
 @given(p=st.floats(min_value=0.0, max_value=1.0))
 @settings(max_examples=50, deadline=_DEADLINE)
 def test_bitstream_statevector_normalized(p: float) -> None:
+    """A bitstream maps to a normalised state."""
     bits = np.array([1] * int(p * 100) + [0] * int((1 - p) * 100), dtype=np.uint8)
     if len(bits) == 0:
         bits = np.array([0], dtype=np.uint8)
@@ -75,18 +80,21 @@ def test_bitstream_statevector_normalized(p: float) -> None:
 
 @given(L=st.integers(min_value=2, max_value=16))
 def test_knm_symmetric(L: int) -> None:
+    """The coupling matrix is symmetric."""
     K = build_knm_paper27(L=L)
     assert np.allclose(K, K.T)
 
 
 @given(L=st.integers(min_value=2, max_value=16))
 def test_knm_positive(L: int) -> None:
+    """The coupling matrix is non-negative."""
     K = build_knm_paper27(L=L)
     assert np.all(K >= 0)
 
 
 @given(L=st.integers(min_value=2, max_value=16))
 def test_knm_diagonal_is_base(L: int) -> None:
+    """The diagonal holds the base coupling."""
     K = build_knm_paper27(L=L)
     # diag(K) = K_base * exp(0) = 0.45
     assert np.allclose(np.diag(K), 0.45)
@@ -94,6 +102,7 @@ def test_knm_diagonal_is_base(L: int) -> None:
 
 @given(L=st.integers(min_value=2, max_value=16))
 def test_knm_shape(L: int) -> None:
+    """The coupling matrix is square in the layer count."""
     K = build_knm_paper27(L=L)
     assert K.shape == (L, L)
 
@@ -104,6 +113,7 @@ def test_knm_shape(L: int) -> None:
 @given(n=st.integers(min_value=2, max_value=6))
 @settings(max_examples=20, deadline=2000)
 def test_hamiltonian_hermitian(n: int) -> None:
+    """The Hamiltonian is Hermitian."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
@@ -114,6 +124,7 @@ def test_hamiltonian_hermitian(n: int) -> None:
 @given(n=st.integers(min_value=2, max_value=6))
 @settings(max_examples=20, deadline=_DEADLINE)
 def test_hamiltonian_qubit_count(n: int) -> None:
+    """The Hamiltonian has one qubit per oscillator."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
@@ -123,6 +134,7 @@ def test_hamiltonian_qubit_count(n: int) -> None:
 @given(n=st.integers(min_value=2, max_value=6))
 @settings(max_examples=20, deadline=_DEADLINE)
 def test_hamiltonian_real_eigenvalues(n: int) -> None:
+    """The Hamiltonian has real eigenvalues."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
@@ -139,6 +151,7 @@ def test_hamiltonian_real_eigenvalues(n: int) -> None:
 @given(n=st.integers(min_value=2, max_value=6), reps=st.integers(min_value=1, max_value=3))
 @settings(max_examples=20, deadline=_DEADLINE)
 def test_ansatz_qubit_count(n: int, reps: int) -> None:
+    """The ansatz has one qubit per oscillator."""
     K = build_knm_paper27(L=n)
     qc = knm_to_ansatz(K, reps=reps)
     assert qc.num_qubits == n
@@ -147,6 +160,7 @@ def test_ansatz_qubit_count(n: int, reps: int) -> None:
 @given(n=st.integers(min_value=2, max_value=6), reps=st.integers(min_value=1, max_value=3))
 @settings(max_examples=20, deadline=_DEADLINE)
 def test_ansatz_param_count(n: int, reps: int) -> None:
+    """The ansatz has two parameters per qubit and repetition."""
     K = build_knm_paper27(L=n)
     qc = knm_to_ansatz(K, reps=reps)
     assert qc.num_parameters == n * 2 * reps

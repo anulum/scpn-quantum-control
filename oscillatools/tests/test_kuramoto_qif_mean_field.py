@@ -54,6 +54,7 @@ def _field(rate: float, potential: float) -> NDArray[np.float64]:
 
 
 def test_rates_match_the_published_equations() -> None:
+    """The rates match the published firing-rate equations."""
     r, v = 0.8, -0.3
     dr, dv = qif_mean_field_rates(
         r, v, eta_bar=_ETA_BAR, delta=_DELTA, coupling=_COUPLING, current=_CURRENT
@@ -63,11 +64,13 @@ def test_rates_match_the_published_equations() -> None:
 
 
 def test_rates_reject_negative_delta() -> None:
+    """A negative heterogeneity is refused."""
     with pytest.raises(ValueError, match="delta must be non-negative"):
         qif_mean_field_rates(1.0, 0.0, eta_bar=0.0, delta=-1.0, coupling=0.0)
 
 
 def test_jacobian_matches_finite_difference() -> None:
+    """The Jacobian agrees with finite differences."""
     r, v = 0.8, -0.3
     eps = 1e-7
     numerical = np.array(
@@ -80,6 +83,7 @@ def test_jacobian_matches_finite_difference() -> None:
 
 
 def test_fixed_point_annihilates_the_field() -> None:
+    """The fixed point has a positive rate and annihilates the field."""
     r_star, v_star = qif_mean_field_fixed_point(
         eta_bar=_ETA_BAR, delta=_DELTA, coupling=_COUPLING, current=_CURRENT
     )
@@ -96,6 +100,7 @@ def test_fixed_point_annihilates_the_field() -> None:
     ],
 )
 def test_fixed_point_validation(kwargs: dict[str, Any], message: str) -> None:
+    """Invalid fixed-point arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "eta_bar": _ETA_BAR,
         "delta": _DELTA,
@@ -109,17 +114,20 @@ def test_fixed_point_validation(kwargs: dict[str, Any], message: str) -> None:
 
 def test_fixed_point_unbracketed_raises() -> None:
     # Strong negative excitability with no coupling has no positive-rate fixed point in range.
+    """Without a positive-rate fixed point the search raises."""
     with pytest.raises(ValueError, match="no positive-rate fixed point"):
         qif_mean_field_fixed_point(eta_bar=-1.0, delta=1.0, coupling=0.0, max_rate=0.01)
 
 
 def test_theta_qif_map_round_trips_and_matches_tangent() -> None:
+    """The theta-to-potential map round-trips and is the half-angle tangent."""
     theta = np.array([0.3, -1.2, 2.1], dtype=np.float64)
     assert qif_potential_from_theta(theta) == pytest.approx(np.tan(theta / 2.0))
     assert theta_from_qif_potential(qif_potential_from_theta(theta)) == pytest.approx(theta)
 
 
 def test_conformal_kuramoto_relation_round_trips() -> None:
+    """The conformal map to the Kuramoto order parameter round-trips."""
     r, v = 0.9, -0.2
     order_parameter = kuramoto_order_parameter_from_macro(r, v)
     assert abs(order_parameter) <= 1.0 + 1e-12
@@ -129,6 +137,7 @@ def test_conformal_kuramoto_relation_round_trips() -> None:
 
 
 def test_integrator_settles_to_the_fixed_point() -> None:
+    """Integration settles on the fixed point."""
     r_star, v_star = qif_mean_field_fixed_point(
         eta_bar=_ETA_BAR, delta=_DELTA, coupling=_COUPLING, current=_CURRENT
     )
@@ -157,6 +166,7 @@ def test_integrator_settles_to_the_fixed_point() -> None:
     ],
 )
 def test_integrator_validation(kwargs: dict[str, Any], message: str) -> None:
+    """Invalid integrator arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "eta_bar": _ETA_BAR,
         "delta": _DELTA,
@@ -171,6 +181,7 @@ def test_integrator_validation(kwargs: dict[str, Any], message: str) -> None:
 
 
 def test_differentiable_form_matches_finite_difference() -> None:
+    """The differentiable form's gradients agree with finite differences."""
     dt, n_steps = 0.01, 40
     r0, v0 = 0.5, -0.2
 
@@ -222,12 +233,12 @@ def test_differentiable_form_matches_finite_difference() -> None:
 def _theta_ensemble_order_parameter(
     rate0: float, potential0: float, dt: float, n_steps: int, n_neurons: int
 ) -> NDArray[np.complex128]:
-    """A direct large-N theta-neuron ensemble, returning the per-step order parameter ``⟨e^{iθ}⟩``.
+    r"""Simulate a direct large-N theta-neuron ensemble, returning the per-step order parameter ``⟨e^{iθ}⟩``.
 
     The excitabilities are placed on Lorentzian quantiles and the membrane potentials are
     initialised Lorentzian with centre ``potential0`` and half-width ``π rate0`` — the macroscopic
     state on the Ott–Antonsen manifold. Each neuron is driven by ``η_j + J r(t)`` with the
-    self-consistent population firing rate ``r = π^{-1}\\operatorname{Re} W`` recovered from the
+    self-consistent population firing rate ``r = π^{-1}\operatorname{Re} W`` recovered from the
     ensemble's own order parameter, so the ensemble is closed; the order parameter is a smooth
     population average (no spike binning), which makes the comparison robust at finite ``N``.
     """
@@ -256,6 +267,7 @@ def _theta_ensemble_order_parameter(
 
 
 def test_order_parameter_trajectory_matches_theta_ensemble() -> None:
+    """The reduced order parameter follows a large theta-neuron ensemble."""
     r_star, v_star = qif_mean_field_fixed_point(
         eta_bar=_ETA_BAR, delta=_DELTA, coupling=_COUPLING, current=_CURRENT
     )

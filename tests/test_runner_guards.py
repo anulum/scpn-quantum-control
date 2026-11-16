@@ -23,27 +23,34 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 class TestPreConnectGuards:
+    """Hardware-runner calls refused before connecting."""
+
     def test_transpile_before_connect(self) -> None:
+        """Transpiling before connecting is refused."""
         runner = HardwareRunner(use_simulator=True)
         with pytest.raises(RuntimeError, match="connect"):
             runner.transpile(QuantumCircuit(2))
 
     def test_transpile_with_dd_before_connect(self) -> None:
+        """Transpiling with decoupling before connecting is refused."""
         runner = HardwareRunner(use_simulator=True)
         with pytest.raises(RuntimeError, match="connect"):
             runner.transpile_with_dd(QuantumCircuit(2))
 
     def test_run_sampler_before_connect(self) -> None:
+        """Running the sampler before connecting is refused."""
         runner = HardwareRunner(use_simulator=True)
         with pytest.raises(RuntimeError, match="connect"):
             runner.run_sampler(QuantumCircuit(2))
 
     def test_run_estimator_before_connect(self) -> None:
+        """Running the estimator before connecting is refused."""
         runner = HardwareRunner(use_simulator=True)
         with pytest.raises(RuntimeError, match="connect"):
             runner.run_estimator(QuantumCircuit(2), [])
 
     def test_retrieve_job_before_connect(self) -> None:
+        """Retrieving a job before connecting is refused."""
         runner = HardwareRunner(use_simulator=True)
         with pytest.raises(RuntimeError, match="connect"):
             runner.retrieve_job("some_id")
@@ -55,7 +62,10 @@ class TestPreConnectGuards:
 
 
 class TestPostConnect:
+    """Hardware-runner calls after connecting."""
+
     def test_transpile_succeeds_after_connect(self) -> None:
+        """Transpiling succeeds after connecting."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         qc = QuantumCircuit(2)
@@ -66,6 +76,7 @@ class TestPostConnect:
         assert isa.num_qubits >= 2
 
     def test_backend_name_after_connect(self) -> None:
+        """After connecting the backend is the simulator."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         name = runner.backend_name
@@ -73,6 +84,7 @@ class TestPostConnect:
         assert "simulator" in name.lower() or "aer" in name.lower()
 
     def test_transpile_with_dd_after_connect(self) -> None:
+        """Transpiling with decoupling succeeds after connecting."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         qc = QuantumCircuit(2)
@@ -89,7 +101,10 @@ class TestPostConnect:
 
 
 class TestSaveResult:
+    """Saving results to disk."""
+
     def test_save_single_result(self, tmp_path: Path) -> None:
+        """A single result is saved with its job ID."""
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path))
         jr = JobResult(
             job_id="test_1",
@@ -104,6 +119,7 @@ class TestSaveResult:
         assert data["job_id"] == "test_1"
 
     def test_save_list_result(self, tmp_path: Path) -> None:
+        """A list of results is saved with provenance and calibration."""
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path))
         results = [
             JobResult(job_id=f"t{i}", backend_name="aer", experiment_name=f"e{i}")
@@ -121,6 +137,7 @@ class TestSaveResult:
         assert data["calibration"] == {"available": False, "reason": "not connected"}
 
     def test_auto_filename(self, tmp_path: Path) -> None:
+        """Without a name the result gets a JSON file name."""
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path))
         jr = JobResult(job_id="x", backend_name="y", experiment_name="z")
         path = runner.save_result(jr)

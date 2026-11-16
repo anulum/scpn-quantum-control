@@ -48,7 +48,6 @@ def _assert_whole_program_grad_matches_finite_difference(
     step: float = 1e-6,
 ) -> None:
     """Assert forward-AD and finite-difference gradients of ``objective`` agree."""
-
     values = np.asarray(values, dtype=np.float64)
     analytic = whole_program_grad(objective, values, trace=False)
     numeric = finite_difference_gradient(objective, values, step=step)
@@ -63,13 +62,11 @@ def _assert_whole_program_grad_matches_finite_difference(
 # --------------------------------------------------------------------------- #
 def _smooth_trig_poly(values: Any) -> object:
     """Straight-line arithmetic and scalar ufuncs, no control flow."""
-
     return np.sin(values[0]) * values[1] + np.exp(values[2]) - values[0] * values[2] ** 2
 
 
 def _loop_sum_of_squares(values: Any) -> object:
     """``for`` loop accumulating a smooth reduction."""
-
     total = values[0] * 0.0
     for value in values:
         total = total + value * value
@@ -78,7 +75,6 @@ def _loop_sum_of_squares(values: Any) -> object:
 
 def _loop_index_sin(values: Any) -> object:
     """``for`` loop mixing the enumerate index with a ufunc."""
-
     total = values[0] * 0.0
     for index, value in enumerate(values):
         total = total + index * np.sin(value)
@@ -87,7 +83,6 @@ def _loop_index_sin(values: Any) -> object:
 
 def _branch_program(values: Any) -> object:
     """Data-dependent branch; evaluated away from the ``0`` boundary."""
-
     if values[0] > 0.0:
         return np.sin(values[0]) + values[1] ** 2
     return np.cos(values[0]) - values[1] ** 2
@@ -95,7 +90,6 @@ def _branch_program(values: Any) -> object:
 
 def _alias_list_mutation(values: Any) -> object:
     """List aliasing and in-place mutation feeding the accumulator."""
-
     history = [values[0]]
     alias = history
     total = values[0] * 0.0
@@ -107,13 +101,11 @@ def _alias_list_mutation(values: Any) -> object:
 
 def _rational_log_reciprocal(values: Any) -> object:
     """Division, ``log`` and ``reciprocal`` in one expression."""
-
     return values[0] / (1.0 + values[1] * values[1]) + np.log(values[2]) + np.reciprocal(values[3])
 
 
 def _running_product(values: Any) -> object:
     """``for`` loop accumulating a running product."""
-
     product = values[0] * 0.0 + 1.0
     for value in values:
         product = product * value
@@ -122,25 +114,21 @@ def _running_product(values: Any) -> object:
 
 def _maximum_tanh(values: Any) -> object:
     """``maximum`` with a clear winner plus ``tanh``."""
-
     return np.maximum(values[0], values[1]) + np.tanh(values[2])
 
 
 def _nested_ufuncs(values: Any) -> object:
     """Nested composition of ``square``/``exp``/``log1p``/``sqrt``."""
-
     return np.log1p(np.square(values[0]) + np.exp(values[1])) + np.sqrt(values[2])
 
 
 def _inverse_trig(values: Any) -> object:
     """``arcsin``/``arccos`` evaluated inside their domain."""
-
     return np.arcsin(values[0]) * np.arccos(values[1]) + values[2] * values[2]
 
 
 def _while_loop_cos(values: Any) -> object:
     """``while`` loop with an integer counter driving indexing and a ufunc."""
-
     total = values[0] * 0.0
     count = 0
     while count < 3:
@@ -151,7 +139,6 @@ def _while_loop_cos(values: Any) -> object:
 
 def _variable_power(values: Any) -> object:
     """Variable exponent with a positive base plus a constant-exponent power."""
-
     return values[0] ** values[1] + values[2] ** 2.0
 
 
@@ -174,5 +161,6 @@ _WHOLE_PROGRAM_CASES: dict[str, tuple[Any, NDArray[np.float64]]] = {
 
 @pytest.mark.parametrize("name", sorted(_WHOLE_PROGRAM_CASES))
 def test_whole_program_grad_matches_finite_difference(name: str) -> None:
+    """Each whole-program gradient agrees with finite differences."""
     objective, values = _WHOLE_PROGRAM_CASES[name]
     _assert_whole_program_grad_matches_finite_difference(objective, values)

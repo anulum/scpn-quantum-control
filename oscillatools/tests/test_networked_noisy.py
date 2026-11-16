@@ -155,6 +155,7 @@ def test_default_settle_window_is_the_final_half() -> None:
 
 
 def test_rejects_non_vector_omega() -> None:
+    """Frequencies that are not a non-empty vector are refused."""
     theta0, _, coupling = _problem(4, 10)
     with pytest.raises(ValueError, match="omega must be a non-empty one-dimensional array"):
         networked_noisy_trajectory(
@@ -163,12 +164,14 @@ def test_rejects_non_vector_omega() -> None:
 
 
 def test_rejects_mismatched_theta0() -> None:
+    """Initial phases of the wrong shape are refused."""
     _, omega, coupling = _problem(5, 11)
     with pytest.raises(ValueError, match="theta0 must match omega shape"):
         networked_noisy_trajectory(np.zeros(4), omega, coupling, 0.1, dt=0.01, n_steps=10, seed=0)
 
 
 def test_rejects_non_square_coupling() -> None:
+    """A non-square coupling matrix is refused."""
     theta0, omega, _ = _problem(5, 12)
     with pytest.raises(ValueError, match="coupling must be a square matrix"):
         networked_noisy_trajectory(
@@ -177,24 +180,28 @@ def test_rejects_non_square_coupling() -> None:
 
 
 def test_rejects_negative_diffusion() -> None:
+    """A negative diffusion is refused."""
     theta0, omega, coupling = _problem(4, 13)
     with pytest.raises(ValueError, match="diffusion must be non-negative"):
         networked_noisy_trajectory(theta0, omega, coupling, -0.1, dt=0.01, n_steps=10, seed=0)
 
 
 def test_rejects_non_positive_dt() -> None:
+    """A non-positive time step is refused."""
     theta0, omega, coupling = _problem(4, 14)
     with pytest.raises(ValueError, match="dt must be positive"):
         networked_noisy_trajectory(theta0, omega, coupling, 0.1, dt=0.0, n_steps=10, seed=0)
 
 
 def test_rejects_non_positive_n_steps() -> None:
+    """A non-positive step count is refused."""
     theta0, omega, coupling = _problem(4, 15)
     with pytest.raises(ValueError, match="n_steps must be positive"):
         networked_noisy_trajectory(theta0, omega, coupling, 0.1, dt=0.01, n_steps=0, seed=0)
 
 
 def test_rejects_settle_steps_out_of_range() -> None:
+    """A settling window out of range is refused."""
     theta0, omega, coupling = _problem(4, 16)
     with pytest.raises(ValueError, match="settle_steps must be in"):
         networked_noisy_trajectory(
@@ -209,11 +216,13 @@ class TestNetworkedNoisyTierDispatch:
     """The Rust → Julia → Python floor tier chain for the noisy forward trajectory."""
 
     def test_public_call_records_a_served_tier(self) -> None:
+        """A public call records which tier served it."""
         theta0, omega, coupling = _problem(16, 20)
         networked_noisy_trajectory(theta0, omega, coupling, 0.5, dt=0.01, n_steps=100, seed=1)
         assert last_networked_noisy_trajectory_tier_used() in {"rust", "julia", "python"}
 
     def test_python_floor_tier_direct(self) -> None:
+        """The Python floor runs directly with the expected shapes."""
         theta0, omega, coupling = _problem(14, 21)
         noise = np.random.default_rng(1).standard_normal((120, 14))
         series, terminal = noisy_module._python_networked_noisy_trajectory(
@@ -223,6 +232,7 @@ class TestNetworkedNoisyTierDispatch:
         assert terminal.shape == (14,)
 
     def test_rust_tier_matches_python_floor(self) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         assert hasattr(engine, "kuramoto_noisy_trajectory")
         theta0, omega, coupling = _problem(32, 22)
@@ -237,6 +247,7 @@ class TestNetworkedNoisyTierDispatch:
         np.testing.assert_allclose(rust[1], floor[1], atol=1e-11)
 
     def test_julia_tier_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         theta0, omega, coupling = _problem(24, 23)
         noise = np.random.default_rng(4).standard_normal((250, 24))
@@ -250,6 +261,7 @@ class TestNetworkedNoisyTierDispatch:
         np.testing.assert_allclose(julia[1], floor[1], atol=1e-10)
 
     def test_rust_tier_raises_when_engine_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native tier raises."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         theta0, omega, coupling = _problem(8, 24)
         noise = np.random.default_rng(0).standard_normal((50, 8))
@@ -259,6 +271,7 @@ class TestNetworkedNoisyTierDispatch:
             )
 
     def test_rust_tier_raises_when_symbol_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel makes the native tier raise."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: object())
         theta0, omega, coupling = _problem(8, 25)
         noise = np.random.default_rng(0).standard_normal((50, 8))
@@ -270,6 +283,7 @@ class TestNetworkedNoisyTierDispatch:
     def test_fall_through_to_floor_when_engine_absent(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Without the engine the call falls through to the Python floor."""
         monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
         monkeypatch.setitem(sys.modules, "oscillatools.accel.julia", None)
         theta0, omega, coupling = _problem(10, 26)

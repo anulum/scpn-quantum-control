@@ -38,6 +38,7 @@ def _inputs() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_circuit_qed_program_contains_signed_exchange_terms() -> None:
+    """A circuit-QED program carries signed exchange terms."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -60,6 +61,7 @@ def test_circuit_qed_program_contains_signed_exchange_terms() -> None:
 
 
 def test_neutral_atom_program_adds_register_and_rydberg_radii() -> None:
+    """A neutral-atom program adds the register and Rydberg radii."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -77,6 +79,7 @@ def test_neutral_atom_program_adds_register_and_rydberg_radii() -> None:
 
 
 def test_continuous_variable_program_uses_rotation_and_beamsplitter_operations() -> None:
+    """A continuous-variable program uses rotations and beam splitters."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -95,6 +98,7 @@ def test_continuous_variable_program_uses_rotation_and_beamsplitter_operations()
 
 
 def test_backend_registry_exposes_analog_compiler() -> None:
+    """The backend registry exposes the analog compiler."""
     backend = be.get_backend("analog_kuramoto")
     assert backend.name == "analog_kuramoto"
     assert backend.is_available() is True
@@ -102,6 +106,7 @@ def test_backend_registry_exposes_analog_compiler() -> None:
 
 
 def test_kuramoto_core_facade_compiles_analog_program() -> None:
+    """The Kuramoto facade compiles an analog program."""
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega, metadata={"case": "facade"})
     program = compile_analog_program(
@@ -114,6 +119,7 @@ def test_kuramoto_core_facade_compiles_analog_program() -> None:
 
 
 def test_backend_validation_rejects_invalid_platform_and_limits() -> None:
+    """An unknown platform or a size above its limit is refused."""
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega)
     with pytest.raises(ValueError, match="Unknown analog platform"):
@@ -130,6 +136,7 @@ def test_backend_validation_rejects_invalid_platform_and_limits() -> None:
 
 
 def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase() -> None:
+    """The NumPy kernel drops zero edges and keeps the sign phase."""
     K, _omega = _inputs()
     K[1, 2] = K[2, 1] = 0.0
     rows, cols, strengths, phases, radii = _analog_terms_numpy(
@@ -147,6 +154,7 @@ def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase() -> None:
 
 
 def test_fim_feedback_terms_encode_collective_magnetisation_pair_term() -> None:
+    """The feedback terms encode the collective magnetisation pair term."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -168,6 +176,7 @@ def test_fim_feedback_terms_encode_collective_magnetisation_pair_term() -> None:
 
 
 def test_pulser_export_wraps_neutral_atom_program_without_submission() -> None:
+    """The Pulser export wraps a neutral-atom program and submits nothing."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -191,6 +200,7 @@ def test_pulser_export_wraps_neutral_atom_program_without_submission() -> None:
 
 
 def test_bloqade_export_uses_neutral_atom_ahs_shape() -> None:
+    """The Bloqade export uses the neutral-atom AHS shape."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -209,6 +219,7 @@ def test_bloqade_export_uses_neutral_atom_ahs_shape() -> None:
 
 
 def test_ibm_pulse_export_requires_circuit_qed_program() -> None:
+    """The IBM pulse export needs a circuit-QED program."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -227,6 +238,7 @@ def test_ibm_pulse_export_requires_circuit_qed_program() -> None:
 
 
 def test_provider_export_rejects_incompatible_platform_and_unknown_provider() -> None:
+    """An incompatible platform or unknown provider is refused."""
     K, omega = _inputs()
     circuit_qed_program = compile_analog_kuramoto(
         K,
@@ -250,6 +262,7 @@ def test_provider_export_rejects_incompatible_platform_and_unknown_provider() ->
 
 
 def test_provider_execution_plan_is_approval_and_calibration_gated() -> None:
+    """Execution needs both approval and calibration."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -285,6 +298,7 @@ def test_provider_execution_plan_is_approval_and_calibration_gated() -> None:
 
 
 def test_provider_execution_plan_rejects_missing_calibration_and_cloud_submission() -> None:
+    """Missing calibration and cloud submission are refused."""
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,

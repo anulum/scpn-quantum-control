@@ -45,30 +45,36 @@ def _cry_angles(qc: QuantumCircuit) -> list[float]:
 
 
 class TestBuildCircuit:
+    """Building the ancilla Lindblad circuit."""
+
     def test_returns_circuit(self) -> None:
+        """The builder returns a circuit."""
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert isinstance(qc, QuantumCircuit)
 
     def test_qubit_count(self) -> None:
-        """n system + 1 ancilla."""
+        """The circuit has the system qubits plus one ancilla."""
         K, omega = _system(4)
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert qc.num_qubits == 5  # 4 + 1
 
     def test_has_measurement(self) -> None:
+        """The circuit contains measurements."""
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega)
         op_names = [inst.operation.name for inst in qc.data]
         assert "measure" in op_names
 
     def test_has_reset(self) -> None:
+        """The circuit resets its ancilla."""
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega)
         op_names = [inst.operation.name for inst in qc.data]
         assert "reset" in op_names
 
     def test_n2_circuit(self) -> None:
+        """Two oscillators give three qubits."""
         K, omega = _system(2)
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert qc.num_qubits == 3
@@ -152,19 +158,24 @@ class TestBuildCircuit:
     def test_invalid_physical_parameters_are_rejected(
         self, kwargs: dict[str, Any], message: str
     ) -> None:
+        """Invalid physical parameters are refused with their reasons."""
         K, omega = _system(2)
 
         with pytest.raises(ValueError, match=message):
             build_ancilla_lindblad_circuit(K, omega, **kwargs)
 
     def test_single_dissipation_step(self) -> None:
+        """A single dissipation step builds a circuit."""
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega, n_dissipation_steps=1)
         assert isinstance(qc, QuantumCircuit)
 
 
 class TestCircuitStats:
+    """Statistics of the ancilla Lindblad circuit."""
+
     def test_output_keys(self) -> None:
+        """The statistics have their documented keys."""
         K, omega = _system(4)
         stats = ancilla_circuit_stats(K, omega)
         expected = {
@@ -180,6 +191,7 @@ class TestCircuitStats:
         assert set(stats.keys()) == expected
 
     def test_qubit_count(self) -> None:
+        """The statistics count system and ancilla qubits."""
         K, omega = _system(4)
         stats = ancilla_circuit_stats(K, omega)
         assert stats["n_qubits"] == 5
@@ -187,17 +199,20 @@ class TestCircuitStats:
         assert stats["n_ancilla"] == 1
 
     def test_resets_count(self) -> None:
+        """There is one reset per system qubit and step."""
         K, omega = _system(3)
         stats = ancilla_circuit_stats(K, omega, n_dissipation_steps=5)
         assert stats["n_resets"] == 3 * 5
 
     def test_zero_coupling_no_cx(self) -> None:
+        """Zero coupling needs no CX gates."""
         K = np.zeros((4, 4))
         omega = np.ones(4)
         stats = ancilla_circuit_stats(K, omega)
         assert stats["n_cx_gates"] == 0
 
     def test_total_gates_positive(self) -> None:
+        """The circuit has gates."""
         K, omega = _system(3)
         stats = ancilla_circuit_stats(K, omega)
         assert stats["total_gates"] > 0
