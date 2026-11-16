@@ -159,7 +159,7 @@ class FakeBackend:
         return FakeRunRequest(list(run_input), shots)
 
     def retrieve_job(self, job_id: str) -> Any:
-        """Retrieval is outside the submit-journal tests."""
+        """Refuse retrieval, which is outside the submit-journal tests."""
         raise AssertionError(f"unexpected retrieval of {job_id}")
 
 
@@ -371,7 +371,10 @@ def journal_job(
 
 
 class TestFrozenMatrix:
+    """The frozen circuit matrices and shot budgets."""
+
     def test_window_matrix_and_budget_are_exact(self) -> None:
+        """The window matrix has 32 main and 4 readout rows and 40,960 shots."""
         rows = script.build_powered_plan(
             layout=script.PRIMARY_LAYOUT,
             depths=script.CAMPAIGNS["window-variability"]["depths"],
@@ -383,6 +386,7 @@ class TestFrozenMatrix:
         assert sum(int(row["shots"]) for row in rows) == 40_960
 
     def test_powered_depth_ordering_matrix_and_budget_are_exact(self) -> None:
+        """The powered matrix has 48 parity and 4 readout rows and 57,344 shots."""
         campaign = script.CAMPAIGNS["depth-profile-powered-epoch"]
         rows = script.build_powered_plan(
             layout=script.PRIMARY_LAYOUT,
@@ -395,10 +399,13 @@ class TestFrozenMatrix:
 
 
 class TestDryRunAndBootstrap:
+    """Dry runs and loading of helpers and backends."""
+
     def test_real_helper_loads_and_missing_spec_fails(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """The circuit helper loads, and a missing helper fails."""
         helper = script._load_helper()
         assert callable(helper._build_circuit)
         monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *_args: None)
@@ -411,6 +418,7 @@ class TestDryRunAndBootstrap:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A dry run writes the full window and reuses unique circuits."""
         monkeypatch.setattr(script, "_load_helper", lambda: FakeHelper())
         monkeypatch.setattr(script, "_fake_backend", lambda: FakeDryBackend())
         monkeypatch.setattr(qiskit, "transpile", identity_transpile)
@@ -445,6 +453,7 @@ class TestDryRunAndBootstrap:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A dry run records and reports depth-envelope violations."""
         monkeypatch.setattr(script, "_load_helper", lambda: FakeHelper())
         monkeypatch.setattr(script, "_fake_backend", lambda: FakeDryBackend())
 
@@ -474,6 +483,7 @@ class TestDryRunAndBootstrap:
         monkeypatch: pytest.MonkeyPatch,
         tmp_path: Path,
     ) -> None:
+        """A powered dry run covers the frozen matrix."""
         monkeypatch.setattr(script, "_load_helper", lambda: FakeHelper())
         monkeypatch.setattr(script, "_fake_backend", lambda: FakeDryBackend())
         monkeypatch.setattr(qiskit, "transpile", identity_transpile)
@@ -536,6 +546,7 @@ class TestDryRunAndBootstrap:
         monkeypatch: pytest.MonkeyPatch,
         tmp_path: Path,
     ) -> None:
+        """Credentials and the live backend load, and missing credentials fail."""
         vault = tmp_path / "credentials.md"
         vault.write_text(
             "# Vault\n## Other\n- token: ignored\n## IQM Resonance\n"
@@ -567,6 +578,7 @@ class TestDryRunAndBootstrap:
             script._load_credentials()
 
     def test_dynamic_fake_backend_loading(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The fake backend loads."""
         backend = object()
         module = types.SimpleNamespace(IQMFakeGarnet=lambda: backend)
         monkeypatch.setattr(importlib, "import_module", lambda _name: module)
@@ -574,7 +586,10 @@ class TestDryRunAndBootstrap:
 
 
 class TestSubmissionJournal:
+    """The submission journal."""
+
     def test_payload_digest_serialises_installed_iqm_dataclass_shape(self) -> None:
+        """The payload digest is a stable SHA-256 of the SDK's dataclass shape."""
         circuit = FakeIQMCircuit(
             "native",
             (FakeIQMOperation("prx", ("QB1",), {"angle": 0.5}),),
@@ -592,6 +607,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A missing owner GO or a bad window range fails before any provider contact."""
         client, _ = hardware_boundary
         record = tmp_path / "submission.json"
         assert script.main(submit_args(record)) == 2
@@ -608,6 +624,7 @@ class TestSubmissionJournal:
         hardware_boundary: tuple[FakeClient, FakeBackend],
         tmp_path: Path,
     ) -> None:
+        """The first powered epoch binds the design and calibration before submitting."""
         client, _ = hardware_boundary
         calibration = tmp_path / "calibration.json"
         write_calibration(calibration, UUID(int=99))
@@ -654,6 +671,7 @@ class TestSubmissionJournal:
         mutate: Any,
         message: str,
     ) -> None:
+        """A powered epoch refuses an invalid calibration without provider contact."""
         client, _ = hardware_boundary
         calibration = tmp_path / "calibration.json"
         write_calibration(calibration, UUID(int=99))
@@ -673,6 +691,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A powered epoch refuses design-evidence reuse and payload drift without provider contact."""
         client, _ = hardware_boundary
         design = load_record(protocol.DESIGN_PATH)
         excluded_id = UUID(design["source"]["excluded_calibration_set_ids"][0])
@@ -696,6 +715,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A later powered epoch needs complete custody of the prior retrieval."""
         client, _ = hardware_boundary
         prior_calibration = tmp_path / "prior-calibration.json"
         prior_counts = tmp_path / "prior-counts.json"
@@ -735,6 +755,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A depth violation fails before the journal or any provider call."""
         client, _ = hardware_boundary
 
         def too_deep(circuit: FakeCircuit, **_kwargs: object) -> FakeCircuit:
@@ -755,6 +776,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A good run records each group, and a restart contacts nobody."""
         client, _ = hardware_boundary
         record_path = tmp_path / "submission.json"
         args = submit_args(record_path, "--i-have-owner-go")
@@ -783,6 +805,7 @@ class TestSubmissionJournal:
         hardware_boundary: tuple[FakeClient, FakeBackend],
         tmp_path: Path,
     ) -> None:
+        """A non-batch repetition submits only the main circuits."""
         client, _ = hardware_boundary
         record_path = tmp_path / "powered-rep2.json"
         assert (
@@ -814,6 +837,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """An interrupt leaves an ambiguous group, and a restart refuses to continue."""
         client, _ = hardware_boundary
         client.failures[2] = KeyboardInterrupt()
         record_path = tmp_path / "submission.json"
@@ -835,6 +859,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """An ambiguous failure is recovered to its exact job before the rest resumes."""
         client, _ = hardware_boundary
         client.failures[1] = TimeoutError("response lost")
         record_path = tmp_path / "submission.json"
@@ -894,6 +919,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Recovery refuses a mismatched payload and a duplicate binding."""
         client, _ = hardware_boundary
         client.failures[1] = TimeoutError("response lost")
         record_path = tmp_path / "submission.json"
@@ -924,6 +950,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A job id the provider returns twice fails closed."""
         client, _ = hardware_boundary
         client.forced_job_ids[2] = UUID(int=1)
         record_path = tmp_path / "submission.json"
@@ -942,6 +969,7 @@ class TestSubmissionJournal:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """An existing legacy record is never overwritten."""
         client, _ = hardware_boundary
         record_path = tmp_path / "submission.json"
         original = {"campaign": "legacy", "jobs": [{"job_id": "old"}]}
@@ -956,9 +984,12 @@ class TestSubmissionJournal:
 
 
 class TestJournalValidation:
+    """Validation of journal records and helpers."""
+
     def test_journal_lock_uses_linked_worktree_common_dir(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
+        """The journal lock lives in the common directory of a linked worktree."""
         common_dir = tmp_path / "main.git"
         worktree_admin = common_dir / "worktrees" / "candidate"
         worktree_admin.mkdir(parents=True)
@@ -975,6 +1006,7 @@ class TestJournalValidation:
             assert len(list(lock_root.glob("*.lock"))) == 1
 
     def test_journal_status_covers_all_state_classes(self) -> None:
+        """The journal status covers every class of job state."""
         assert script._journal_status([{"state": "prepared"}]) == "prepared"
         assert (
             script._journal_status([{"state": "submitted"}, {"state": "prepared"}])
@@ -983,11 +1015,14 @@ class TestJournalValidation:
         assert script._journal_status([{"state": "submitting"}]) == "recovery_required"
 
     def test_payload_digest_rejects_missing_parameter(self) -> None:
+        """A payload missing an execution parameter is refused."""
         parameters = types.SimpleNamespace(shots=1)
         with pytest.raises(ValueError, match="missing execution parameter"):
             script._payload_digest([FakeCircuit("x")], parameters)
 
     def test_json_default_supports_uuid_and_containers_and_rejects_unknown(self) -> None:
+        """The JSON encoder handles circuits, enums and UUIDs and refuses others."""
+
         class Mode(Enum):
             STRICT = "strict"
 
@@ -999,6 +1034,7 @@ class TestJournalValidation:
             script._json_default(object())
 
     def test_job_identifier_supports_method_and_rejects_empty(self) -> None:
+        """Job ids come from a method or attribute, and empty or non-UUID ids are refused."""
         valid = str(UUID(int=7))
         assert script._job_identifier(types.SimpleNamespace(job_id=lambda: valid)) == valid
         with pytest.raises(RuntimeError, match="without a durable identifier"):
@@ -1007,6 +1043,7 @@ class TestJournalValidation:
             script._job_identifier(types.SimpleNamespace(job_id="job-1"))
 
     def test_json_loader_rejects_non_object(self, tmp_path: Path) -> None:
+        """A JSON file that is not an object is refused."""
         path = tmp_path / "array.json"
         path.write_text("[]", encoding="utf-8")
         with pytest.raises(ValueError, match="must contain a JSON object"):
@@ -1055,10 +1092,12 @@ class TestJournalValidation:
         jobs: list[object],
         message: str,
     ) -> None:
+        """Malformed job states are refused."""
         with pytest.raises(ValueError, match=message):
             script._journal_jobs({"jobs": jobs})
 
     def test_group_plan_rejects_missing_group_and_field_drift(self) -> None:
+        """A plan missing a group or with drifted fields is refused."""
         main = journal_job()
         with pytest.raises(ValueError, match="job groups"):
             script._validate_group_plan({"jobs": [main]}, [main, {**main, "group_id": "readout"}])
@@ -1066,6 +1105,7 @@ class TestJournalValidation:
             script._validate_group_plan({"jobs": [main]}, [{**main, "shots": 2048}])
 
     def test_submission_group_builder_rejects_empty_and_invalid_request(self) -> None:
+        """No groups, or a group without circuits, is refused."""
         client = FakeClient()
         backend = FakeBackend(client)
         with pytest.raises(ValueError, match="no IQM submission groups"):
@@ -1093,6 +1133,7 @@ class TestJournalValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """An incomplete journal refuses retrieval before provider contact."""
         client, _ = hardware_boundary
         client.failures[1] = TimeoutError("response lost")
         record_path = tmp_path / "submission.json"
@@ -1122,6 +1163,7 @@ class TestJournalValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Payload drift in a partial journal is refused before submitting."""
         client, _ = hardware_boundary
         client.failures[2] = KeyboardInterrupt()
         record_path = tmp_path / "submission.json"
@@ -1138,6 +1180,8 @@ class TestJournalValidation:
 
 
 class TestRecoveryValidation:
+    """Validation of recovery requests."""
+
     def _ambiguous_record(
         self,
         hardware_boundary: tuple[FakeClient, FakeBackend],
@@ -1158,6 +1202,7 @@ class TestRecoveryValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Recovery refuses an invalid record and an unknown group."""
         bad = tmp_path / "bad.json"
         bad.write_text("{}", encoding="utf-8")
         args = [
@@ -1187,6 +1232,7 @@ class TestRecoveryValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Recovery refuses a group absent from a valid journal."""
         _client, _ = hardware_boundary
         record_path = tmp_path / "record.json"
         record_path.write_text(
@@ -1222,6 +1268,7 @@ class TestRecoveryValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Recovery refuses a non-UUID id and a failed provider lookup."""
         _client, record = self._ambiguous_record(hardware_boundary, tmp_path)
         base = [
             "recover",
@@ -1245,6 +1292,7 @@ class TestRecoveryValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Recovery is idempotent and refuses to rebind."""
         client, record = self._ambiguous_record(hardware_boundary, tmp_path)
         recovered_id = UUID(int=303)
         client.jobs[recovered_id] = FakeProviderJob(recovered_id, client.requests[1])
@@ -1271,6 +1319,7 @@ class TestRecoveryValidation:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Recovery refuses a job bound to another group."""
         _client, record_path = self._ambiguous_record(hardware_boundary, tmp_path)
         record = load_record(record_path)
         duplicate_id = str(UUID(int=305))
@@ -1296,12 +1345,15 @@ class TestRecoveryValidation:
 
 
 class TestRetrieval:
+    """Retrieving the results."""
+
     def test_complete_journal_polls_and_writes_counts(
         self,
         monkeypatch: pytest.MonkeyPatch,
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A complete journal is polled and its counts written."""
         record_path = tmp_path / "record.json"
         main_id = str(UUID(int=401))
         readout_id = str(UUID(int=402))
@@ -1363,6 +1415,7 @@ class TestRetrieval:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A legacy record without jobs, or a bad timeout, fails closed."""
         record_path = tmp_path / "legacy.json"
         record_path.write_text(json.dumps({"quantum_computer": "garnet", "jobs": []}))
         output = tmp_path / "counts.json"
