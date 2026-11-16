@@ -497,6 +497,34 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains design-only measurement planning
+  (`experimental/llm_qpu/contracts/experiment.py`, schemas
+  `measurement_spec.v1`, `sentinel_preparation.v1` and
+  `planned_experiment.v1`).
+  - `MeasurementSpec` names:
+    - the experiment ID;
+    - the sorted bases (X, Y, Z);
+    - the data and sentinel shots;
+    - complete logical-to-classical and display bit permutations;
+    - the register;
+    - the sentinel states (`zero`, `one`) and slots;
+    - the replicate and epoch IDs.
+  - `SentinelPreparation` is an all-zero preparation or RY(π) on every
+    wire, read out in Z for readout sanity, never for mitigation.
+  - `plan_measurements` turns a `CircuitPlanSet` into a `PlannedExperiment`:
+    - one data cell per plan and basis, keyed by sample, arm, basis,
+      replicate, epoch and circuit digest;
+    - one sentinel cell per state and slot;
+    - for each cell, a `MeasurementPlan` with no physical layout, whose
+      request digest the cell carries.
+  - A `PlannedExperiment` refuses duplicate keys and any cell whose
+    circuit, shots or bound request differ from its own measurement.
+    `validate_planned_experiment` replans every cell exactly.
+  - The standalone worker revalidates the compression and plan-set chain,
+    validates the spec independently and rebuilds every cell, measurement
+    and sentinel with its own code. The `plan_measurements` port now names
+    the function.
+
 - The experimental LLM-QPU lane gains a design-only `CircuitPlanSet` contract
   (`experimental/llm_qpu/contracts/plan_set.py`, schema
   `circuit_plan_set.v1`). It binds the reservoir and compressed-batch

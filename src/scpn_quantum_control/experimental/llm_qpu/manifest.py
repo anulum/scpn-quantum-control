@@ -31,6 +31,7 @@ _INVENTORY = (
     "llm_qpu/contracts/compressor.py",
     "llm_qpu/contracts/cost.py",
     "llm_qpu/contracts/evaluation.py",
+    "llm_qpu/contracts/experiment.py",
     "llm_qpu/contracts/features.py",
     "llm_qpu/contracts/latent.py",
     "llm_qpu/contracts/measurement.py",

@@ -121,7 +121,7 @@ PORTS: tuple[PortSpec, ...] = (
         ("CircuitPlanSet", "MeasurementSpec"),
         "PlannedExperiment",
         "offline_planning",
-        _NOT_BUILT,
+        "planning also needs the reservoir; use contracts.experiment.plan_measurements",
     ),
     PortSpec(
         "simulate",

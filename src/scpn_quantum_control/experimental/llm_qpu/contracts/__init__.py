@@ -46,6 +46,14 @@ if TYPE_CHECKING:
         paired_statistics,
         validate_evaluation_report,
     )
+    from .experiment import (
+        MeasurementSpec,
+        PlannedExperiment,
+        SentinelPreparation,
+        decode_planned_experiment,
+        plan_measurements,
+        validate_planned_experiment,
+    )
     from .features import (
         FeatureBatch,
         FeatureRow,
@@ -106,12 +114,15 @@ if TYPE_CHECKING:
         HEADER_SCHEMA,
         LATENT_SCHEMA,
         MEASUREMENT_PLAN_SCHEMA,
+        MEASUREMENT_SPEC_SCHEMA,
         MODEL_SCHEMA,
         OWNER_APPROVAL_SCHEMA,
+        PLANNED_EXPERIMENT_SCHEMA,
         PROVIDER_BATCH_RECEIPT_SCHEMA,
         RAW_RESULT_SET_SCHEMA,
         RESERVOIR_SCHEMA,
         SCHEMA,
+        SENTINEL_SCHEMA,
         SPLIT_SCHEMA,
         STATIC_PLAN_SCHEMA,
         STUDENT_ARTIFACT_SCHEMA,
@@ -380,6 +391,30 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
         "decode_circuit_plan_set",
     ),
+    "SentinelPreparation": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+        "SentinelPreparation",
+    ),
+    "MeasurementSpec": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+        "MeasurementSpec",
+    ),
+    "PlannedExperiment": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+        "PlannedExperiment",
+    ),
+    "plan_measurements": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+        "plan_measurements",
+    ),
+    "validate_planned_experiment": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+        "validate_planned_experiment",
+    ),
+    "decode_planned_experiment": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+        "decode_planned_experiment",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -462,6 +497,18 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "CIRCUIT_PLAN_SET_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "CIRCUIT_PLAN_SET_SCHEMA",
+    ),
+    "MEASUREMENT_SPEC_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "MEASUREMENT_SPEC_SCHEMA",
+    ),
+    "SENTINEL_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "SENTINEL_SCHEMA",
+    ),
+    "PLANNED_EXPERIMENT_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "PLANNED_EXPERIMENT_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -705,4 +752,13 @@ __all__ = (
     "build_circuit_plan_set",
     "validate_circuit_plan_set",
     "decode_circuit_plan_set",
+    "MEASUREMENT_SPEC_SCHEMA",
+    "SENTINEL_SCHEMA",
+    "PLANNED_EXPERIMENT_SCHEMA",
+    "SentinelPreparation",
+    "MeasurementSpec",
+    "PlannedExperiment",
+    "plan_measurements",
+    "validate_planned_experiment",
+    "decode_planned_experiment",
 )

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **878 modules** across **41 package families**
-- **4731 documented public module-level symbols**
+- **879 modules** across **41 package families**
+- **4737 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2476,6 +2476,16 @@ Paired evaluation reports locked to a frozen protocol, one split and one provide
 **Classes:** `SampleOutcome`, `EvaluationReport`
 
 **Functions:** `paired_statistics()`, `validate_evaluation_report()`, `decode_evaluation_report()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.experiment`
+
+Planned experiments: one cell per plan and basis plus readout sentinels, rebuilt exactly.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/experiment.py) · Public symbols: **6**
+
+**Classes:** `SentinelPreparation`, `MeasurementSpec`, `PlannedExperiment`
+
+**Functions:** `plan_measurements()`, `validate_planned_experiment()`, `decode_planned_experiment()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.features`
 

@@ -447,6 +447,42 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "decode_circuit_plan_set",
                 "scpn_quantum_control.experimental.llm_qpu.contracts.plan_set",
             ),
+            (
+                "MEASUREMENT_SPEC_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "SENTINEL_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "PLANNED_EXPERIMENT_SCHEMA",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+            ),
+            (
+                "SentinelPreparation",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+            ),
+            (
+                "MeasurementSpec",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+            ),
+            (
+                "PlannedExperiment",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+            ),
+            (
+                "plan_measurements",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+            ),
+            (
+                "validate_planned_experiment",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+            ),
+            (
+                "decode_planned_experiment",
+                "scpn_quantum_control.experimental.llm_qpu.contracts.experiment",
+            ),
         ),
     ),
 }

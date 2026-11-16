@@ -45,6 +45,9 @@ _STUDENT_SCHEMA = "scpn.experimental.llm_qpu.student_artifact.v1"
 _RESERVOIR_SCHEMA = "scpn.experimental.llm_qpu.reservoir_spec.v1"
 _STATIC_SCHEMA = "scpn.experimental.llm_qpu.static_circuit_plan.v1"
 _PLAN_SET_SCHEMA = "scpn.experimental.llm_qpu.circuit_plan_set.v1"
+_SPEC_SCHEMA = "scpn.experimental.llm_qpu.measurement_spec.v1"
+_SENTINEL_SCHEMA = "scpn.experimental.llm_qpu.sentinel_preparation.v1"
+_EXPERIMENT_SCHEMA = "scpn.experimental.llm_qpu.planned_experiment.v1"
 _TEACHER_ORIGINS = {
     "hardware_features": "provider_result",
     "simulated_features": "synthetic_classical",
@@ -2770,6 +2773,245 @@ def _roundtrip_circuit_plan_set(request: dict[str, object]) -> dict[str, object]
     }
 
 
+_SPEC_FIELDS = {
+    "schema",
+    "object_kind",
+    "experiment_id",
+    "bases",
+    "data_shots",
+    "logical_to_clbit",
+    "display_order_clbits",
+    "register_name",
+    "sentinel_states",
+    "sentinel_slots",
+    "sentinel_shots",
+    "replicate_id",
+    "planned_epoch_id",
+}
+
+
+def _validate_measurement_spec(spec: object, width: int) -> dict[str, object]:
+    if type(spec) is not dict or set(spec) != _SPEC_FIELDS:
+        raise ValueError("MeasurementSpec fields mismatch")
+    if spec["schema"] != _SPEC_SCHEMA or spec["object_kind"] != "measurement_spec":
+        raise ValueError("unknown MeasurementSpec schema")
+    for name in ("experiment_id", "register_name", "replicate_id", "planned_epoch_id"):
+        _target_text(spec[name], name)
+    for name, allowed in (
+        ("bases", ("X", "Y", "Z")),
+        ("sentinel_states", ("one", "zero")),
+        ("sentinel_slots", None),
+    ):
+        values = spec[name]
+        if type(values) is not list or not values or any(type(v) is not str for v in values):
+            raise ValueError(f"{name} must be a nonempty sorted unique list")
+        if values != sorted(set(values)) or (allowed and any(v not in allowed for v in values)):
+            raise ValueError(f"{name} must be a sorted unique list of known values")
+    for name in ("data_shots", "sentinel_shots"):
+        shots = spec[name]
+        if type(shots) is not int or not 0 < shots <= 1_000_000:
+            raise ValueError(f"{name} must be a bounded positive integer")
+    for name in ("logical_to_clbit", "display_order_clbits"):
+        bits = spec[name]
+        if (
+            type(bits) is not list
+            or any(type(b) is not int for b in bits)
+            or sorted(bits) != list(range(width))
+        ):
+            raise ValueError(f"{name} must be a complete permutation of the register")
+    return spec
+
+
+def _measurement_wire(
+    circuit: str, width: int, basis: str, shots: object, spec: dict[str, object]
+) -> dict[str, object]:
+    return {
+        "schema": _MEASUREMENT_SCHEMA,
+        "object_kind": "measurement_plan",
+        "circuit_plan_digest": circuit,
+        "n_qubits": width,
+        "basis_id": basis,
+        "shots": shots,
+        "observable_ids": _observables(basis, width),
+        "logical_to_clbit": spec["logical_to_clbit"],
+        "display_order_clbits": spec["display_order_clbits"],
+        "register_name": spec["register_name"],
+        "physical_qubits": None,
+        "pauli_label_convention": "logical_q0_low_index_v1",
+    }
+
+
+def _cell_wire(
+    key: dict[str, object], circuit: str, width: int, role: str, measurement: dict[str, object]
+) -> dict[str, object]:
+    return {
+        "schema": _CELL_SCHEMA,
+        "object_kind": "planned_cell",
+        "key": key,
+        "circuit_plan_digest": circuit,
+        "shots": measurement["shots"],
+        "measurement_width": width,
+        "role": role,
+        "metadata": {
+            "measurement_request_digest": hashlib.sha256(_canonical_bytes(measurement)).hexdigest()
+        },
+    }
+
+
+def _sentinel_wire(state: str, width: int) -> dict[str, object]:
+    gates = (
+        []
+        if state == "zero"
+        else [{"gate": "ry", "wire": w, "angle_hex": math.pi.hex()} for w in range(width)]
+    )
+    return {
+        "schema": _SENTINEL_SCHEMA,
+        "object_kind": "sentinel_preparation",
+        "state_id": state,
+        "n_qubits": width,
+        "initial_state": "zero",
+        "operations": gates,
+        "basis_id": "Z",
+        "purpose": "bounded_readout_sanity_not_mitigation",
+    }
+
+
+def _key_wire(*parts: object) -> dict[str, object]:
+    names = (
+        "experiment_id",
+        "source_sample_id",
+        "sequence_id",
+        "arm_id",
+        "basis_id",
+        "replicate_id",
+        "planned_epoch_id",
+        "parameter_binding_id",
+    )
+    return dict(zip(names, parts, strict=True))
+
+
+def _expected_experiment(
+    plans: list[Any], spec: dict[str, object], width: int
+) -> tuple[list[object], list[object], list[object]]:
+    cells: list[object] = []
+    measurements: list[object] = []
+    bases, states, slots = spec["bases"], spec["sentinel_states"], spec["sentinel_slots"]
+    if type(bases) is not list or type(states) is not list or type(slots) is not list:
+        raise ValueError("measurement spec lists must be lists")
+    epoch, replicate, experiment = (
+        spec["planned_epoch_id"],
+        spec["replicate_id"],
+        spec["experiment_id"],
+    )
+    for plan in plans:
+        circuit = hashlib.sha256(_canonical_bytes(plan)).hexdigest()
+        for basis in bases:
+            measurement = _measurement_wire(circuit, width, basis, spec["data_shots"], spec)
+            key = _key_wire(
+                experiment,
+                plan["sample_id"],
+                "contextual_single",
+                plan["arm_id"],
+                basis,
+                replicate,
+                epoch,
+                circuit,
+            )
+            measurements.append(measurement)
+            cells.append(_cell_wire(key, circuit, width, "data", measurement))
+    sentinels: list[object] = [_sentinel_wire(state, width) for state in states]
+    for state, sentinel in zip(states, sentinels, strict=True):
+        circuit = hashlib.sha256(_canonical_bytes(sentinel)).hexdigest()
+        for slot in slots:
+            measurement = _measurement_wire(circuit, width, "Z", spec["sentinel_shots"], spec)
+            key = _key_wire(
+                experiment,
+                f"sentinel_{state}",
+                "none",
+                "sentinel",
+                "Z",
+                f"slot_{slot}",
+                epoch,
+                circuit,
+            )
+            measurements.append(measurement)
+            cells.append(_cell_wire(key, circuit, width, "sentinel", measurement))
+    return sentinels, cells, measurements
+
+
+def _check_experiment_fields(
+    experiment: object, plan_set: dict[str, object], spec: dict[str, object]
+) -> dict[str, object]:
+    fields = {"schema", "object_kind", "plan_set_digest", "measurement_spec_digest"}
+    if type(experiment) is not dict or set(experiment) != fields | {
+        "sentinels",
+        "cells",
+        "measurements",
+        "header",
+    }:
+        raise ValueError("PlannedExperiment fields mismatch")
+    if (
+        experiment["schema"] != _EXPERIMENT_SCHEMA
+        or experiment["object_kind"] != "planned_experiment"
+    ):
+        raise ValueError("unknown PlannedExperiment schema")
+    digests = (
+        hashlib.sha256(_canonical_bytes(plan_set)).hexdigest(),
+        hashlib.sha256(_canonical_bytes(spec)).hexdigest(),
+    )
+    if (experiment["plan_set_digest"], experiment["measurement_spec_digest"]) != digests:
+        raise ValueError("the experiment names a different plan set or measurement spec")
+    header = plan_set["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    _validate_artifact_header(experiment, digests, origin)
+    return experiment
+
+
+def _roundtrip_planned_experiment(request: dict[str, object]) -> dict[str, object]:
+    chain = (
+        "task",
+        "split",
+        "model",
+        "latent",
+        "latent_base64",
+        "compressor",
+        "centering_base64",
+        "projection_base64",
+        "scales_base64",
+        "compressed",
+        "angles_base64",
+        "reservoir",
+        "plan_set",
+    )
+    if set(request) != {"op", *chain, "measurement_spec", "experiment"}:
+        raise ValueError("experiment request fields mismatch")
+    _roundtrip_circuit_plan_set(
+        {"op": "roundtrip_circuit_plan_set", **{n: request[n] for n in chain}}
+    )
+    plan_set, reservoir = request["plan_set"], request["reservoir"]
+    if type(plan_set) is not dict or type(reservoir) is not dict:
+        raise ValueError("plan set and reservoir must be objects")
+    width = int(str(reservoir["n_qubits"]))
+    spec = _validate_measurement_spec(request["measurement_spec"], width)
+    experiment = _check_experiment_fields(request["experiment"], plan_set, spec)
+    plans = plan_set["plans"]
+    if type(plans) is not list:
+        raise ValueError("plan-set plans must be a list")
+    expected = _expected_experiment(plans, spec, width)
+    if [experiment["sentinels"], experiment["cells"], experiment["measurements"]] != list(
+        expected
+    ):
+        raise ValueError("a cell, measurement or sentinel differs from its exact plan")
+    wire = _canonical_bytes(experiment)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "experiment": json.loads(wire),
+        "experiment_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -2800,6 +3042,10 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_student_artifact": (_roundtrip_student_artifact, (ValueError, TypeError, KeyError)),
     "roundtrip_circuit_plan_set": (
         _roundtrip_circuit_plan_set,
+        (ValueError, TypeError, KeyError, OverflowError),
+    ),
+    "roundtrip_planned_experiment": (
+        _roundtrip_planned_experiment,
         (ValueError, TypeError, KeyError, OverflowError),
     ),
 }

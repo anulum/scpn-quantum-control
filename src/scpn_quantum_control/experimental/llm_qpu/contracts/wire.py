@@ -43,6 +43,9 @@ FEATURE_BATCH_SCHEMA = "scpn.experimental.llm_qpu.feature_batch.v1"
 EVALUATION_REPORT_SCHEMA = "scpn.experimental.llm_qpu.evaluation_report.v1"
 STUDENT_ARTIFACT_SCHEMA = "scpn.experimental.llm_qpu.student_artifact.v1"
 CIRCUIT_PLAN_SET_SCHEMA = "scpn.experimental.llm_qpu.circuit_plan_set.v1"
+MEASUREMENT_SPEC_SCHEMA = "scpn.experimental.llm_qpu.measurement_spec.v1"
+SENTINEL_SCHEMA = "scpn.experimental.llm_qpu.sentinel_preparation.v1"
+PLANNED_EXPERIMENT_SCHEMA = "scpn.experimental.llm_qpu.planned_experiment.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -285,6 +288,7 @@ class ArtifactHeader:
             "evaluation_report",
             "student_artifact",
             "circuit_plan_set",
+            "planned_experiment",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")
