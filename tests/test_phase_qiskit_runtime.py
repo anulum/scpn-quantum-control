@@ -53,6 +53,7 @@ def _single_rotation_problem() -> tuple[QuantumCircuit, tuple[Parameter, ...], S
 
 
 def test_qiskit_maturity_audit_records_local_evidence_and_provider_gaps() -> None:
+    """The Qiskit maturity audit records local evidence and the provider gaps."""
     circuit, parameters, observable = _single_rotation_problem()
 
     result = run_qiskit_maturity_audit(
@@ -151,6 +152,7 @@ def _qiskit_runtime_qpu_execution_artifact(
 
 
 def test_qiskit_maturity_audit_accepts_runtime_primitive_artifact_without_promotion() -> None:
+    """A runtime primitive artefact is accepted without promotion."""
     circuit, parameters, observable = _single_rotation_problem()
     artifact = _qiskit_runtime_primitive_artifact()
 
@@ -178,6 +180,7 @@ def test_qiskit_maturity_audit_accepts_runtime_primitive_artifact_without_promot
 
 
 def test_qiskit_maturity_audit_accepts_runtime_qpu_execution_without_promotion() -> None:
+    """A runtime QPU execution artefact is accepted without promotion."""
     circuit, parameters, observable = _single_rotation_problem()
     artifact = _qiskit_runtime_qpu_execution_artifact()
 
@@ -208,6 +211,7 @@ def test_qiskit_maturity_audit_accepts_runtime_qpu_execution_without_promotion()
 
 
 def test_qiskit_runtime_qpu_execution_artifact_accepts_sampler_without_observable() -> None:
+    """A Sampler execution artefact needs no observable."""
     artifact = _qiskit_runtime_qpu_execution_artifact(
         primitive_name="sampler",
         observable_fingerprint=None,
@@ -219,6 +223,7 @@ def test_qiskit_runtime_qpu_execution_artifact_accepts_sampler_without_observabl
 
 
 def test_build_qiskit_runtime_qpu_execution_artifact_from_estimator_capture() -> None:
+    """An Estimator capture builds a hardware execution artefact."""
     artifact = build_qiskit_runtime_qpu_execution_artifact(
         artifact_id=" qiskit-runtime-qpu-builder-20260619 ",
         provider_name="ibm_quantum",
@@ -246,6 +251,7 @@ def test_build_qiskit_runtime_qpu_execution_artifact_from_estimator_capture() ->
 
 
 def test_build_qiskit_runtime_qpu_execution_artifact_from_sampler_capture() -> None:
+    """A Sampler capture builds an artefact with its shots and no observable."""
     artifact = build_qiskit_runtime_qpu_execution_artifact(
         artifact_id="qiskit-runtime-qpu-sampler-builder-20260619",
         provider_name="ibm_quantum",
@@ -272,6 +278,7 @@ def test_build_qiskit_runtime_qpu_execution_artifact_from_sampler_capture() -> N
 
 
 def test_build_qiskit_runtime_qpu_execution_artifact_rejects_sampler_observable() -> None:
+    """A Sampler capture with an observable is refused."""
     with pytest.raises(ValueError, match="observable_fingerprint"):
         build_qiskit_runtime_qpu_execution_artifact(
             artifact_id="qiskit-runtime-qpu-sampler-builder-20260619",
@@ -295,6 +302,7 @@ def test_build_qiskit_runtime_qpu_execution_artifact_rejects_sampler_observable(
 
 
 def test_build_qiskit_runtime_qpu_execution_artifact_rejects_simulator_capture() -> None:
+    """A simulator capture is refused as not a live QPU execution."""
     with pytest.raises(ValueError, match="live QPU execution"):
         build_qiskit_runtime_qpu_execution_artifact(
             artifact_id="qiskit-runtime-qpu-builder-20260619",
@@ -420,11 +428,13 @@ def test_qiskit_runtime_qpu_execution_artifact_rejects_malformed_evidence(
     factory: Callable[[], QiskitRuntimeQPUExecutionArtifact],
     match: str,
 ) -> None:
+    """Malformed execution evidence is refused with its reason."""
     with pytest.raises(ValueError, match=match):
         factory()
 
 
 def test_qiskit_runtime_primitive_artifact_rejects_hardware_execution_claim() -> None:
+    """A primitive artefact may not claim hardware execution."""
     with pytest.raises(ValueError, match="must not claim hardware execution"):
         QiskitRuntimePrimitiveExecutionArtifact(
             artifact_id="qiskit-runtime-estimator-20260616",
@@ -495,6 +505,7 @@ def _qiskit_calibration_comparison_artifact(
 def test_qiskit_maturity_audit_accepts_paired_qpu_raw_count_and_calibration_without_promotion() -> (
     None
 ):
+    """Paired QPU, raw-count and calibration artefacts are accepted without promotion."""
     circuit, parameters, observable = _single_rotation_problem()
     qpu_artifact = _qiskit_runtime_qpu_execution_artifact()
     raw_count_artifact = _qiskit_raw_count_replay_artifact()
@@ -652,6 +663,7 @@ def _qiskit_provider_gradient_workflow_suite() -> tuple[
 
 
 def test_qiskit_provider_evidence_bundle_keeps_gradient_workflow_gate_blocked() -> None:
+    """An evidence bundle without gradient workflows keeps that gate blocked."""
     circuit, parameters, observable = _single_rotation_problem()
     bundle = _qiskit_qpu_provider_evidence_bundle()
 
@@ -688,6 +700,7 @@ def test_qiskit_provider_evidence_bundle_keeps_gradient_workflow_gate_blocked() 
 
 
 def test_qiskit_gradient_workflow_suite_clears_provider_workflow_gate() -> None:
+    """A gradient workflow suite clears the provider workflow gate."""
     circuit, parameters, observable = _single_rotation_problem()
     bundle = _qiskit_qpu_provider_evidence_bundle()
     gradient_artifacts = _qiskit_provider_gradient_workflow_suite()
@@ -833,6 +846,7 @@ def test_qiskit_gradient_workflow_artifact_rejects_invalid_method_metadata(
 
 
 def test_qiskit_gradient_workflow_suite_rejects_missing_method() -> None:
+    """A suite missing a gradient method is refused."""
     circuit, parameters, observable = _single_rotation_problem()
     bundle = _qiskit_qpu_provider_evidence_bundle()
 
@@ -1028,6 +1042,7 @@ def test_qiskit_gradient_workflow_artifact_rejects_parameter_digest_drift() -> N
 
 
 def test_qiskit_gradient_workflow_artifact_rejects_sampler_observable() -> None:
+    """A Sampler gradient artefact with an observable is refused."""
     with pytest.raises(ValueError, match="observable_fingerprint"):
         _qiskit_provider_gradient_workflow_artifact(
             "spsa",
@@ -1037,11 +1052,13 @@ def test_qiskit_gradient_workflow_artifact_rejects_sampler_observable() -> None:
 
 
 def test_qiskit_gradient_workflow_artifact_rejects_unknown_method() -> None:
+    """An unknown gradient method is refused."""
     with pytest.raises(ValueError, match="gradient_method"):
         _qiskit_provider_gradient_workflow_artifact("adjoint")
 
 
 def test_qiskit_provider_evidence_bundle_keeps_benchmark_gate_blocked_without_benchmark() -> None:
+    """Without isolated benchmarks the benchmark gate stays blocked."""
     circuit, parameters, observable = _single_rotation_problem()
     bundle = _qiskit_qpu_provider_evidence_bundle(isolated_benchmark_artifact_id=None)
 
@@ -1060,6 +1077,7 @@ def test_qiskit_provider_evidence_bundle_keeps_benchmark_gate_blocked_without_be
 
 
 def test_qiskit_provider_evidence_bundle_rejects_mismatched_raw_count_chain() -> None:
+    """A raw-count chain with a mismatched job is refused."""
     with pytest.raises(ValueError, match="raw_count_replay_artifact.job_id"):
         build_qiskit_runtime_qpu_provider_evidence_bundle(
             artifact_id="qiskit-provider-evidence-bundle-20260619",
@@ -1098,6 +1116,7 @@ def test_qiskit_maturity_audit_rejects_stale_provider_evidence_bundle() -> None:
 
 
 def test_qiskit_maturity_audit_rejects_bundle_mixed_with_individual_qpu_artifacts() -> None:
+    """A bundle mixed with individual QPU artefacts is refused."""
     circuit, parameters, observable = _single_rotation_problem()
 
     with pytest.raises(ValueError, match="qpu_provider_evidence_bundle"):
@@ -1113,6 +1132,7 @@ def test_qiskit_maturity_audit_rejects_bundle_mixed_with_individual_qpu_artifact
 
 
 def test_qiskit_maturity_audit_rejects_unpaired_raw_count_replay_artifact() -> None:
+    """A raw-count replay artefact without its execution is refused."""
     circuit, parameters, observable = _single_rotation_problem()
 
     with pytest.raises(ValueError, match="raw-count replay artefact requires"):
@@ -1127,6 +1147,7 @@ def test_qiskit_maturity_audit_rejects_unpaired_raw_count_replay_artifact() -> N
 
 
 def test_qiskit_maturity_audit_rejects_mismatched_raw_count_replay_artifact() -> None:
+    """A raw-count replay artefact for another job is refused."""
     circuit, parameters, observable = _single_rotation_problem()
 
     with pytest.raises(ValueError, match="raw_count_replay_artifact.job_id"):
@@ -1144,6 +1165,7 @@ def test_qiskit_maturity_audit_rejects_mismatched_raw_count_replay_artifact() ->
 
 
 def test_qiskit_maturity_audit_rejects_unpaired_calibration_comparison_artifact() -> None:
+    """A calibration comparison without its execution is refused."""
     circuit, parameters, observable = _single_rotation_problem()
 
     with pytest.raises(ValueError, match="calibration comparison artefact requires"):
@@ -1158,6 +1180,7 @@ def test_qiskit_maturity_audit_rejects_unpaired_calibration_comparison_artifact(
 
 
 def test_qiskit_maturity_audit_rejects_mismatched_calibration_comparison_artifact() -> None:
+    """A calibration comparison for another circuit is refused."""
     circuit, parameters, observable = _single_rotation_problem()
 
     with pytest.raises(ValueError, match="calibration_comparison_artifact.circuit_fingerprint"):
@@ -1175,6 +1198,7 @@ def test_qiskit_maturity_audit_rejects_mismatched_calibration_comparison_artifac
 
 
 def test_qiskit_raw_count_replay_artifact_rejects_non_live_counts() -> None:
+    """Raw counts that do not cite a hardware execution are refused."""
     with pytest.raises(ValueError, match="must cite hardware execution"):
         QiskitRawCountReplayArtifact(
             artifact_id="qiskit-raw-count-replay-20260616",
@@ -1194,6 +1218,7 @@ def test_qiskit_raw_count_replay_artifact_rejects_non_live_counts() -> None:
 
 
 def test_qiskit_calibration_comparison_artifact_rejects_failed_tolerance() -> None:
+    """A calibration comparison outside tolerance is refused."""
     with pytest.raises(ValueError, match="max_abs_error must be within tolerance"):
         QiskitCalibrationStatevectorComparisonArtifact(
             artifact_id="qiskit-calibration-comparison-20260616",

@@ -56,7 +56,10 @@ def _finite_difference_jacobian(
 
 
 class TestPythonNetworkedForceFloor:
+    """The Python floor of the networked force."""
+
     def test_matches_closed_form(self) -> None:
+        """The force matches its closed form."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         coupling = _random_coupling(7, 5, symmetric=False)
@@ -76,6 +79,7 @@ class TestPythonNetworkedForceFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_recovers_mean_field_for_all_to_all_coupling(self, n: int, seed: int) -> None:
+        """All-to-all coupling recovers the mean field."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         strength = 1.7
@@ -88,6 +92,7 @@ class TestPythonNetworkedForceFloor:
         )
 
     def test_independent_of_coupling_diagonal(self) -> None:
+        """The force ignores the coupling diagonal."""
         rng = np.random.default_rng(7)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = _random_coupling(6, 3, symmetric=False)
@@ -99,15 +104,20 @@ class TestPythonNetworkedForceFloor:
         )
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 4"):
             nk._python_networked_kuramoto_force(np.zeros(4), np.zeros((4, 3)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty force."""
         assert nk._python_networked_kuramoto_force(np.array([]), np.zeros((0, 0))).shape == (0,)
 
 
 class TestPythonNetworkedJacobianFloor:
+    """The Python floor of the networked Jacobian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Jacobian matches its closed form."""
         rng = np.random.default_rng(12)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = _random_coupling(6, 8, symmetric=False)
@@ -126,6 +136,7 @@ class TestPythonNetworkedJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference_of_force(self, n: int, symmetric: bool, seed: int) -> None:
+        """The Jacobian agrees with finite differences of the force."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=symmetric)
@@ -142,6 +153,7 @@ class TestPythonNetworkedJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rows_sum_to_zero(self, n: int, symmetric: bool, seed: int) -> None:
+        """Each Jacobian row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 2, symmetric=symmetric)
@@ -154,6 +166,7 @@ class TestPythonNetworkedJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_symmetric_for_symmetric_coupling(self, n: int, seed: int) -> None:
+        """A symmetric coupling gives a symmetric Jacobian."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 3, symmetric=True)
@@ -161,6 +174,7 @@ class TestPythonNetworkedJacobianFloor:
         np.testing.assert_allclose(jacobian, jacobian.T, atol=1e-14)
 
     def test_independent_of_coupling_diagonal(self) -> None:
+        """The Jacobian ignores the coupling diagonal."""
         rng = np.random.default_rng(4)
         theta = rng.uniform(-math.pi, math.pi, size=5)
         coupling = _random_coupling(5, 6, symmetric=False)
@@ -172,10 +186,12 @@ class TestPythonNetworkedJacobianFloor:
         )
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             nk._python_networked_kuramoto_jacobian(np.zeros(3), np.zeros((2, 2)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty Jacobian."""
         assert nk._python_networked_kuramoto_jacobian(np.array([]), np.zeros((0, 0))).shape == (
             0,
             0,
@@ -183,6 +199,8 @@ class TestPythonNetworkedJacobianFloor:
 
 
 class TestRustNetworkedTier:
+    """The native networked tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -190,6 +208,7 @@ class TestRustNetworkedTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, symmetric: bool, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "networked_kuramoto_force", None)):
             pytest.skip("scpn_quantum_engine.networked_kuramoto_force unavailable")
@@ -208,16 +227,20 @@ class TestRustNetworkedTier:
         )
 
     def test_rust_force_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native force raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             nk._rust_networked_kuramoto_force(np.zeros(3), np.zeros((3, 3)))
 
     def test_rust_jacobian_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Jacobian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             nk._rust_networked_kuramoto_jacobian(np.zeros(3), np.zeros((3, 3)))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -235,7 +258,10 @@ class TestRustNetworkedTier:
 
 
 class TestJuliaNetworkedTier:
+    """The Julia networked tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             networked_kuramoto_force as julia_force,
@@ -261,12 +287,15 @@ class TestJuliaNetworkedTier:
 
 
 class TestNetworkedDispatch:
+    """Dispatch across the networked tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=16),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=False)
@@ -283,6 +312,7 @@ class TestNetworkedDispatch:
                 np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected shapes."""
         from oscillatools.accel import (
             last_networked_kuramoto_force_tier_used,
             last_networked_kuramoto_jacobian_tier_used,
@@ -301,5 +331,6 @@ class TestNetworkedDispatch:
         assert last_networked_kuramoto_jacobian_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert nk._NETWORKED_KURAMOTO_FORCE_CHAIN[-1][0] == "python"
         assert nk._NETWORKED_KURAMOTO_JACOBIAN_CHAIN[-1][0] == "python"

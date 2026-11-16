@@ -55,6 +55,7 @@ def _joint_flat(phases, coupling, omega, rate):
 
 
 def test_equilibrium_is_cosine_of_phase_difference() -> None:
+    """The Hebbian equilibrium is the cosine of each phase difference."""
     phases = np.array([0.0, 0.5, 1.3, 2.1])
     equilibrium = hebbian_coupling_equilibrium(phases)
     expected = np.cos(phases[None, :] - phases[:, None])
@@ -64,16 +65,19 @@ def test_equilibrium_is_cosine_of_phase_difference() -> None:
 
 
 def test_equilibrium_rejects_non_vector_phases() -> None:
+    """Phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hebbian_coupling_equilibrium(np.zeros((2, 2)))
 
 
 def test_equilibrium_rejects_empty_phases() -> None:
+    """Empty phases are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hebbian_coupling_equilibrium(np.empty(0))
 
 
 def test_plasticity_rate_matches_formula() -> None:
+    """The plasticity rate matches its formula."""
     phases = np.array([0.1, 0.9, 1.7])
     coupling = np.array([[0.0, 0.3, -0.2], [0.4, 0.0, 0.1], [-0.5, 0.2, 0.0]])
     rate = 0.7
@@ -83,6 +87,7 @@ def test_plasticity_rate_matches_formula() -> None:
 
 
 def test_plasticity_vanishes_at_equilibrium() -> None:
+    """Plasticity vanishes at the equilibrium."""
     phases = np.array([0.2, 1.1, 2.4, 0.8])
     coupling = hebbian_coupling_equilibrium(phases)
     rate_matrix = hebbian_plasticity_rate(phases, coupling, plasticity_rate=1.5)
@@ -90,16 +95,19 @@ def test_plasticity_vanishes_at_equilibrium() -> None:
 
 
 def test_plasticity_rejects_negative_rate() -> None:
+    """A negative plasticity rate is refused."""
     with pytest.raises(ValueError, match="plasticity_rate must be non-negative"):
         hebbian_plasticity_rate(np.zeros(3), np.zeros((3, 3)), plasticity_rate=-0.1)
 
 
 def test_plasticity_rejects_wrong_coupling_shape() -> None:
+    """A coupling of the wrong shape is refused."""
     with pytest.raises(ValueError, match="coupling must have shape"):
         hebbian_plasticity_rate(np.zeros(3), np.zeros((3, 4)), plasticity_rate=0.5)
 
 
 def test_plasticity_rejects_non_vector_phases() -> None:
+    """Phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         hebbian_plasticity_rate(np.zeros((2, 2)), np.zeros((4, 4)), plasticity_rate=0.5)
 
@@ -108,6 +116,7 @@ def test_plasticity_rejects_non_vector_phases() -> None:
 
 
 def test_vector_field_combines_force_and_plasticity() -> None:
+    """The vector field combines the network force and the plasticity."""
     phases = np.array([0.0, 0.7, 1.5])
     coupling = np.array([[0.0, 0.4, -0.1], [0.2, 0.0, 0.3], [0.1, -0.2, 0.0]])
     omega = np.array([0.5, -0.3, 0.2])
@@ -122,6 +131,7 @@ def test_vector_field_combines_force_and_plasticity() -> None:
 
 
 def test_vector_field_rejects_mismatched_omega() -> None:
+    """Frequencies of the wrong shape are refused."""
     with pytest.raises(ValueError, match="omega must have shape"):
         adaptive_vector_field(
             np.zeros(3), np.zeros((3, 3)), np.zeros(2), _networked_force, _hebbian(0.5)
@@ -129,6 +139,7 @@ def test_vector_field_rejects_mismatched_omega() -> None:
 
 
 def test_vector_field_rejects_wrong_coupling_shape() -> None:
+    """A coupling of the wrong shape is refused."""
     with pytest.raises(ValueError, match="coupling must have shape"):
         adaptive_vector_field(
             np.zeros(3), np.zeros((3, 2)), np.zeros(3), _networked_force, _hebbian(0.5)
@@ -139,6 +150,7 @@ def test_vector_field_rejects_wrong_coupling_shape() -> None:
 
 
 def test_jacobian_matches_central_difference() -> None:
+    """The joint Jacobian agrees with central differences."""
     rng = np.random.default_rng(7)
     count, rate = 5, 0.3
     phases = rng.uniform(0.0, 2.0 * np.pi, count)
@@ -164,6 +176,7 @@ def test_jacobian_matches_central_difference() -> None:
 
 
 def test_jacobian_phase_block_equals_networked_jacobian() -> None:
+    """The phase block equals the networked Jacobian."""
     rng = np.random.default_rng(11)
     count = 4
     phases = rng.uniform(0.0, 2.0 * np.pi, count)
@@ -173,6 +186,7 @@ def test_jacobian_phase_block_equals_networked_jacobian() -> None:
 
 
 def test_jacobian_coupling_block_is_minus_rate_identity() -> None:
+    """The coupling block is minus the rate times the identity."""
     count, rate = 3, 0.8
     phases = np.array([0.2, 1.0, 2.5])
     coupling = np.zeros((count, count))
@@ -182,6 +196,7 @@ def test_jacobian_coupling_block_is_minus_rate_identity() -> None:
 
 
 def test_jacobian_has_full_joint_dimension() -> None:
+    """The Jacobian spans the phases and couplings together."""
     count = 4
     analytic = hebbian_adaptive_jacobian(
         np.zeros(count), np.zeros((count, count)), plasticity_rate=0.5
@@ -190,11 +205,13 @@ def test_jacobian_has_full_joint_dimension() -> None:
 
 
 def test_jacobian_rejects_negative_rate() -> None:
+    """A negative plasticity rate is refused."""
     with pytest.raises(ValueError, match="plasticity_rate must be non-negative"):
         hebbian_adaptive_jacobian(np.zeros(3), np.zeros((3, 3)), plasticity_rate=-1.0)
 
 
 def test_jacobian_rejects_wrong_coupling_shape() -> None:
+    """A coupling of the wrong shape is refused."""
     with pytest.raises(ValueError, match="coupling must have shape"):
         hebbian_adaptive_jacobian(np.zeros(3), np.zeros((2, 2)), plasticity_rate=0.5)
 
@@ -203,6 +220,7 @@ def test_jacobian_rejects_wrong_coupling_shape() -> None:
 
 
 def test_trajectory_accessors_return_final_state() -> None:
+    """The accessors return the final phases and coupling."""
     times = np.arange(3.0)
     phases = np.arange(6.0).reshape(3, 2)
     couplings = np.arange(12.0).reshape(3, 2, 2)
@@ -212,6 +230,7 @@ def test_trajectory_accessors_return_final_state() -> None:
 
 
 def test_trajectory_hebbian_gap_is_zero_at_equilibrium() -> None:
+    """At equilibrium the Hebbian gap is zero."""
     phases = np.array([[0.0, 0.6, 1.4]])
     coupling = hebbian_coupling_equilibrium(phases[0])[None, ...]
     traj = AdaptiveTrajectory(np.array([0.0]), phases, coupling, np.ones(1))
@@ -222,6 +241,7 @@ def test_trajectory_hebbian_gap_is_zero_at_equilibrium() -> None:
 
 
 def test_integrator_validation() -> None:
+    """Invalid integrator inputs are refused with their reasons."""
     omega = np.zeros(3)
     coupling = np.zeros((3, 3))
     with pytest.raises(ValueError, match="omega must have shape"):
@@ -249,6 +269,7 @@ def test_integrator_validation() -> None:
 
 
 def test_integrator_shapes_and_initial_sample() -> None:
+    """The trajectory has one sample per step plus the start."""
     count, n_steps = 4, 20
     rng = np.random.default_rng(1)
     phases = rng.uniform(0.0, 2.0 * np.pi, count)
@@ -267,6 +288,7 @@ def test_integrator_shapes_and_initial_sample() -> None:
 
 def test_zero_plasticity_freezes_coupling() -> None:
     # With ε = 0 the weights do not adapt: the coupling matrix is constant through the run.
+    """Zero plasticity keeps the coupling fixed."""
     count = 4
     rng = np.random.default_rng(2)
     coupling = rng.normal(0.0, 0.5, (count, count))
@@ -286,6 +308,7 @@ def test_zero_plasticity_freezes_coupling() -> None:
 def test_network_learns_hebbian_structure() -> None:
     # Roadmap acceptance: from a random coupling the weights self-organise onto the Hebbian
     # equilibrium K_ij → cos(θ_j − θ_i) bounded in [−1, 1].
+    """The network learns the Hebbian structure within [-1, 1]."""
     count = 5
     rng = np.random.default_rng(0)
     coupling = rng.normal(0.0, 0.3, (count, count))
@@ -306,6 +329,7 @@ def test_network_learns_hebbian_structure() -> None:
 
 def test_two_oscillator_phase_relations_set_weight_sign() -> None:
     # A frozen-phase Hebbian relaxation: an in-phase pair learns +1, an anti-phase pair learns −1.
+    """An in-phase pair learns weight +1 and an antiphase pair -1."""
     in_phase = np.array([0.3, 0.3])
     anti_phase = np.array([0.3, 0.3 + np.pi])
     zero_coupling = np.zeros((2, 2))
@@ -332,6 +356,7 @@ def test_two_oscillator_phase_relations_set_weight_sign() -> None:
 
 
 def test_run_is_deterministic() -> None:
+    """Two runs are identical."""
     count = 3
     rng = np.random.default_rng(5)
     phases = rng.uniform(0.0, 2.0 * np.pi, count)
