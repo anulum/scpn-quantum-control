@@ -243,6 +243,7 @@ class TestInformationTheoretic:
     """Test Φ increase under FIM."""
 
     def test_phi_increases_with_fim(self) -> None:
+        """Raising the FIM strength raises phi by at least 30 per cent."""
         path = RESULTS_DIR / "information_theoretic_2026-03-29.json"
         data = json.loads(path.read_text())
         phi_data = data["phi_data"]
@@ -297,6 +298,7 @@ class TestTopologyUniversality:
     """Test FIM works on all topologies."""
 
     def test_all_topologies_improve(self) -> None:
+        """Every tested topology gains from the FIM term."""
         path = RESULTS_DIR / "topology_universality_2026-03-29.json"
         data = json.loads(path.read_text())
         for entry in data["data"]:
@@ -419,10 +421,12 @@ class TestTopologicalDefects:
     """Test FIM suppresses vortices."""
 
     def test_defect_results_exist(self) -> None:
+        """The defect result file exists."""
         path = RESULTS_DIR / "topological_defects_2026-03-29.json"
         assert path.exists()
 
     def test_fim_reduces_defects(self) -> None:
+        """The FIM term reduces the defect count."""
         path = RESULTS_DIR / "topological_defects_2026-03-29.json"
         data = json.loads(path.read_text())
         d_no = [d for d in data["data"] if d["K"] == 10 and d["lam"] == 0][0]["defects"]
@@ -439,6 +443,7 @@ class TestMetabolicScaling:
     """Test P ∝ N prediction."""
 
     def test_log_correlation(self) -> None:
+        """The recorded metabolic-scaling log correlation exceeds 0.95."""
         path = RESULTS_DIR / "metabolic_scaling_2026-03-29.json"
         data = json.loads(path.read_text())
         assert data["log_correlation"] > 0.95
@@ -510,6 +515,7 @@ class TestCrossFrequency:
     """Test PAC, wavelet coherence, Granger results."""
 
     def test_results_exist(self) -> None:
+        """The cross-frequency observables result file exists."""
         path = (
             Path(__file__).parent.parent
             / "results"
@@ -518,6 +524,7 @@ class TestCrossFrequency:
         assert path.exists()
 
     def test_pac_theta_beta_strongest(self) -> None:
+        """Theta-to-beta phase-amplitude coupling is the strongest recorded pairing."""
         path = (
             Path(__file__).parent.parent
             / "results"
@@ -570,11 +577,13 @@ class TestAllResultsPresent:
 
     @pytest.mark.parametrize("filename", EXPECTED_RESULTS)
     def test_result_file_exists(self, filename: str) -> None:
+        """Each expected result file exists."""
         path = RESULTS_DIR / filename
         assert path.exists(), f"Missing: {filename}"
 
     @pytest.mark.parametrize("filename", EXPECTED_RESULTS)
     def test_result_file_valid_json(self, filename: str) -> None:
+        """Each expected result file holds a JSON object."""
         path = RESULTS_DIR / filename
         data = json.loads(path.read_text())
         assert isinstance(data, dict)

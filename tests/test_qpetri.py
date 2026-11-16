@@ -15,6 +15,7 @@ from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
 @pytest.fixture
 def simple_net() -> QuantumPetriNet:
+    """Return a two-place, two-transition net."""
     W_in = np.array([[0.8, 0.0], [0.0, 0.6]])  # 2 transitions, 2 places
     W_out = np.array([[0.0, 0.7], [0.5, 0.0]])  # 2 places, 2 transitions
     thresholds = np.array([0.5, 0.5])
@@ -22,11 +23,13 @@ def simple_net() -> QuantumPetriNet:
 
 
 def test_encode_marking(simple_net: QuantumPetriNet) -> None:
+    """A marking is encoded on one qubit per place."""
     qc = simple_net.encode_marking(np.array([0.5, 0.3]))
     assert qc.num_qubits == 2
 
 
 def test_step_returns_marking(simple_net: QuantumPetriNet) -> None:
+    """A step returns a marking within [0, 1]."""
     marking = np.array([0.7, 0.3])
     new_marking = simple_net.step(marking)
     assert new_marking.shape == (2,)
@@ -35,6 +38,7 @@ def test_step_returns_marking(simple_net: QuantumPetriNet) -> None:
 
 
 def test_from_matrices() -> None:
+    """A net built from matrices has the given places and transitions."""
     W_in = np.array([[0.5, 0.3]])
     W_out = np.array([[0.4], [0.6]])
     thresholds = np.array([0.5])
@@ -44,6 +48,7 @@ def test_from_matrices() -> None:
 
 
 def test_zero_marking() -> None:
+    """A zero marking steps to a marking of the same size."""
     W_in = np.array([[0.5]])
     W_out = np.array([[0.5]])
     thresholds = np.array([0.5])
@@ -100,6 +105,7 @@ def test_multiple_transitions_preserve_bounds() -> None:
 
 
 def test_from_matrices_basic() -> None:
+    """A net can be built from matrices."""
     W_in = np.array([[0.5, 0.3]])
     W_out = np.array([[0.0], [0.6]])
     thresholds = np.array([0.8])
@@ -108,6 +114,7 @@ def test_from_matrices_basic() -> None:
 
 
 def test_step_output_shape() -> None:
+    """A step returns one value per place."""
     W_in = np.array([[0.5, 0.0], [0.0, 0.5]])
     W_out = np.array([[0.0, 0.4], [0.4, 0.0]])
     thresholds = np.array([0.8, 0.8])
@@ -117,6 +124,7 @@ def test_step_output_shape() -> None:
 
 
 def test_step_preserves_bounds() -> None:
+    """A step keeps the marking within [0, 1]."""
     W_in = np.array([[0.5]])
     W_out = np.array([[0.5]])
     thresholds = np.array([0.5])
@@ -128,6 +136,7 @@ def test_step_preserves_bounds() -> None:
 
 
 def test_zero_input_stable() -> None:
+    """A zero input gives a finite marking."""
     W_in = np.array([[0.5, 0.0]])
     W_out = np.array([[0.0], [0.5]])
     thresholds = np.array([0.8])

@@ -115,8 +115,10 @@ def _communities(n: int) -> list[NDArray[np.int_]]:
 
 
 def _windowed(intra: float, inter: float, n_steps: int) -> tuple[NDArray[np.float64], float]:
-    r"""Evolve the two-population model and return ``(community order parameters, chimera index)``
-    over the post-formation window ``[_SETTLE, n_steps]``."""
+    r"""Evolve the two-population model over its post-formation window.
+
+    The result is ``(community order parameters, chimera index)`` over ``[_SETTLE, n_steps]``.
+    """
     coupling = _block_coupling(_N, intra, inter)
     theta0 = _chimera_initial_condition(_N, _SEED)
     trajectory = _integrate(theta0, coupling, _ALPHA, n_steps)
@@ -127,18 +129,23 @@ def _windowed(intra: float, inter: float, n_steps: int) -> tuple[NDArray[np.floa
 
 @pytest.fixture(scope="module")
 def chimera_state() -> tuple[NDArray[np.float64], float]:
+    """Return the windowed run in the chimera regime."""
     return _windowed(_CHIMERA_INTRA, _CHIMERA_INTER, _CHIMERA_STEPS)
 
 
 @pytest.fixture(scope="module")
 def synchronised_state() -> tuple[NDArray[np.float64], float]:
+    """Return the windowed run in the synchronised regime."""
     return _windowed(_SYNC_INTRA, _SYNC_INTER, _SYNC_STEPS)
 
 
 class TestTwoPopulationChimera:
+    """The two-population chimera against its synchronised control."""
+
     def test_one_population_locks_while_the_other_breathes(
         self, chimera_state: tuple[NDArray[np.float64], float]
     ) -> None:
+        """One population stays locked while the other's order parameter breathes."""
         community_r, _ = chimera_state
         coherent, incoherent = community_r[:, 0], community_r[:, 1]
         # Population 1 phase-locks and stays locked for the whole window.
@@ -153,6 +160,7 @@ class TestTwoPopulationChimera:
     def test_chimera_index_is_strongly_positive(
         self, chimera_state: tuple[NDArray[np.float64], float]
     ) -> None:
+        """The chimera index is clearly positive."""
         _, chi = chimera_state
         # Time-averaged variance of the community order parameters — zero for uniform synchrony or
         # uniform incoherence, clearly positive for the locked/unlocked chimera coexistence.
@@ -161,6 +169,7 @@ class TestTwoPopulationChimera:
     def test_strong_intercoupling_synchronises_both_populations(
         self, synchronised_state: tuple[NDArray[np.float64], float]
     ) -> None:
+        """Strong intercoupling synchronises both populations steadily."""
         community_r, chi = synchronised_state
         # With A = 0.2 the inter-population coupling is strong enough to lock both populations, so
         # there is no chimera: both order parameters sit near unity and the index collapses.
@@ -174,6 +183,7 @@ class TestTwoPopulationChimera:
         chimera_state: tuple[NDArray[np.float64], float],
         synchronised_state: tuple[NDArray[np.float64], float],
     ) -> None:
+        """The chimera and synchronised regimes differ by more than an order of magnitude."""
         chimera_r, chimera_chi = chimera_state
         sync_r, sync_chi = synchronised_state
         # The reproduction is unambiguous: the chimera index and the breathing amplitude of the

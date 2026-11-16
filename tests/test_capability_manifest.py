@@ -7,6 +7,8 @@
 # SCPN Quantum Control — capability manifest tests
 # scpn-quantum-control -- capability manifest tests
 
+"""Capability manifest generation, validation and its committed outputs."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -42,6 +44,7 @@ def _project_version() -> str:
 
 
 def test_manifest_scans_public_capability_surfaces() -> None:
+    """The manifest scans the public capability surfaces from its configuration."""
     tool = _load_tool()
     manifest = tool.build_capability_manifest(_repo_root())
 
@@ -70,6 +73,7 @@ def test_manifest_scans_public_capability_surfaces() -> None:
 
 
 def test_manifest_validation_rejects_count_drift() -> None:
+    """A count that disagrees with its list fails validation."""
     tool = _load_tool()
     manifest = tool.build_capability_manifest(_repo_root())
     manifest["counts"]["python_model_source_modules"] += 1
@@ -81,12 +85,14 @@ def test_manifest_validation_rejects_count_drift() -> None:
 
 
 def test_generated_capability_outputs_are_current() -> None:
+    """The committed capability outputs match a fresh generation."""
     tool = _load_tool()
 
     tool.assert_outputs_current(_repo_root())
 
 
 def test_readme_capability_snapshot_matches_generated_markdown() -> None:
+    """The README snapshot matches the generated Markdown."""
     tool = _load_tool()
     readme = (_repo_root() / "README.md").read_text(encoding="utf-8")
     start = "<!-- capability-snapshot:start -->"
@@ -102,7 +108,6 @@ def test_readme_capability_snapshot_matches_generated_markdown() -> None:
 
 def test_public_docs_do_not_reintroduce_known_stale_inventory_claims() -> None:
     """Reject hand-maintained public inventory counts known to drift."""
-
     tool = _load_tool()
     findings = tool.public_inventory_claim_findings(_repo_root())
 
@@ -111,7 +116,6 @@ def test_public_docs_do_not_reintroduce_known_stale_inventory_claims() -> None:
 
 def test_mkdocs_nav_omission_report_triages_public_docs() -> None:
     """Expose public docs that are absent from MkDocs navigation."""
-
     tool = _load_tool()
     repo = _repo_root()
     manifest = tool.build_capability_manifest(repo)
@@ -138,7 +142,6 @@ def test_mkdocs_nav_omission_report_triages_public_docs() -> None:
 
 def test_mkdocs_nav_markdown_parser_handles_nested_and_quoted_labels(tmp_path: Path) -> None:
     """Parse MkDocs nav entries without requiring a YAML dependency."""
-
     tool = _load_tool()
     (tmp_path / "site.yml").write_text(
         "\n".join(
@@ -166,6 +169,7 @@ def test_mkdocs_nav_markdown_parser_handles_nested_and_quoted_labels(tmp_path: P
 
 
 def test_capability_manifest_cli_writes_review_artifacts() -> None:
+    """The command writes the JSON and Markdown review files."""
     tool_path = _repo_root() / "tools" / "capability_manifest.py"
     with tempfile.TemporaryDirectory() as directory:
         json_path = Path(directory) / "capability_manifest.json"

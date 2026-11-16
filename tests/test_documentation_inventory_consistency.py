@@ -144,6 +144,7 @@ def _actual_module_names(package: str) -> tuple[str, ...]:
 
 
 def test_documented_binding_count_matches_the_rust_crate() -> None:
+    """Every documented native binding count matches the crate."""
     actual = _actual_pyfunction_count()
     assert actual > 0
     claims: list[tuple[str, int]] = []
@@ -158,6 +159,7 @@ def test_documented_binding_count_matches_the_rust_crate() -> None:
 
 
 def test_documented_rust_source_file_count_matches_the_crate() -> None:
+    """Every documented native source-file count matches the crate."""
     actual = _actual_rust_source_file_count()
     claims: list[tuple[str, int]] = []
     for relative in ("docs/architecture.md", "docs/rust_engine.md"):
@@ -170,6 +172,7 @@ def test_documented_rust_source_file_count_matches_the_crate() -> None:
 
 
 def test_documented_python_source_module_count_matches_the_package() -> None:
+    """Every documented Python module count matches the package."""
     actual = _actual_python_source_module_count()
     wrong: list[tuple[str, int, int]] = []
     for relative, pattern in _PYTHON_SOURCE_MODULE_COUNT_DOCS.items():
@@ -183,6 +186,7 @@ def test_documented_python_source_module_count_matches_the_package() -> None:
 
 
 def test_architecture_mermaid_node_counts_match_the_filesystem() -> None:
+    """The architecture map's module counts match the filesystem."""
     text = _ARCHITECTURE.read_text(encoding="utf-8")
     nodes = [
         (package, int(count))
@@ -199,6 +203,7 @@ def test_architecture_mermaid_node_counts_match_the_filesystem() -> None:
 
 
 def test_architecture_crypto_tree_lists_only_existing_modules() -> None:
+    """The architecture map lists only crypto modules that exist."""
     lines = _ARCHITECTURE.read_text(encoding="utf-8").splitlines()
     start = next(i for i, line in enumerate(lines) if line.startswith("crypto/"))
     referenced: list[str] = []
@@ -213,6 +218,7 @@ def test_architecture_crypto_tree_lists_only_existing_modules() -> None:
 
 
 def test_public_crypto_module_counts_match_the_filesystem() -> None:
+    """Every documented crypto module count matches the filesystem."""
     actual = _actual_module_count("crypto")
     wrong: list[tuple[str, int, int]] = []
     for relative, patterns in _CRYPTO_MODULE_COUNT_DOCS.items():
@@ -224,6 +230,7 @@ def test_public_crypto_module_counts_match_the_filesystem() -> None:
 
 
 def test_public_docs_do_not_reference_removed_crypto_modules() -> None:
+    """No public page names a removed crypto module."""
     stale_hits: list[tuple[str, str]] = []
     for path in _markdown_docs():
         text = path.read_text(encoding="utf-8")
@@ -236,6 +243,7 @@ def test_public_docs_do_not_reference_removed_crypto_modules() -> None:
 
 
 def test_export_control_lists_the_live_crypto_modules() -> None:
+    """The export-control page lists exactly the live crypto modules."""
     text = (_REPO_ROOT / "docs" / "EXPORT_CONTROL.md").read_text(encoding="utf-8")
     expected = {
         f"scpn_quantum_control.crypto.{module}" for module in _actual_module_names("crypto")
@@ -249,4 +257,5 @@ def test_export_control_lists_the_live_crypto_modules() -> None:
 def test_actual_module_count_is_positive(package: str) -> None:
     # guards the helper itself across representative substantive packages (accel is
     # now a deprecation shim re-exporting oscillatools, so it holds zero source modules)
+    """Each counted package has modules."""
     assert _actual_module_count(package) > 0

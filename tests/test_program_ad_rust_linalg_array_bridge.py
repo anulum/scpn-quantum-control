@@ -25,7 +25,6 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 
 def _multi_dot_weighted_objective(values: Any) -> Any:
     """Return a compact matrix-chain objective with matrix and scalar outputs."""
-
     left = np.reshape(values[:4], (2, 2))
     middle = np.reshape(values[4:8], (2, 2))
     right = np.reshape(values[8:12], (2, 2))
@@ -40,7 +39,6 @@ def _multi_dot_weighted_objective(values: Any) -> Any:
 
 def _multi_dot_sample() -> NDArray[np.float64]:
     """Return a nonsingular static matrix-chain sample for Rust replay tests."""
-
     return np.array(
         [
             1.0,
@@ -66,7 +64,6 @@ def _multi_dot_sample() -> NDArray[np.float64]:
 
 def _solve_matrix_rhs_sample() -> NDArray[np.float64]:
     """Return a nonsingular matrix-RHS solve sample for Rust replay tests."""
-
     return np.array(
         [
             4.0,
@@ -100,7 +97,6 @@ def _solve_matrix_rhs_sample() -> NDArray[np.float64]:
 
 def _solve_matrix_rhs_weights() -> NDArray[np.float64]:
     """Return deterministic cotangent weights for a 3x5 solve output."""
-
     return np.array(
         [
             [0.2, -0.7, 1.1, 0.4, -0.3],
@@ -113,7 +109,6 @@ def _solve_matrix_rhs_weights() -> NDArray[np.float64]:
 
 def _solve_matrix_rhs_weighted_objective(values: Any) -> Any:
     """Return a scalar objective over a static matrix-RHS linear solve."""
-
     matrix = np.reshape(values[:9], (3, 3))
     rhs = np.reshape(values[9:], (3, 5))
     return np.sum(np.linalg.solve(matrix, rhs) * _solve_matrix_rhs_weights())
@@ -121,7 +116,6 @@ def _solve_matrix_rhs_weighted_objective(values: Any) -> Any:
 
 def _solve_matrix_rhs_indexed_objective(values: Any) -> Any:
     """Return one raw matrix-RHS solve element to exercise fail-closed replay."""
-
     matrix = np.reshape(values[:9], (3, 3))
     rhs = np.reshape(values[9:], (3, 5))
     return np.linalg.solve(matrix, rhs)[0, 4]
@@ -129,7 +123,6 @@ def _solve_matrix_rhs_indexed_objective(values: Any) -> Any:
 
 def test_rust_bridge_replays_program_ad_multi_dot_array_nodes() -> None:
     """The PyO3 bridge should replay compact multi_dot array nodes end to end."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _multi_dot_sample()
@@ -157,7 +150,6 @@ def test_rust_bridge_replays_program_ad_multi_dot_array_nodes() -> None:
 
 def test_rust_bridge_replays_program_ad_solve_matrix_rhs_nodes() -> None:
     """The PyO3 bridge should replay compact matrix-RHS solve nodes end to end."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _solve_matrix_rhs_sample()
@@ -182,7 +174,6 @@ def test_rust_bridge_replays_program_ad_solve_matrix_rhs_nodes() -> None:
 
 def test_rust_bridge_fails_closed_on_indexed_solve_matrix_rhs_node() -> None:
     """The bridge should reject bare indexed matrix-RHS solve elements."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _solve_matrix_rhs_sample()

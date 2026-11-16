@@ -22,23 +22,27 @@ from scpn_quantum_control.hardware.trapped_ion import (
 
 
 def test_noise_model_returns_model() -> None:
+    """The noise model has error instructions."""
     model = trapped_ion_noise_model()
     assert model is not None
     assert len(model.noise_instructions) > 0
 
 
 def test_noise_model_custom_params() -> None:
+    """The noise model accepts custom parameters."""
     model = trapped_ion_noise_model(ms_error=0.01, t1_us=50_000.0)
     assert model is not None
 
 
 def test_constants_physical_ranges() -> None:
+    """The device constants lie in physical ranges."""
     assert 0 < MS_ERROR < 1
     assert T1_US > T2_US > 0
     assert MS_GATE_TIME_US > SQ_GATE_TIME_US > 0
 
 
 def test_transpile_single_qubit() -> None:
+    """A one-qubit circuit transpiles to one qubit."""
     qc = QuantumCircuit(1)
     qc.h(0)
     result = transpile_for_trapped_ion(qc)
@@ -46,6 +50,7 @@ def test_transpile_single_qubit() -> None:
 
 
 def test_transpile_removes_swaps() -> None:
+    """Transpilation leaves no swaps."""
     qc = QuantumCircuit(4)
     qc.cx(0, 3)
     qc.cx(1, 3)
@@ -55,6 +60,7 @@ def test_transpile_removes_swaps() -> None:
 
 
 def test_transpile_preserves_unitarity() -> None:
+    """Transpilation preserves the circuit's unitary."""
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -65,6 +71,7 @@ def test_transpile_preserves_unitarity() -> None:
 
 
 def test_transpile_all_to_all_connectivity() -> None:
+    """All-to-all connectivity needs no swaps."""
     qc = QuantumCircuit(3)
     qc.cx(0, 2)
     qc.cx(1, 0)
@@ -74,6 +81,7 @@ def test_transpile_all_to_all_connectivity() -> None:
 
 
 def test_transpile_empty_circuit() -> None:
+    """An empty circuit transpiles and records that no entangling proxy is needed."""
     qc = QuantumCircuit(2)
     result = transpile_for_trapped_ion(qc)
     assert result.num_qubits == 2
@@ -123,6 +131,7 @@ def test_transpile_records_proxy_metadata() -> None:
 
 
 def test_noise_model_has_error_instructions() -> None:
+    """The noise model carries error instructions."""
     model = trapped_ion_noise_model()
     assert len(model.noise_instructions) > 0
 

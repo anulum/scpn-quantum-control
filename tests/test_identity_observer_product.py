@@ -51,6 +51,7 @@ def _bell_state() -> Statevector:
 
 
 def test_inventory_separates_loop_metrics_from_identity_products() -> None:
+    """The inventory separates loop metrics from identity products and gives each a boundary."""
     rows = identity_metric_inventory()
     safe = {row.metric_id for row in rows if row.loop_safe}
     unsafe = {row.metric_id for row in rows if not row.loop_safe}
@@ -61,6 +62,7 @@ def test_inventory_separates_loop_metrics_from_identity_products() -> None:
 
 
 def test_unsuitable_scenarios_cover_overinterpretation() -> None:
+    """The unsuitable scenarios cover the main over-interpretations."""
     scenarios = identity_observer_unsuitable_scenarios()
 
     assert len(scenarios) == 5
@@ -79,11 +81,13 @@ def test_unsuitable_scenarios_cover_overinterpretation() -> None:
     ],
 )
 def test_threshold_validation(overrides: dict[str, float], message: str) -> None:
+    """Invalid thresholds are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         _thresholds(**overrides)
 
 
 def test_real_robustness_and_coherence_observers_allow() -> None:
+    """Real robustness and coherence observers let the loop continue."""
     K, omega = _problem()
     decision = evaluate_identity_safety(
         K,
@@ -107,6 +111,7 @@ def test_real_robustness_and_coherence_observers_allow() -> None:
 
 
 def test_supported_bell_witness_allows() -> None:
+    """A supported Bell witness lets the loop continue."""
     K, omega = _problem()
     decision = evaluate_identity_safety(
         K,
@@ -129,6 +134,7 @@ def test_supported_bell_witness_allows() -> None:
 
 
 def test_supported_but_below_threshold_witness_holds() -> None:
+    """A supported witness below its threshold holds the loop."""
     K, omega = _problem()
     product_state = Statevector.from_int(0, 4)
     decision = evaluate_identity_safety(
@@ -148,6 +154,7 @@ def test_supported_but_below_threshold_witness_holds() -> None:
 
 
 def test_missing_or_invalid_requested_witness_aborts() -> None:
+    """A missing or invalid requested witness aborts the loop."""
     K, omega = _problem()
     missing = evaluate_identity_safety(
         K,
@@ -177,6 +184,7 @@ def test_missing_or_invalid_requested_witness_aborts() -> None:
 
 
 def test_numeric_threshold_and_depth_trips_hold() -> None:
+    """A failed numeric threshold or depth limit holds the loop."""
     K, omega = _problem()
     decision = evaluate_identity_safety(
         K,
@@ -200,6 +208,7 @@ def test_numeric_threshold_and_depth_trips_hold() -> None:
 
 
 def test_input_guards_precede_metric_evaluation() -> None:
+    """Input guards refuse bad depth or width before any metric is computed."""
     K, omega = _problem()
     with pytest.raises(ValueError, match="planned_depth"):
         evaluate_identity_safety(

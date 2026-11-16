@@ -22,7 +22,10 @@ pytestmark = pytest.mark.skipif(not HAS_RUST, reason="scpn_quantum_engine not in
 
 
 class TestRustPythonParity:
+    """Native results against the Python reference."""
+
     def test_knm_16_exact_parity(self) -> None:
+        """The native sixteen-oscillator coupling matrix equals the Python one."""
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -31,6 +34,7 @@ class TestRustPythonParity:
         np.testing.assert_allclose(K_rust, K_python, atol=1e-12)
 
     def test_knm_7_parity(self) -> None:
+        """The native seven-oscillator coupling matrix equals the Python one."""
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -39,12 +43,14 @@ class TestRustPythonParity:
         np.testing.assert_allclose(K_rust, K_python, atol=1e-12)
 
     def test_knm_diagonal(self) -> None:
+        """The native coupling matrix has the calibrated diagonal."""
         import scpn_quantum_engine as engine
 
         K = np.array(engine.build_knm(4, 0.45, 0.3))
         assert K[0, 0] == pytest.approx(0.45, abs=1e-12)
 
     def test_knm_calibration_anchors(self) -> None:
+        """The native coupling matrix has the calibrated anchor values."""
         import scpn_quantum_engine as engine
 
         K = np.array(engine.build_knm(16, 0.45, 0.3))
@@ -54,6 +60,7 @@ class TestRustPythonParity:
         assert K[3, 4] == pytest.approx(0.154, abs=1e-12)
 
     def test_knm_cross_hierarchy_max(self) -> None:
+        """The native coupling matrix keeps the cross-hierarchy couplings."""
         import scpn_quantum_engine as engine
 
         K = np.array(engine.build_knm(16, 0.45, 0.3))
@@ -62,6 +69,7 @@ class TestRustPythonParity:
         assert K[0, 15] >= 0.05
 
     def test_pec_coefficients_parity(self) -> None:
+        """Native and Python error-cancellation coefficients agree."""
         import scpn_quantum_engine as engine
         from scpn_quantum_control.mitigation.pec import pauli_twirl_decompose
 
@@ -71,6 +79,7 @@ class TestRustPythonParity:
             np.testing.assert_allclose(rust, python, atol=1e-12)
 
     def test_order_parameter_parity(self) -> None:
+        """Native and Python order parameters agree."""
         import scpn_quantum_engine as engine
 
         theta = np.array([0.0, 0.1, 0.2, 0.3])
@@ -80,6 +89,7 @@ class TestRustPythonParity:
         assert rust_R == pytest.approx(python_R, abs=1e-10)
 
     def test_kuramoto_euler_parity(self) -> None:
+        """Native and Python Euler trajectories agree."""
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 

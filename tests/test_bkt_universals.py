@@ -16,20 +16,26 @@ from scpn_quantum_control.analysis.bkt_universals import (
 
 
 class TestBKTUniversals:
+    """Candidate expressions for the BKT universal constants."""
+
     def test_returns_summary(self) -> None:
+        """The search returns a summary record."""
         result = check_all_candidates()
         assert isinstance(result, BKTUniversalsSummary)
 
     def test_at_least_5_candidates(self) -> None:
+        """The summary holds at least five candidates."""
         result = check_all_candidates()
         assert len(result.candidates) >= 5
 
     def test_sorted_by_deviation(self) -> None:
+        """Candidates are sorted by increasing deviation."""
         result = check_all_candidates()
         for i in range(len(result.candidates) - 1):
             assert result.candidates[i].deviation <= result.candidates[i + 1].deviation
 
     def test_best_is_first(self) -> None:
+        """The best value is that of the first candidate."""
         result = check_all_candidates()
         assert result.best_value == result.candidates[0].value
 
@@ -59,6 +65,7 @@ class TestBKTUniversals:
 
 
 def test_all_candidates_have_expression() -> None:
+    """Every candidate has a non-empty expression."""
     result = check_all_candidates()
     for c in result.candidates:
         assert isinstance(c.expression, str)
@@ -66,18 +73,21 @@ def test_all_candidates_have_expression() -> None:
 
 
 def test_all_candidates_have_positive_value() -> None:
+    """Every candidate has a positive value."""
     result = check_all_candidates()
     for c in result.candidates:
         assert c.value > 0
 
 
 def test_deviations_all_nonnegative() -> None:
+    """Every deviation is non-negative."""
     result = check_all_candidates()
     for c in result.candidates:
         assert c.deviation >= 0
 
 
 def test_result_has_best_fields() -> None:
+    """The summary exposes the best value, expression and deviation."""
     result = check_all_candidates()
     assert hasattr(result, "best_value")
     assert hasattr(result, "best_expression")

@@ -37,6 +37,7 @@ def _inputs() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_partition_selects_largest_couplings_and_preserves_residual() -> None:
+    """The partition sends the largest couplings to analog and keeps the rest digital."""
     K, _omega = _inputs()
     partition = partition_kuramoto_couplings(K, max_analog_couplers=2)
 
@@ -58,6 +59,7 @@ def test_partition_selects_largest_couplings_and_preserves_residual() -> None:
 
 
 def test_hybrid_program_contains_analog_block_and_digital_residual() -> None:
+    """The hybrid program holds an analog block and a digital residual."""
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -82,6 +84,7 @@ def test_hybrid_program_contains_analog_block_and_digital_residual() -> None:
 
 
 def test_threshold_can_route_only_hardware_native_large_terms() -> None:
+    """A threshold routes only the large native terms to analog."""
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -102,6 +105,7 @@ def test_threshold_can_route_only_hardware_native_large_terms() -> None:
 
 
 def test_zero_analog_budget_compiles_identity_analog_couplers_and_digital_work() -> None:
+    """With no analog budget every coupling runs digitally."""
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -118,6 +122,7 @@ def test_zero_analog_budget_compiles_identity_analog_couplers_and_digital_work()
 
 
 def test_all_analog_route_uses_empty_residual_circuit() -> None:
+    """With every coupling analog the digital residual is empty."""
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -135,6 +140,7 @@ def test_all_analog_route_uses_empty_residual_circuit() -> None:
 
 
 def test_backend_registry_exposes_hybrid_compiler() -> None:
+    """The backend registry exposes the hybrid compiler."""
     backend = be.get_backend("hybrid_digital_analog")
     assert backend.name == "hybrid_digital_analog"
     assert backend.is_available() is True
@@ -142,6 +148,7 @@ def test_backend_registry_exposes_hybrid_compiler() -> None:
 
 
 def test_kuramoto_core_facade_compiles_hybrid_program() -> None:
+    """The Kuramoto facade compiles a hybrid program."""
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega, metadata={"case": "hybrid_facade"})
     program = compile_hybrid_program(
@@ -156,6 +163,7 @@ def test_kuramoto_core_facade_compiles_hybrid_program() -> None:
 
 
 def test_backend_validation_rejects_invalid_split_parameters() -> None:
+    """An invalid duration, budget or threshold is refused."""
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega)
     backend = HybridDigitalAnalogBackend()
@@ -170,6 +178,7 @@ def test_backend_validation_rejects_invalid_split_parameters() -> None:
 
 
 def test_numpy_partition_matches_expected_route_codes() -> None:
+    """The NumPy partition gives the expected rows, columns and route codes."""
     K, _omega = _inputs()
     analog, digital, rows, cols, codes = _partition_numpy(
         K,

@@ -18,6 +18,7 @@ from scpn_quantum_control.bridge.ssgf_adapter import (
 
 
 def test_w_to_hamiltonian_basic() -> None:
+    """A coupling matrix maps to a Hamiltonian with one qubit per node."""
     W = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
     H = ssgf_w_to_hamiltonian(W, omega)
@@ -25,6 +26,7 @@ def test_w_to_hamiltonian_basic() -> None:
 
 
 def test_w_to_hamiltonian_hermitian() -> None:
+    """The mapped Hamiltonian is Hermitian."""
     W = np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]])
     omega = np.array([1.0, 1.5, 2.0])
     H = ssgf_w_to_hamiltonian(W, omega)
@@ -33,12 +35,14 @@ def test_w_to_hamiltonian_hermitian() -> None:
 
 
 def test_state_to_quantum_circuit() -> None:
+    """A state maps to a circuit with one qubit per node."""
     state = {"theta": np.array([0.5, 1.0, 1.5])}
     qc = ssgf_state_to_quantum(state)
     assert qc.num_qubits == 3
 
 
 def test_state_roundtrip() -> None:
+    """Encoding and decoding a state recovers its phases approximately."""
     theta_orig = np.array([0.5, 1.0])
     state = {"theta": theta_orig}
     qc = ssgf_state_to_quantum(state)
@@ -48,6 +52,7 @@ def test_state_roundtrip() -> None:
 
 
 def test_quantum_to_ssgf_R_global() -> None:
+    """The decoded global order parameter lies in [0, 1]."""
     qc = ssgf_state_to_quantum({"theta": np.array([1.0, 1.0, 1.0])})
     sv = Statevector.from_instruction(qc)
     state = quantum_to_ssgf_state(sv, 3)
@@ -55,6 +60,7 @@ def test_quantum_to_ssgf_R_global() -> None:
 
 
 def test_w_to_hamiltonian_zero_coupling() -> None:
+    """A zero coupling matrix still maps to a Hamiltonian of the right width."""
     W = np.zeros((3, 3))
     omega = np.array([1.0, 2.0, 3.0])
     H = ssgf_w_to_hamiltonian(W, omega)
@@ -62,6 +68,7 @@ def test_w_to_hamiltonian_zero_coupling() -> None:
 
 
 def test_state_to_quantum_zero_angles() -> None:
+    """Zero phases decode to near-zero phases."""
     state = {"theta": np.zeros(2)}
     qc = ssgf_state_to_quantum(state)
     sv = Statevector.from_instruction(qc)
@@ -71,6 +78,7 @@ def test_state_to_quantum_zero_angles() -> None:
 
 
 def test_quantum_to_ssgf_coherent() -> None:
+    """A coherent state decodes to a high order parameter."""
     theta = np.full(4, 1.0)
     qc = ssgf_state_to_quantum({"theta": theta})
     sv = Statevector.from_instruction(qc)
@@ -123,6 +131,7 @@ def test_R_global_opposite_phases_low() -> None:
 
 def test_pipeline_w_to_evolution_decode() -> None:
     """Full pipeline: W → H → encode → Trotter evolve → decode.
+
     Verifies SSGF adapter is not decorative — data flows end-to-end.
     """
     import time

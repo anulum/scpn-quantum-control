@@ -47,6 +47,7 @@ def _request(*, backend: str | None = None, **parameters: Any) -> ExecutiveReque
 # end-to-end
 # --------------------------------------------------------------------------- #
 def test_validate_committed_registry_against_committed_ledger() -> None:
+    """Validating the committed registry against its ledger succeeds."""
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
     outputs = record.result.outputs
@@ -62,6 +63,7 @@ def test_validate_committed_registry_against_committed_ledger() -> None:
 
 
 def test_validate_reports_unmet_minimum_claim_bound() -> None:
+    """An unmet minimum claim count is reported."""
     record = run_action(_request(minimum_total_claims=4096), registry=_registry())
     outputs = record.result.outputs
     assert outputs["minimum_total_claims"] == 4096
@@ -69,6 +71,7 @@ def test_validate_reports_unmet_minimum_claim_bound() -> None:
 
 
 def test_validate_plan_defaults_backend_read_only() -> None:
+    """The default plan is read-only on the Python backend."""
     plan = preview_action(_request(), registry=_registry())
     assert plan.backend == "python"
     assert plan.requires_approval is False
@@ -77,6 +80,7 @@ def test_validate_plan_defaults_backend_read_only() -> None:
 
 
 def test_validate_rejects_undeclared_backend() -> None:
+    """An undeclared backend is refused."""
     handler = ValidateActionHandler()
     contract = resolve_verb_contract(VALIDATE_VERB)
     with pytest.raises(ValueError, match="is not declared for the validate verb"):
@@ -84,6 +88,7 @@ def test_validate_rejects_undeclared_backend() -> None:
 
 
 def test_generated_validate_script_embeds_verdict_and_compiles() -> None:
+    """The generated script embeds the verdict and compiles."""
     record = run_action(_request(), registry=_registry())
     assert record.script is not None
     source = record.script.source
@@ -97,11 +102,13 @@ def test_generated_validate_script_embeds_verdict_and_compiles() -> None:
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("bad", [True, "two", 0, 5000])
 def test_as_positive_int_rejects_bad(bad: Any) -> None:
+    """A non-positive integer is refused."""
     with pytest.raises(ValueError):
         _as_positive_int("v", bad, maximum=4096)
 
 
 def test_safe_slug_normal_and_empty() -> None:
+    """Slugs are made safe, with a fallback for empty input."""
     assert _safe_slug("validate-ledger.1") == "validate_ledger_1"
     assert _safe_slug("!!!") == "action"
 
@@ -116,10 +123,12 @@ def test_safe_slug_normal_and_empty() -> None:
     ],
 )
 def test_normalise_validate_rejects_invalid(parameters: dict[str, Any]) -> None:
+    """Invalid validation options are refused."""
     with pytest.raises(ValueError):
         _normalise_validate(parameters)
 
 
 def test_normalise_validate_defaults_minimum() -> None:
+    """The minimum claim count defaults to one."""
     assert _normalise_validate({}) == {"minimum_total_claims": 1}
     assert _normalise_validate({"minimum_total_claims": 5}) == {"minimum_total_claims": 5}

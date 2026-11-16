@@ -49,6 +49,8 @@ EVEN_SIZES = [2, 4, 6, 8]
 
 
 class TestXYvsXXZ:
+    """The XY Hamiltonian against the XXZ Hamiltonian at zero anisotropy."""
+
     @pytest.mark.parametrize("n", SIZES)
     def test_xy_equals_xxz_delta0(self, n: int) -> None:
         """knm_to_hamiltonian(K,w) == knm_to_xxz_hamiltonian(K,w, delta=0)."""
@@ -68,8 +70,11 @@ class TestXYvsXXZ:
 
 
 class TestSparseVsDenseR:
+    """Sparse and dense order-parameter evaluation on the same states."""
+
     @pytest.mark.parametrize("n", SIZES)
     def test_initial_state(self, n: int) -> None:
+        """Sparse and dense evaluation agree on the initial state."""
         omega = OMEGA_N_16[:n]
         psi = _build_initial_state(n, omega)
         R_d = _state_order_param(psi, n)
@@ -134,6 +139,8 @@ class TestSparseVsDenseR:
 
 
 class TestEvolutionConsistency:
+    """Order-parameter evolution against a manual computation."""
+
     @pytest.mark.parametrize("n", SMALL_SIZES)
     def test_evolution_R_matches_manual(self, n: int) -> None:
         """classical_exact_evolution R(t) should match manual U@psi loop."""
@@ -174,6 +181,8 @@ class TestEvolutionConsistency:
 
 
 class TestDiagConsistency:
+    """Sparse and dense diagonalisation of the same Hamiltonian."""
+
     @pytest.mark.parametrize("n", [4, 6, 8])
     def test_sparse_vs_dense_ground_energy(self, n: int) -> None:
         """k_eigenvalues sparse solver agrees with full dense diag.
@@ -212,6 +221,8 @@ class TestDiagConsistency:
 
 
 class TestRustVsPython:
+    """Native and Python Kuramoto trajectories."""
+
     @pytest.mark.parametrize("n", SMALL_SIZES)
     def test_kuramoto_trajectory_agreement(self, n: int) -> None:
         """If Rust engine is available, trajectories should agree with Python."""
@@ -256,6 +267,8 @@ class TestRustVsPython:
 
 
 class TestTrotterConvergence:
+    """Trotter evolution against exact evolution."""
+
     @pytest.mark.parametrize("n", SMALL_SIZES)
     def test_trotter_converges_to_exact(self, n: int) -> None:
         """Trotter R should approach exact R as reps increase."""
@@ -288,6 +301,7 @@ class TestRustLanczosParity:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_lanczos_coefficients_match(self, n: int) -> None:
+        """Native and Python Lanczos coefficients agree."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not hasattr(engine, "lanczos_b_coefficients"):
             pytest.skip("lanczos_b_coefficients not yet in Rust engine")
@@ -350,6 +364,7 @@ class TestRustOTOCParity:
 
     @pytest.mark.parametrize("n", [2, 3])
     def test_otoc_values_match(self, n: int) -> None:
+        """Native and reference OTOC values agree."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not hasattr(engine, "otoc_from_eigendecomp"):
             pytest.skip("otoc_from_eigendecomp not yet in Rust engine")
