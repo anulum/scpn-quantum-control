@@ -497,6 +497,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains typed port refusal surfaces
+  (`experimental/llm_qpu/ports.py`). `PORTS` registers the fourteen lane
+  ports with the owner pack's exact signatures, each in one side-effect
+  class:
+  - offline model probe (local runtime, no credentials);
+  - offline planning (no access, no credentials);
+  - read-only provider retrieval;
+  - the governed submit class, which holds `submit_approved` alone.
+  `PortSpec` enforces those rules. Every port refuses explicitly with
+  `PortRefused`, naming its class, its reason and the signature contracts
+  the contracts package does not yet define; the list shrinks as
+  contracts land. `transform_latents`, `submit_approved`,
+  `retrieve_existing` and `estimate_features` are typed functions,
+  because all their contracts exist; they refuse the same way.
+  Retrieval may never fall back to a submission, and comparison may never
+  start an experiment.
+
 - The experimental LLM-QPU lane gains a design-only `StudentArtifact` contract
   (`experimental/llm_qpu/contracts/student.py`, schema
   `student_artifact.v1`) for an offline classical model distilled from

@@ -53,6 +53,7 @@ _INVENTORY = (
     "llm_qpu/data/temporal_task.py",
     "llm_qpu/data/temporal_transfer.py",
     "llm_qpu/manifest.py",
+    "llm_qpu/ports.py",
     "llm_qpu/runtime/__init__.py",
     "llm_qpu/runtime/attempt_journal.py",
     "llm_qpu/runtime/provider_recovery.py",
