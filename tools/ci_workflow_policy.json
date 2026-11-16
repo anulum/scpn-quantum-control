@@ -397,7 +397,8 @@
         "program-ad-replay",
         "python-sharding-quality",
         "topology-extra-coverage",
-        "cross-validation-extra"
+        "cross-validation-extra",
+        "oscillatools-jax-torch-tiers"
       ]
     },
     {
@@ -632,6 +633,7 @@
     "python-sharding-quality",
     "topology-extra-coverage",
     "cross-validation-extra",
+    "oscillatools-jax-torch-tiers",
     "test",
     "test-extra-platforms",
     "type-check",

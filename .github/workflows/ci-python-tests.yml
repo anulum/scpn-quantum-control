@@ -316,3 +316,51 @@ jobs:
             echo "a cross-validation case skipped although the extra is installed"
             exit 1
           fi
+
+  oscillatools-jax-torch-tiers:
+    # oscillatools keeps its [jax] and [torch] tiers optional, so
+    # oscillatools-ci runs these files without either framework and their
+    # cases skip. No other job ran them with the frameworks installed, and a
+    # false bit-identity claim for the JAX RK4 ensemble went unnoticed. This
+    # job installs the pinned JAX and torch-cpu layers, runs every file that
+    # skips without them, and fails if a JAX or torch case still skips. It
+    # records no coverage: the tier modules stay omitted from coverage.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.15"
+          cache: pip
+      - name: Install the 3.15 lock and the pinned JAX and torch-cpu layers
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py315-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py315-linux.txt
+          python -m pip check
+          python -c "import jax, torch; print(jax.__version__, torch.__version__)"
+      - name: Run the JAX and torch tier tests with no framework case skipped
+        # The witness tests import their helpers as the oscillatools tests package.
+        working-directory: oscillatools
+        run: |
+          log="$RUNNER_TEMP/oscillatools-jax-torch-tiers.log"
+          python -m pytest -q -rs -p no:cacheprovider --no-cov \
+            tests/test_diff_kuramoto_autodiff_witness.py \
+            tests/test_diff_kuramoto_delay_sensitivity_witness.py \
+            tests/test_diff_kuramoto_mpc_kkt.py \
+            tests/test_formal_neural_lyapunov.py \
+            tests/test_jax_kuramoto.py \
+            tests/test_jax_kuramoto_delayed.py \
+            tests/test_jax_kuramoto_mpc.py \
+            tests/test_kuramoto_neural_operator.py \
+            tests/test_neural_lyapunov_certificate.py \
+            tests/test_surrogate_kuramoto_mpc.py \
+            tests/test_tensor_io_contract.py > "$log" 2>&1 || { cat "$log"; exit 1; }
+          cat "$log"
+          if grep -E "^SKIPPED .*could not import '(jax|torch)" "$log"; then
+            echo "a JAX or torch tier case skipped although the framework is installed"
+            exit 1
+          fi

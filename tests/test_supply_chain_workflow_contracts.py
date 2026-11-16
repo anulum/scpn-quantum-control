@@ -7,7 +7,10 @@
 # SCPN Quantum Control — supply-chain workflow contracts
 """Pin CI dependency acquisition to immutable, hash-verified inputs."""
 
+import re
 from pathlib import Path
+
+import yaml
 
 
 def _workflow(path: str) -> str:
@@ -94,3 +97,23 @@ def test_cross_validation_extra_is_locked_and_run_without_skips() -> None:
     assert "-r requirements-ci-xvalidate-py312-linux.txt" in workflow
     assert "tests/test_cross_validation_qutip_dynamiqs.py" in workflow
     assert 'grep -q "^SKIPPED"' in workflow
+
+
+def test_oscillatools_framework_tier_lane_runs_every_framework_test() -> None:
+    """Run every oscillatools test that skips without JAX or torch in the lane that installs both."""
+    workflow = yaml.safe_load(
+        Path(".github/workflows/ci-python-tests.yml").read_text(encoding="utf-8")
+    )
+    steps = workflow["jobs"]["oscillatools-jax-torch-tiers"]["steps"]
+    commands = "\n".join(str(step.get("run", "")) for step in steps)
+    framework_skip = re.compile(r"importorskip\(\s*[\"'](?:jax|torch)")
+    tier_tests = sorted(
+        path.name
+        for path in Path("oscillatools/tests").glob("test_*.py")
+        if framework_skip.search(path.read_text(encoding="utf-8"))
+    )
+    assert tier_tests
+    assert [name for name in tier_tests if f"tests/{name}" not in commands] == []
+    assert "-r requirements-ci-jax-py315-linux.txt" in commands
+    assert "-r requirements-ci-torch-cpu-py315-linux.txt" in commands
+    assert "could not import '(jax|torch)" in commands

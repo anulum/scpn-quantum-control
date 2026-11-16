@@ -1071,6 +1071,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   check, the CI policy registers the job, and the test infrastructure page
   describes it.
 
+- The oscillatools JAX and torch tiers now run with their frameworks in CI.
+  oscillatools CI keeps `[jax]` and `[torch]` optional, so their eleven test
+  files only ever skipped hosted. A false claim survived that way: the JAX
+  RK4 ensemble was documented and tested as bit-identical to the single
+  solve, which holds on the reference GPU but not on a CPU (4 to 8 ulp; now
+  stated and tested to 1e-12).
+  - The new `oscillatools-jax-torch-tiers` job (Python 3.15) installs the
+    3.15 lock with the JAX (0.12.0.1) and torch-cpu (2.15.0) layers. It runs
+    the eleven files from the `oscillatools` directory, where the witness
+    tests import their helpers, and fails if a JAX or torch case still
+    skips. It records no coverage, as the tier modules stay omitted from it.
+  - A workflow contract test derives the file list from the `importorskip`
+    calls, so a new tier test cannot be left out of the job.
+  - The job was replayed locally on Python 3.15.2 with these locks before it
+    was committed: 237 passed, none skipped.
+
 - The Cirq adapter (`hardware/cirq_adapter.py`) now tests the import path
   with Cirq importable in every lane: the adapter file is executed under a
   private module name with a stand-in `cirq` module, which marks Cirq

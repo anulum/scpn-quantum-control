@@ -655,6 +655,16 @@ No other lock installs dynamiqs, so before this job the dynamiqs cases skipped
 in every hosted run. The job uploads no coverage database: the QuTiP cases of
 the same file already run in the main lanes.
 
+The `oscillatools-jax-torch-tiers` job runs on Python 3.15. It installs the
+3.15 lock, then the JAX and torch-cpu layers
+(`requirements-ci-jax-py315-linux.txt`, `requirements-ci-torch-cpu-py315-linux.txt`).
+From the `oscillatools` directory it runs every oscillatools test file that
+skips without JAX or torch, and fails if such a case still skips; a workflow
+contract test derives that file list from the `importorskip` calls. oscillatools
+CI keeps both tiers optional and omits their modules from coverage, so this job
+records no coverage either; it exists so the tier tests run with the
+frameworks somewhere hosted.
+
 The separate 100% recovery register is
 `data/coverage/coverage_debt_register.json`. It is generated and audited by
 `tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does
