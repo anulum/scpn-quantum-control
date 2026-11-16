@@ -37,6 +37,11 @@ _COMPILED_BUNDLE_SCHEMA = "scpn.experimental.llm_qpu.compiled_bundle.v1"
 _COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
 _OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
 _RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receipt.v1"
+_RESULT_SET_SCHEMA = "scpn.experimental.llm_qpu.raw_result_set.v1"
+_RESULT_ORIGINS = {
+    "provider_metadata": "provider_result",
+    "synthetic_classical": "synthetic_classical",
+}
 _UUID_TEXT = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z")
 _PROVIDER_JOB_ID = {"iqm": _UUID_TEXT, "ibm": re.compile(r"[a-z0-9]{20}\Z")}
 _APPROVAL_ORIGINS = {"live": "owner_decision", "test": "synthetic_classical"}
@@ -142,10 +147,7 @@ def _canonical_bytes(value: object) -> bytes:
     return encoded
 
 
-def _roundtrip_contract(request: dict[str, object]) -> dict[str, object]:
-    if set(request) != {"op", "cell", "array", "array_base64"}:
-        raise ValueError("contract request fields mismatch")
-    cell = request["cell"]
+def _validate_planned_cell(cell: object) -> dict[str, object]:
     if type(cell) is not dict or set(cell) != _CELL_FIELDS:
         raise ValueError("planned cell fields mismatch")
     if cell["schema"] != _CELL_SCHEMA or cell["object_kind"] != "planned_cell":
@@ -171,7 +173,13 @@ def _roundtrip_contract(request: dict[str, object]) -> dict[str, object]:
         raise ValueError("metadata shadows reserved fields")
     if len(_canonical_bytes(metadata)) > 8192:
         raise ValueError("metadata bytes exceed limit")
-    cell_wire = _canonical_bytes(cell)
+    return cell
+
+
+def _roundtrip_contract(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "cell", "array", "array_base64"}:
+        raise ValueError("contract request fields mismatch")
+    cell_wire = _canonical_bytes(_validate_planned_cell(request["cell"]))
     array = request["array"]
     raw = request["array_base64"]
     if type(array) is not dict or set(array) != {
@@ -1690,6 +1698,233 @@ def _roundtrip_provider_batch_receipt(request: dict[str, object]) -> dict[str, o
     }
 
 
+_RESULT_FIELDS = {
+    "cell_ordinal",
+    "key",
+    "job_ordinal",
+    "provider_job_id",
+    "pub_index",
+    "binding_index",
+    "measured_qubits",
+    "requested_shots",
+    "actual_shots",
+    "counts",
+    "raw_payload_sha256",
+}
+_RESULT_SET_FIELDS = {
+    "schema",
+    "object_kind",
+    "attempt_id",
+    "provider_batch_receipt_digest",
+    "compiled_bundle_digest",
+    "expected_cell_count",
+    "results",
+    "gaps",
+    "header",
+}
+
+
+def _bounded(value: object, name: str, maximum: int) -> int:
+    if type(value) is not int or not 0 <= value < maximum:
+        raise ValueError(f"{name} must be a bounded non-negative integer")
+    return value
+
+
+def _validate_counts(counts: object, width: int, shots: int) -> None:
+    if type(counts) is not list or not 0 < len(counts) <= 4096:
+        raise ValueError("raw counts must be a nonempty list of at most 4096 outcomes")
+    total, names = 0, []
+    for entry in counts:
+        if type(entry) is not list or len(entry) != 2:
+            raise ValueError("each raw count is one bitstring and one count")
+        bits, count = entry
+        if type(bits) is not str or len(bits) != width or set(bits) - {"0", "1"}:
+            raise ValueError("raw bitstring width differs from the measured qubits")
+        if type(count) is not int or count < 1:
+            raise ValueError("raw counts must be positive integers; zeros pad sparse data")
+        total += count
+        names.append(bits)
+    if names != sorted(set(names)) or total != shots:
+        raise ValueError("raw counts must be sorted, unique and sum to the actual shots")
+
+
+def _validate_cell_result(result: object) -> dict[str, object]:
+    if type(result) is not dict or set(result) != _RESULT_FIELDS:
+        raise ValueError("CellResult fields mismatch")
+    for name, maximum in (
+        ("cell_ordinal", 10_000_000),
+        ("job_ordinal", 100_000),
+        ("pub_index", 10_000_000),
+        ("binding_index", 1_000_000),
+    ):
+        _bounded(result[name], name, maximum)
+    key = result["key"]
+    if type(key) is not dict or set(key) != _KEY_FIELDS:
+        raise ValueError("CellKey fields mismatch")
+    _target_text(result["provider_job_id"], "provider job ID")
+    qubits = result["measured_qubits"]
+    if type(qubits) is not list or not 0 < len(qubits) <= 64:
+        raise ValueError("measured qubits must be a list of one to 64 qubits")
+    if len({_bounded(qubit, "measured qubit", 100_000) for qubit in qubits}) != len(qubits):
+        raise ValueError("a qubit cannot be measured into two bits")
+    requested, actual = result["requested_shots"], result["actual_shots"]
+    if type(requested) is not int or not 0 < requested <= 10_000_000:
+        raise ValueError("requested shots must be a bounded positive integer")
+    if type(actual) is not int or actual != requested:
+        raise ValueError("actual shots differ from the requested shots; quarantine the cell")
+    _validate_counts(result["counts"], len(qubits), requested)
+    _worker_digest(result["raw_payload_sha256"], "raw payload digest")
+    return result
+
+
+def _validate_cell_gap(gap: object) -> int:
+    if type(gap) is not dict or set(gap) != {
+        "cell_ordinal",
+        "status",
+        "reason",
+        "raw_payload_sha256",
+    }:
+        raise ValueError("CellGap fields mismatch")
+    ordinal = _bounded(gap["cell_ordinal"], "cell_ordinal", 10_000_000)
+    _target_text(gap["reason"], "gap reason")
+    if gap["status"] == "quarantined":
+        _worker_digest(gap["raw_payload_sha256"], "quarantined raw payload digest")
+    elif gap["status"] != "missing" or gap["raw_payload_sha256"] is not None:
+        raise ValueError("a gap is missing without raw data or quarantined with it")
+    return ordinal
+
+
+def _validate_result_set_fields(result_set: object) -> dict[str, object]:
+    if type(result_set) is not dict or set(result_set) != _RESULT_SET_FIELDS:
+        raise ValueError("RawResultSet fields mismatch")
+    if result_set["schema"] != _RESULT_SET_SCHEMA or result_set["object_kind"] != "raw_result_set":
+        raise ValueError("unknown RawResultSet schema")
+    attempt = result_set["attempt_id"]
+    if type(attempt) is not str or _UUID_TEXT.fullmatch(attempt) is None:
+        raise ValueError("attempt ID must be canonical UUID text")
+    for name in ("provider_batch_receipt_digest", "compiled_bundle_digest"):
+        _worker_digest(result_set[name], name)
+    expected = result_set["expected_cell_count"]
+    if type(expected) is not int or not 0 < expected <= 10_000_000:
+        raise ValueError("expected cell count must be a bounded positive integer")
+    results, gaps = result_set["results"], result_set["gaps"]
+    if type(results) is not list or type(gaps) is not list:
+        raise ValueError("results and gaps must be lists")
+    found = [int(str(_validate_cell_result(item)["cell_ordinal"])) for item in results]
+    missing = [_validate_cell_gap(gap) for gap in gaps]
+    if found != sorted(set(found)) or missing != sorted(set(missing)):
+        raise ValueError("results and gaps must be ordered by unique cell ordinal")
+    if sorted(found + missing) != list(range(expected)):
+        raise ValueError("every expected cell needs one result or one recorded gap")
+    units = {(r["provider_job_id"], r["pub_index"], r["binding_index"]) for r in results}
+    if len(units) != len(results):
+        raise ValueError("two cells cannot share one provider result unit (merged PUB)")
+    return result_set
+
+
+def _check_planned_cells(planned: object, bundle: dict[str, object]) -> list[dict[str, object]]:
+    cells = bundle["cells"]
+    if type(planned) is not list or type(cells) is not list or len(planned) != len(cells):
+        raise ValueError("validation needs one planned cell per compiled cell")
+    checked = []
+    for cell, compiled in zip(planned, cells, strict=True):
+        record = _validate_planned_cell(cell)
+        if type(compiled) is not dict:
+            raise ValueError("compiled cells must be objects")
+        if hashlib.sha256(_canonical_bytes(record)).hexdigest() != compiled["planned_cell_digest"]:
+            raise ValueError("planned cell differs from the compiled bundle")
+        if record["shots"] != compiled["shots"]:
+            raise ValueError("compiled shots differ from the planned cell")
+        checked.append(record)
+    return checked
+
+
+def _cross_check_result(
+    result: dict[str, object],
+    planned: dict[str, object],
+    jobs: list[dict[str, object]],
+    layout: set[object],
+) -> None:
+    if result["key"] != planned["key"] or result["requested_shots"] != planned["shots"]:
+        raise ValueError("result key or requested shots differ from the planned cell")
+    qubits = result["measured_qubits"]
+    if type(qubits) is not list or len(qubits) != planned["measurement_width"]:
+        raise ValueError("measured width differs from the planned cell")
+    if not layout.issuperset(qubits):
+        raise ValueError("a measured qubit is outside the compiled layout")
+    ordinal = int(str(result["job_ordinal"]))
+    if ordinal >= len(jobs):
+        raise ValueError("result names a job the receipt does not hold")
+    job = jobs[ordinal]
+    if job["state"] != "submitted" or job["provider_job_id"] != result["provider_job_id"]:
+        raise ValueError("result job is ambiguous or its ID differs from the receipt")
+    cells = job["cell_ordinals"]
+    if type(cells) is not list or result["cell_ordinal"] not in cells:
+        raise ValueError("result cell is not in its receipt job")
+    if cells.index(result["cell_ordinal"]) != result["pub_index"] or result["binding_index"] != 0:
+        raise ValueError("result is not at its receipt circuit position with binding zero")
+
+
+def _cross_check_result_set(
+    result_set: dict[str, object], receipt: dict[str, object], bundle: dict[str, object]
+) -> None:
+    if (
+        result_set["provider_batch_receipt_digest"]
+        != hashlib.sha256(_canonical_bytes(receipt)).hexdigest()
+    ):
+        raise ValueError("results name a different provider receipt")
+    if result_set["compiled_bundle_digest"] != receipt["compiled_bundle_digest"]:
+        raise ValueError("results, receipt and bundle name different compiled bundles")
+    if result_set["attempt_id"] != receipt["attempt_id"]:
+        raise ValueError("results belong to another attempt")
+    cells = bundle["cells"]
+    if type(cells) is not list or result_set["expected_cell_count"] != len(cells):
+        raise ValueError("expected cell count differs from the compiled bundle")
+    header, receipt_header = result_set["header"], receipt["header"]
+    if type(header) is not dict or type(receipt_header) is not dict:
+        raise ValueError("artifact headers must be objects")
+    if header["data_origin"] != _RESULT_ORIGINS[str(receipt_header["data_origin"])]:
+        raise ValueError("result origin does not match the receipt; a fixture is never hardware")
+
+
+def _roundtrip_raw_result_set(request: dict[str, object]) -> dict[str, object]:
+    names = ("target", "bundle", "quote", "approval", "receipt")
+    if set(request) != {"op", *names, "planned", "results"}:
+        raise ValueError("result request fields mismatch")
+    receipt_request = {name: request[name] for name in names}
+    _roundtrip_provider_batch_receipt(
+        {"op": "roundtrip_provider_batch_receipt", **receipt_request}
+    )
+    bundle, receipt = request["bundle"], request["receipt"]
+    if type(bundle) is not dict or type(receipt) is not dict:
+        raise ValueError("bundle and receipt must be objects")
+    result_set = _validate_result_set_fields(request["results"])
+    header = result_set["header"]
+    origin = str(header["data_origin"]) if type(header) is dict else ""
+    if origin not in ("provider_result", "synthetic_classical"):
+        raise ValueError("a raw result set derives from provider results or a fixture")
+    parents = (
+        str(result_set["provider_batch_receipt_digest"]),
+        str(result_set["compiled_bundle_digest"]),
+    )
+    _validate_artifact_header(result_set, parents, origin)
+    _cross_check_result_set(result_set, receipt, bundle)
+    planned = _check_planned_cells(request["planned"], bundle)
+    jobs, layout, results = receipt["jobs"], bundle["layout"], result_set["results"]
+    if type(jobs) is not list or type(layout) is not list or type(results) is not list:
+        raise ValueError("receipt jobs, layout and results must be lists")
+    for result in results:
+        _cross_check_result(result, planned[int(str(result["cell_ordinal"]))], jobs, set(layout))
+    wire = _canonical_bytes(result_set)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "results": json.loads(wire),
+        "results_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -1711,6 +1946,7 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
         _roundtrip_provider_batch_receipt,
         (ValueError, TypeError, KeyError),
     ),
+    "roundtrip_raw_result_set": (_roundtrip_raw_result_set, (ValueError, TypeError, KeyError)),
 }
 
 

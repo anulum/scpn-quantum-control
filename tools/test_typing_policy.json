@@ -938,6 +938,7 @@
         "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
         "tests/experimental/llm_qpu/test_owner_approval_contract.py",
         "tests/experimental/llm_qpu/test_provider_batch_receipt_contract.py",
+        "tests/experimental/llm_qpu/test_raw_result_set_contract.py",
         "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
         "tests/experimental/llm_qpu/test_target_snapshot_contract.py",
         "tests/ml_convergence_qnn_absence.py",

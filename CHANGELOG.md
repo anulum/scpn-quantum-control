@@ -497,6 +497,26 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains design-only `CellResult`, `CellGap` and
+  `RawResultSet` contracts (`experimental/llm_qpu/contracts/results.py`,
+  schema `raw_result_set.v1`) for the raw outcome of one provider batch
+  receipt. A `CellResult` records the cell's ordinal and `CellKey`, its
+  receipt job, provider job ID, PUB and binding indices, the physical qubit
+  behind each bitstring position, requested and actual shots, sorted sparse
+  integer counts and the raw payload digest. Other shots, float or boolean
+  counts, and zero counts that pad sparse data to full support are refused.
+  A `CellGap` records a missing cell, or a quarantined one with its raw
+  payload kept. A `RawResultSet` accounts for every expected cell exactly
+  once as a result or a gap, so no cell goes missing silently, and refuses
+  two cells sharing one provider result unit (a merged PUB).
+  `validate_raw_result_set` ties each result to its planned cell (the
+  compiled bundle's planned-cell digest is the SHA-256 of the planned cell
+  wire) and to its receipt job and circuit position. It refuses a result
+  from an ambiguous job, a measured qubit outside the compiled layout, and
+  a fixture receipt with provider-result data. The standalone worker
+  validates the same wire independently; its planned-cell checks are now
+  one helper shared with the cell round trip.
+
 - The experimental LLM-QPU lane gains a design-only `ProviderBatchReceipt`
   contract (`experimental/llm_qpu/contracts/receipt.py`, schema
   `provider_batch_receipt.v1`) that binds one approved compiled bundle to its

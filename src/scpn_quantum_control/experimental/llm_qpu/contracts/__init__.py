@@ -54,6 +54,13 @@ if TYPE_CHECKING:
         decode_provider_batch_receipt,
         validate_provider_batch_receipt,
     )
+    from .results import (
+        CellGap,
+        CellResult,
+        RawResultSet,
+        decode_raw_result_set,
+        validate_raw_result_set,
+    )
     from .static import (
         ReservoirSpec,
         StaticCircuitPlan,
@@ -75,6 +82,7 @@ if TYPE_CHECKING:
         MODEL_SCHEMA,
         OWNER_APPROVAL_SCHEMA,
         PROVIDER_BATCH_RECEIPT_SCHEMA,
+        RAW_RESULT_SET_SCHEMA,
         RESERVOIR_SCHEMA,
         SCHEMA,
         SPLIT_SCHEMA,
@@ -260,6 +268,26 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.receipt",
         "decode_provider_batch_receipt",
     ),
+    "CellResult": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.results",
+        "CellResult",
+    ),
+    "CellGap": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.results",
+        "CellGap",
+    ),
+    "RawResultSet": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.results",
+        "RawResultSet",
+    ),
+    "validate_raw_result_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.results",
+        "validate_raw_result_set",
+    ),
+    "decode_raw_result_set": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.results",
+        "decode_raw_result_set",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -322,6 +350,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "PROVIDER_BATCH_RECEIPT_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "PROVIDER_BATCH_RECEIPT_SCHEMA",
+    ),
+    "RAW_RESULT_SET_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "RAW_RESULT_SET_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -539,4 +571,10 @@ __all__ = (
     "ProviderBatchReceipt",
     "validate_provider_batch_receipt",
     "decode_provider_batch_receipt",
+    "RAW_RESULT_SET_SCHEMA",
+    "CellResult",
+    "CellGap",
+    "RawResultSet",
+    "validate_raw_result_set",
+    "decode_raw_result_set",
 )

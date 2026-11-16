@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **871 modules** across **41 package families**
-- **4699 documented public module-level symbols**
+- **872 modules** across **41 package families**
+- **4704 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2514,6 +2514,16 @@ Provider batch receipts: real job IDs per cell, ambiguity never read as failure.
 **Classes:** `SubmittedJob`, `ProviderBatchReceipt`
 
 **Functions:** `validate_provider_batch_receipt()`, `decode_provider_batch_receipt()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.results`
+
+Raw per-cell results: exact shots, sparse integer counts, no silently missing cell.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/results.py) · Public symbols: **5**
+
+**Classes:** `CellResult`, `CellGap`, `RawResultSet`
+
+**Functions:** `validate_raw_result_set()`, `decode_raw_result_set()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.static`
 
