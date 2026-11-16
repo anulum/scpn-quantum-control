@@ -32,6 +32,7 @@ from scpn_quantum_control.dense_budget import (
 
 
 def test_dense_budget_estimates_complex_hamiltonian_bytes() -> None:
+    """The estimate gives the dimension, shape and bytes of a complex Hamiltonian."""
     estimate = estimate_dense_allocation(
         4,
         dtype=np.complex128,
@@ -113,11 +114,13 @@ def test_budget_must_be_finite_and_representable(budget: float) -> None:
 
 
 def test_dense_budget_rejects_invalid_qubit_count() -> None:
+    """An invalid qubit count is refused."""
     with pytest.raises(ValueError, match="n_qubits"):
         hilbert_dimension(0)
 
 
 def test_dense_budget_fails_before_large_allocation() -> None:
+    """A dense Hamiltonian above the budget is refused before it is allocated."""
     with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
         require_dense_allocation(
             16,
@@ -129,6 +132,7 @@ def test_dense_budget_fails_before_large_allocation() -> None:
 
 
 def test_dense_budget_allows_small_allocation() -> None:
+    """A small dense object stays within the budget."""
     estimate = require_dense_allocation(
         4,
         dtype=np.complex128,
@@ -141,6 +145,7 @@ def test_dense_budget_allows_small_allocation() -> None:
 
 
 def test_knm_dense_matrix_fails_closed_before_rust_or_qiskit_allocation() -> None:
+    """An oversized coupling matrix is refused before any native or Qiskit allocation."""
     n = 16
     K = np.zeros((n, n), dtype=float)
     omega = np.ones(n, dtype=float)
@@ -150,6 +155,7 @@ def test_knm_dense_matrix_fails_closed_before_rust_or_qiskit_allocation() -> Non
 
 
 def test_dense_eigensolver_workspace_uses_conservative_multiplier() -> None:
+    """The eigensolver budget includes a conservative workspace factor."""
     with pytest.raises(DenseAllocationError, match="test dense eigensolver"):
         require_dense_eigensolver_workspace(
             4,

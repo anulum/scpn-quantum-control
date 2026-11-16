@@ -53,6 +53,7 @@ def _locked_state(network: dict[str, Any]) -> NDArray[np.float64]:
 
 
 def test_potential_gradient_is_the_negative_field() -> None:
+    """The potential's gradient is the negative vector field."""
     network = _network()
     state = network["rng"].uniform(0.0, 0.5, size=_N)
     field = network["omega"] + networked_kuramoto_force(state, network["coupling"])
@@ -75,6 +76,7 @@ def test_potential_gradient_is_the_negative_field() -> None:
 
 
 def test_contraction_rate_is_the_algebraic_connectivity() -> None:
+    """At synchrony the contraction rate equals the algebraic connectivity."""
     network = _network(1)
     state = _locked_state(network)
     difference = state[:, None] - state[None, :]
@@ -85,6 +87,7 @@ def test_contraction_rate_is_the_algebraic_connectivity() -> None:
 
 
 def test_cohesive_locked_state_is_certified() -> None:
+    """A cohesive locked state is certified."""
     network = _network(2)
     state = _locked_state(network)
     certificate = certify_synchronisation(state, network["omega"], network["coupling"])
@@ -98,6 +101,7 @@ def test_cohesive_locked_state_is_certified() -> None:
 
 
 def test_anti_phase_state_is_not_certified() -> None:
+    """An anti-phase state is not certified and does not contract."""
     network = _network(3)
     anti_phase = np.zeros(_N)
     anti_phase[::2] = np.pi
@@ -109,6 +113,7 @@ def test_anti_phase_state_is_not_certified() -> None:
 
 
 def test_phase_cohesiveness_value() -> None:
+    """Phase cohesiveness is the largest phase gap across coupled pairs."""
     coupling = np.ones((3, 3))
     np.fill_diagonal(coupling, 0.0)
     assert phase_cohesiveness(np.array([0.0, 0.1, 0.2]), coupling) == pytest.approx(0.2)
@@ -130,6 +135,7 @@ def test_phase_cohesiveness_value() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     network = _network()
     base: dict[str, Any] = {
         "phases": np.zeros(_N),

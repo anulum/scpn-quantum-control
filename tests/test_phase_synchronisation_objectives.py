@@ -47,6 +47,7 @@ def _finite_difference_gradient(
 
 
 def test_kuramoto_order_parameter_loss_matches_finite_difference() -> None:
+    """The order-parameter loss and its gradient agree with finite differences."""
     params = np.array([0.15, 0.45, -0.2, 0.35], dtype=np.float64)
     term = kuramoto_order_parameter_target_term(4, target=0.82, term_weight=1.7)
 
@@ -74,6 +75,7 @@ def test_kuramoto_order_parameter_loss_matches_finite_difference() -> None:
 
 
 def test_phase_locking_loss_matches_finite_difference_and_parameter_shift_mode() -> None:
+    """The phase-locking loss agrees with finite differences and uses parameter shift."""
     params = np.array([0.2, 0.5, -0.4, 0.1], dtype=np.float64)
     term = phase_locking_target_term(
         4,
@@ -97,6 +99,7 @@ def test_phase_locking_loss_matches_finite_difference_and_parameter_shift_mode()
 
 
 def test_cluster_synchronisation_loss_matches_finite_difference() -> None:
+    """The cluster loss agrees with finite differences and needs analytic gradients."""
     params = np.array([0.1, 0.35, -0.2, 1.4, 1.65, 1.9], dtype=np.float64)
     term = cluster_synchronisation_target_term(
         6,
@@ -119,6 +122,7 @@ def test_cluster_synchronisation_loss_matches_finite_difference() -> None:
 
 
 def test_build_synchronisation_objective_composes_all_loss_families() -> None:
+    """The composed objective holds every loss family."""
     params = np.array([0.1, 0.35, -0.2, 1.4, 1.65, 1.9], dtype=np.float64)
     objective = build_synchronisation_objective(
         6,
@@ -148,6 +152,7 @@ def test_build_synchronisation_objective_composes_all_loss_families() -> None:
 
 
 def test_order_parameter_zero_value_and_singular_gradient_boundary() -> None:
+    """At zero order the gradient is singular and is refused."""
     incoherent = np.array([0.0, np.pi], dtype=np.float64)
 
     assert kuramoto_order_parameter(incoherent) < 1.0e-12
@@ -160,6 +165,7 @@ def test_order_parameter_zero_value_and_singular_gradient_boundary() -> None:
 
 
 def test_synchronisation_objectives_reject_invalid_inputs() -> None:
+    """Wrong widths and invalid targets are refused."""
     with pytest.raises(ValueError, match="width"):
         kuramoto_order_parameter_target_term(0)
     with pytest.raises(ValueError, match="width"):

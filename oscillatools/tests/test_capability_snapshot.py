@@ -29,7 +29,6 @@ _PAGE = _REPO_ROOT / "docs" / "capabilities.md"
 
 def _load(name: str, relative: str) -> ModuleType:
     """Load a tool module from its repository file path."""
-
     spec = importlib.util.spec_from_file_location(name, _REPO_ROOT / relative)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -43,7 +42,6 @@ snapshot_tool = _load("capability_snapshot", "tools/capability_snapshot.py")
 
 def test_build_snapshot_mirrors_the_live_facade() -> None:
     """The snapshot must capture the exact facade version, groups, and symbols."""
-
     snapshot = snapshot_tool.build_snapshot()
     facade = kuramoto.capabilities()
 
@@ -57,7 +55,6 @@ def test_build_snapshot_mirrors_the_live_facade() -> None:
 
 def test_to_json_dict_is_stable_and_complete() -> None:
     """The JSON view must round-trip and carry every group and count."""
-
     snapshot = snapshot_tool.build_snapshot()
     payload = snapshot.to_json_dict()
 
@@ -73,7 +70,6 @@ def test_to_json_dict_is_stable_and_complete() -> None:
 
 def test_render_markdown_lists_every_group_and_symbol() -> None:
     """The rendered page must enumerate every group heading and symbol."""
-
     snapshot = snapshot_tool.build_snapshot()
     document = snapshot_tool.render_markdown(snapshot)
 
@@ -87,14 +83,12 @@ def test_render_markdown_lists_every_group_and_symbol() -> None:
 
 def test_checked_in_page_matches_renderer_output() -> None:
     """The tracked capability page must be generated from the current renderer."""
-
     expected = snapshot_tool.render_markdown(snapshot_tool.build_snapshot())
     assert _PAGE.read_text(encoding="utf-8") == expected
 
 
 def test_main_writes_page(tmp_path: Path) -> None:
     """The CLI writes the capability page and reports success."""
-
     out = tmp_path / "capabilities.md"
     code = snapshot_tool.main(["--output", str(out)])
     assert code == 0

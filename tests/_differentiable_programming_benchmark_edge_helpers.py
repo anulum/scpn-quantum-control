@@ -30,7 +30,6 @@ from scpn_quantum_control.differentiable import (
 
 def _static_lattice_program_ir() -> ProgramADEffectIR:
     """Return real minimal Program AD IR for static-lattice benchmark guards."""
-
     return ProgramADEffectIR(
         ssa_values=(
             ProgramADSSAValue(
@@ -60,13 +59,11 @@ def _static_lattice_program_ir() -> ProgramADEffectIR:
 
 def _gradient(size: int) -> NDArray[np.float64]:
     """Return a deterministic one-dimensional float gradient."""
-
     return np.arange(1, size + 1, dtype=np.float64)
 
 
 def _benchmark_row(case_id: str = "case") -> DifferentiableProgrammingBenchmarkResult:
     """Return a valid differentiable-programming benchmark row."""
-
     gradient = _gradient(2)
     return DifferentiableProgrammingBenchmarkResult(
         case_id=case_id,
@@ -83,7 +80,6 @@ def _benchmark_row(case_id: str = "case") -> DifferentiableProgrammingBenchmarkR
 
 def _quantum_row(case_id: str) -> QuantumGradientBenchmarkResult:
     """Return a valid quantum-gradient benchmark row."""
-
     gradient = _gradient(2)
     return QuantumGradientBenchmarkResult(
         case_id=case_id,
@@ -108,7 +104,6 @@ def _program_ir(
     phi_nodes: tuple[SimpleNamespace, ...] | None = None,
 ) -> SimpleNamespace:
     """Return the minimal IR-shaped object needed by benchmark guards."""
-
     return SimpleNamespace(
         ssa_values=(SimpleNamespace(name="%x"),),
         effects=effects
@@ -145,7 +140,6 @@ def _whole_program_result(
     adjoint_supported: bool = False,
 ) -> SimpleNamespace:
     """Return a minimal whole-program AD result for benchmark helper tests."""
-
     result_gradient = _gradient(3) if gradient is None else gradient
     adjoint = SimpleNamespace(supported=adjoint_supported) if adjoint_supported else None
     return SimpleNamespace(

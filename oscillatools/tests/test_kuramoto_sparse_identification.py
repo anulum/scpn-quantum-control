@@ -61,6 +61,7 @@ def _kuramoto_derivatives(
 
 
 def test_discovers_sparse_kuramoto_structure_exactly() -> None:
+    """Sparse identification recovers the Kuramoto coupling and frequencies exactly."""
     coupling = _coupling()
     snapshots = _snapshots()
     derivatives = _kuramoto_derivatives(snapshots, coupling)
@@ -79,6 +80,7 @@ def test_discovers_sparse_kuramoto_structure_exactly() -> None:
 
 
 def test_discovered_model_reproduces_the_field() -> None:
+    """The discovered model reproduces the sampled vector field."""
     snapshots = _snapshots(seed=1)
     coupling = _coupling()
     derivatives = _kuramoto_derivatives(snapshots, coupling)
@@ -88,6 +90,7 @@ def test_discovered_model_reproduces_the_field() -> None:
 
 
 def test_discovers_sakaguchi_functional_form() -> None:
+    """A phase-lagged coupling is recovered as its sine and cosine parts."""
     beta = 0.4
     coupling = np.zeros((_N, _N), dtype=np.float64)
     coupling[0, 1] = 1.0
@@ -101,6 +104,7 @@ def test_discovers_sakaguchi_functional_form() -> None:
 
 
 def test_discovers_biharmonic_coupling() -> None:
+    """A second-harmonic coupling is recovered with no first harmonic."""
     coupling = np.zeros((_N, _N), dtype=np.float64)
     coupling[0, 1] = 0.7
     snapshots = _snapshots(seed=3)
@@ -112,6 +116,7 @@ def test_discovers_biharmonic_coupling() -> None:
 
 
 def test_threshold_rejects_subthreshold_coupling() -> None:
+    """Coupling below the threshold is set to zero while strong coupling stays."""
     coupling = _coupling()
     coupling[0, 1] = 0.02  # below the 0.05 threshold → must be discovered as absent
     snapshots = _snapshots(seed=4)
@@ -134,6 +139,7 @@ def test_threshold_rejects_subthreshold_coupling() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     snapshots = _snapshots(n=20)
     call: dict[str, Any] = {
         "phases": snapshots,

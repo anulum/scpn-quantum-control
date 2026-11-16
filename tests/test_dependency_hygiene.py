@@ -27,10 +27,12 @@ main = _MODULE.main
 
 
 def test_requirements_txt_mirrors_project_runtime_dependencies() -> None:
+    """requirements.txt mirrors the project's runtime dependencies."""
     assert dependency_drift_report(ROOT).in_sync
 
 
 def test_dependency_drift_checker_reports_mismatch(tmp_path: Path) -> None:
+    """The checker names missing and extra requirements."""
     (tmp_path / "pyproject.toml").write_text(
         "\n".join(
             [
@@ -57,6 +59,7 @@ def test_dependency_drift_checker_reports_mismatch(tmp_path: Path) -> None:
 
 
 def test_dependency_drift_checker_treats_order_as_part_of_the_mirror(tmp_path: Path) -> None:
+    """A reordered mirror is reported as drift."""
     (tmp_path / "pyproject.toml").write_text(
         "\n".join(
             [
@@ -83,6 +86,7 @@ def test_dependency_drift_checker_treats_order_as_part_of_the_mirror(tmp_path: P
 
 
 def test_dependency_drift_checker_accepts_pins_within_declared_ranges(tmp_path: Path) -> None:
+    """Pins inside the declared ranges are accepted."""
     (tmp_path / "pyproject.toml").write_text(
         "\n".join(
             [
@@ -107,6 +111,7 @@ def test_dependency_drift_checker_accepts_pins_within_declared_ranges(tmp_path: 
 
 
 def test_dependency_drift_checker_rejects_pins_outside_declared_ranges(tmp_path: Path) -> None:
+    """A pin outside its declared range is refused."""
     (tmp_path / "pyproject.toml").write_text(
         "\n".join(
             [
@@ -128,6 +133,7 @@ def test_dependency_drift_checker_rejects_pins_outside_declared_ranges(tmp_path:
 
 
 def test_all_extra_is_portable_and_accelerators_are_explicit() -> None:
+    """The all extra stays portable; accelerators have their own extras."""
     text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert "all = [" in text
     assert "accelerated = [" in text

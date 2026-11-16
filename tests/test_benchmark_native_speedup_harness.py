@@ -35,12 +35,14 @@ gate_mod = _load("native_speedup_gate_rt", "tools/benchmark_native_speedup_gate.
 
 
 def test_stats_reports_ordered_percentiles_and_throughput() -> None:
+    """Timing statistics report ordered percentiles and a positive throughput."""
     stats = harness._stats([1.0, 2.0, 3.0, 4.0, 5.0])
     assert stats["p50_us"] <= stats["p95_us"] <= stats["p99_us"]
     assert stats["throughput_ops_s"] > 0.0
 
 
 def test_measure_discards_warmup_and_collects_repeats() -> None:
+    """Measurement runs the warm-up calls as well as the counted repeats."""
     calls: list[int] = []
     harness._measure(lambda: calls.append(1), warmup=3, repeats=5)
     assert len(calls) == 8
@@ -51,11 +53,13 @@ def test_measure_discards_warmup_and_collects_repeats() -> None:
     [(4, 200), (8, 80), (10, 25), (12, 8)],
 )
 def test_repeats_scale_with_system_size(size: int, expected_repeats: int) -> None:
+    """The repeat count follows the system size."""
     _, repeats = harness._repeats_for(size)
     assert repeats == expected_repeats
 
 
 def test_digests_are_deterministic_and_exclude_existing_field() -> None:
+    """Payload digests are deterministic and ignore an existing digest field."""
     payload = {"a": 1, "payload_sha256": "stale"}
     assert harness.payload_digest(payload) == harness.payload_digest({"a": 1})
     benches = {"x": {"languages": {"rust_pyo3": {"p50_us": 1.0}}}}
@@ -63,6 +67,7 @@ def test_digests_are_deterministic_and_exclude_existing_field() -> None:
 
 
 def test_provenance_helpers_return_sane_values() -> None:
+    """The provenance helpers return a CPU model, a build profile and a memory figure."""
     assert isinstance(harness._cpu_model(), str)
     assert isinstance(harness._rust_release_profile(), dict)
     assert harness._peak_rss_mb() >= 0.0
@@ -102,6 +107,7 @@ def test_build_report_falls_back_when_rust_engine_absent(monkeypatch: pytest.Mon
 
 
 def test_main_writes_report_and_baseline(tmp_path: Path) -> None:
+    """The command writes the report and the baseline with their schemas."""
     report_path = tmp_path / "report.json"
     baseline_path = tmp_path / "baseline.json"
     code = harness.main(

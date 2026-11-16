@@ -33,11 +33,13 @@ def _tiny_cfg(**kw: object) -> task.ProbeConfigV2:
 
 def test_shared_param_count_and_basis() -> None:
     # 120 shared cluster edges + 2*6*17 drive
+    """The shared ablation has the stated parameter count and basis."""
     assert ablations._N_SHARED == task.N_CLUSTER_OSC * (task.N_CLUSTER_OSC - 1) // 2
     assert ablations.shared_param_count() == 120 + task.N_RELATIONS * task.N_PAIRS * task.N_OSC
 
 
 def test_shared_coupling_is_symmetric_and_excludes_readout_node() -> None:
+    """The shared coupling is symmetric and leaves the readout oscillator uncoupled."""
     params = ablations.shared_init(0)
     k = np.asarray(ablations._shared_coupling(params["k_shared"]))
     assert np.allclose(k, k.T)
@@ -49,6 +51,7 @@ def test_shared_coupling_is_symmetric_and_excludes_readout_node() -> None:
 def test_shared_coupling_is_the_same_for_every_trial() -> None:
     # The no-gating ablation applies ONE coupling regardless of the code; the code
     # enters only through the additive frequency drive.
+    """The shared coupling does not vary between trials."""
     import jax.numpy as jnp
 
     params = ablations.shared_init(1)
@@ -66,6 +69,7 @@ def test_shared_coupling_is_the_same_for_every_trial() -> None:
 
 
 def test_shared_trains_and_predicts_in_range() -> None:
+    """The shared ablation trains and predicts one in-range bin per test trial."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, 0)
     finals = np.asarray(teacher.teacher_final_phases(batch.theta0, batch.code, cfg))
@@ -84,6 +88,7 @@ def test_shared_trains_and_predicts_in_range() -> None:
 
 def test_separable_readout_uses_one_partner() -> None:
     # A2: bridge_mode="r1_only" bridges the readout to a single cluster.
+    """The separable readout uses a single partner."""
     both = coupling.partners_for((0, 5), "both")
     r1_only = coupling.partners_for((0, 5), "r1_only")
     assert len(both) == 2 and len(r1_only) == 1
@@ -92,6 +97,7 @@ def test_separable_readout_uses_one_partner() -> None:
 
 def test_separable_readout_label_independent_of_r2() -> None:
     # With a single-relation bridge, dropping R2 should not change the readout label.
+    """The separable readout's labels barely depend on the second relation."""
     cfg = _tiny_cfg(bridge_mode="r1_only")
     rng = np.random.default_rng(0)
     theta0 = rng.uniform(-np.pi, np.pi, size=(48, task.N_OSC))

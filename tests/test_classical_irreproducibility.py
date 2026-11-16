@@ -82,12 +82,12 @@ def _parity_operator(n: int) -> SparsePauliOp:
 
 
 def _commutator_sparse(a: SparsePauliOp, b: SparsePauliOp) -> SparsePauliOp:
-    """[A, B] = A·B − B·A, simplified to a canonical Pauli-term list."""
+    """Return [A, B] = A·B − B·A, simplified to a canonical Pauli-term list."""
     return (a @ b - b @ a).simplify()
 
 
 def _is_zero_operator(op: SparsePauliOp) -> bool:
-    """True iff every coefficient is exactly numerically zero.
+    """Report whether every coefficient is exactly numerically zero.
 
     ``simplify`` collapses terms that cancel; what remains is the
     numerically non-zero residue. For a true algebraic identity this
@@ -120,6 +120,7 @@ class TestSymbolicParityCommutation:
 
     @pytest.mark.parametrize("n", [3, 4, 6])
     def test_h_commutes_with_p(self, n: int) -> None:
+        """The Hamiltonian commutes with the parity operator."""
         h = _hamiltonian_sparse(n)
         p = _parity_operator(n)
         comm = _commutator_sparse(h, p)
@@ -187,6 +188,7 @@ class TestUnitaryPreservesParity:
     @pytest.mark.parametrize("t", [0.1, DEFAULT_T_STEP, 1.7])
     @pytest.mark.parametrize("n", [3, 4])
     def test_exp_minus_i_h_t_commutes_with_p(self, n: int, t: float) -> None:
+        """The exact time evolution commutes with parity."""
         h = _hamiltonian_sparse(n).to_matrix()
         p = _parity_operator(n).to_matrix()
         # exp(-iHt) built via matrix exponential of a Hermitian matrix
@@ -200,6 +202,7 @@ class TestUnitaryPreservesParity:
 
     @pytest.mark.parametrize("depth", [1, 4, 30])
     def test_lie_trotter_step_power_commutes_with_p(self, depth: int) -> None:
+        """Powers of a Lie-Trotter step commute with parity."""
         n = DEFAULT_N_QUBITS
         omega = np.linspace(0.8, 1.2, n)
         k = np.zeros((n, n))
@@ -251,6 +254,7 @@ class TestClassicalLeakageIsAlgebraicallyZero:
         expected_parity: int,
         depth: int,
     ) -> None:
+        """Evolution leaves no amplitude in the opposite parity sector."""
         n = DEFAULT_N_QUBITS
         assert _parity_eigenvalue(initial) == expected_parity
 

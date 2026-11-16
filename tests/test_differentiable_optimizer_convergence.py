@@ -37,6 +37,7 @@ def payload() -> dict[str, Any]:
 def test_optimizer_convergence_payload_carries_rows_and_boundary(
     payload: dict[str, Any],
 ) -> None:
+    """The convergence payload carries its schema, identity, rows and boundary."""
     assert payload["schema"] == GROUND_STATE_OPTIMIZER_CONVERGENCE_SCHEMA
     assert payload["artifact_id"] == "pytest-ground-state-optimizer"
     assert payload["artifact_date"] == "2026-07-09"
@@ -52,6 +53,7 @@ def test_optimizer_convergence_payload_carries_rows_and_boundary(
 def test_optimizer_convergence_markdown_renders_evidence(
     payload: dict[str, Any],
 ) -> None:
+    """The Markdown page renders the classification and the boundary."""
     markdown = render_ground_state_optimizer_convergence_markdown(payload)
 
     assert "# Ground-State Optimizer Convergence Evidence" in markdown
@@ -75,6 +77,7 @@ def test_optimizer_convergence_markdown_omits_empty_boundary_section(
 def test_optimizer_convergence_writer_creates_json_and_markdown(
     tmp_path: Path,
 ) -> None:
+    """The writer creates the JSON and Markdown files with their counts."""
     artifact = write_ground_state_optimizer_convergence_artifact(
         tmp_path / "ground_state_optimizer_convergence.json",
         artifact_id="pytest-writer",
@@ -92,6 +95,7 @@ def test_optimizer_convergence_writer_creates_json_and_markdown(
 
 
 def test_optimizer_convergence_writer_rejects_invalid_paths(tmp_path: Path) -> None:
+    """Output paths with the wrong suffix are refused."""
     with pytest.raises(ValueError, match="output_path must end with .json"):
         write_ground_state_optimizer_convergence_artifact(tmp_path / "artifact.txt")
 
@@ -103,11 +107,13 @@ def test_optimizer_convergence_writer_rejects_invalid_paths(tmp_path: Path) -> N
 
 
 def test_optimizer_convergence_payload_rejects_blank_artifact_id() -> None:
+    """A blank artefact identifier is refused."""
     with pytest.raises(ValueError, match="artifact_id must be non-empty"):
         ground_state_optimizer_convergence_payload(artifact_id=" ")
 
 
 def test_optimizer_convergence_payload_rejects_wrong_suite_classification() -> None:
+    """A suite of the wrong evidence class is refused."""
     suite = run_ground_state_optimizer_convergence_suite()
     object.__setattr__(suite, "evidence_class", "isolated_affinity")
 

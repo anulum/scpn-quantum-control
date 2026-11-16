@@ -13,12 +13,14 @@ from scpn_quantum_control.qsnn.qlif import QuantumLIFNeuron
 
 
 def test_no_input_no_spike() -> None:
+    """Without input the neuron does not spike."""
     neuron = QuantumLIFNeuron(n_shots=0)
     spike = neuron.step(0.0)
     assert spike == 0
 
 
 def test_strong_input_spikes() -> None:
+    """A strong input produces a circuit."""
     neuron = QuantumLIFNeuron(v_threshold=1.0, tau_mem=1.0, dt=1.0, n_shots=0)
     for _ in range(10):
         neuron.step(2.0)
@@ -29,6 +31,7 @@ def test_strong_input_spikes() -> None:
 
 
 def test_reset_on_spike() -> None:
+    """After a spike the potential returns to rest."""
     neuron = QuantumLIFNeuron(v_threshold=0.1, tau_mem=100.0, dt=1.0, n_shots=0)
     neuron.v = 0.2  # above threshold
     spike = neuron.step(0.0)
@@ -37,6 +40,7 @@ def test_reset_on_spike() -> None:
 
 
 def test_circuit_is_single_qubit() -> None:
+    """The neuron's circuit has one qubit."""
     neuron = QuantumLIFNeuron()
     neuron.step(0.5)
     qc = neuron.get_circuit()
@@ -45,6 +49,7 @@ def test_circuit_is_single_qubit() -> None:
 
 
 def test_reset_clears_state() -> None:
+    """A reset restores the resting potential and clears the circuit."""
     neuron = QuantumLIFNeuron()
     neuron.step(1.0)
     neuron.reset()
@@ -108,6 +113,7 @@ def test_zero_input_membrane_decays() -> None:
 
 
 def test_custom_v_rest() -> None:
+    """A custom resting potential is used from the start."""
     neuron = QuantumLIFNeuron(v_rest=-0.5)
     assert neuron.v_rest == -0.5
     neuron.reset()

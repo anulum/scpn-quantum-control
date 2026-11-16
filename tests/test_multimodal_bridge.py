@@ -58,6 +58,7 @@ def _evidence() -> tuple[SyntheticMultimodalDataset, MultimodalIntervalForecast]
 
 
 def test_interval_composes_into_real_no_submit_sensing_plan() -> None:
+    """A forecast interval becomes an allowed sensing plan that submits nothing."""
     dataset, interval = _evidence()
     bridge = plan_forecast_active_sensing(
         interval,
@@ -81,6 +82,7 @@ def test_interval_composes_into_real_no_submit_sensing_plan() -> None:
 
 
 def test_hardware_request_remains_refused_by_sensing_policy() -> None:
+    """A hardware request is refused by the sensing policy."""
     dataset, interval = _evidence()
     bridge = plan_forecast_active_sensing(
         interval,
@@ -100,6 +102,7 @@ def test_hardware_request_remains_refused_by_sensing_policy() -> None:
 
 
 def test_terminal_forecast_creates_bounded_unapplied_controller_proposal() -> None:
+    """A terminal forecast yields a bounded controller proposal that is not applied."""
     _, interval = _evidence()
     result = forecast_to_controller_initialisation(
         interval,
@@ -121,6 +124,7 @@ def test_terminal_forecast_creates_bounded_unapplied_controller_proposal() -> No
 
 
 def test_sensing_bridge_refuses_custody_and_candidate_errors() -> None:
+    """Custody, range and alignment errors in the sensing bridge are refused."""
     dataset, interval = _evidence()
     with pytest.raises(ValueError, match="custody/shape"):
         plan_forecast_active_sensing(
@@ -248,12 +252,14 @@ def test_controller_bridge_refuses_invalid_controls(
     builder: Callable[[MultimodalIntervalForecast], ForecastControllerInitialisation],
     message: str,
 ) -> None:
+    """Invalid controls are refused with their reasons."""
     _, interval = _evidence()
     with pytest.raises(ValueError, match=message):
         builder(interval)
 
 
 def test_bridge_records_refuse_promotion_and_empty_custody() -> None:
+    """Bridge records refuse hardware promotion and empty custody."""
     dataset, interval = _evidence()
     sensing = plan_forecast_active_sensing(
         interval,

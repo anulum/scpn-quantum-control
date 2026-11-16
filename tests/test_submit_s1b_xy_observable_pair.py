@@ -19,6 +19,7 @@ from scripts.submit_s1b_ibm_xy_observable_pair import (
 
 
 def test_s1c_arguments_can_prepare_shallow_gain_tuned_lane() -> None:
+    """The arguments prepare the shallow, gain-tuned lane in one round."""
     args = _parse_args(
         [
             "--lane",
@@ -45,6 +46,7 @@ def test_s1c_arguments_can_prepare_shallow_gain_tuned_lane() -> None:
 
 
 def test_configurable_controller_applies_s1c_policy_parameters() -> None:
+    """The controller applies the lane's correction angle and gain."""
     args = _parse_args(
         [
             "--n-rounds",
@@ -63,6 +65,7 @@ def test_configurable_controller_applies_s1c_policy_parameters() -> None:
 
 
 def test_s1d_policy_sweep_expands_to_preregistered_variants() -> None:
+    """The policy sweep expands to the preregistered variants."""
     args = _parse_args(
         [
             "--lane",
@@ -87,6 +90,7 @@ def test_s1d_policy_sweep_expands_to_preregistered_variants() -> None:
 
 
 def test_s1e_confirmatory_repeat_reuses_policy_sweep_with_five_repetitions() -> None:
+    """The confirmatory repeat reuses the sweep with five repetitions."""
     args = _parse_args(
         [
             "--lane",
@@ -114,6 +118,7 @@ def test_s1e_confirmatory_repeat_reuses_policy_sweep_with_five_repetitions() -> 
 
 
 def test_polarity_flipped_s1d_controller_preserves_signed_policy_metadata() -> None:
+    """A polarity-flipped controller keeps its signed policy metadata."""
     args = _parse_args(
         [
             "--lane",
@@ -140,6 +145,7 @@ def test_polarity_flipped_s1d_controller_preserves_signed_policy_metadata() -> N
 
 
 def test_s1d_analysis_summary_preserves_policy_variant_outcomes() -> None:
+    """The analysis keeps each variant's outcome and names the best."""
     package = {
         "experiment_id": "s1d_policy_direction_sweep_2026-05-20",
         "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",

@@ -37,6 +37,7 @@ large_system = _load_script_module("prepare_large_system_submission_extensions")
 
 
 def test_candidate_matrix_covers_submission_papers_and_scales() -> None:
+    """The candidate matrix covers every target paper and size."""
     specs = large_system.candidate_specs()
 
     assert [spec.candidate_id for spec in specs] == [
@@ -58,6 +59,7 @@ def test_candidate_matrix_covers_submission_papers_and_scales() -> None:
 
 
 def test_qpu_readiness_accepts_n8_readout_ceiling_and_rejects_n9_full_readout() -> None:
+    """Readiness accepts the eight-qubit readout ceiling and refuses full readout above it."""
     n8_spec = next(
         spec
         for spec in large_system.candidate_specs()
@@ -91,6 +93,7 @@ def test_qpu_readiness_accepts_n8_readout_ceiling_and_rejects_n9_full_readout() 
 
 
 def test_methods_n16_n20_are_classical_gpu_lanes_not_qpu_jobs() -> None:
+    """The sixteen- and twenty-qubit lanes run on GPUs and use no QPU time."""
     backend = GenericBackendV2(num_qubits=32, seed=large_system.SEED_TRANSPILER)
 
     estimates = {
@@ -112,6 +115,7 @@ def test_methods_n16_n20_are_classical_gpu_lanes_not_qpu_jobs() -> None:
 
 
 def test_methods_qpu_lanes_use_submitter_conservative_seconds_per_circuit() -> None:
+    """QPU estimates use the submitter's conservative time per circuit."""
     spec = next(
         spec
         for spec in large_system.candidate_specs()
@@ -129,6 +133,7 @@ def test_methods_qpu_lanes_use_submitter_conservative_seconds_per_circuit() -> N
 
 
 def test_payload_and_markdown_record_ready_order_and_budget(tmp_path: Path) -> None:
+    """The payload records the ready order and budget and submits nothing."""
     args = large_system._parse_args(
         [
             "--backend",
@@ -172,6 +177,7 @@ def test_payload_and_markdown_record_ready_order_and_budget(tmp_path: Path) -> N
 
 
 def test_usage_budget_summary_computes_live_fit_fields(monkeypatch: Any) -> None:
+    """The budget summary computes what fits the live allowance."""
     args = large_system._parse_args(["--backend", "generic_line", "--backend-qubits", "32"])
     usage = {
         "usage_allocation_seconds": 3600,

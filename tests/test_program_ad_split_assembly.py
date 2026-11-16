@@ -34,7 +34,6 @@ FloatArray = NDArray[np.float64]
 
 def test_program_ad_assembly_split_facade_uses_extracted_factory() -> None:
     """The compatibility facade should expose the extracted split factory."""
-
     assert program_ad_assembly_split_derivative_rule is extracted_split_derivative_rule
 
 
@@ -42,7 +41,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -91,7 +89,6 @@ def test_program_ad_split_family_preserves_gather_adjoint() -> None:
 
 def test_program_ad_split_family_rejects_invalid_static_sections() -> None:
     """Program AD split-family calls should fail closed on invalid split contracts."""
-
     with pytest.raises(ValueError, match="static split"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.split(values, 4)[0]),
@@ -107,7 +104,6 @@ def test_program_ad_split_family_rejects_invalid_static_sections() -> None:
 
 def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
     """Split-family calls should expose fail-closed assembly primitive direct rules."""
-
     matrix = np.array([[1.0, -2.0, 0.5], [3.0, -1.5, 2.0]], dtype=np.float64)
     tangent = np.array([[0.25, -0.5, 0.75], [-1.0, 1.25, -1.5]], dtype=np.float64)
     cotangent = np.array([0.2, -0.4, 0.6, -0.8, 1.0, -1.2], dtype=np.float64)
@@ -248,7 +244,6 @@ def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
 
 def test_program_ad_assembly_split_variant_boundaries_are_explicit() -> None:
     """Split-family contracts should expose fail-closed static partition boundaries."""
-
     expected_boundaries = {
         "hsplit": "static_hsplit_sections_gather_scatter",
         "vsplit": "static_vsplit_sections_gather_scatter",
@@ -264,7 +259,6 @@ def test_program_ad_assembly_split_variant_boundaries_are_explicit() -> None:
 
 def test_program_ad_assembly_split_batching_rule_maps_partition_outputs() -> None:
     """Split batching should map source batches and preserve partition structure."""
-
     contract = primitive_contract_for("scpn.program_ad.assembly:split")
     assert contract.batching_rule is not None
     batching_rule = contract.batching_rule

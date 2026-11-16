@@ -68,6 +68,7 @@ def _rk4(
 
 
 def test_coupling_function_reproduces_canonical_interactions() -> None:
+    """The coupling function reproduces the classical and Sakaguchi interactions."""
     grid = np.linspace(-np.pi, np.pi, 17, dtype=np.float64)
     classic = coupling_function_value(grid, np.array([1.0]), np.array([0.0]))
     assert classic == pytest.approx(np.sin(grid))
@@ -77,6 +78,7 @@ def test_coupling_function_reproduces_canonical_interactions() -> None:
 
 
 def test_collocation_recovers_diverse_coupling_and_frequencies_exactly() -> None:
+    """Collocation recovers the coupling harmonics and frequencies exactly."""
     rng = np.random.default_rng(0)
     n, harmonics = 6, 2
     coupling = _coupling(rng, n)
@@ -96,6 +98,7 @@ def test_collocation_recovers_diverse_coupling_and_frequencies_exactly() -> None
 
 
 def test_trajectory_match_gradient_matches_finite_differences() -> None:
+    """The trajectory-matching gradient agrees with finite differences."""
     rng = np.random.default_rng(0)
     n, harmonics = 6, 2
     coupling = _coupling(rng, n)
@@ -134,6 +137,7 @@ def test_trajectory_match_gradient_matches_finite_differences() -> None:
 
 
 def test_trajectory_match_recovers_the_coupling_function() -> None:
+    """Trajectory matching drives its loss down and recovers the coupling function."""
     rng = np.random.default_rng(7)
     n, harmonics = 5, 2
     coupling = _coupling(rng, n)
@@ -168,6 +172,7 @@ def test_trajectory_match_recovers_the_coupling_function() -> None:
 
 
 def test_coupling_function_value_rejects_mismatched_coefficients() -> None:
+    """Coefficient arrays of unequal or zero length are refused."""
     with pytest.raises(ValueError, match="equal-length non-empty"):
         coupling_function_value(np.array([0.0]), np.array([1.0]), np.array([0.5, 0.5]))
 
@@ -192,6 +197,7 @@ def test_coupling_function_value_rejects_mismatched_coefficients() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     rng = np.random.default_rng(1)
     n = 5
     coupling = _coupling(rng, n)

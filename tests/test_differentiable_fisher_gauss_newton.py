@@ -27,7 +27,6 @@ from scpn_quantum_control.differentiable import (
 
 def _assert_allclose(actual: object, expected: object, *, atol: float | None = None) -> None:
     """Assert numerical closeness through NumPy's dynamically typed test helper."""
-
     assert_allclose = cast(Any, np.testing.assert_allclose)
     if atol is None:
         assert_allclose(actual, expected)
@@ -37,7 +36,6 @@ def _assert_allclose(actual: object, expected: object, *, atol: float | None = N
 
 def test_empirical_fisher_metric_from_jacobian_result() -> None:
     """Fisher/Gauss-Newton metrics should be constructible from Jacobians."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], 2.0 * values[1]]),
         [1.0, 2.0],
@@ -53,7 +51,6 @@ def test_empirical_fisher_metric_from_jacobian_result() -> None:
 
 def test_empirical_fisher_metric_rejects_invalid_weights() -> None:
     """Fisher metric weights must match residual rows and stay non-negative."""
-
     with pytest.raises(ValueError, match="weights"):
         empirical_fisher_metric(np.eye(2), weights=np.array([1.0]))
     with pytest.raises(ValueError, match="non-negative"):
@@ -64,7 +61,6 @@ def test_empirical_fisher_metric_rejects_invalid_weights() -> None:
 
 def test_gauss_newton_gradient_solves_weighted_least_squares_residual() -> None:
     """Gauss-Newton should solve the weighted residual normal equations."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] - 1.0, 2.0 * (values[1] + 0.5)]),
         [3.0, 1.5],
@@ -89,7 +85,6 @@ def test_gauss_newton_gradient_solves_weighted_least_squares_residual() -> None:
 
 def test_gauss_newton_gradient_respects_frozen_parameters() -> None:
     """Frozen parameters must not receive Gauss-Newton update components."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] - 1.0, values[1] - 2.0]),
         [2.0, 5.0],
@@ -102,7 +97,6 @@ def test_gauss_newton_gradient_respects_frozen_parameters() -> None:
 
 def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
     """Gauss-Newton diagnostics require a validated JacobianResult and weights."""
-
     invalid_jacobian = cast(JacobianResult, np.eye(2))
     with pytest.raises(ValueError, match="JacobianResult"):
         gauss_newton_gradient(invalid_jacobian)

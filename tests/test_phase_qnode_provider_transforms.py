@@ -50,6 +50,7 @@ def _sampler(values: FloatArray, shots: int | None) -> ProviderExpectationSample
 
 
 def test_provider_qnode_transform_executes_scalar_transform_family() -> None:
+    """The scalar transforms run and return a gradient."""
     values = np.array([0.2, -0.4], dtype=float)
     tangent = np.array([0.5, -2.0], dtype=float)
     cotangent = np.array([3.0], dtype=float)
@@ -88,6 +89,7 @@ def test_provider_qnode_transform_executes_scalar_transform_family() -> None:
 
 
 def test_provider_qnode_transform_executes_finite_shot_with_uncertainty() -> None:
+    """A finite-shot transform runs with its value and shot total."""
     values = np.array([0.2, -0.4], dtype=float)
 
     result = execute_provider_qnode_transform(
@@ -114,6 +116,7 @@ def test_provider_qnode_transform_executes_finite_shot_with_uncertainty() -> Non
 
 
 def test_provider_qnode_vmap_grad_executes_rowwise_callback_gradients() -> None:
+    """The batched gradient runs row by row through the callback."""
     batched_values = np.array(
         [[0.2, -0.4], [0.7, 0.1], [-0.3, 0.6]],
         dtype=float,
@@ -159,6 +162,7 @@ def test_provider_qnode_vmap_grad_accumulates_finite_shots() -> None:
 
 
 def test_provider_qnode_transforms_fail_closed_for_unsafe_routes() -> None:
+    """Hardware and other unsafe routes fail closed with a reason."""
     values = np.array([0.2, -0.4], dtype=float)
     batched_values = np.array([[0.2, -0.4], [0.7, 0.1]], dtype=float)
 
@@ -190,6 +194,7 @@ def test_provider_qnode_transforms_fail_closed_for_unsafe_routes() -> None:
 
 
 def test_provider_qnode_transform_validates_directional_inputs() -> None:
+    """A missing or wrong-width tangent fails closed."""
     values = np.array([0.2, -0.4], dtype=float)
 
     missing_tangent = execute_provider_qnode_transform("jvp", _sampler, values)
@@ -295,6 +300,7 @@ def test_provider_qnode_transform_rejects_invalid_baseline_sample() -> None:
 
 
 def test_provider_qnode_transform_readiness_suite_records_boundaries() -> None:
+    """The readiness suite records which transforms are supported."""
     suite = run_provider_qnode_transform_readiness_suite()
     payload = suite.to_dict()
 
