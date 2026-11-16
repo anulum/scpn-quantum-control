@@ -647,6 +647,14 @@ baseline run or the ripser topology run that is not uploaded and combined.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 
+The `cross-validation-extra` job runs on Python 3.12. It installs the
+`[xvalidate]` extra from `requirements-ci-xvalidate-py312-linux.txt`
+(dynamiqs 0.3.7, resolved against the 3.12 lock and audited in the job), runs
+`tests/test_cross_validation_qutip_dynamiqs.py` and fails if any case skips.
+No other lock installs dynamiqs, so before this job the dynamiqs cases skipped
+in every hosted run. The job uploads no coverage database: the QuTiP cases of
+the same file already run in the main lanes.
+
 The separate 100% recovery register is
 `data/coverage/coverage_debt_register.json`. It is generated and audited by
 `tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does

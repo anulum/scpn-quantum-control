@@ -396,7 +396,8 @@
         "python-test-shards",
         "program-ad-replay",
         "python-sharding-quality",
-        "topology-extra-coverage"
+        "topology-extra-coverage",
+        "cross-validation-extra"
       ]
     },
     {
@@ -630,6 +631,7 @@
     "program-ad-replay",
     "python-sharding-quality",
     "topology-extra-coverage",
+    "cross-validation-extra",
     "test",
     "test-extra-platforms",
     "type-check",

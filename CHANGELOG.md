@@ -1057,6 +1057,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   covers the quimb and ripser runs, and the supply-chain test pins the new
   lock. The test infrastructure page states what the union appends.
 
+- The optional `[xvalidate]` extra now has a CI lane. No lock installed
+  dynamiqs, so the six dynamiqs cases of the QuTiP and dynamiqs
+  cross-validation skipped in every hosted run. The new
+  `cross-validation-extra` job installs the 3.12 lock and the new hash lock
+  `requirements-ci-xvalidate-py312-linux.txt` (dynamiqs 0.3.7, which uv
+  resolved against that lock, with jax 0.12.0.1). It audits the lock with
+  pip-audit, runs `tests/test_cross_validation_qutip_dynamiqs.py` and fails
+  if any case skips. The lane uses Python 3.12 because the whole job was
+  replayed on that interpreter with this exact lock before it was committed:
+  43 cases passed, none skipped, and pip-audit found no known
+  vulnerabilities. The supply-chain test pins the lock and the no-skip
+  check, the CI policy registers the job, and the test infrastructure page
+  describes it.
+
 - The Cirq adapter (`hardware/cirq_adapter.py`) now tests the import path
   with Cirq importable in every lane: the adapter file is executed under a
   private module name with a stand-in `cirq` module, which marks Cirq

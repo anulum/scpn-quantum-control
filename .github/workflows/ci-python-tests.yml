@@ -279,3 +279,40 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
+
+  cross-validation-extra:
+    # The [xvalidate] extra pins dynamiqs, which no other CI lock installs, so
+    # the dynamiqs cases of the solver cross-validation skipped in every hosted
+    # run. This job installs the pinned extra and fails if any case still skips.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install the 3.12 lock and the pinned cross-validation extra
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-xvalidate-py312-linux.txt
+          python -m pip check
+          python -c "import dynamiqs; assert dynamiqs.__version__ == '0.3.7', dynamiqs.__version__"
+      - name: Audit the committed cross-validation extra lock
+        run: >-
+          python -m pip_audit -r requirements-ci-xvalidate-py312-linux.txt
+          --no-deps --disable-pip --strict --desc on
+      - name: Run the solver cross-validation with no case skipped
+        run: |
+          log="$RUNNER_TEMP/scpn-qc-cross-validation.log"
+          python -m pytest -q -rs -p no:cacheprovider tests/test_cross_validation_qutip_dynamiqs.py > "$log" 2>&1 || { cat "$log"; exit 1; }
+          cat "$log"
+          if grep -q "^SKIPPED" "$log"; then
+            echo "a cross-validation case skipped although the extra is installed"
+            exit 1
+          fi

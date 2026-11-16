@@ -80,3 +80,17 @@ def test_ci_lock_inputs_cover_the_new_security_and_typing_surfaces() -> None:
     ):
         lock = Path(path).read_text(encoding="utf-8")
         assert "types-pyyaml==6.0.12.20260815" in lock
+
+
+def test_cross_validation_extra_is_locked_and_run_without_skips() -> None:
+    """Pin dynamiqs in a hash closure on the 3.12 base and fail the CI run on any skip."""
+    xvalidate_input = Path("requirements-ci-xvalidate-py312-linux.in").read_text(encoding="utf-8")
+    xvalidate_lock = Path("requirements-ci-xvalidate-py312-linux.txt").read_text(encoding="utf-8")
+    workflow = Path(".github/workflows/ci-python-tests.yml").read_text(encoding="utf-8")
+    assert "dynamiqs==0.3.7" in xvalidate_input
+    assert "--constraint requirements-ci-py312-linux.txt" in xvalidate_lock
+    assert "dynamiqs==0.3.7 \\" in xvalidate_lock
+    assert "--hash=sha256:" in xvalidate_lock
+    assert "-r requirements-ci-xvalidate-py312-linux.txt" in workflow
+    assert "tests/test_cross_validation_qutip_dynamiqs.py" in workflow
+    assert 'grep -q "^SKIPPED"' in workflow
