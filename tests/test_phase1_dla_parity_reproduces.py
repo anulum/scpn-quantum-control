@@ -58,11 +58,13 @@ def _load_module() -> ModuleType:
 
 @pytest.fixture(scope="module")
 def analyse() -> ModuleType:
+    """Return the loaded phase-1 analysis module."""
     return _load_module()
 
 
 @pytest.fixture(scope="module")
 def summaries(analyse: ModuleType) -> list[Any]:
+    """Return the per-depth summaries of the four-qubit phase-1 circuits."""
     circuits = analyse.load_phase1_circuits()
     by_depth = analyse.collect_n4_depth_points(circuits)
     return [analyse.summarise_depth(by_depth[d]) for d in sorted(by_depth.keys())]
@@ -72,6 +74,7 @@ class TestPhase1Dataset:
     """Raw-data presence and coverage checks."""
 
     def test_all_four_phase1_files_exist(self, analyse: ModuleType) -> None:
+        """All four phase-1 result files exist."""
         missing = [p for p in analyse.PHASE1_FILES if not p.exists()]
         assert not missing, (
             f"Phase 1 dataset incomplete — missing files: {missing}. The "
@@ -80,6 +83,7 @@ class TestPhase1Dataset:
         )
 
     def test_circuit_count_at_least_claimed_floor(self, analyse: ModuleType) -> None:
+        """At least 300 phase-1 circuits are present."""
         circuits = analyse.load_phase1_circuits()
         assert len(circuits) >= 300, (
             f"Expected ≥ 300 circuits across the Phase 1 sub-phases; "
@@ -88,6 +92,7 @@ class TestPhase1Dataset:
         )
 
     def test_eight_distinct_n4_depth_points(self, analyse: ModuleType) -> None:
+        """The four-qubit data has eight distinct depths."""
         circuits = analyse.load_phase1_circuits()
         by_depth = analyse.collect_n4_depth_points(circuits)
         assert len(by_depth) == 8, (
@@ -100,6 +105,7 @@ class TestPhase1Statistics:
     """Check the headline numbers quoted in CHANGELOG and preprint."""
 
     def test_peak_asymmetry_at_depth_6(self, summaries: list[Any]) -> None:
+        """The asymmetry peaks at depth 6 near the published value."""
         depth_6 = next((s for s in summaries if s.depth == 6), None)
         assert depth_6 is not None, "Depth 6 missing from summaries"
         pct = 100.0 * depth_6.asymmetry_relative
@@ -109,6 +115,7 @@ class TestPhase1Statistics:
         )
 
     def test_mean_asymmetry_depths_ge_4(self, summaries: list[Any]) -> None:
+        """The mean asymmetry at depth 4 and above matches the published value."""
         deep = [s for s in summaries if s.depth >= 4]
         assert deep, "No depth ≥ 4 points present"
         mean_pct = 100.0 * sum(s.asymmetry_relative for s in deep) / len(deep)
@@ -118,6 +125,7 @@ class TestPhase1Statistics:
         )
 
     def test_seven_of_eight_depths_significant(self, summaries: list[Any]) -> None:
+        """At least seven of the eight depths are significant."""
         significant = sum(1 for s in summaries if not math.isnan(s.welch_p) and s.welch_p < 0.05)
         assert significant >= 7, (
             f"Only {significant}/8 depths have Welch p < 0.05; the "
@@ -125,6 +133,7 @@ class TestPhase1Statistics:
         )
 
     def test_fisher_combined_chi2(self, analyse: ModuleType, summaries: list[Any]) -> None:
+        """Fisher's combined test reproduces the published statistic."""
         pvals = [s.welch_p for s in summaries if not math.isnan(s.welch_p)]
         chi2, combined_p = analyse.fisher_combined_pvalue(pvals)
         assert math.isclose(chi2, 123.4, abs_tol=10.0), (
@@ -150,6 +159,7 @@ class TestAnalysisScriptEndToEnd:
         # matplotlib is in the `viz` extra, not `dev`, so the CI matrix
         # may not have it; skip cleanly in that case — the other seven
         # tests in this file exercise the statistics without it.
+        """The command prints the combined test and the significant depths."""
         matplotlib = pytest.importorskip("matplotlib")
         matplotlib.use("Agg")
         monkeypatch.setattr(

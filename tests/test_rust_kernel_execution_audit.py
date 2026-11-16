@@ -57,6 +57,7 @@ def _write_rust_fixture(tmp_path: Path, lib_rs: str, module_rs: str) -> Path:
 
 
 def test_kernel_execution_audit_classifies_rayon_threaded_fixture(tmp_path: Path) -> None:
+    """A Rayon kernel is classified as threaded."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="\n".join(
@@ -90,6 +91,7 @@ def test_kernel_execution_audit_classifies_rayon_threaded_fixture(tmp_path: Path
 
 
 def test_kernel_execution_audit_classifies_explicit_simd_fixture(tmp_path: Path) -> None:
+    """An explicit SIMD kernel is classified with its evidence."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="\n".join(
@@ -121,6 +123,7 @@ def test_kernel_execution_audit_classifies_explicit_simd_fixture(tmp_path: Path)
 
 
 def test_kernel_execution_json_output_is_deterministic(tmp_path: Path) -> None:
+    """The JSON output has its fixed keys and schema."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="\n".join(
@@ -154,6 +157,7 @@ def test_kernel_execution_json_output_is_deterministic(tmp_path: Path) -> None:
 
 
 def test_kernel_execution_cli_writes_json(tmp_path: Path, capsys: Any) -> None:
+    """The command writes JSON and reports a pass."""
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="\n".join(
@@ -175,6 +179,7 @@ def test_kernel_execution_cli_writes_json(tmp_path: Path, capsys: Any) -> None:
 
 
 def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
+    """The engine crate records its threaded kernels and claims no SIMD."""
     crate = Path(__file__).resolve().parents[1] / "scpn_quantum_engine"
 
     audit = scan_crate(crate)
@@ -199,11 +204,13 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
 
 
 def test_pyo3_member_crate_roots_empty_without_manifest(tmp_path: Path) -> None:
+    """Without a manifest there are no member crates."""
     (tmp_path / "src").mkdir()
     assert pyo3_member_crate_roots(tmp_path) == ()
 
 
 def test_pyo3_member_crate_roots_finds_nested_pyo3_path_dependency(tmp_path: Path) -> None:
+    """A nested binding path dependency is found."""
     crate = tmp_path / "engine"
     member = crate / "member"
     _write_crate_with_manifest(member, '[package]\nname = "member"\n')
@@ -218,6 +225,7 @@ def test_pyo3_member_crate_roots_finds_nested_pyo3_path_dependency(tmp_path: Pat
 def test_pyo3_member_crate_roots_skips_string_pathless_featureless_and_external(
     tmp_path: Path,
 ) -> None:
+    """String, path-less, feature-less and external dependencies are skipped."""
     crate = tmp_path / "engine"
     outside = tmp_path / "outside"
     _write_crate_with_manifest(outside, '[package]\nname = "outside"\n')
@@ -237,6 +245,7 @@ def test_pyo3_member_crate_roots_skips_string_pathless_featureless_and_external(
 
 
 def test_pyo3_member_crate_roots_dedupes_repeated_members(tmp_path: Path) -> None:
+    """A repeated member crate is listed once."""
     crate = tmp_path / "engine"
     member = crate / "member"
     _write_crate_with_manifest(member, '[package]\nname = "member"\n')
@@ -251,6 +260,7 @@ def test_pyo3_member_crate_roots_dedupes_repeated_members(tmp_path: Path) -> Non
 
 
 def test_scan_crate_includes_nested_pyo3_member_crate(tmp_path: Path) -> None:
+    """Scanning a crate includes its nested binding member."""
     engine = tmp_path / "engine"
     member = engine / "member"
     _write_crate_with_manifest(

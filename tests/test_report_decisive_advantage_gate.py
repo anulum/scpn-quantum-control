@@ -55,33 +55,45 @@ def _valid_rows() -> list[dict[str, Any]]:
 
 
 class TestRowsFromPayload:
+    """Reading benchmark rows from a payload."""
+
     def test_list_payload(self) -> None:
+        """A list payload is read as rows."""
         assert rows_from_payload([{"a": 1}]) == [{"a": 1}]
 
     def test_mapping_payload(self) -> None:
+        """A mapping payload is read through its rows key."""
         assert rows_from_payload({"rows": [{"a": 1}]}) == [{"a": 1}]
 
     def test_invalid_payload_raises(self) -> None:
+        """Any other payload is refused."""
         with pytest.raises(ValueError, match="rows payload"):
             rows_from_payload(42)
 
 
 class TestBuildReport:
+    """Building the advantage report."""
+
     def test_preregistration_only_has_no_decision(self) -> None:
+        """Without rows the report has a protocol and no decision."""
         report = build_report(PROTOCOL, None)
         assert "protocol" in report
         assert "decision" not in report
 
     def test_with_rows_has_validation_and_decision(self) -> None:
+        """With rows the report validates them and records the decision."""
         report = build_report(PROTOCOL, _valid_rows())
         assert report["validation"]["valid"] is True
         assert report["decision"]["label"] == "classical_wins"
 
 
 class TestMain:
+    """The report command."""
+
     def test_preregistration_only_writes_manifest(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """Without rows the command writes a manifest without a decision."""
         code = main(["--out-dir", str(tmp_path)])
         assert code == 0
         out = tmp_path / f"{PROTOCOL.protocol.protocol_id}.json"
@@ -93,6 +105,7 @@ class TestMain:
     def test_with_rows_reports_decision(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """With rows the command prints and writes the decision."""
         rows_path = tmp_path / "rows.json"
         rows_path.write_text(json.dumps(_valid_rows()), encoding="utf-8")
         code = main(["--rows", str(rows_path), "--out-dir", str(tmp_path)])

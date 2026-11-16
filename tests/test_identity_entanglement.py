@@ -32,12 +32,14 @@ def _product_state() -> Statevector:
 
 
 def test_bell_state_violates_chsh() -> None:
+    """A Bell state violates the CHSH bound."""
     sv = _bell_state()
     S = chsh_from_statevector(sv, 0, 1)
     assert S > 2.0, f"Bell state should violate CHSH, got S={S}"
 
 
 def test_bell_state_near_tsirelson() -> None:
+    """A Bell state comes close to the Tsirelson bound."""
     sv = _bell_state()
     S = chsh_from_statevector(sv, 0, 1)
     tsirelson = 2 * np.sqrt(2)
@@ -45,24 +47,28 @@ def test_bell_state_near_tsirelson() -> None:
 
 
 def test_product_state_respects_chsh() -> None:
+    """A product state respects the CHSH bound."""
     sv = _product_state()
     S = chsh_from_statevector(sv, 0, 1)
     assert S <= 2.0 + 1e-10, f"Product state should satisfy CHSH, got S={S}"
 
 
 def test_same_qubit_raises() -> None:
+    """Measuring a qubit against itself is refused."""
     sv = _bell_state()
     with pytest.raises(ValueError, match="must differ"):
         chsh_from_statevector(sv, 0, 0)
 
 
 def test_out_of_range_qubit_raises() -> None:
+    """A qubit index out of range is refused."""
     sv = _bell_state()
     with pytest.raises(ValueError, match="out of range"):
         chsh_from_statevector(sv, 0, 5)
 
 
 def test_entanglement_map_bell() -> None:
+    """The entanglement map finds the one entangled pair of a Bell state."""
     sv = _bell_state()
     result = disposition_entanglement_map(sv)
     assert result["n_pairs"] == 1
@@ -71,12 +77,14 @@ def test_entanglement_map_bell() -> None:
 
 
 def test_entanglement_map_product() -> None:
+    """The entanglement map finds no entangled pair in a product state."""
     sv = _product_state()
     result = disposition_entanglement_map(sv)
     assert result["n_entangled"] == 0
 
 
 def test_entanglement_map_with_labels() -> None:
+    """The entanglement map carries the given qubit labels."""
     sv = _bell_state()
     result = disposition_entanglement_map(sv, disposition_labels=["verify", "honest_naming"])
     pair = result["pairs"][0]
@@ -85,12 +93,14 @@ def test_entanglement_map_with_labels() -> None:
 
 
 def test_entanglement_map_wrong_label_count_raises() -> None:
+    """A label list of the wrong length is refused."""
     sv = _bell_state()
     with pytest.raises(ValueError, match="labels"):
         disposition_entanglement_map(sv, disposition_labels=["a", "b", "c"])
 
 
 def test_integration_metric_bounded() -> None:
+    """The integration metric lies in [0, 1]."""
     sv = _bell_state()
     result = disposition_entanglement_map(sv)
     assert 0.0 <= result["integration_metric"] <= 1.0 + 1e-10

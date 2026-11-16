@@ -28,6 +28,7 @@ from scpn_quantum_control.forecasting import (
 
 
 def test_hardware_trace_loader_preserves_committed_measurements() -> None:
+    """The hardware trace loader keeps the committed measurements and their source."""
     dataset = load_hardware_kuramoto_4osc_trace()
 
     assert dataset.name == "ibm_heron_r2_kuramoto_4osc"
@@ -41,6 +42,7 @@ def test_hardware_trace_loader_preserves_committed_measurements() -> None:
 
 
 def test_hardware_forecast_improves_held_out_mse_without_holdout_fit() -> None:
+    """The calibrated forecast improves held-out error without fitting the holdout."""
     result = run_real_data_sync_forecast_benchmark(load_hardware_kuramoto_4osc_trace())
 
     assert isinstance(result, SynchronisationForecastBenchmarkResult)
@@ -56,6 +58,7 @@ def test_hardware_forecast_improves_held_out_mse_without_holdout_fit() -> None:
 
 
 def test_ieee5bus_case_uses_public_topology_and_rust_or_python_baseline() -> None:
+    """The power-grid case uses the public topology and a replay baseline."""
     dataset = load_ieee5bus_sync_forecast_case()
 
     assert dataset.domain == "power-grid"
@@ -71,6 +74,7 @@ def test_ieee5bus_case_uses_public_topology_and_rust_or_python_baseline() -> Non
 
 
 def test_ieee5bus_forecast_passes_with_fixed_train_window() -> None:
+    """The power-grid forecast passes with its fixed training window."""
     dataset = load_ieee5bus_sync_forecast_case()
     result = run_real_data_sync_forecast_benchmark(dataset, min_improvement_fraction=0.01)
 
@@ -81,6 +85,7 @@ def test_ieee5bus_forecast_passes_with_fixed_train_window() -> None:
 
 
 def test_suite_runs_hardware_and_topology_cases() -> None:
+    """The suite runs both cases and both pass."""
     suite = run_real_data_sync_forecast_suite(include_topology_replay=True)
 
     assert [result.dataset.name for result in suite] == [
@@ -92,6 +97,7 @@ def test_suite_runs_hardware_and_topology_cases() -> None:
 
 
 def test_result_serialisation_contains_plain_json_values() -> None:
+    """Results serialise to plain JSON values."""
     result = run_real_data_sync_forecast_benchmark(load_hardware_kuramoto_4osc_trace())
     payload = result.as_dict()
 
@@ -102,6 +108,7 @@ def test_result_serialisation_contains_plain_json_values() -> None:
 
 
 def test_dataset_validation_rejects_no_holdout_window() -> None:
+    """A dataset without a holdout window is refused."""
     good = load_hardware_kuramoto_4osc_trace()
     bad = SynchronisationForecastDataset(
         name=good.name,
@@ -122,6 +129,7 @@ def test_dataset_validation_rejects_no_holdout_window() -> None:
 
 
 def test_validation_rejects_unbounded_observed_trace() -> None:
+    """An observed trace outside [0, 1] is refused."""
     good = load_hardware_kuramoto_4osc_trace()
     bad = SynchronisationForecastDataset(
         name=good.name,
@@ -142,6 +150,7 @@ def test_validation_rejects_unbounded_observed_trace() -> None:
 
 
 def test_forecast_model_run_is_public_result_envelope() -> None:
+    """Each model run is a public result envelope with predictions per observation."""
     result = run_real_data_sync_forecast_benchmark(load_hardware_kuramoto_4osc_trace())
 
     assert isinstance(result.baseline, ForecastModelRun)
@@ -150,6 +159,7 @@ def test_forecast_model_run_is_public_result_envelope() -> None:
 
 
 def test_cli_hardware_only_outputs_json() -> None:
+    """The command writes the hardware-only suite as JSON."""
     completed = subprocess.run(
         [
             sys.executable,

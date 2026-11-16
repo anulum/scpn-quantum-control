@@ -99,7 +99,6 @@ def _values(*shapes: tuple[int, ...]) -> NDArray[np.float64]:
     declaration order; this mirrors that packing so a rule built from those
     operand shapes receives a conformant input vector.
     """
-
     return np.concatenate(
         [_RNG.normal(size=shape).reshape(-1).astype(np.float64) for shape in shapes]
     )
@@ -109,7 +108,6 @@ def _analytic_jvp_jacobian(
     rule: CustomDerivativeRule, values: NDArray[np.float64], out_size: int
 ) -> NDArray[np.float64]:
     """Assemble the forward-rule Jacobian one column per unit input tangent."""
-
     assert rule.jvp_rule is not None
     jacobian = np.zeros((out_size, values.size), dtype=np.float64)
     for column in range(values.size):
@@ -125,7 +123,6 @@ def _analytic_vjp_jacobian(
     rule: CustomDerivativeRule, values: NDArray[np.float64], out_size: int
 ) -> NDArray[np.float64]:
     """Assemble the reverse-rule Jacobian one row per unit output cotangent."""
-
     assert rule.vjp_rule is not None
     jacobian = np.zeros((out_size, values.size), dtype=np.float64)
     for row in range(out_size):
@@ -152,7 +149,6 @@ def _assert_routing_rule_matches_finite_difference(
     transpose). Both are asserted on absolute tolerance because the exact
     Jacobian entries are ``0`` or ``1``.
     """
-
     values = np.asarray(values, dtype=np.float64).reshape(-1)
     out = np.asarray(rule.value_fn(values), dtype=np.float64).reshape(-1)
     finite_difference = finite_difference_jacobian(rule.value_fn, values, step=step)
@@ -199,6 +195,7 @@ _SHAPE_RULES: dict[str, tuple[CustomDerivativeRule, tuple[int, ...]]] = {
 
 @pytest.mark.parametrize("name", sorted(_SHAPE_RULES))
 def test_shape_transform_rule_matches_finite_difference(name: str) -> None:
+    """Each shape-transform rule agrees with finite differences."""
     rule, shape = _SHAPE_RULES[name]
     _assert_routing_rule_matches_finite_difference(rule, _values(shape))
 
@@ -227,6 +224,7 @@ _INDEXING_RULES: dict[str, tuple[CustomDerivativeRule, tuple[int, ...]]] = {
 
 @pytest.mark.parametrize("name", sorted(_INDEXING_RULES))
 def test_array_indexing_rule_matches_finite_difference(name: str) -> None:
+    """Each indexing rule agrees with finite differences."""
     rule, shape = _INDEXING_RULES[name]
     _assert_routing_rule_matches_finite_difference(rule, _values(shape))
 
@@ -247,6 +245,7 @@ _ASSEMBLY_RULES: dict[str, tuple[CustomDerivativeRule, tuple[int, ...]]] = {
 
 @pytest.mark.parametrize("name", sorted(_ASSEMBLY_RULES))
 def test_assembly_rule_matches_finite_difference(name: str) -> None:
+    """Each assembly rule agrees with finite differences."""
     rule, shape = _ASSEMBLY_RULES[name]
     _assert_routing_rule_matches_finite_difference(rule, _values(shape))
 
@@ -255,11 +254,13 @@ def test_assembly_rule_matches_finite_difference(name: str) -> None:
 # Broadcast
 # --------------------------------------------------------------------------- #
 def test_broadcast_to_rule_matches_finite_difference() -> None:
+    """The broadcast-to rule agrees with finite differences."""
     rule = program_ad_assembly_broadcast_to_derivative_rule((3,), (2, 3))
     _assert_routing_rule_matches_finite_difference(rule, _values((3,)))
 
 
 def test_broadcast_arrays_rule_matches_finite_difference() -> None:
+    """The broadcast-arrays rule agrees with finite differences."""
     rule = program_ad_assembly_broadcast_arrays_derivative_rule([(3,), (2, 1)])
     _assert_routing_rule_matches_finite_difference(rule, _values((3,), (2, 1)))
 
@@ -298,5 +299,6 @@ _STACK_RULES: dict[str, tuple[CustomDerivativeRule, tuple[tuple[int, ...], ...]]
 
 @pytest.mark.parametrize("name", sorted(_STACK_RULES))
 def test_stack_block_rule_matches_finite_difference(name: str) -> None:
+    """Each stack and block rule agrees with finite differences."""
     rule, shapes = _STACK_RULES[name]
     _assert_routing_rule_matches_finite_difference(rule, _values(*shapes))

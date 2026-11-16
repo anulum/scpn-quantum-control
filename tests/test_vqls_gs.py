@@ -21,6 +21,7 @@ from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
 
 def test_discretize_shapes() -> None:
+    """Discretisation gives a square operator and a normalised right-hand side."""
     solver = VQLS_GradShafranov(n_qubits=3)
     A, b = solver.discretize()
     assert A.shape == (8, 8)
@@ -29,12 +30,14 @@ def test_discretize_shapes() -> None:
 
 
 def test_laplacian_symmetric() -> None:
+    """The discretised Laplacian is symmetric."""
     solver = VQLS_GradShafranov(n_qubits=3)
     A, _ = solver.discretize()
     np.testing.assert_allclose(A, A.T, atol=1e-12)
 
 
 def test_laplacian_positive_definite() -> None:
+    """The discretised Laplacian is positive definite."""
     solver = VQLS_GradShafranov(n_qubits=3)
     A, _ = solver.discretize()
     eigvals = np.linalg.eigvalsh(A)
@@ -42,6 +45,7 @@ def test_laplacian_positive_definite() -> None:
 
 
 def test_solve_returns_array() -> None:
+    """Solving returns a finite vector of the grid size."""
     solver = VQLS_GradShafranov(n_qubits=3)
     psi = solver.solve(reps=1, maxiter=30)
     assert psi.shape == (8,)
@@ -49,6 +53,7 @@ def test_solve_returns_array() -> None:
 
 
 def test_ansatz_qubit_count() -> None:
+    """The ansatz has the solver's qubit count."""
     solver = VQLS_GradShafranov(n_qubits=4)
     qc = solver.build_ansatz(reps=1)
     assert qc.num_qubits == 4
@@ -88,6 +93,7 @@ def test_source_width_affects_solution() -> None:
 
 
 def test_ansatz_params_increase_with_reps() -> None:
+    """More repetitions add ansatz parameters."""
     solver = VQLS_GradShafranov(n_qubits=3)
     qc1 = solver.build_ansatz(reps=1)
     qc2 = solver.build_ansatz(reps=3)
@@ -95,6 +101,7 @@ def test_ansatz_params_increase_with_reps() -> None:
 
 
 def test_grid_size_matches_n_qubits() -> None:
+    """The grid size is two to the power of the qubit count."""
     for n in (2, 3, 4):
         s = VQLS_GradShafranov(n_qubits=n)
         assert s.grid_size == 2**n
@@ -164,6 +171,7 @@ def test_solve_fail_closed_without_residual_repair() -> None:
 
 
 def test_solve_runs_configured_multi_restart_count(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Solving runs the configured number of restarts."""
     solver = VQLS_GradShafranov(n_qubits=2)
     call_count = 0
 
@@ -185,6 +193,7 @@ def test_solve_runs_configured_multi_restart_count(monkeypatch: pytest.MonkeyPat
 
 
 def test_zero_operator_uses_unit_cost_guard(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A zero operator uses the unit cost guard and still returns a finite solution."""
     solver = VQLS_GradShafranov(n_qubits=2)
     solver._A = np.zeros((4, 4))
     solver._b = np.array([1.0, 0.0, 0.0, 0.0])
@@ -208,6 +217,7 @@ def test_zero_operator_uses_unit_cost_guard(monkeypatch: pytest.MonkeyPatch) -> 
 
 
 def test_imaginary_state_raises_clear_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An imaginary-norm state is refused with a clear error."""
     solver = VQLS_GradShafranov(n_qubits=2, imag_tol=0.01)
     solver.discretize()
 

@@ -41,8 +41,11 @@ def _observe(theta0, omega, coupling, steps, dt=0.05, n_steps=40):
 
 
 class TestTrajectoryMatchGradient:
+    """The trajectory-matching cost and its coupling gradient."""
+
     @pytest.mark.parametrize("integrator", ["rk4", "euler"])
     def test_gradient_matches_finite_difference(self, integrator: str) -> None:
+        """The coupling gradient agrees with finite differences."""
         theta0, omega, coupling = _planted(6, 5)
         dt, n_steps = 0.05, 20
         steps = np.array([5, 10, 15, 20])
@@ -72,6 +75,7 @@ class TestTrajectoryMatchGradient:
         np.testing.assert_allclose(grad_coupling, fd, atol=1e-5)
 
     def test_value_matches_value_and_grad(self) -> None:
+        """The cost alone equals the cost returned with the gradient, and vanishes at the truth."""
         theta0, omega, coupling = _planted(5, 7)
         steps = np.array([10, 20])
         observed = _observe(theta0, omega, coupling, steps)
@@ -84,6 +88,7 @@ class TestTrajectoryMatchGradient:
         assert loss < 1e-18
 
     def test_validation(self) -> None:
+        """Inputs of the wrong shape are refused."""
         theta0, omega, coupling = _planted(4, 1)
         steps = np.array([5, 10])
         observed = _observe(theta0, omega, coupling, steps)
@@ -116,7 +121,10 @@ class TestTrajectoryMatchGradient:
 
 
 class TestLearnCoupling:
+    """Recovering a planted coupling matrix from trajectories."""
+
     def test_recovers_planted_coupling(self) -> None:
+        """Learning lowers the cost and the coupling error monotonically."""
         theta0, omega, coupling = _planted(6, 1)
         dt, n_steps = 0.05, 40
         steps = np.array([5, 10, 15, 20, 25, 30, 35, 40])
@@ -148,6 +156,7 @@ class TestLearnCoupling:
         np.testing.assert_array_equal(np.diag(result.coupling), np.zeros(6))
 
     def test_converged_at_true_coupling(self) -> None:
+        """Starting at the true coupling converges after one iteration."""
         theta0, omega, coupling = _planted(5, 3)
         steps = np.array([10, 20, 30])
         observed = _observe(theta0, omega, coupling, steps)
@@ -160,6 +169,7 @@ class TestLearnCoupling:
         assert result.cost_history[0] < 1e-18
 
     def test_asymmetric_path_runs(self) -> None:
+        """The asymmetric path returns a full coupling matrix."""
         theta0, omega, coupling = _planted(4, 13)
         steps = np.array([10, 20])
         observed = _observe(theta0, omega, coupling, steps)
@@ -178,6 +188,7 @@ class TestLearnCoupling:
         assert result.coupling.shape == (4, 4)
 
     def test_iteration_budget_and_rejects_non_positive(self) -> None:
+        """The iteration budget is respected and a non-positive budget is refused."""
         theta0, omega, coupling = _planted(5, 2)
         steps = np.array([10, 20])
         observed = _observe(theta0, omega, coupling, steps)
@@ -191,6 +202,7 @@ class TestLearnCoupling:
             )
 
     def test_reproducible(self) -> None:
+        """Two runs give identical cost histories and couplings."""
         theta0, omega, coupling = _planted(5, 4)
         steps = np.array([10, 20, 30])
         observed = _observe(theta0, omega, coupling, steps)

@@ -20,6 +20,7 @@ from scpn_quantum_control.crypto.percolation import (
 
 
 def test_percolation_threshold_positive() -> None:
+    """The percolation threshold lies inside the coupling range."""
     K = build_knm_paper27(L=8)
     threshold = percolation_threshold(K)
     assert threshold > 0
@@ -27,6 +28,7 @@ def test_percolation_threshold_positive() -> None:
 
 
 def test_active_channels_above_threshold() -> None:
+    """Active channels are ordered pairs with weights at or above the threshold."""
     K = build_knm_paper27(L=8)
     threshold = percolation_threshold(K)
     channels = active_channel_graph(K, threshold)
@@ -37,6 +39,7 @@ def test_active_channels_above_threshold() -> None:
 
 
 def test_all_channels_at_zero_threshold() -> None:
+    """At a zero threshold every pair is a channel."""
     K = build_knm_paper27(L=4)
     channels = active_channel_graph(K, threshold=0.0)
     # 4 nodes → 6 pairs
@@ -44,24 +47,28 @@ def test_all_channels_at_zero_threshold() -> None:
 
 
 def test_no_channels_above_max() -> None:
+    """Above the largest weight there are no channels."""
     K = build_knm_paper27(L=4)
     channels = active_channel_graph(K, threshold=K.max() + 1)
     assert len(channels) == 0
 
 
 def test_key_rate_symmetric() -> None:
+    """The key-rate matrix is symmetric."""
     conc = np.array([[0, 0.5, 0.1], [0.5, 0, 0.3], [0.1, 0.3, 0]])
     rates = key_rate_per_channel(conc)
     assert np.allclose(rates, rates.T)
 
 
 def test_key_rate_zero_for_zero_concurrence() -> None:
+    """Zero concurrence gives zero key rates."""
     conc = np.zeros((3, 3))
     rates = key_rate_per_channel(conc)
     assert np.allclose(rates, 0)
 
 
 def test_key_rate_positive_for_high_concurrence() -> None:
+    """High concurrence gives a positive key rate."""
     conc = np.array([[0, 0.9], [0.9, 0]])
     rates = key_rate_per_channel(conc)
     assert rates[0, 1] > 0
@@ -77,18 +84,21 @@ def test_active_channels_upper_triangle() -> None:
 
 
 def test_key_rate_shape() -> None:
+    """The key-rate matrix has one row and column per node."""
     conc = np.zeros((4, 4))
     rates = key_rate_per_channel(conc)
     assert rates.shape == (4, 4)
 
 
 def test_key_rate_diagonal_zero() -> None:
+    """A node has no key rate with itself."""
     conc = np.array([[0, 0.8], [0.8, 0]])
     rates = key_rate_per_channel(conc)
     assert rates[0, 0] == 0 and rates[1, 1] == 0
 
 
 def test_active_channels_threshold_sweep() -> None:
+    """Raising the threshold never adds channels."""
     K = build_knm_paper27(L=4)
     n_low = len(active_channel_graph(K, threshold=0.01))
     n_high = len(active_channel_graph(K, threshold=0.5))

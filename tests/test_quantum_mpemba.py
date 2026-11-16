@@ -32,7 +32,10 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestMpembaExperiment:
+    """The quantum Mpemba experiment on small systems."""
+
     def test_returns_result(self) -> None:
+        """The experiment returns a result with one time point per step."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -41,6 +44,7 @@ class TestMpembaExperiment:
         assert len(result.times) == 11
 
     def test_fidelity_bounded(self) -> None:
+        """Fidelities stay within numerical tolerance of [0, 1]."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -72,6 +76,7 @@ class TestMpembaExperiment:
         assert result.fidelity_far[-1] >= result.fidelity_far[0] - 0.1
 
     def test_R_values_bounded(self) -> None:
+        """Order parameters stay within [0, 1]."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -92,6 +97,7 @@ class TestMpembaExperiment:
             assert result.crossing_time > 0
 
     def test_3qubit_runs(self) -> None:
+        """The experiment runs on three qubits."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -145,12 +151,14 @@ class TestMpembaExperiment:
         kwargs: dict[str, Any],
         match: str,
     ) -> None:
+        """Invalid physical inputs are refused with their reasons."""
         k_base = kwargs.pop("K_base", 1.0)
         with pytest.raises(ValueError, match=match):
             mpemba_experiment(omega, topology, K_base=k_base, **kwargs)
 
 
 def test_mpemba_result_fields() -> None:
+    """The result exposes the Mpemba flag and both order-parameter series."""
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -162,6 +170,7 @@ def test_mpemba_result_fields() -> None:
 
 
 def test_mpemba_R_length() -> None:
+    """Both order-parameter series have one value per time point."""
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -171,6 +180,7 @@ def test_mpemba_R_length() -> None:
 
 
 def test_mpemba_R_near_bounded() -> None:
+    """The near-start order parameter stays within [0, 1]."""
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -180,6 +190,7 @@ def test_mpemba_R_near_bounded() -> None:
 
 
 def test_mpemba_4qubit() -> None:
+    """The experiment runs on four qubits."""
     n = 4
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]

@@ -21,37 +21,45 @@ from scpn_quantum_control.tcbo.quantum_observer import (
 
 
 class TestComputeTCBOObservables:
+    """Topological observables of small systems."""
+
     def test_returns_result(self) -> None:
+        """The computation returns a result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert isinstance(result, TCBOResult)
 
     def test_p_h1_bounded(self) -> None:
+        """The first persistence probability lies in [0, 1]."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert 0 <= result.p_h1 <= 1.0
 
     def test_n_qubits(self) -> None:
+        """The result records the qubit count."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert result.n_qubits == 4
 
     def test_tee_type(self) -> None:
+        """The entanglement entropy term is a float."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert isinstance(result.tee, float)
 
     def test_string_order_bounded(self) -> None:
+        """The string order lies within [-1, 1]."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert abs(result.string_order) <= 1.0 + 1e-10
 
     def test_betti_proxies(self) -> None:
+        """The Betti proxies lie in [0, 1] and the first equals the persistence probability."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
@@ -59,6 +67,7 @@ class TestComputeTCBOObservables:
         assert result.betti_1_proxy == result.p_h1
 
     def test_6_oscillators(self) -> None:
+        """The computation runs on six oscillators."""
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         result = compute_tcbo_observables(K, omega)
@@ -83,6 +92,8 @@ class TestComputeTCBOObservables:
 
 
 class TestTCBOPhysics:
+    """Physical behaviour of the topological observables."""
+
     def test_tee_finite(self) -> None:
         """The entropy inclusion-exclusion proxy must be finite."""
         K = build_knm_paper27(L=4)
@@ -112,6 +123,8 @@ class TestTCBOPhysics:
 
 
 class TestTCBOPipeline:
+    """The coupling-to-observables pipeline."""
+
     def test_pipeline_knm_to_tcbo(self) -> None:
         """Full pipeline: build_knm → TCBO → all observables wired."""
         K = build_knm_paper27(L=4)

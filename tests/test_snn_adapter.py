@@ -24,36 +24,42 @@ from scpn_quantum_control.bridge.snn_adapter import (
 
 
 def test_spike_to_rotations_all_firing() -> None:
+    """Constant firing maps to angles of pi."""
     spikes = np.ones((10, 3))
     angles = spike_train_to_rotations(spikes, window=5)
     np.testing.assert_allclose(angles, np.pi, atol=1e-10)
 
 
 def test_spike_to_rotations_none_firing() -> None:
+    """No firing maps to zero angles."""
     spikes = np.zeros((10, 3))
     angles = spike_train_to_rotations(spikes, window=5)
     np.testing.assert_allclose(angles, 0.0, atol=1e-10)
 
 
 def test_spike_to_rotations_1d() -> None:
+    """A one-dimensional spike train maps to one angle per neuron."""
     spikes = np.array([1, 0, 1, 0, 1])
     angles = spike_train_to_rotations(spikes, window=5)
     assert angles.shape == (5,)
 
 
 def test_measurement_to_current_scaling() -> None:
+    """Measurements map to currents with the given scale."""
     probs = np.array([0.0, 0.5, 1.0])
     currents = quantum_measurement_to_current(probs, scale=2.0)
     np.testing.assert_allclose(currents, [0.0, 1.0, 2.0])
 
 
 def test_bridge_init() -> None:
+    """The bridge records its neuron and input counts."""
     bridge = SNNQuantumBridge(n_neurons=2, n_inputs=3, seed=42)
     assert bridge.n_neurons == 2
     assert bridge.n_inputs == 3
 
 
 def test_bridge_forward_shape() -> None:
+    """A forward pass returns one value per neuron."""
     bridge = SNNQuantumBridge(n_neurons=2, n_inputs=3, seed=42)
     spikes = np.random.default_rng(0).integers(0, 2, (10, 3))
     result = bridge.forward(spikes)
@@ -61,6 +67,7 @@ def test_bridge_forward_shape() -> None:
 
 
 def test_bridge_forward_bounded() -> None:
+    """Forward outputs lie in [0, 1]."""
     bridge = SNNQuantumBridge(n_neurons=2, n_inputs=2, scale=1.0, seed=0)
     spikes = np.random.default_rng(0).integers(0, 2, (5, 2))
     result = bridge.forward(spikes)
@@ -69,6 +76,7 @@ def test_bridge_forward_bounded() -> None:
 
 
 def test_bridge_deterministic() -> None:
+    """Two identical bridges give identical outputs."""
     b1 = SNNQuantumBridge(n_neurons=2, n_inputs=2, seed=42)
     b2 = SNNQuantumBridge(n_neurons=2, n_inputs=2, seed=42)
     spikes = np.ones((5, 2))
@@ -101,6 +109,7 @@ def test_rotation_monotonic_with_rate() -> None:
 
 
 def test_measurement_to_current_default_scale() -> None:
+    """With the default scale currents equal the probabilities."""
     probs = np.array([0.5, 0.8])
     currents = quantum_measurement_to_current(probs)
     np.testing.assert_allclose(currents, probs)
@@ -113,6 +122,7 @@ def test_measurement_to_current_default_scale() -> None:
 
 def test_pipeline_spikes_to_currents() -> None:
     """Full pipeline: spike history → SNNQuantumBridge → output currents.
+
     Verifies the adapter is not decorative — data flows through quantum layer.
     """
     import time

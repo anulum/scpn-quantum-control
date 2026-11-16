@@ -24,16 +24,21 @@ from scpn_quantum_control.hardware.qcvv import (
 
 
 class TestStateFidelity:
+    """State fidelity on simple states."""
+
     def test_identical_states(self) -> None:
+        """A state has fidelity one with itself."""
         psi = np.array([1, 0, 0, 0], dtype=complex)
         assert state_fidelity(psi, psi) == pytest.approx(1.0)
 
     def test_orthogonal_states(self) -> None:
+        """Orthogonal states have fidelity zero."""
         psi1 = np.array([1, 0, 0, 0], dtype=complex)
         psi2 = np.array([0, 1, 0, 0], dtype=complex)
         assert state_fidelity(psi1, psi2) == pytest.approx(0.0)
 
     def test_bounded(self) -> None:
+        """Fidelity lies in [0, 1]."""
         rng = np.random.default_rng(42)
         psi1 = (rng.normal(size=4) + 0j).astype(np.complex128)
         psi1 /= np.linalg.norm(psi1)
@@ -44,6 +49,8 @@ class TestStateFidelity:
 
 
 class TestMirrorCircuit:
+    """Mirror-circuit fidelity."""
+
     def test_perfect_return(self) -> None:
         """Statevector simulator should return to |0> perfectly."""
         K = build_knm_paper27(L=3)
@@ -52,6 +59,7 @@ class TestMirrorCircuit:
         assert f > 0.99
 
     def test_bounded(self) -> None:
+        """Mirror-circuit fidelity lies in [0, 1]."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         f = mirror_circuit_fidelity(K, omega)
@@ -59,6 +67,8 @@ class TestMirrorCircuit:
 
 
 class TestXEB:
+    """Cross-entropy benchmarking scores."""
+
     def test_perfect_xeb_near_one(self) -> None:
         """No noise → XEB near 1."""
         K = build_knm_paper27(L=3)
@@ -76,7 +86,10 @@ class TestXEB:
 
 
 class TestQCVVCertify:
+    """Certification of a simulated device."""
+
     def test_returns_result(self) -> None:
+        """Certification returns a result record."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = qcvv_certify(K, omega)
@@ -90,6 +103,7 @@ class TestQCVVCertify:
         assert result.certified
 
     def test_n_qubits(self) -> None:
+        """The result records the qubit count."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = qcvv_certify(K, omega)

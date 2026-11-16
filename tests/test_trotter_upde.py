@@ -96,17 +96,20 @@ def deterministic_upde_boundary(monkeypatch: pytest.MonkeyPatch) -> Iterator[Non
 
 
 def test_phase_namespace_exports_upde_contracts() -> None:
+    """The phase package re-exports the solver and its result types."""
     assert ExportedQuantumUPDESolver is QuantumUPDESolver
     assert UPDEStepResult.__name__ == "UPDEStepResult"
     assert UPDETrajectoryResult.__name__ == "UPDETrajectoryResult"
 
 
 def test_default_16_layers() -> None:
+    """The solver defaults to sixteen layers."""
     solver = QuantumUPDESolver()
     assert solver.n_layers == 16
 
 
 def test_custom_small_system() -> None:
+    """The solver accepts a smaller system."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -114,6 +117,7 @@ def test_custom_small_system() -> None:
 
 
 def test_hamiltonian_exists() -> None:
+    """The solver builds a Hamiltonian of the right width."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -123,6 +127,7 @@ def test_hamiltonian_exists() -> None:
 
 
 def test_run_returns_R_trajectory() -> None:
+    """A run returns one order-parameter value per step plus the start."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -160,6 +165,7 @@ def test_second_order_trotter_passthrough() -> None:
 
 @pytest.mark.parametrize("L", [2, 3, 4])
 def test_various_sizes(L: int) -> None:
+    """Runs at other sizes give finite order parameters."""
     K = build_knm_paper27(L=L)
     omega = OMEGA_N_16[:L]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -170,6 +176,7 @@ def test_various_sizes(L: int) -> None:
 
 
 def test_step_returns_R_global() -> None:
+    """A step returns the global order parameter."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -179,6 +186,7 @@ def test_step_returns_R_global() -> None:
 
 
 def test_hamiltonian_hermitian() -> None:
+    """The Hamiltonian is Hermitian."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -193,6 +201,7 @@ def test_hamiltonian_hermitian() -> None:
 
 
 def test_R_trajectory_finite() -> None:
+    """The order-parameter trajectory is finite."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     solver = QuantumUPDESolver(K=K, omega=omega)
@@ -223,6 +232,7 @@ def test_R_bounded_throughout() -> None:
 
 def test_pipeline_knm_to_upde() -> None:
     """Full pipeline: build_knm → UPDE solver → run → R trajectory.
+
     Verifies UPDE is wired end-to-end, not decorative.
     """
     import time

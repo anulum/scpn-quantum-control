@@ -35,6 +35,7 @@ def _assess(
 
 
 def test_ready_host_has_no_blockers() -> None:
+    """A ready host has no blockers and a stable governor."""
     readiness = _assess()
     assert readiness.ready
     assert readiness.blockers == ()
@@ -43,6 +44,7 @@ def test_ready_host_has_no_blockers() -> None:
 
 
 def test_powersave_governor_blocks() -> None:
+    """A power-saving governor blocks isolated runs."""
     readiness = _assess(governor="powersave")
     assert not readiness.ready
     assert not readiness.governor_is_stable
@@ -50,12 +52,14 @@ def test_powersave_governor_blocks() -> None:
 
 
 def test_missing_governor_blocks() -> None:
+    """An unreadable governor blocks isolated runs."""
     readiness = _assess(governor=None)
     assert not readiness.ready
     assert any("unreadable" in blocker for blocker in readiness.blockers)
 
 
 def test_high_load_blocks() -> None:
+    """A load above the threshold blocks isolated runs."""
     readiness = _assess(load_average=(2.5, 1.8, 1.2))
     assert not readiness.ready
     assert not readiness.load_is_low
@@ -63,30 +67,35 @@ def test_high_load_blocks() -> None:
 
 
 def test_load_exactly_at_threshold_is_low() -> None:
+    """A load exactly at the threshold counts as low."""
     readiness = _assess(load_average=(MAX_ISOLATED_LOAD, 0.5, 0.5))
     assert readiness.load_is_low
     assert readiness.ready
 
 
 def test_missing_load_blocks() -> None:
+    """A missing load average blocks isolated runs."""
     readiness = _assess(load_average=None)
     assert not readiness.ready
     assert any("load average is unavailable" in blocker for blocker in readiness.blockers)
 
 
 def test_missing_frequency_blocks() -> None:
+    """An unreadable frequency blocks isolated runs."""
     readiness = _assess(frequency_mhz=None)
     assert not readiness.ready
     assert any("frequency is unreadable" in blocker for blocker in readiness.blockers)
 
 
 def test_multiple_blockers_accumulate() -> None:
+    """Several problems give several blockers."""
     readiness = _assess(governor="ondemand", load_average=(3.0, 3.0, 3.0), frequency_mhz=None)
     assert not readiness.ready
     assert len(readiness.blockers) == 3
 
 
 def test_reserved_core_must_be_non_negative() -> None:
+    """A negative reserved core is refused."""
     with pytest.raises(ValueError):
         _assess(reserved_core=-1)
 
@@ -94,6 +103,7 @@ def test_reserved_core_must_be_non_negative() -> None:
 def test_capture_host_readiness_runs_on_local_host() -> None:
     # Capture must succeed and return a structurally valid verdict regardless of
     # whether this host happens to be isolation-ready.
+    """Readiness can be captured on the local host."""
     readiness = capture_host_readiness(0)
     assert isinstance(readiness, HostReadiness)
     assert readiness.reserved_core == 0

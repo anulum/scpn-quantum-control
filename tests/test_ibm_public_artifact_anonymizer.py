@@ -40,6 +40,7 @@ RAW_FIM_REPEAT_ID = "d" + "7t5gtaudops7397ikn0"
 
 
 def test_public_run_label_is_deterministic_hmac_label() -> None:
+    """The public run label is a deterministic HMAC label that hides the raw ID."""
     label = public_run_label(RAW_EXAMPLE_ID, "private-salt")
 
     assert label == public_run_label(RAW_EXAMPLE_ID, "private-salt")
@@ -48,17 +49,20 @@ def test_public_run_label_is_deterministic_hmac_label() -> None:
 
 
 def test_public_run_label_rejects_empty_salt() -> None:
+    """An empty salt is refused."""
     with pytest.raises(ValueError, match="salt"):
         public_run_label(RAW_EXAMPLE_ID, "")
 
 
 def test_raw_job_id_detector_accepts_observed_ibm_shape_only() -> None:
+    """Only the observed IBM job-ID shape counts as a raw ID."""
     assert looks_like_raw_ibm_job_id(RAW_EXAMPLE_ID)
     assert not looks_like_raw_ibm_job_id("ibm-run-1234567890abcdef")
     assert not looks_like_raw_ibm_job_id("job-1")
 
 
 def test_sanitise_json_payload_replaces_job_ids_and_preserves_counts() -> None:
+    """Sanitising replaces job IDs and keeps the counts and backend."""
     payload = {
         "backend": "ibm_fez",
         "job_id": RAW_EXAMPLE_ID,
@@ -80,6 +84,7 @@ def test_sanitise_json_payload_replaces_job_ids_and_preserves_counts() -> None:
 
 
 def test_sanitise_json_payload_handles_job_id_lists_and_nested_rows() -> None:
+    """Sanitising handles ID lists and nested rows and leaves other IDs alone."""
     payload = {
         "job_ids": [RAW_FIM_PILOT_ID, "non-provider-id"],
         "circuits": [
@@ -98,6 +103,7 @@ def test_sanitise_json_payload_handles_job_id_lists_and_nested_rows() -> None:
 
 
 def test_private_manifest_records_raw_values_but_not_salt() -> None:
+    """The private manifest records the raw values but not the salt."""
     result = sanitise_json_payload(
         {"job_id": RAW_EXAMPLE_ID},
         source_path=Path("results/example.json"),
@@ -119,6 +125,7 @@ def test_private_manifest_records_raw_values_but_not_salt() -> None:
 
 
 def test_sanitise_json_files_dry_run_does_not_modify_public_file(tmp_path: Path) -> None:
+    """A dry run reports changes without modifying the file."""
     data = tmp_path / "data"
     data.mkdir()
     artefact = data / "run.json"
@@ -131,6 +138,7 @@ def test_sanitise_json_files_dry_run_does_not_modify_public_file(tmp_path: Path)
 
 
 def test_sanitise_json_files_write_updates_public_file(tmp_path: Path) -> None:
+    """A write run replaces the raw ID in the file."""
     data = tmp_path / "data"
     data.mkdir()
     artefact = data / "run.json"
@@ -149,6 +157,7 @@ def test_sanitise_json_files_write_updates_public_file(tmp_path: Path) -> None:
 def test_cli_writes_manifest_without_rewriting_by_default(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """By default the command writes the manifest and leaves the files unchanged."""
     data = tmp_path / "data"
     data.mkdir()
     artefact = data / "run.json"
@@ -168,6 +177,7 @@ def test_cli_writes_manifest_without_rewriting_by_default(
 
 
 def test_cli_requires_exactly_one_salt_source(tmp_path: Path) -> None:
+    """The command needs exactly one salt source."""
     manifest = tmp_path / "manifest.json"
 
     with pytest.raises(ValueError, match="exactly one"):

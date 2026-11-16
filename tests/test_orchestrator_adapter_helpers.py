@@ -35,6 +35,7 @@ def _make_state(n_layers: int = 2, regime: str = "stable") -> dict[str, Any]:
 
 
 def test_read_field_raises_on_missing_required() -> None:
+    """A missing required field raises KeyError."""
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     with pytest.raises(KeyError, match="Missing required field"):
@@ -42,12 +43,14 @@ def test_read_field_raises_on_missing_required() -> None:
 
 
 def test_read_field_returns_default() -> None:
+    """A missing optional field returns its default."""
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     assert _read_field({"a": 1}, "x", default=42) == 42
 
 
 def test_read_field_getattr_path() -> None:
+    """A field can be read as an attribute."""
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     class Obj:
@@ -57,12 +60,14 @@ def test_read_field_getattr_path() -> None:
 
 
 def test_infer_layer_pair_non_digit_key() -> None:
+    """A non-numeric key maps to the given layer on both sides."""
     from scpn_quantum_control.bridge.orchestrator_adapter import _infer_layer_pair
 
     assert _infer_layer_pair("lock_a", 5) == (5, 5)
 
 
 def test_to_orchestrator_payload() -> None:
+    """The orchestrator payload carries layers and the regime."""
     state = _make_state()
     artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
     payload = PhaseOrchestratorAdapter.to_orchestrator_payload(artifact)
@@ -71,6 +76,7 @@ def test_to_orchestrator_payload() -> None:
 
 
 def test_build_knm_zero_diagonal() -> None:
+    """The built coupling matrix has a zero diagonal."""
     binding = {
         "layers": [
             {"oscillator_ids": [0, 1], "natural_frequency": 1.0},
@@ -84,6 +90,7 @@ def test_build_knm_zero_diagonal() -> None:
 
 
 def test_from_orchestrator_state_roundtrip() -> None:
+    """An orchestrator state converts back with its regime and layers."""
     state = _make_state(3, "NOMINAL")
     artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
     assert artifact.regime_id == "NOMINAL"
@@ -91,6 +98,7 @@ def test_from_orchestrator_state_roundtrip() -> None:
 
 
 def test_read_field_first_match() -> None:
+    """The first matching field name wins."""
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     d = {"a": 1, "b": 2}
@@ -98,12 +106,14 @@ def test_read_field_first_match() -> None:
 
 
 def test_infer_layer_pair_digit_key() -> None:
+    """A numeric key names both layers of the pair."""
     from scpn_quantum_control.bridge.orchestrator_adapter import _infer_layer_pair
 
     assert _infer_layer_pair("3_7", 0) == (3, 7)
 
 
 def test_telemetry_output() -> None:
+    """Telemetry reports the regime and one entry per layer."""
     state = _make_state(2, "OK")
     artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
     telemetry = PhaseOrchestratorAdapter.to_scpn_control_telemetry(artifact)

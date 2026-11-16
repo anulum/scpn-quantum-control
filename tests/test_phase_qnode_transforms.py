@@ -42,6 +42,7 @@ def _hessian(params: FloatArray) -> FloatArray:
 
 
 def test_phase_qnode_transform_executes_grad_value_and_hessian() -> None:
+    """The gradient, value and Hessian transforms run."""
     params = np.array([0.2, -0.4], dtype=float)
 
     grad = execute_phase_qnode_transform("grad", _objective, params)
@@ -71,6 +72,7 @@ def test_phase_qnode_transform_executes_grad_value_and_hessian() -> None:
 
 
 def test_phase_qnode_transform_executes_hessian_vector_product() -> None:
+    """The Hessian-vector product runs."""
     params = np.array([0.31, -0.17], dtype=float)
     vector = np.array([0.5, -1.25], dtype=float)
 
@@ -90,6 +92,7 @@ def test_phase_qnode_transform_executes_hessian_vector_product() -> None:
 
 
 def test_phase_qnode_transform_executes_jvp_vjp_and_scalar_jacobians() -> None:
+    """The JVP, VJP and scalar Jacobian transforms run and agree with the gradient."""
     params = np.array([0.31, -0.17], dtype=float)
     tangent = np.array([0.5, -2.0], dtype=float)
     cotangent = np.array([3.0], dtype=float)
@@ -121,6 +124,7 @@ def test_phase_qnode_transform_executes_jvp_vjp_and_scalar_jacobians() -> None:
 
 
 def test_phase_qnode_transform_fails_closed_for_unsupported_routes() -> None:
+    """Hardware and other unsupported routes fail closed."""
     params = np.array([0.2, -0.4], dtype=float)
 
     hardware = execute_phase_qnode_transform(
@@ -153,6 +157,7 @@ def test_phase_qnode_transform_fails_closed_for_unsupported_routes() -> None:
 
 
 def test_phase_qnode_transform_validates_directional_inputs() -> None:
+    """Invalid tangents and cotangents are refused."""
     params = np.array([0.2, -0.4], dtype=float)
 
     with pytest.raises(ValueError, match="tangent"):
@@ -236,6 +241,7 @@ def test_phase_qnode_complex_contract_rejects_unknown_derivative() -> None:
 
 
 def test_phase_qnode_complex_and_wirtinger_contract_is_explicit_fail_closed() -> None:
+    """The complex-derivative contract is explicit and unsupported."""
     contract = phase_qnode_complex_derivative_contract()
 
     assert isinstance(contract, PhaseQNodeComplexDerivativeContract)
@@ -248,6 +254,7 @@ def test_phase_qnode_complex_and_wirtinger_contract_is_explicit_fail_closed() ->
 
 
 def test_phase_qnode_transform_rejects_complex_derivative_inputs() -> None:
+    """Complex derivative inputs are refused."""
     params = np.array([0.2 + 0.1j, -0.4], dtype=np.complex128)
     real_params = np.array([0.2, -0.4], dtype=float)
 
@@ -276,6 +283,7 @@ def test_phase_qnode_transform_rejects_complex_derivative_inputs() -> None:
 
 
 def test_phase_qnode_hessian_vector_product_fails_closed_for_unsafe_routes() -> None:
+    """The Hessian-vector product fails closed on unsafe routes."""
     params = np.array([0.2, -0.4], dtype=float)
     vector = np.array([0.5, -1.25], dtype=float)
 
@@ -304,6 +312,7 @@ def test_phase_qnode_hessian_vector_product_fails_closed_for_unsafe_routes() -> 
 
 
 def test_phase_qnode_transform_readiness_suite_records_supported_and_blocked() -> None:
+    """The readiness suite records the supported and the blocked transforms."""
     suite = run_phase_qnode_transform_readiness_suite()
 
     assert suite.passed
@@ -326,6 +335,7 @@ def test_phase_qnode_transform_readiness_suite_records_supported_and_blocked() -
 
 
 def test_transform_nesting_now_supports_local_directional_and_scalar_jacobian_routes() -> None:
+    """Nested transforms support the local directional and scalar Jacobian routes."""
     jvp = plan_gradient_transform_nesting("jvp", n_params=2)
     vjp = plan_gradient_transform_nesting("vjp", n_params=2)
     jacfwd = plan_gradient_transform_nesting("jacfwd", n_params=2)
