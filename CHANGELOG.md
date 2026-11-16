@@ -497,6 +497,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a paired dev evaluation of a quantum
+  arm (`experimental/llm_qpu/learning/dev_evaluation.py`).
+  - `exact_arm_features` assembles each sample's X, Y and Z values of one
+    arm from an `ExactFeatureSet`. `sampled_arm_features` does the same
+    from one `SimulatedFeatureBatch` per basis, and refuses a batch row
+    that is not a cell of its basis in the experiment.
+  - `aligned_features` puts the rows in a split's sample order and
+    refuses gaps.
+  - `run_feature_readout` (`learning/classical_baselines.py`) tunes,
+    refits and scores the classical baselines' readout on given features,
+    sharing one tuning path with every baseline family. Given the product
+    basis, it reproduces that family exactly.
+  - `evaluate_on_dev` builds an `EvaluationReport` of a log-loss
+    protocol's classical and quantum arms from their dev outcomes. It uses
+    the contract's paired source-group statistics and seeded group
+    bootstrap. Costs are zero provider resource units, a zero price and
+    the measured classical compute seconds. The report passes
+    `validate_evaluation_report`.
+
 - The experimental LLM-QPU lane gains features of simulated counts.
   - `SimulatedFeatureBatch` (`experimental/llm_qpu/contracts/simulated_features.py`,
     schema `simulated_feature_batch.v1`) holds the sampled features of

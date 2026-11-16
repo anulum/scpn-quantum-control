@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -139,42 +140,33 @@ def _cv_loss(
 
 
 def _tune(
-    family: str, train: LabelledSplit, classes: int, folds: int, dimension: int, seed: int
+    features_for: Callable[[float | None], _FloatArray],
+    bandwidths: tuple[float | None, ...],
+    train: LabelledSplit,
+    classes: int,
+    folds: int,
 ) -> tuple[float, float | None, int]:
     """Return the best (l2, bandwidth) by train group cross-validation and the fits it took."""
-    bandwidths: tuple[float | None, ...] = (
-        BANDWIDTH_GRID if family == "random_fourier" else (None,)
-    )
     splits = group_folds(train.groups, folds)
     scored = []
     for bandwidth in bandwidths:
-        features = family_features(
-            family, train, bandwidth=bandwidth, dimension=dimension, seed=seed
-        )
+        features = features_for(bandwidth)
         for l2 in L2_GRID:
             scored.append((_cv_loss(features, train.labels, splits, classes, l2), l2, bandwidth))
     _, l2, bandwidth = min(scored, key=lambda item: item[0])
     return l2, bandwidth, len(scored) * folds
 
 
-def run_baseline(
-    family: str,
+def _refit_and_score(
+    name: str,
+    raw_train: _FloatArray,
+    raw_dev: _FloatArray,
     train: LabelledSplit,
     dev: LabelledSplit,
-    *,
-    classes: int,
-    max_fits: int,
-    folds: int = 4,
-    dimension: int = 81,
-    seed: int = 0,
+    choice: tuple[int, float, float | None, int],
 ) -> BaselineResult:
-    """Tune on train only, refit on all train rows, then score every dev row once."""
-    grid = len(L2_GRID) * (len(BANDWIDTH_GRID) if family == "random_fourier" else 1)
-    if grid * folds + 1 > max_fits:
-        raise ValueError("the tuning grid exceeds the declared fit budget")
-    l2, bandwidth, fits = _tune(family, train, classes, folds, dimension, seed)
-    raw_train = family_features(family, train, bandwidth=bandwidth, dimension=dimension, seed=seed)
-    raw_dev = family_features(family, dev, bandwidth=bandwidth, dimension=dimension, seed=seed)
+    """Refit the chosen readout on all train rows with a train-only standardiser and score each dev row."""
+    classes, l2, bandwidth, fits = choice
     started = time.perf_counter()
     scaler = fit_standardiser(raw_train)
     readout = fit_logistic(scaler.apply(raw_train), train.labels, classes=classes, l2=l2)
@@ -190,7 +182,7 @@ def run_baseline(
         )
     )
     return BaselineResult(
-        family,
+        name,
         raw_train.shape[1],
         readout.parameter_count,
         l2,
@@ -203,6 +195,67 @@ def run_baseline(
         float(losses.mean()),
         float(correct.mean()),
     )
+
+
+def _check_budget(grid: int, folds: int, max_fits: int) -> None:
+    """Refuse a tuning grid whose fits, plus the final refit, exceed the declared budget."""
+    if grid * folds + 1 > max_fits:
+        raise ValueError("the tuning grid exceeds the declared fit budget")
+
+
+def run_baseline(
+    family: str,
+    train: LabelledSplit,
+    dev: LabelledSplit,
+    *,
+    classes: int,
+    max_fits: int,
+    folds: int = 4,
+    dimension: int = 81,
+    seed: int = 0,
+) -> BaselineResult:
+    """Tune on train only, refit on all train rows, then score every dev row once."""
+    bandwidths: tuple[float | None, ...] = (
+        BANDWIDTH_GRID if family == "random_fourier" else (None,)
+    )
+    _check_budget(len(L2_GRID) * len(bandwidths), folds, max_fits)
+
+    def features_for(bandwidth: float | None) -> _FloatArray:
+        """Return the family's train features at one bandwidth."""
+        return family_features(family, train, bandwidth=bandwidth, dimension=dimension, seed=seed)
+
+    l2, bandwidth, fits = _tune(features_for, bandwidths, train, classes, folds)
+    raw_train = features_for(bandwidth)
+    raw_dev = family_features(family, dev, bandwidth=bandwidth, dimension=dimension, seed=seed)
+    return _refit_and_score(family, raw_train, raw_dev, train, dev, (classes, l2, bandwidth, fits))
+
+
+def run_feature_readout(
+    name: str,
+    train_features: object,
+    dev_features: object,
+    train: LabelledSplit,
+    dev: LabelledSplit,
+    *,
+    classes: int,
+    max_fits: int,
+    folds: int = 4,
+) -> BaselineResult:
+    """Tune, refit and score the same readout on given per-row features, for example quantum features."""
+    raw_train = np.array(train_features, dtype=np.float64)
+    raw_dev = np.array(dev_features, dtype=np.float64)
+    for features, split in ((raw_train, train), (raw_dev, dev)):
+        if (
+            features.ndim != 2
+            or features.shape[0] != len(split.sample_ids)
+            or not np.isfinite(features).all()
+        ):
+            raise ValueError("given features must be one finite row per sample")
+    if raw_train.shape[1] != raw_dev.shape[1]:
+        raise ValueError("train and dev features must have one width")
+    _check_budget(len(L2_GRID), folds, max_fits)
+    l2, _, fits = _tune(lambda _: raw_train, (None,), train, classes, folds)
+    return _refit_and_score(name, raw_train, raw_dev, train, dev, (classes, l2, None, fits))
 
 
 def run_baseline_suite(

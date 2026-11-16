@@ -66,6 +66,7 @@ _INVENTORY = (
     "llm_qpu/data/temporal_transfer.py",
     "llm_qpu/learning/__init__.py",
     "llm_qpu/learning/classical_baselines.py",
+    "llm_qpu/learning/dev_evaluation.py",
     "llm_qpu/learning/feature_maps.py",
     "llm_qpu/learning/logistic_readout.py",
     "llm_qpu/manifest.py",

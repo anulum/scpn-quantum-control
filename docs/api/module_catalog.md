@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **891 modules** across **41 package families**
-- **4780 documented public module-level symbols**
+- **892 modules** across **41 package families**
+- **4785 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2789,11 +2789,19 @@ Generate paired histories whose answer crosses three ordered copies.
 
 Strong classical baselines tuned by group cross-validation on train and scored once on dev.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py) · Public symbols: **7**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py) · Public symbols: **8**
 
 **Classes:** `LabelledSplit`, `DevOutcome`, `BaselineResult`
 
-**Functions:** `family_features()`, `group_folds()`, `run_baseline()`, `run_baseline_suite()`
+**Functions:** `family_features()`, `group_folds()`, `run_baseline()`, `run_feature_readout()`, `run_baseline_suite()`
+
+### `scpn_quantum_control.experimental.llm_qpu.learning.dev_evaluation`
+
+Quantum-arm features per sample and a paired dev evaluation report against a classical arm.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/learning/dev_evaluation.py) · Public symbols: **4**
+
+**Functions:** `exact_arm_features()`, `sampled_arm_features()`, `aligned_features()`, `evaluate_on_dev()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.learning.feature_maps`
 

@@ -26,6 +26,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     ArtifactHeader,
     CircuitPlanSet,
     CompressedLatentBatch,
+    ExperimentProtocol,
     LatentBatch,
     MeasurementSpec,
     ModelDescriptor,
@@ -36,6 +37,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     TaskSpec,
     build_circuit_plan_set,
     canonical_bytes,
+    f64,
     plan_measurements,
 )
 from scpn_quantum_control.experimental.llm_qpu.contracts.target import ReportedValue
@@ -467,3 +469,84 @@ def _target(**changes: Any) -> TargetSnapshot:
         "design_only",
     )
     return TargetSnapshot(**fields, header=header)
+
+
+def _dev_design(
+    dev_groups: tuple[str, ...],
+    arms: tuple[str, str] = ("classical", "quantum"),
+    metric: str = "mean_log_loss",
+) -> tuple[SplitManifest, ExperimentProtocol]:
+    """Return a split whose dev groups are given and an exploratory log-loss protocol of two arms."""
+    split_fields: dict[str, Any] = {
+        "task_digest": "a" * 64,
+        "dataset_digest": "b" * 64,
+        "train_groups": ("train",),
+        "dev_groups": tuple(sorted(set(dev_groups))),
+        "test_groups": ("test-a",),
+        "seed": 7,
+        "dedup_rule": "exact_source_digest",
+        "test_target_custodian": "separate_locked_evaluator",
+        "transform_fit_split": "train_only",
+    }
+    split_content = {
+        "schema": "scpn.experimental.llm_qpu.split_manifest.v2",
+        "object_kind": "split_manifest",
+        **{k: list(v) if k.endswith("_groups") else v for k, v in split_fields.items()},
+    }
+    split = SplitManifest(
+        **split_fields,
+        header=_header(
+            "split_manifest", split_content, ("a" * 64, "b" * 64), "synthetic_classical"
+        ),
+    )
+    fields: dict[str, Any] = {
+        "experiment_id": "fixture-protocol",
+        "evaluation_id": "dev-exploration",
+        "task_digest": "a" * 64,
+        "split_digest": _sha(split.to_wire()),
+        "model_digest": "c" * 64,
+        "compressor_digest": "d" * 64,
+        "kernel_plan_digest": "e" * 64,
+        "measurement_plan_digest": "f" * 64,
+        "analysis_plan_digest": "0" * 64,
+        "mode": "contextual_latent_transform",
+        "prediction_mode": "teacher_forced_trace",
+        "arms": tuple(sorted(arms)),
+        "classical_arm": arms[0],
+        "quantum_arm": arms[1],
+        "primary_metric": metric,
+        "contrast_direction": "classical_minus_quantum"
+        if metric in ("mean_log_loss", "mse", "mae")
+        else "quantum_minus_classical",
+        "minimum_relevant_delta": 0.02,
+        "max_dev_fits_per_arm": 80,
+        "max_qpu_evaluations": 1,
+        "stopping_rule": "fixed_split_no_optional_stopping",
+        "failure_policy": "retain_all_ids_report_missing_and_sensitivity",
+        "inference_unit": "source_group_paired",
+        "analysis_scope": "exploratory",
+    }
+    content = {
+        "schema": "scpn.experimental.llm_qpu.experiment_protocol.v2",
+        "object_kind": "experiment_protocol",
+        **{
+            k: list(v) if k == "arms" else f64(v) if k == "minimum_relevant_delta" else v
+            for k, v in fields.items()
+        },
+    }
+    names: tuple[str, ...] = (
+        "task_digest",
+        "split_digest",
+        "model_digest",
+        "compressor_digest",
+        "kernel_plan_digest",
+        "measurement_plan_digest",
+        "analysis_plan_digest",
+    )
+    protocol = ExperimentProtocol(
+        **fields,
+        header=_header(
+            "experiment_protocol", content, tuple(fields[n] for n in names), "synthetic_classical"
+        ),
+    )
+    return split, protocol
