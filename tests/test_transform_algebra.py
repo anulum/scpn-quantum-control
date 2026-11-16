@@ -45,7 +45,6 @@ FloatArray = NDArray[np.float64]
 
 def _float_array(value: object) -> FloatArray:
     """Convert dynamic transform outputs into typed float arrays for assertions."""
-
     return np.asarray(value, dtype=np.float64)
 
 
@@ -281,7 +280,6 @@ def test_canonical_jvp_vjp_transforms_compose_with_vmap_and_jacobians() -> None:
 
 def test_transform_algebra_custom_rules_and_whole_program_ad_compose_with_vmap() -> None:
     """Custom rules and whole-program AD should compose under vmap."""
-
     rule = CustomDerivativeRule(
         name="affine_sine_rule",
         value_fn=lambda values: np.array([values[0] + np.sin(values[1])], dtype=np.float64),
@@ -391,7 +389,6 @@ def test_whole_program_grad_of_vmap_composes_with_higher_order_transforms() -> N
 
 def test_transform_algebra_aliases_are_exported_from_package_root() -> None:
     """Transform algebra aliases should be stable package-root APIs."""
-
     assert scpn.jacfwd is jacfwd
     assert scpn.jacrev is jacrev
     assert scpn.jvp is jvp

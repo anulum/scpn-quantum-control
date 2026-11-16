@@ -21,6 +21,8 @@ from scpn_quantum_control.phase import (
 
 
 def test_parameter_shift_training_converges_on_known_trig_objective() -> None:
+    """Parameter-shift training on a known trigonometric objective converges monotonically."""
+
     def objective(params: np.ndarray) -> float:
         return float(np.cos(params[0]) + np.sin(params[1]))
 
@@ -48,6 +50,7 @@ def test_parameter_shift_training_converges_on_known_trig_objective() -> None:
 
 
 def test_parameter_shift_vqe_convergence_certificate_tracks_exact_gap() -> None:
+    """The convergence certificate records the gap to the exact ground energy."""
     k_matrix = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
 
@@ -72,6 +75,8 @@ def test_parameter_shift_vqe_convergence_certificate_tracks_exact_gap() -> None:
 
 
 def test_parameter_shift_convergence_validator_rejects_bad_thresholds() -> None:
+    """The convergence validator refuses an invalid target gap."""
+
     def objective(params: np.ndarray) -> float:
         return float(np.cos(params[0]))
 

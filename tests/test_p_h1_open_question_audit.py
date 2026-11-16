@@ -38,6 +38,7 @@ main = audit_module.main
 
 
 def test_scientific_decision_keeps_p_h1_open_for_knm_graph_mismatch() -> None:
+    """The decision keeps the parameter open because the coupling graph does not derive it."""
     decision = _scientific_decision(
         graph_p_h1=0.9689,
         target=0.72,
@@ -52,6 +53,7 @@ def test_scientific_decision_keeps_p_h1_open_for_knm_graph_mismatch() -> None:
 
 
 def test_build_audit_payload_has_preregistered_gates_and_provenance() -> None:
+    """The audit payload carries its preregistered gates and the finite-size probe."""
     payload = build_audit_payload(
         n_values=[4],
         n_seeds=1,
@@ -71,6 +73,7 @@ def test_build_audit_payload_has_preregistered_gates_and_provenance() -> None:
 
 
 def test_main_writes_json_payload(tmp_path: Path) -> None:
+    """The command writes a JSON payload that needs no hardware."""
     output = tmp_path / "p_h1_audit.json"
     code = main(
         [

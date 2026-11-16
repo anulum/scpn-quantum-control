@@ -29,6 +29,7 @@ def _load_module() -> ModuleType:
 
 
 def test_phase3_guess_analysis_shape_and_jobs() -> None:
+    """The analysis covers both recorded jobs and the preregistered witness rows."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 
@@ -42,6 +43,7 @@ def test_phase3_guess_analysis_shape_and_jobs() -> None:
 
 
 def test_phase3_guess_analysis_records_claim_boundary() -> None:
+    """The analysis blocks the mitigation claims it cannot support."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 
@@ -58,6 +60,7 @@ def test_phase3_guess_analysis_records_claim_boundary() -> None:
 
 
 def test_exact_state_readout_correction_is_applied() -> None:
+    """Every witness row receives an exact-state readout correction within [0, 1]."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 

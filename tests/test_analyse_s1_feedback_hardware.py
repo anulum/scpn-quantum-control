@@ -39,6 +39,7 @@ def _package() -> dict[str, object]:
 
 
 def test_analyse_package_reports_feedback_target_error_improvement() -> None:
+    """A feedback package reports a positive decision and its absolute and relative error improvement."""
     summary = analyse_package(_package())
 
     assert summary["experiment_id"] == "s1"
@@ -50,6 +51,7 @@ def test_analyse_package_reports_feedback_target_error_improvement() -> None:
 
 
 def test_analyse_package_rejects_missing_required_arms() -> None:
+    """A package with fewer than two arms is refused."""
     package = _package()
     arms = package["arms"]
     assert isinstance(arms, list)
@@ -60,6 +62,7 @@ def test_analyse_package_rejects_missing_required_arms() -> None:
 
 
 def test_analyse_package_rejects_invalid_counts() -> None:
+    """A package whose arm records carry invalid counts is refused."""
     package = _package()
     arms = package["arms"]
     assert isinstance(arms, list)

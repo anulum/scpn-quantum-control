@@ -30,6 +30,7 @@ def _load_module() -> ModuleType:
 
 
 def test_guess_circuit_matrix_matches_preregistration() -> None:
+    """The circuit matrix has the preregistered size, noise scales and depths."""
     module = _load_module()
 
     main, readout = module.build_guess_circuits()
@@ -44,6 +45,7 @@ def test_guess_circuit_matrix_matches_preregistration() -> None:
 
 
 def test_folded_circuit_depth_increases_with_noise_scale() -> None:
+    """Folding increases circuit depth with each noise scale."""
     module = _load_module()
 
     main, _ = module.build_guess_circuits()
@@ -57,6 +59,7 @@ def test_folded_circuit_depth_increases_with_noise_scale() -> None:
 
 
 def test_submit_requires_budget_confirmation(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Submission without budget confirmation exits with status 2."""
     module = _load_module()
     monkeypatch.setattr(sys, "argv", ["phase3_guess_dla_ibm.py", "--submit"])
 

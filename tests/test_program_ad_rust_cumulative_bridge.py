@@ -25,7 +25,6 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 
 def _cumulative_weighted_objective(values: Any) -> Any:
     """Return a compact cumulative objective with flat and static-axis scans."""
-
     matrix = np.reshape(values[:6], (2, 3))
     cumsum_axis_weights = np.reshape(values[6:12], (2, 3))
     cumprod_axis_weights = np.reshape(values[12:18], (2, 3))
@@ -42,7 +41,6 @@ def _cumulative_weighted_objective(values: Any) -> Any:
 
 def _cumulative_sample() -> NDArray[np.float64]:
     """Return a nonzero sample covering scan, product-scan, and difference rules."""
-
     return np.array(
         [
             1.25,
@@ -78,7 +76,6 @@ def _cumulative_sample() -> NDArray[np.float64]:
 
 def test_rust_bridge_replays_compact_cumulative_program_ad_nodes() -> None:
     """The Rust bridge should replay compact cumulative value+gradient IR."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _cumulative_sample()

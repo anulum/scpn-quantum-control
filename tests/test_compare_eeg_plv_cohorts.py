@@ -63,6 +63,7 @@ def _payload(*, condition: str, values: list[float]) -> dict[str, object]:
 
 
 def test_coupling_map_rejects_duplicate_edges() -> None:
+    """A coupling list with a duplicate edge is refused."""
     payload = _payload(condition="baseline eyes open", values=[0.2, 0.3])
     couplings = payload["couplings"]
     assert isinstance(couplings, list)
@@ -73,6 +74,7 @@ def test_coupling_map_rejects_duplicate_edges() -> None:
 
 
 def test_compare_payloads_reports_descriptive_closed_minus_open_summary() -> None:
+    """Comparing the two cohorts reports a descriptive eyes-closed minus eyes-open summary."""
     payload = compare_payloads(
         open_payload=_payload(condition="baseline eyes open", values=[0.2, 0.4]),
         closed_payload=_payload(condition="baseline eyes closed", values=[0.3, 0.35]),
@@ -98,6 +100,7 @@ def test_compare_payloads_reports_descriptive_closed_minus_open_summary() -> Non
 
 
 def test_compare_payloads_requires_matching_edge_sets() -> None:
+    """Cohorts with different edge sets are refused."""
     closed_payload = _payload(condition="baseline eyes closed", values=[0.3, 0.35])
     closed_couplings = closed_payload["couplings"]
     assert isinstance(closed_couplings, list)

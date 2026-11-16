@@ -31,6 +31,7 @@ def _load_module() -> ModuleType:
 
 
 def test_saved_state_layout_payload_blocks_hardware_promotion() -> None:
+    """The saved-state layout payload keeps the hardware comparison blocked."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 
@@ -45,6 +46,7 @@ def test_saved_state_layout_payload_blocks_hardware_promotion() -> None:
 
 
 def test_saved_layout_resource_rows_preserve_preregistered_shape() -> None:
+    """Resource rows keep the preregistered row count with positive depth and gates."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 
@@ -58,6 +60,7 @@ def test_saved_layout_resource_rows_preserve_preregistered_shape() -> None:
 
 
 def test_outputs_include_manifest_blocker(tmp_path: Path) -> None:
+    """The written outputs include the manifest with its blocker and no submission."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
     summary = module.build_readiness(payload, input_path=module.DEFAULT_INPUT)

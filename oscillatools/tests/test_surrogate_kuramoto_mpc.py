@@ -54,7 +54,7 @@ _MPC = dict(
 
 
 def _one_step_rms_error(model: SurrogateStepModel, control_scale: float, seed: int) -> float:
-    """The RMS wrapped one-step phase error of the surrogate against the true plant."""
+    """Return the RMS wrapped one-step phase error of the surrogate against the true plant."""
     rng = np.random.default_rng(seed)
     errors = []
     for _ in range(200):
@@ -71,13 +71,13 @@ def _one_step_rms_error(model: SurrogateStepModel, control_scale: float, seed: i
 
 @pytest.fixture(scope="module")
 def well_trained() -> SurrogateStepModel:
-    """A surrogate trained over a wide control range (faithful over the applied controls)."""
+    """Train a surrogate over a wide control range (faithful over the applied controls)."""
     return fit_surrogate_step_model(_OMEGA, _COUPLING, _DT, seed=1, **_FIT)
 
 
 @pytest.fixture(scope="module")
 def comparison(well_trained: SurrogateStepModel) -> SurrogateControlComparison:
-    """The surrogate vs true-model closed-loop comparison for the well-trained surrogate."""
+    """Compare surrogate and true-model closed loops for the well-trained surrogate."""
     return compare_surrogate_control(well_trained, _START, **_MPC)
 
 

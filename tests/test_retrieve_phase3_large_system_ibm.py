@@ -106,6 +106,7 @@ def _synthetic_result_rows(submission: dict[str, object]) -> list[dict[str, obje
 
 
 def test_large_system_reducer_uses_submission_width_and_full_readout_calibration() -> None:
+    """The reducer uses the submitted width and the full readout calibration per noise scale."""
     module = _load_script_module("retrieve_phase3_large_system_ibm")
     submission = _synthetic_submission()
     raw_payload = module.raw_payload_from_rows(
@@ -133,6 +134,7 @@ def test_large_system_reducer_uses_submission_width_and_full_readout_calibration
 
 
 def test_write_outputs_preserves_raw_and_reference_hashes(tmp_path: Path) -> None:
+    """Written outputs keep the raw-count and reference digests."""
     module = _load_script_module("retrieve_phase3_large_system_ibm")
     raw_path = tmp_path / "raw.json"
     raw_path.write_text(json.dumps({"schema": "test"}) + "\n", encoding="utf-8")
@@ -204,6 +206,7 @@ def test_write_outputs_preserves_raw_and_reference_hashes(tmp_path: Path) -> Non
 
 
 def test_large_system_reducer_falls_back_to_pseudoinverse_for_singular_readout() -> None:
+    """A singular readout matrix falls back to the pseudoinverse."""
     module = _load_script_module("retrieve_phase3_large_system_ibm")
     submission = _synthetic_submission()
     rows = _synthetic_result_rows(submission)

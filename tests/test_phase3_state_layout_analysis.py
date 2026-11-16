@@ -29,6 +29,7 @@ def _load_module() -> ModuleType:
 
 
 def test_build_analysis_matches_preregistered_shape() -> None:
+    """The analysis covers both recorded jobs and every preregistered state, depth and layout."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 
@@ -44,6 +45,7 @@ def test_build_analysis_matches_preregistered_shape() -> None:
 
 
 def test_build_analysis_records_claim_boundaries_and_flags() -> None:
+    """The analysis blocks the causality and advantage claims it cannot support."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 
@@ -60,6 +62,7 @@ def test_build_analysis_records_claim_boundaries_and_flags() -> None:
 
 
 def test_original_comparison_has_all_layout_depth_tests() -> None:
+    """The original comparison runs all twelve layout-depth tests."""
     module = _load_module()
     payload = json.loads(module.DEFAULT_INPUT.read_text(encoding="utf-8"))
 

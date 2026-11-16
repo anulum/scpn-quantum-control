@@ -27,7 +27,6 @@ _INTERP_GRID = np.array([-2.0, -0.25, 1.25, 3.5], dtype=np.float64)
 
 def _interpolation_weighted_objective(values: Any) -> Any:
     """Return an interpolation objective covering interior and boundary samples."""
-
     samples = values[:4]
     fp_values = values[4:8]
     default_boundary_weights = values[8:12]
@@ -48,7 +47,6 @@ def _interpolation_weighted_objective(values: Any) -> Any:
 
 def _interpolation_sample() -> NDArray[np.float64]:
     """Return finite samples, interpolation values, and objective weights."""
-
     return np.array(
         [
             -2.5,
@@ -74,7 +72,6 @@ def _interpolation_sample() -> NDArray[np.float64]:
 
 def test_rust_bridge_replays_compact_interpolation_program_ad_nodes() -> None:
     """The Rust bridge should replay compact interpolation value+gradient IR."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _interpolation_sample()

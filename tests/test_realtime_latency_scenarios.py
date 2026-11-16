@@ -17,6 +17,7 @@ from scpn_quantum_control.hardware.realtime_latency_scenarios import (
 
 
 def test_default_realtime_latency_scenarios_are_dedicated_non_s1() -> None:
+    """The default latency scenarios are the two dedicated adaptive lanes with fixed rounds and shots."""
     scenarios = default_realtime_latency_scenarios(2048)
     lanes = {scenario.lane for scenario in scenarios}
     assert lanes == {"rt_adaptive_dense", "rt_adaptive_sparse"}
@@ -25,6 +26,7 @@ def test_default_realtime_latency_scenarios_are_dedicated_non_s1() -> None:
 
 
 def test_dynamic_feedback_circuit_contains_midcircuit_measurement_and_conditionals() -> None:
+    """The feedback circuit measures mid-circuit and branches on the outcome."""
     scenario = default_realtime_latency_scenarios(1024)[0]
     circuit = build_dynamic_feedback_circuit(scenario)
     assert circuit.num_qubits == 4
@@ -38,6 +40,7 @@ def test_dynamic_feedback_circuit_contains_midcircuit_measurement_and_conditiona
 
 
 def test_open_loop_reference_contains_no_conditionals() -> None:
+    """The open-loop reference has no conditional operations."""
     scenario = default_realtime_latency_scenarios(1024)[1]
     circuit = build_open_loop_reference_circuit(scenario)
     assert circuit.num_qubits == 4

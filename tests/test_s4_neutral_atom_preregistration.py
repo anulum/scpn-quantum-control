@@ -15,6 +15,7 @@ from scripts.export_s4_neutral_atom_preregistration import build_neutral_atom_do
 
 
 def test_neutral_atom_dossier_is_non_submitting() -> None:
+    """The neutral-atom dossier submits nothing and imports no provider constructors."""
     dossier = build_neutral_atom_dossier(build_readiness_payload())
 
     assert dossier.job_id == "s4_neutral_atom_provider_object_review"
@@ -24,6 +25,7 @@ def test_neutral_atom_dossier_is_non_submitting() -> None:
 
 
 def test_neutral_atom_dossier_covers_pulser_and_bloqade() -> None:
+    """The dossier covers both neutral-atom providers with the native schema."""
     dossier = build_neutral_atom_dossier(build_readiness_payload())
 
     assert dossier.circuit_summary["providers"] == "pulser,bloqade"
@@ -34,6 +36,7 @@ def test_neutral_atom_dossier_covers_pulser_and_bloqade() -> None:
 
 
 def test_neutral_atom_dossier_records_comparator_and_credit_gates() -> None:
+    """The dossier requires a matched digital comparator and provider credit."""
     dossier = build_neutral_atom_dossier(build_readiness_payload())
 
     assert set(dossier.decision_tree) == {"accepted", "manual_review", "fail"}

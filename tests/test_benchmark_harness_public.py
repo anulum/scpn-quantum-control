@@ -19,6 +19,7 @@ from scpn_quantum_control.benchmark_harness import (
 
 
 def test_load_phase1_dataset_public_facade() -> None:
+    """The public facade loads the full phase-1 dataset from its single backend."""
     dataset = load_phase1_dataset()
 
     assert dataset.n_circuits_total == 342
@@ -26,6 +27,7 @@ def test_load_phase1_dataset_public_facade() -> None:
 
 
 def test_reproduce_phase1_statistics_public_facade() -> None:
+    """The public facade reproduces the phase-1 statistics and checks their claims."""
     result = reproduce_phase1_statistics()
 
     assert result.n_circuits_used > 0
@@ -35,6 +37,7 @@ def test_reproduce_phase1_statistics_public_facade() -> None:
 
 
 def test_run_phase1_benchmark_includes_classical_reference() -> None:
+    """A phase-1 benchmark run carries a NumPy classical reference that is zero within tolerance."""
     result = run_phase1_benchmark(baselines_backend="numpy")
 
     assert result.classical_reference.backend == "numpy"

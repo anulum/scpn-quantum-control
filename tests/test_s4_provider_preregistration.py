@@ -15,6 +15,7 @@ from scripts.export_s4_provider_preregistration import build_ibm_pulse_dossier
 
 
 def test_ibm_pulse_dossier_is_non_submitting() -> None:
+    """The pulse dossier submits nothing and creates no pulse schedule."""
     dossier = build_ibm_pulse_dossier(build_readiness_payload())
 
     assert dossier.job_id == "s4_ibm_pulse_calibration_review"
@@ -25,6 +26,7 @@ def test_ibm_pulse_dossier_is_non_submitting() -> None:
 
 
 def test_ibm_pulse_dossier_preserves_provider_summary() -> None:
+    """The dossier keeps the provider, platform, schema and oscillator count."""
     dossier = build_ibm_pulse_dossier(build_readiness_payload())
 
     assert dossier.circuit_summary["provider"] == "ibm_pulse"
@@ -36,6 +38,7 @@ def test_ibm_pulse_dossier_preserves_provider_summary() -> None:
 
 
 def test_ibm_pulse_dossier_has_review_decision_tree() -> None:
+    """The dossier has a review decision tree, a channel-map observable and a QPU-time prerequisite."""
     dossier = build_ibm_pulse_dossier(build_readiness_payload())
 
     assert set(dossier.decision_tree) == {"accepted", "manual_review", "fail"}

@@ -21,6 +21,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_verify_composed_objective_gradient_matches_finite_difference() -> None:
+    """A composed objective's gradient agrees with finite differences."""
     objective = build_phase_control_objective(
         2,
         energy_weight=1.0,
@@ -44,6 +45,7 @@ def test_verify_composed_objective_gradient_matches_finite_difference() -> None:
 
 
 def test_composed_objective_audit_suite_reports_supported_and_blocked_routes() -> None:
+    """The audit suite separates the parameter-shift route from the blocked hybrid route."""
     suite = run_composed_objective_audit_suite()
     payload = suite.to_dict()
 
@@ -64,6 +66,7 @@ def test_composed_objective_audit_suite_reports_supported_and_blocked_routes() -
 
 
 def test_verify_composed_objective_gradient_rejects_invalid_controls() -> None:
+    """Invalid step, tolerance or parameters are refused."""
     objective = build_phase_control_objective(1)
 
     with pytest.raises(ValueError, match="finite_difference_step"):

@@ -81,6 +81,7 @@ def _write_plan(tmp_path: Path) -> Path:
 
 
 def test_select_executable_plan_rows_excludes_qpu_and_optional_rows(tmp_path: Path) -> None:
+    """Slice selection keeps only the executable baselines that need no QPU."""
     module = _load_module()
     plan_path = _write_plan(tmp_path)
     module.__dict__["OUT_DIR"] = plan_path.parent
@@ -92,6 +93,7 @@ def test_select_executable_plan_rows_excludes_qpu_and_optional_rows(tmp_path: Pa
 
 
 def test_execute_slice_records_no_hardware_or_advantage(tmp_path: Path) -> None:
+    """An executed slice records no submission, no advantage and an incomplete campaign."""
     module = _load_module()
     plan_path = _write_plan(tmp_path)
     module.__dict__["OUT_DIR"] = plan_path.parent
@@ -113,6 +115,7 @@ def test_execute_slice_records_no_hardware_or_advantage(tmp_path: Path) -> None:
 
 
 def test_write_outputs_records_manifest(tmp_path: Path) -> None:
+    """The written outputs include a manifest stating the same boundaries."""
     module = _load_module()
     plan_path = _write_plan(tmp_path)
     module.__dict__["OUT_DIR"] = plan_path.parent

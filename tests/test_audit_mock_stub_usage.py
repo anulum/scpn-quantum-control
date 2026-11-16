@@ -37,6 +37,7 @@ format_findings = _audit_mock_stub_usage.format_findings
 
 
 def test_audit_detects_monkeypatch_and_mock_calls(tmp_path: Path) -> None:
+    """The audit finds MagicMock and monkeypatch uses and marks third-party boundaries."""
     path = tmp_path / "test_boundary.py"
     path.write_text(
         "\n".join(
@@ -61,6 +62,7 @@ def test_audit_detects_monkeypatch_and_mock_calls(tmp_path: Path) -> None:
 
 
 def test_audit_flags_result_term_context(tmp_path: Path) -> None:
+    """A stub named after a scientific result is flagged as touching result terms."""
     path = tmp_path / "test_result_stub.py"
     path.write_text(
         "\n".join(
@@ -83,6 +85,7 @@ def test_audit_flags_result_term_context(tmp_path: Path) -> None:
 
 
 def test_tree_audit_json_and_text_outputs_are_deterministic(tmp_path: Path) -> None:
+    """Auditing a tree gives the same finding in JSON and in the text summary."""
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_one.py").write_text(

@@ -35,6 +35,7 @@ def _write_dataset(path: Path, circuits: list[dict[str, object]]) -> None:
 
 
 def test_full_basis_marker_allows_confusion_matrix(tmp_path: Path) -> None:
+    """A full set of prepared basis states allows confusion-matrix mitigation."""
     module = _load_module()
     dataset = tmp_path / "full.json"
     _write_dataset(
@@ -55,6 +56,7 @@ def test_full_basis_marker_allows_confusion_matrix(tmp_path: Path) -> None:
 
 
 def test_partial_marker_lists_missing_basis_states(tmp_path: Path) -> None:
+    """A partial set allows only exact-state correction and lists the missing states."""
     module = _load_module()
     dataset = tmp_path / "partial.json"
     _write_dataset(
@@ -75,6 +77,7 @@ def test_partial_marker_lists_missing_basis_states(tmp_path: Path) -> None:
 
 
 def test_missing_readout_marker_blocks_mitigation_claim(tmp_path: Path) -> None:
+    """Without readout calibration no mitigation claim is allowed."""
     module = _load_module()
     dataset = tmp_path / "missing.json"
     _write_dataset(dataset, [{"meta": {"experiment": "main", "n_qubits": 3, "initial": "000"}}])

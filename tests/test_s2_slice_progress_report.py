@@ -83,6 +83,7 @@ def _write_slice(data_dir: Path, size: int, *, status: str = "ok") -> None:
 
 
 def test_aggregate_slices_marks_clean_no_qpu_progress(tmp_path: Path) -> None:
+    """Clean slices allow the next bounded slice without hardware."""
     module = _load_module()
     data_dir = tmp_path / "data"
     for size in (8, 10, 12):
@@ -99,6 +100,7 @@ def test_aggregate_slices_marks_clean_no_qpu_progress(tmp_path: Path) -> None:
 
 
 def test_aggregate_slices_blocks_when_slice_has_anomaly(tmp_path: Path) -> None:
+    """A slice with an anomaly blocks further progress."""
     module = _load_module()
     data_dir = tmp_path / "data"
     _write_slice(data_dir, 8)
@@ -111,6 +113,7 @@ def test_aggregate_slices_blocks_when_slice_has_anomaly(tmp_path: Path) -> None:
 
 
 def test_write_report_records_claim_boundary(tmp_path: Path) -> None:
+    """The written report states that no submission and no advantage claim follow."""
     module = _load_module()
     data_dir = tmp_path / "data"
     docs_dir = tmp_path / "docs"

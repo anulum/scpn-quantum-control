@@ -37,6 +37,7 @@ class _WithAttr:
 
 
 def test_provider_id_extractors_reject_control_characters() -> None:
+    """Every provider job-ID extractor refuses identifiers with control characters."""
     bad = _WithAttr(id="job-\n42")
     with pytest.raises(ValueError):
         hal_azure._job_id(bad)
@@ -70,6 +71,7 @@ def test_provider_id_extractors_reject_control_characters() -> None:
 
 
 def test_provider_id_extractors_trim_padding_and_preserve_value() -> None:
+    """Every provider job-ID extractor trims padding and keeps the identifier."""
     padded = _WithAttr(id="  job-42  ")
     assert hal_azure._job_id(padded) == "job-42"
     assert hal_qbraid._job_id(padded) == "job-42"
@@ -91,6 +93,7 @@ def test_provider_id_extractors_trim_padding_and_preserve_value() -> None:
 
 
 def test_provider_id_extractors_reject_object_repr_placeholders() -> None:
+    """Every provider job-ID extractor refuses an object repr instead of an identifier."""
     placeholder = _WithAttr(id="<ProviderJob object at 0xDEADBEEF>")
 
     with pytest.raises(ValueError):

@@ -43,6 +43,7 @@ def _version_key(version: str) -> tuple[int, int, int]:
     -------
     tuple of int
         ``(major, minor, patch)`` suitable for ordering comparisons.
+
     """
     major, minor, patch = version.split(".")
     return (int(major), int(minor), int(patch))
@@ -60,6 +61,7 @@ def _single_version_headers(path: Path) -> list[tuple[str, str]]:
     -------
     list of tuple of str
         Headers in file order, one entry per ``## [X.Y.Z] - DATE`` line.
+
     """
     pairs: list[tuple[str, str]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -81,6 +83,7 @@ def _range_headers(path: Path) -> list[tuple[str, str]]:
     -------
     list of tuple of str
         Inclusive version ranges declared as ``## [A.B.C–D.E.F] - DATE``.
+
     """
     ranges: list[tuple[str, str]] = []
     for line in path.read_text(encoding="utf-8").splitlines():

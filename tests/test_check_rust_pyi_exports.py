@@ -46,6 +46,7 @@ def test_rust_and_pyi_exports_ignore_namespaces_and_private_helpers(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Export discovery ignores namespaces and private helpers in Rust and in the stub."""
     rust_path, pyi_path = _write_contracts(
         tmp_path,
         rust_text="\n".join(
@@ -74,6 +75,7 @@ def test_rust_pyi_checker_returns_zero_when_contracts_match(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """The checker passes when the Rust exports and the stub agree."""
     rust_path, pyi_path = _write_contracts(
         tmp_path,
         rust_text="m.add_function(wrap_pyfunction!(build_knm, m)?)?;",
@@ -91,6 +93,7 @@ def test_rust_pyi_checker_reports_missing_and_stale_exports(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """The checker fails and names exports missing from the stub and stale stub entries."""
     rust_path, pyi_path = _write_contracts(
         tmp_path,
         rust_text="\n".join(

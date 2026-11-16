@@ -37,6 +37,7 @@ script = _load_script()
 def test_main_runs_a_descent_and_writes_the_artifact(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command runs a descent and writes a classified artefact."""
     out = tmp_path / "descent.json"
     code = script.main(
         ["--n-osc", "2", "--max-iterations", "2", "--seed", "5", "--json-out", str(out)]
@@ -58,6 +59,7 @@ def test_main_runs_a_descent_and_writes_the_artifact(
 
 
 def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
+    """The artefact survives a JSON round trip unchanged."""
     out = tmp_path / "descent.json"
     script.main(["--n-osc", "2", "--max-iterations", "1", "--seed", "5", "--json-out", str(out)])
     payload = json.loads(out.read_text(encoding="utf-8"))
@@ -75,5 +77,6 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
     ],
 )
 def test_out_of_range_arguments_fail_closed(argv: list[str], match: str) -> None:
+    """Out-of-range arguments end the command with an error."""
     with pytest.raises(SystemExit, match=match):
         script.main(argv)

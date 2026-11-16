@@ -48,6 +48,7 @@ class _Backend:
 
 
 def test_select_layouts_returns_three_connected_windows() -> None:
+    """Layout selection returns three connected windows with positive scores."""
     module = _load_module()
 
     layouts = module.select_layouts(_Backend(), n_layouts=3)
@@ -61,6 +62,7 @@ def test_select_layouts_returns_three_connected_windows() -> None:
 
 
 def test_build_circuits_matches_preregistered_scope() -> None:
+    """The circuit build matches the preregistered main and readout counts."""
     module = _load_module()
     layouts = module.select_layouts(_Backend(), n_layouts=3)
 
@@ -76,6 +78,7 @@ def test_build_circuits_matches_preregistered_scope() -> None:
 
 
 def test_readiness_rejects_depth_or_gate_guard_violation() -> None:
+    """Readiness refuses a circuit that breaks the depth or gate guard."""
     module = _load_module()
     layouts = module.select_layouts(_Backend(), n_layouts=1)
     main, _ = module.build_circuits(layouts)

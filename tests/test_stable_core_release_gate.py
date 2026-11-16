@@ -25,7 +25,6 @@ from scripts.run_stable_core_release_gate import (
 
 def test_gate_helper_builds_commands_in_stable_order() -> None:
     """The release gate should run capability, contract, then preflight gates."""
-
     commands = build_stable_core_release_gate_commands()
 
     assert commands == (
@@ -37,7 +36,6 @@ def test_gate_helper_builds_commands_in_stable_order() -> None:
 
 def test_gate_main_calls_release_steps_in_order(monkeypatch: pytest.MonkeyPatch) -> None:
     """Release gate commands must execute in fixed, ordered sequence."""
-
     executed_commands: list[tuple[str, ...]] = []
 
     def stub_run_command(command: tuple[str, ...]) -> None:
@@ -53,7 +51,6 @@ def test_gate_main_calls_release_steps_in_order(monkeypatch: pytest.MonkeyPatch)
 
 def test_gate_main_fails_closed_on_first_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """A non-zero exit in the first command must stop and propagate as SystemExit."""
-
     executed_commands: list[tuple[str, ...]] = []
 
     def stub_run_command(command: tuple[str, ...]) -> None:

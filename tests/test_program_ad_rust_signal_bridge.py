@@ -25,7 +25,6 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 
 def _signal_weighted_objective(values: Any) -> Any:
     """Return a compact signal objective covering convolution and correlation modes."""
-
     signal = values[:4]
     kernel = values[4:7]
     convolve_full_weights = values[7:13]
@@ -47,7 +46,6 @@ def _signal_weighted_objective(values: Any) -> Any:
 
 def _signal_sample() -> NDArray[np.float64]:
     """Return a finite sample covering dynamic signal, kernel, and weight parameters."""
-
     return np.array(
         [
             1.25,
@@ -88,7 +86,6 @@ def _signal_sample() -> NDArray[np.float64]:
 
 def test_rust_bridge_replays_compact_signal_program_ad_nodes() -> None:
     """The Rust bridge should replay compact signal value+gradient IR."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _signal_sample()

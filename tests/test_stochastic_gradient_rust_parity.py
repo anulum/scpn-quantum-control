@@ -23,6 +23,8 @@ engine = pytest.importorskip("scpn_quantum_engine")
 
 
 def test_rust_spsa_gradient_matches_python_materialised_records() -> None:
+    """The native SPSA gradient equals the Python one over the same materialised records."""
+
     def objective(values: NDArray[np.float64], shots: int | None) -> SPSAObjectiveSample:
         assert shots == 400
         return SPSAObjectiveSample(
@@ -73,6 +75,7 @@ def test_rust_spsa_gradient_matches_python_materialised_records() -> None:
 
 
 def test_rust_score_function_gradient_matches_python_materialised_records() -> None:
+    """The native score-function gradient equals the Python one over the same records."""
     rewards = np.array([2.0, 0.0, 4.0], dtype=np.float64)
     score_vectors = np.array(
         [
@@ -105,6 +108,7 @@ def test_rust_score_function_gradient_matches_python_materialised_records() -> N
 
 
 def test_rust_gradient_confidence_policy_matches_python_interval() -> None:
+    """The native confidence policy accepts the interval the Python policy computes."""
     python_result = score_function_gradient_estimate(
         [2.0, 0.0, 4.0],
         [[1.0, 2.0], [-1.0, 0.0], [0.0, 1.0]],

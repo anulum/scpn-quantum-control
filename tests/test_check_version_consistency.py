@@ -65,6 +65,7 @@ def _patch_contract_paths(
 def test_version_consistency_returns_zero_when_all_carriers_match(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The check passes when every version carrier agrees."""
     files = _write_version_files(
         tmp_path,
         {
@@ -81,6 +82,7 @@ def test_version_consistency_returns_zero_when_all_carriers_match(
 def test_version_consistency_reports_mismatched_carrier(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The check fails and names the carrier whose version differs."""
     files = _write_version_files(
         tmp_path,
         {
@@ -100,6 +102,7 @@ def test_version_consistency_reports_mismatched_carrier(
 def test_version_consistency_reports_missing_and_unmatched_files(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The check fails for a missing carrier and for one without a version line."""
     files = _write_version_files(
         tmp_path,
         {

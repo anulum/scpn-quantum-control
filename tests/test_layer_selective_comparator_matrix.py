@@ -69,6 +69,7 @@ class _FakeBackend:
 
 
 def test_true_layer_layout_prefers_low_error_connected_window() -> None:
+    """Layout selection picks the connected window with the lowest readout and gate errors."""
     module = _load_module()
 
     selected = module.select_true_layer_layout(_FakeBackend())
@@ -80,6 +81,7 @@ def test_true_layer_layout_prefers_low_error_connected_window() -> None:
 
 
 def test_comparator_summary_promotes_only_resource_gain() -> None:
+    """A resource gain makes the comparator promotable offline without submission."""
     module = _load_module()
     layer_layout = module.LayerSelectiveLayout((4, 5, 6, 7), 0.1, 0.001, 0.002, 0.1)
     rows: list[dict[str, Any]] = []
@@ -110,6 +112,7 @@ def test_comparator_summary_promotes_only_resource_gain() -> None:
 
 
 def test_comparator_summary_blocks_no_gain() -> None:
+    """Without a resource gain the comparator stays blocked."""
     module = _load_module()
     layer_layout = module.LayerSelectiveLayout((4, 5, 6, 7), 0.1, 0.001, 0.002, 0.1)
     rows: list[dict[str, Any]] = []

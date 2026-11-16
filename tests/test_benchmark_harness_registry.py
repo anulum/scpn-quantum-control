@@ -17,6 +17,7 @@ from scpn_quantum_control.benchmark_harness.registry import (
 
 
 def test_registry_lists_phase1_as_only_implemented_family() -> None:
+    """Phase 1 is the only implemented benchmark family, with its command."""
     rows = list_benchmark_families(include_planned=False)
 
     assert [row.benchmark_id for row in rows] == ["phase1_dla_parity"]
@@ -25,6 +26,7 @@ def test_registry_lists_phase1_as_only_implemented_family() -> None:
 
 
 def test_registry_planned_rows_are_explicitly_not_available() -> None:
+    """Planned families have no command or artefact and name their blocker."""
     rows = list_benchmark_families()
     planned = [row for row in rows if row.status == "planned"]
 
@@ -40,6 +42,7 @@ def test_registry_planned_rows_are_explicitly_not_available() -> None:
 
 
 def test_registry_payload_counts_statuses() -> None:
+    """The registry payload counts implemented, planned and blocked families."""
     payload = benchmark_registry_payload()
 
     assert payload["schema"] == "benchmark_harness_registry_v1"

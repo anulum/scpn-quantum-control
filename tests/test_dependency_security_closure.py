@@ -19,6 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_symengine_floor_is_explicit_in_package_metadata() -> None:
+    """The package metadata states the symengine security floor."""
     pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     requirements = [
         Requirement(raw)
@@ -33,12 +34,14 @@ def test_symengine_floor_is_explicit_in_package_metadata() -> None:
 
 
 def test_symengine_pinned_requirements_match_security_floor() -> None:
+    """The pinned runtime requirements use a symengine release at the floor."""
     runtime_requirements = (REPO_ROOT / "requirements.txt").read_text(encoding="utf-8")
 
     assert "symengine==0.14.1" in runtime_requirements
 
 
 def test_symengine_hashed_ci_lock_matches_security_floor() -> None:
+    """The hashed CI lock pins that symengine release with its digest."""
     ci_requirements = (REPO_ROOT / "requirements-ci-py312-linux.txt").read_text(encoding="utf-8")
 
     assert "symengine==0.14.1" in ci_requirements

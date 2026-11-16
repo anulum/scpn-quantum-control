@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -34,8 +34,7 @@ def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[n
 
 
 class TestSymmetryPipeline:
-    """Symmetry sectors and sparse methods should give consistent eigenvalues
-    as the pipeline progresses from full ED to sector ED to sparse."""
+    """Symmetry sectors and sparse methods agree from full diagonalisation to sectors to sparse."""
 
     def test_z2_eigenvalues_match_full_ed(self) -> None:
         """Z₂ sector eigenvalues should reconstruct the full spectrum."""

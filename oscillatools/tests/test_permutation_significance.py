@@ -32,7 +32,7 @@ _TIME = np.arange(_T) * 0.05
 
 
 def _mean_order_parameter(trajectory: np.ndarray) -> float:
-    """The time-averaged Kuramoto order parameter of a ``(T, N)`` phase series."""
+    """Return the time-averaged Kuramoto order parameter of a ``(T, N)`` phase series."""
     return float(np.mean([order_parameter(trajectory[t]) for t in range(trajectory.shape[0])]))
 
 
@@ -43,7 +43,7 @@ def _incoherence(trajectory: np.ndarray) -> float:
 
 @pytest.fixture(scope="module")
 def synchronised() -> np.ndarray:
-    """A tightly phase-locked series: one common frequency, a narrow phase cluster."""
+    """Build a tightly phase-locked series: one common frequency, a narrow phase cluster."""
     rng = np.random.default_rng(1)
     offsets = rng.normal(0.0, 0.2, _N)
     return (_TIME[:, None] + offsets[None, :]) % (2.0 * np.pi)
@@ -51,7 +51,7 @@ def synchronised() -> np.ndarray:
 
 @pytest.fixture(scope="module")
 def independent() -> np.ndarray:
-    """A series of unrelated oscillators: spread frequencies and independent phase offsets."""
+    """Build unrelated oscillators: spread frequencies and independent phase offsets."""
     rng = np.random.default_rng(2)
     frequencies = rng.uniform(-1.5, 1.5, _N)
     offsets = rng.uniform(0.0, 2.0 * np.pi, _N)

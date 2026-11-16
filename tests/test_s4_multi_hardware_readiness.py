@@ -14,6 +14,7 @@ from scripts.export_s4_multi_hardware_readiness import build_readiness_payload
 
 
 def test_s4_readiness_payload_is_non_submitting() -> None:
+    """The readiness payload contacts no cloud, requests no QPU time and blocks result claims."""
     payload = build_readiness_payload()
 
     assert payload["hardware_submission"] is False
@@ -23,6 +24,7 @@ def test_s4_readiness_payload_is_non_submitting() -> None:
 
 
 def test_s4_provider_plans_are_approval_gated() -> None:
+    """Every provider plan can neither submit nor execute without approval."""
     payload = build_readiness_payload()
     plans = {plan["provider"]: plan for plan in payload["provider_plans"]}
 
@@ -35,6 +37,7 @@ def test_s4_provider_plans_are_approval_gated() -> None:
 
 
 def test_s4_programmes_cover_neutral_atom_and_circuit_qed_paths() -> None:
+    """The programmes cover a neutral-atom and a circuit-QED path with their schemas."""
     payload = build_readiness_payload()
 
     neutral = payload["programmes"]["neutral_atoms"]

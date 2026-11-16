@@ -18,16 +18,19 @@ from scripts.analyse_s1_dynamic_circuit_constraints import (
 
 
 def test_hamming_distance_requires_equal_length_bitstrings() -> None:
+    """Hamming distance counts differing bits and refuses bitstrings of unequal length."""
     assert _hamming_distance("000", "101") == 2
 
 
 def test_independent_multi_flip_probability_for_three_bits() -> None:
+    """The probability of two or more independent flips over three bits matches the closed form."""
     probability = _independent_multi_flip_probability((0.1, 0.2, 0.3))
 
     assert abs(probability - 0.098) < 1e-12
 
 
 def test_readout_leakage_summary_reports_multi_bit_proxy() -> None:
+    """The readout summary reports conditioning, retention and the largest single-state leakage."""
     readout_model = {
         "condition_number": 1.25,
         "calibration_rows": [
