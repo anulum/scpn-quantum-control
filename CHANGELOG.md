@@ -497,6 +497,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `FeatureBatch` contract
+  (`experimental/llm_qpu/contracts/features.py`, schema `feature_batch.v1`):
+  the `[N, F]` sampled means and sampling covariance of one measurement basis,
+  one `FeatureRow` per cell in result-set order, with each row's `CellKey` and
+  measurement request digest. Values are finite floats in [-1, 1] (a
+  quasi-probability estimate is refused as a raw-count feature), covariance
+  is square and symmetric and is absent only for a single shot, and a cell
+  without a result is an explicit missing row with a reason. A
+  `quasi_probability_v1` estimator is refused. `validate_feature_batch` ties
+  each row to its planned cell and to the measurement plan of that cell's
+  circuit. It requires a row for every cell measured in the basis, in order,
+  refuses a zero-filled row for a missing cell, and recomputes every
+  measured row from the raw counts through `estimate_sampled_basis` after
+  mapping the physical bit order through the plan's layout and classical
+  bits; a row must match bit for bit. The standalone worker validates the
+  measurement plans and recomputes the same values independently.
+
 - The experimental LLM-QPU lane gains design-only `CellResult`, `CellGap` and
   `RawResultSet` contracts (`experimental/llm_qpu/contracts/results.py`,
   schema `raw_result_set.v1`) for the raw outcome of one provider batch

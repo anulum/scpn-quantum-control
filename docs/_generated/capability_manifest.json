@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1654,
-    "python_model_source_modules": 872,
+    "python_model_classes": 1656,
+    "python_model_source_modules": 873,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1645
+    "test_files": 1646
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 28
+        "python_modules": 29
       },
       {
         "package": "fep",
@@ -2704,6 +2704,14 @@
       {
         "name": "FeasibilityReport",
         "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
+      },
+      {
+        "name": "FeatureBatch",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/features.py"
+      },
+      {
+        "name": "FeatureRow",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/features.py"
       },
       {
         "name": "FeedProbeResult",
@@ -7775,6 +7783,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/cost.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/features.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py",
@@ -9549,6 +9558,7 @@
       "tests/experimental/llm_qpu/test_contract_wire.py",
       "tests/experimental/llm_qpu/test_cost_quote_contract.py",
       "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
+      "tests/experimental/llm_qpu/test_feature_batch_contract.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/experimental/llm_qpu/test_latent_batch_contract.py",
       "tests/experimental/llm_qpu/test_measurement_plan_contract.py",

@@ -38,6 +38,8 @@ _COST_QUOTE_SCHEMA = "scpn.experimental.llm_qpu.cost_quote.v1"
 _OWNER_APPROVAL_SCHEMA = "scpn.experimental.llm_qpu.owner_approval.v1"
 _RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receipt.v1"
 _RESULT_SET_SCHEMA = "scpn.experimental.llm_qpu.raw_result_set.v1"
+_FEATURE_SCHEMA = "scpn.experimental.llm_qpu.feature_batch.v1"
+_MEASUREMENT_SCHEMA = "scpn.experimental.llm_qpu.measurement_plan.v1"
 _RESULT_ORIGINS = {
     "provider_metadata": "provider_result",
     "synthetic_classical": "synthetic_classical",
@@ -1925,6 +1927,252 @@ def _roundtrip_raw_result_set(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+_PLAN_FIELDS = {
+    "schema",
+    "object_kind",
+    "circuit_plan_digest",
+    "n_qubits",
+    "basis_id",
+    "shots",
+    "observable_ids",
+    "logical_to_clbit",
+    "display_order_clbits",
+    "register_name",
+    "physical_qubits",
+    "pauli_label_convention",
+}
+_ROW_FIELDS = {
+    "cell_ordinal",
+    "key",
+    "measurement_request_digest",
+    "shots",
+    "values",
+    "covariance",
+    "missing_reason",
+}
+
+
+def _observables(basis: str, width: int) -> list[str]:
+    singles = [f"{basis}{wire}" for wire in range(width)]
+    return singles + [f"{basis}{wire}{basis}{wire + 1}" for wire in range(width - 1)]
+
+
+def _validate_measurement_plan(plan: object) -> dict[str, object]:
+    if type(plan) is not dict or set(plan) != _PLAN_FIELDS:
+        raise ValueError("measurement plan fields mismatch")
+    if plan["schema"] != _MEASUREMENT_SCHEMA or plan["object_kind"] != "measurement_plan":
+        raise ValueError("unsupported measurement plan schema")
+    _worker_digest(plan["circuit_plan_digest"], "circuit plan digest")
+    width, basis, shots = plan["n_qubits"], plan["basis_id"], plan["shots"]
+    if type(width) is not int or width not in (4, 8) or basis not in ("X", "Y", "Z"):
+        raise ValueError("measurement plan requires n4/n8 and an X, Y or Z basis")
+    if type(shots) is not int or not 0 < shots <= 1_000_000:
+        raise ValueError("measurement shots must be a bounded positive integer")
+    if plan["observable_ids"] != _observables(str(basis), width):
+        raise ValueError("measurement observable order or basis mismatch")
+    for name in ("logical_to_clbit", "display_order_clbits"):
+        bits = plan[name]
+        if type(bits) is not list or any(type(bit) is not int for bit in bits):
+            raise ValueError("measurement bit maps must be integer lists")
+        if sorted(bits) != list(range(width)):
+            raise ValueError("measurement bit maps must be complete permutations")
+    _target_text(plan["register_name"], "measurement register")
+    physical = plan["physical_qubits"]
+    if physical is not None and (
+        type(physical) is not list
+        or len(physical) != width
+        or any(type(wire) is not int or not 0 <= wire < 128 for wire in physical)
+        or len(set(physical)) != width
+    ):
+        raise ValueError("physical qubits must be explicit unique bounded indices")
+    if plan["pauli_label_convention"] != "logical_q0_low_index_v1":
+        raise ValueError("unsupported Pauli label convention")
+    return plan
+
+
+def _sampled_estimate(
+    plan: dict[str, object], result: dict[str, object]
+) -> tuple[int, list[float], list[list[float]] | None]:
+    physical, measured = plan["physical_qubits"], result["measured_qubits"]
+    if (
+        type(physical) is not list
+        or type(measured) is not list
+        or sorted(physical) != sorted(measured)
+    ):
+        raise ValueError("measurement plan layout differs from the measured qubits")
+    position = [measured.index(wire) for wire in physical]
+    width = len(physical) * 2 - 1
+    counts = result["counts"]
+    if type(counts) is not list:
+        raise ValueError("raw counts must be a list")
+    totals, joint, shots = [0] * width, [[0] * width for _ in range(width)], 0
+    for bits, count in counts:
+        single = [1 - 2 * int(bits[index]) for index in position]
+        values = single + [single[i] * single[i + 1] for i in range(len(single) - 1)]
+        shots += count
+        for i, value in enumerate(values):
+            totals[i] += count * value
+            for j, other in enumerate(values):
+                joint[i][j] += count * value * other
+    if shots != plan["shots"]:
+        raise ValueError("raw counts do not match requested shots")
+    means = [total / shots for total in totals]
+    if shots == 1:
+        return shots, means, None
+    denominator = shots * shots * (shots - 1)
+    covariance = [
+        [(shots * joint[i][j] - totals[i] * totals[j]) / denominator for j in range(width)]
+        for i in range(width)
+    ]
+    return shots, means, covariance
+
+
+def _validate_feature_row(row: object, width: int) -> dict[str, object]:
+    if type(row) is not dict or set(row) != _ROW_FIELDS:
+        raise ValueError("FeatureRow fields mismatch")
+    _bounded(row["cell_ordinal"], "cell_ordinal", 10_000_000)
+    key = row["key"]
+    if type(key) is not dict or set(key) != _KEY_FIELDS:
+        raise ValueError("CellKey fields mismatch")
+    _worker_digest(row["measurement_request_digest"], "measurement request digest")
+    values, covariance, shots = row["values"], row["covariance"], row["shots"]
+    if values is None:
+        if shots is not None or covariance is not None:
+            raise ValueError("a missing row carries no shots or covariance")
+        _target_text(row["missing_reason"], "missing reason")
+        return row
+    if row["missing_reason"] is not None or type(shots) is not int or shots < 1:
+        raise ValueError("a measured row has positive shots and no missing reason")
+    if type(values) is not list or len(values) != width:
+        raise ValueError("every measured row has one value per observable")
+    if any(not -1.0 <= _f64_token(value) <= 1.0 for value in values):
+        raise ValueError("a sampled mean of a ±1 observable lies in [-1, 1]")
+    if shots == 1:
+        if covariance is not None:
+            raise ValueError("one shot has no sampling covariance")
+        return row
+    if type(covariance) is not list or len(covariance) != width:
+        raise ValueError("covariance must be a square list matching the features")
+    for line in covariance:
+        if type(line) is not list or len(line) != width:
+            raise ValueError("covariance must be a square list matching the features")
+    return row
+
+
+def _f64_token(value: object) -> float:
+    if type(value) is not dict or set(value) != {"$f64"} or type(value["$f64"]) is not str:
+        raise ValueError("feature numbers must be f64 tags")
+    parsed = float.fromhex(value["$f64"])
+    if not math.isfinite(parsed):
+        raise ValueError("feature numbers must be finite")
+    return parsed
+
+
+def _validate_feature_fields(batch: object) -> dict[str, object]:
+    fields = {"schema", "object_kind", "raw_result_set_digest", "estimator", "basis_id"}
+    if type(batch) is not dict or set(batch) != fields | {"observable_ids", "rows", "header"}:
+        raise ValueError("FeatureBatch fields mismatch")
+    if batch["schema"] != _FEATURE_SCHEMA or batch["object_kind"] != "feature_batch":
+        raise ValueError("unknown FeatureBatch schema")
+    _worker_digest(batch["raw_result_set_digest"], "raw result set digest")
+    if batch["estimator"] != "sampled_mean_v1":
+        raise ValueError(
+            "only sampled means of raw counts are features; quasi-probabilities are not"
+        )
+    if batch["basis_id"] not in ("X", "Y", "Z"):
+        raise ValueError("feature basis must be X, Y or Z")
+    names, rows = batch["observable_ids"], batch["rows"]
+    if type(names) is not list or not names or len(set(map(str, names))) != len(names):
+        raise ValueError("observable IDs must be a nonempty unique list")
+    if type(rows) is not list or not rows:
+        raise ValueError("feature rows must be a nonempty list")
+    ordinals = [int(str(_validate_feature_row(row, len(names))["cell_ordinal"])) for row in rows]
+    if ordinals != sorted(set(ordinals)):
+        raise ValueError("feature rows must follow the result set's cell order")
+    return batch
+
+
+def _cross_check_feature_row(
+    row: dict[str, object],
+    plan: dict[str, object],
+    planned: dict[str, object],
+    result: dict[str, object] | None,
+    names: object,
+) -> None:
+    if row["key"] != planned["key"] or plan["observable_ids"] != names:
+        raise ValueError("feature row key or columns differ from the planned cell")
+    if row["measurement_request_digest"] != hashlib.sha256(_canonical_bytes(plan)).hexdigest():
+        raise ValueError("feature row names another measurement request")
+    if result is None:
+        if row["values"] is not None:
+            raise ValueError("a cell without a result must stay missing, never zero-filled")
+        return
+    if row["values"] is None:
+        raise ValueError("a measured cell cannot be reported missing")
+    shots, means, covariance = _sampled_estimate(plan, result)
+    values, reported = row["values"], row["covariance"]
+    if type(values) is not list:
+        raise ValueError("feature values must be a list")
+    found = [_f64_token(value) for value in values]
+    matrix: list[list[float]] | None = None
+    if type(reported) is list:
+        matrix = [[_f64_token(entry) for entry in line] for line in reported]
+    if (row["shots"], found, matrix) != (shots, means, covariance):
+        raise ValueError("feature values differ from the raw counts")
+
+
+def _checked_plans(plans: object, planned: object) -> list[dict[str, object]]:
+    if type(plans) is not list or type(planned) is not list or len(plans) != len(planned):
+        raise ValueError("validation needs one measurement plan per compiled cell")
+    checked = [_validate_measurement_plan(plan) for plan in plans]
+    for plan, cell in zip(checked, planned, strict=True):
+        if type(cell) is not dict or plan["circuit_plan_digest"] != cell["circuit_plan_digest"]:
+            raise ValueError("measurement plan does not measure the planned circuit")
+    return checked
+
+
+def _roundtrip_feature_batch(request: dict[str, object]) -> dict[str, object]:
+    names = ("target", "bundle", "quote", "approval", "receipt", "planned", "results")
+    if set(request) != {"op", *names, "plans", "features"}:
+        raise ValueError("feature request fields mismatch")
+    _roundtrip_raw_result_set({"op": "roundtrip_raw_result_set", **{n: request[n] for n in names}})
+    result_set, planned = request["results"], request["planned"]
+    if type(result_set) is not dict or type(planned) is not list:
+        raise ValueError("results must be an object and planned cells a list")
+    plans = _checked_plans(request["plans"], planned)
+    batch = _validate_feature_fields(request["features"])
+    header, result_header = batch["header"], result_set["header"]
+    if type(header) is not dict or type(result_header) is not dict:
+        raise ValueError("artifact headers must be objects")
+    origin = str(header["data_origin"])
+    if origin not in ("provider_result", "synthetic_classical"):
+        raise ValueError("a feature batch derives from provider results or a fixture")
+    _validate_artifact_header(batch, (str(batch["raw_result_set_digest"]),), origin)
+    if batch["raw_result_set_digest"] != hashlib.sha256(_canonical_bytes(result_set)).hexdigest():
+        raise ValueError("features name a different raw result set")
+    if origin != result_header["data_origin"]:
+        raise ValueError("feature origin differs from the raw results")
+    rows, found = batch["rows"], result_set["results"]
+    if type(rows) is not list or type(found) is not list:
+        raise ValueError("feature rows and results must be lists")
+    expected = [index for index, plan in enumerate(plans) if plan["basis_id"] == batch["basis_id"]]
+    if [row["cell_ordinal"] for row in rows] != expected:
+        raise ValueError("feature rows must cover every cell measured in this basis, in order")
+    by_cell = {result["cell_ordinal"]: result for result in found}
+    for row in rows:
+        index = row["cell_ordinal"]
+        args = (plans[index], planned[index], by_cell.get(index), batch["observable_ids"])
+        _cross_check_feature_row(row, *args)
+    wire = _canonical_bytes(batch)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "features": json.loads(wire),
+        "features_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -1947,6 +2195,7 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
         (ValueError, TypeError, KeyError),
     ),
     "roundtrip_raw_result_set": (_roundtrip_raw_result_set, (ValueError, TypeError, KeyError)),
+    "roundtrip_feature_batch": (_roundtrip_feature_batch, (ValueError, TypeError, KeyError)),
 }
 
 

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **872 modules** across **41 package families**
-- **4704 documented public module-level symbols**
+- **873 modules** across **41 package families**
+- **4708 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2466,6 +2466,16 @@ Frozen cost quotes whose unknown totals and prices never read as zero.
 **Classes:** `QuotedCount`, `CostQuote`
 
 **Functions:** `validate_cost_quote()`, `decode_cost_quote()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.features`
+
+Feature batches recomputed from raw counts; a missing cell is never a zero row.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/features.py) · Public symbols: **4**
+
+**Classes:** `FeatureRow`, `FeatureBatch`
+
+**Functions:** `validate_feature_batch()`, `decode_feature_batch()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.latent`
 

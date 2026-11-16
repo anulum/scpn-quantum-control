@@ -39,6 +39,12 @@ if TYPE_CHECKING:
     from .compressed import CompressedLatentBatch, validate_compressed_latent_batch
     from .compressor import CompressorArtifact, validate_compressor_artifact
     from .cost import CostQuote, QuotedCount, decode_cost_quote, validate_cost_quote
+    from .features import (
+        FeatureBatch,
+        FeatureRow,
+        decode_feature_batch,
+        validate_feature_batch,
+    )
     from .latent import LatentBatch, validate_latent_batch
     from .measurement import (
         MeasurementPlan,
@@ -76,6 +82,7 @@ if TYPE_CHECKING:
         COMPRESSOR_SCHEMA,
         COST_QUOTE_SCHEMA,
         EXPERIMENT_PROTOCOL_SCHEMA,
+        FEATURE_BATCH_SCHEMA,
         HEADER_SCHEMA,
         LATENT_SCHEMA,
         MEASUREMENT_PLAN_SCHEMA,
@@ -288,6 +295,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.results",
         "decode_raw_result_set",
     ),
+    "FeatureRow": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.features",
+        "FeatureRow",
+    ),
+    "FeatureBatch": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.features",
+        "FeatureBatch",
+    ),
+    "validate_feature_batch": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.features",
+        "validate_feature_batch",
+    ),
+    "decode_feature_batch": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.features",
+        "decode_feature_batch",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -354,6 +377,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "RAW_RESULT_SET_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "RAW_RESULT_SET_SCHEMA",
+    ),
+    "FEATURE_BATCH_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "FEATURE_BATCH_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -577,4 +604,9 @@ __all__ = (
     "RawResultSet",
     "validate_raw_result_set",
     "decode_raw_result_set",
+    "FEATURE_BATCH_SCHEMA",
+    "FeatureRow",
+    "FeatureBatch",
+    "validate_feature_batch",
+    "decode_feature_batch",
 )
