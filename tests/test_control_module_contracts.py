@@ -240,16 +240,23 @@ def test_vqls_cost_handles_near_zero_state() -> None:
     assert np.linalg.norm(psi) > 0, "VQLS returned zero vector"
 
 
-def test_qec_odd_defects_duplication() -> None:
-    """Odd number of defects triggers defect duplication."""
+def test_qec_single_x_error_flips_two_stabilisers_and_is_corrected() -> None:
+    """A single X error flips two stabilisers, and the decoded correction clears them.
+
+    On the toric code one data error always marks two defects, so this is the
+    even case; the odd-input duplication is covered by test_decode_odd_defects.
+    """
     qec = ControlQEC(distance=3)
     err_x = np.zeros(2 * 3**2, dtype=np.int8)
     err_z = np.zeros(2 * 3**2, dtype=np.int8)
-    # Place a single X error to get odd syndrome defects
     err_x[0] = 1
     syn_z, syn_x = qec.get_syndrome(err_x, err_z)
+    assert int(syn_z.sum()) == 2
+    assert int(syn_x.sum()) == 0
     corr = qec.decoder.decode(syn_z)
     assert corr.shape == err_x.shape
+    residual, _ = qec.get_syndrome((err_x + corr) % 2, err_z)
+    assert int(residual.sum()) == 0
 
 
 def test_qec_simulate_errors_default_rng() -> None:
@@ -273,24 +280,24 @@ def test_qec_residual_syndrome_failure() -> None:
     assert failures >= 5
 
 
-def test_qec_odd_syndrome_defects() -> None:
-    """Verify odd syndrome defects are paired by duplicating one defect."""
+def test_qec_physical_syndromes_have_even_defect_parity() -> None:
+    """Every syndrome produced by data errors on the toric code has an even defect count.
+
+    The decoder relies on this: it duplicates a defect only for odd inputs that
+    no physical error pattern can produce (see test_decode_odd_defects).
+    """
     from scpn_quantum_control.qec.control_qec import ControlQEC
 
     qec = ControlQEC(distance=3)
     n_data = 2 * 3**2
-    # Construct an error pattern that produces an odd number of defects
     rng = np.random.default_rng(0)
     for _ in range(100):
         err_x = (rng.random(n_data) < 0.15).astype(np.int8)
-        err_z = np.zeros(n_data, dtype=np.int8)
-        syn_z, _ = qec.get_syndrome(err_x, err_z)
-        n_defects = int(syn_z.sum())
-        if n_defects % 2 == 1:
-            corr = qec.decoder.decode(syn_z)
-            assert corr.shape == (n_data,)
-            return
-    pytest.skip("no odd syndrome found in 100 random samples")
+        err_z = (rng.random(n_data) < 0.15).astype(np.int8)
+        syn_z, syn_x = qec.get_syndrome(err_x, err_z)
+        assert int(syn_z.sum()) % 2 == 0
+        assert int(syn_x.sum()) % 2 == 0
+        assert qec.decoder.decode(syn_z).shape == (n_data,)
 
 
 def test_qec_decode_and_correct_failure() -> None:
