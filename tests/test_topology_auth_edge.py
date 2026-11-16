@@ -223,17 +223,20 @@ class TestRowHash:
 class TestNoiseTolerance:
     """The noise-tolerance check."""
 
-    def test_returns_dict(self) -> None:
-        """The check returns a dict."""
+    def test_reports_every_drift_statistic(self) -> None:
+        """The check reports the noise scale and drift statistics in their natural order."""
         K = _ring_coupling(4)
         result = fingerprint_noise_tolerance(K, n_trials=10, sigma=0.01)
-        assert "mean_drift" in result or "max_drift" in result or isinstance(result, dict)
+        assert set(result) == {"sigma", "mean_drift", "max_drift", "std_drift", "safe_tol"}
+        assert result["sigma"] == 0.01
+        # The 99th percentile sits between the mean and the maximum of the trials.
+        assert 0.0 < result["mean_drift"] <= result["safe_tol"] <= result["max_drift"]
+        assert result["std_drift"] >= 0.0
 
     def test_small_noise_small_drift(self) -> None:
-        """Small and large noise both return a dict."""
+        """Smaller noise gives a smaller mean and maximum drift."""
         K = _ring_coupling(4)
         r_small = fingerprint_noise_tolerance(K, n_trials=10, sigma=0.001)
         r_large = fingerprint_noise_tolerance(K, n_trials=10, sigma=0.1)
-        # Larger noise should give larger drift (on average)
-        assert isinstance(r_small, dict)
-        assert isinstance(r_large, dict)
+        assert r_small["mean_drift"] < r_large["mean_drift"]
+        assert r_small["max_drift"] < r_large["max_drift"]
