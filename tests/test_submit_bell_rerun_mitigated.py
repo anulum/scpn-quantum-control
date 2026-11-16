@@ -64,6 +64,8 @@ def perfect_calibration_counts(shots: int = CAL_SHOTS) -> dict[str, dict[str, in
 
 
 class FakeProps:
+    """Gate properties with one error rate."""
+
     def __init__(self, error: float | None) -> None:
         self.error = error
 
@@ -76,6 +78,7 @@ class FakeTarget:
         self.operation_names = tuple(op_maps)
 
     def __getitem__(self, name: str) -> dict[tuple[int, ...] | None, FakeProps]:
+        """Return the qubit map of one operation."""
         return self._op_maps[name]
 
 
@@ -102,7 +105,10 @@ def good_target() -> FakeTarget:
 
 
 class TestChshSettingCircuits:
+    """The four CHSH setting circuits."""
+
     def test_four_settings_with_pinned_names(self) -> None:
+        """There are four settings with their pinned names and width."""
         circuits = script.chsh_setting_circuits()
         assert [circuit.name for circuit in circuits] == [
             "bell_rerun_s0",
@@ -113,6 +119,7 @@ class TestChshSettingCircuits:
         assert all(circuit.num_qubits == script.N_QUBITS for circuit in circuits)
 
     def test_ideal_statistics_reach_tsirelson_on_both_pairs(self) -> None:
+        """Ideal statistics reach the Tsirelson bound on both pairs."""
         entries = [{"counts": counts} for counts in ideal_setting_counts()]
         for pair in QUBIT_PAIRS:
             statistics = chsh_for_pair(entries, pair)
@@ -120,6 +127,7 @@ class TestChshSettingCircuits:
             assert statistics.settings_e[1] == pytest.approx(-1.0 / math.sqrt(2.0), abs=2e-3)
 
     def test_setting_angles_follow_the_sign_convention(self) -> None:
+        """The setting angles follow the sign convention."""
         (a0, b0), (a1, b1), (a2, b2), (a3, b3) = script.SETTING_ANGLES
         assert (a0, a1) == (0.0, 0.0)
         assert (a2, a3) == (math.pi / 2.0, math.pi / 2.0)
@@ -128,7 +136,10 @@ class TestChshSettingCircuits:
 
 
 class TestCalibrationCircuits:
+    """The readout calibration circuits."""
+
     def test_sixteen_circuits_prepare_their_labels_exactly(self) -> None:
+        """The sixteen circuits each prepare their label exactly."""
         circuits = script.calibration_circuits()
         assert len(circuits) == 2**script.N_QUBITS
         for label, circuit in zip(LABELS, circuits, strict=True):
@@ -139,7 +150,10 @@ class TestCalibrationCircuits:
 
 
 class TestLayoutSelection:
+    """Selecting the physical layout."""
+
     def test_selects_two_best_disjoint_edges(self) -> None:
+        """The two best disjoint edges are chosen with their errors."""
         layout = script.select_physical_qubits(good_target())
         # (1,2) scores 0.001 + 0.0115 = 0.0125 — the best edge. (0,1) and
         # (2,3) both overlap it, so the best disjoint partner is (4,5).
@@ -149,11 +163,13 @@ class TestLayoutSelection:
         assert layout.worst_readout_error == 0.020
 
     def test_no_calibrated_edges_fails_closed(self) -> None:
+        """A target without calibrated edges fails closed."""
         target = FakeTarget({"measure": {(0,): FakeProps(0.01)}})
         with pytest.raises(ValueError, match="no fully calibrated two-qubit edges"):
             script.select_physical_qubits(target)
 
     def test_no_disjoint_second_edge_fails_closed(self) -> None:
+        """A target without a second disjoint edge fails closed."""
         target = FakeTarget(
             {
                 "cz": {(0, 1): FakeProps(0.002), (1, 2): FakeProps(0.003)},
@@ -168,6 +184,7 @@ class TestLayoutSelection:
             script.select_physical_qubits(target)
 
     def test_edges_without_readout_are_skipped(self) -> None:
+        """Edges without readout calibration are skipped."""
         target = FakeTarget(
             {
                 "cz": {
@@ -187,6 +204,7 @@ class TestLayoutSelection:
         assert layout.physical_qubits == (2, 3, 4, 5)
 
     def test_none_qargs_and_missing_errors_are_ignored(self) -> None:
+        """Global entries and missing errors are ignored."""
         edge_maps: dict[str, dict[tuple[int, ...] | None, FakeProps]] = {
             "cz": {
                 None: FakeProps(0.5),
@@ -212,6 +230,7 @@ class TestLayoutSelection:
         assert readout == {2: 0.01, 4: 0.01, 5: 0.01}
 
     def test_duplicate_edge_keeps_the_smaller_error(self) -> None:
+        """A duplicate edge keeps the smaller error."""
         op_maps: dict[str, dict[tuple[int, ...] | None, FakeProps]] = {
             "cz": {(0, 1): FakeProps(0.005)},
             "ecr": {(1, 0): FakeProps(0.003)},
@@ -220,6 +239,7 @@ class TestLayoutSelection:
         assert edges == {(0, 1): 0.003}
 
     def test_duplicate_edge_ignores_the_larger_error(self) -> None:
+        """A duplicate edge ignores a larger error."""
         op_maps: dict[str, dict[tuple[int, ...] | None, FakeProps]] = {
             "cz": {(0, 1): FakeProps(0.003)},
             "ecr": {(1, 0): FakeProps(0.005)},
@@ -228,6 +248,7 @@ class TestLayoutSelection:
         assert edges == {(0, 1): 0.003}
 
     def test_none_property_map_is_skipped(self) -> None:
+        """An operation without a property map is skipped."""
         op_maps: dict[str, Any] = {
             "delay": None,
             "cz": {(0, 1): FakeProps(0.002)},
@@ -237,29 +258,39 @@ class TestLayoutSelection:
 
 
 class TestCoerceCounts:
+    """Checking and padding counts."""
+
     def test_valid_counts_pass_and_pad_to_width(self) -> None:
+        """Valid counts pass with bitstrings padded to the width."""
         coerced = script.coerce_counts({"11": 3, "0000": 5}, expected_shots=8, field_name="test")
         assert coerced == {"0011": 3, "0000": 5}
 
     def test_width_overflow_fails_closed(self) -> None:
+        """A bitstring wider than four bits fails closed."""
         with pytest.raises(ValueError, match="exactly 4 bits"):
             script.coerce_counts({"00000": 8}, expected_shots=8, field_name="test")
 
     def test_negative_count_fails_closed(self) -> None:
+        """A negative count fails closed."""
         with pytest.raises(ValueError, match="test value"):
             script.coerce_counts({"0000": -1}, expected_shots=8, field_name="test")
 
     def test_duplicate_bitstring_after_padding_fails_closed(self) -> None:
+        """Bitstrings that collide after padding fail closed."""
         with pytest.raises(ValueError, match="duplicate bitstring"):
             script.coerce_counts({"11": 4, "0011": 4}, expected_shots=8, field_name="test")
 
     def test_shot_conservation_fails_closed(self) -> None:
+        """A shot total that does not match fails closed."""
         with pytest.raises(ValueError, match="expected 9, observed 8"):
             script.coerce_counts({"0000": 8}, expected_shots=9, field_name="test")
 
 
 class TestProbabilityPairCorrelator:
+    """The pair correlator from probabilities."""
+
     def test_matches_parity_convention(self) -> None:
+        """The correlator follows the parity convention."""
         probabilities = [0.0] * len(LABELS)
         probabilities[LABELS.index("0000")] = 0.5
         probabilities[LABELS.index("0010")] = 0.5
@@ -281,6 +312,7 @@ class TestProbabilityPairCorrelator:
         )
 
     def test_negative_quasi_probability_enters_unclipped(self) -> None:
+        """Negative quasi-probabilities enter without clipping."""
         probabilities = [0.0] * len(LABELS)
         probabilities[LABELS.index("0000")] = 1.1
         probabilities[LABELS.index("0001")] = -0.1
@@ -290,7 +322,10 @@ class TestProbabilityPairCorrelator:
 
 
 class TestMitigatedStatistics:
+    """Readout-mitigated statistics."""
+
     def test_identity_confusion_matrix_reproduces_unmitigated(self) -> None:
+        """An identity confusion matrix reproduces the unmitigated statistics."""
         setting_counts = ideal_setting_counts()
         confusion = build_readout_confusion_matrix(perfect_calibration_counts(), script.N_QUBITS)
         entries = [{"counts": counts} for counts in setting_counts]
@@ -306,7 +341,10 @@ class TestMitigatedStatistics:
 
 
 class TestSetting1BandDecision:
+    """The preregistered decision on setting 1."""
+
     def test_within_band_reads_as_artefact(self) -> None:
+        """A value within the band reads as an artefact."""
         decision = script.setting1_band_decision([0.8, -0.79, 0.82, 0.81], shots=SHOTS)
         assert decision["within_2_sigma_of_band"] is True
         assert "artefact" in decision["preregistered_reading"]
@@ -316,18 +354,23 @@ class TestSetting1BandDecision:
         ]
 
     def test_far_below_band_reads_as_persistent_asymmetry(self) -> None:
+        """A value far below the band reads as a persistent asymmetry."""
         decision = script.setting1_band_decision([0.8, 0.30, 0.82, 0.81], shots=SHOTS)
         assert decision["within_2_sigma_of_band"] is False
         assert "persists" in decision["preregistered_reading"]
 
     def test_saturated_correlator_clamps_sigma_at_zero(self) -> None:
+        """A saturated correlator has zero error and stays within the band."""
         decision = script.setting1_band_decision([1.0, -1.0, 1.0, 1.0], shots=SHOTS)
         assert decision["sigma_setting1"] == 0.0
         assert decision["within_2_sigma_of_band"] is True
 
 
 class TestBuildAnalysis:
+    """Building the analysis."""
+
     def test_full_analysis_shape_and_values(self) -> None:
+        """The analysis has its schema, identifiers and values."""
         analysis = script.build_analysis(
             ideal_setting_counts(), perfect_calibration_counts(), shots=SHOTS
         )
@@ -346,6 +389,8 @@ class TestBuildAnalysis:
 
 
 class TestReadiness:
+    """The readiness gates."""
+
     def _layout(self) -> script.LayoutSelection:
         return script.LayoutSelection(
             physical_qubits=(1, 2, 4, 5),
@@ -365,6 +410,7 @@ class TestReadiness:
         return types.SimpleNamespace(**defaults)
 
     def test_ready_when_all_gates_pass(self) -> None:
+        """With every gate passing the run is ready."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=self._layout(),
@@ -378,6 +424,7 @@ class TestReadiness:
         assert "full-basis" in readiness["mitigation_deviation_note"]
 
     def test_blocked_by_readout_error(self) -> None:
+        """A high readout error blocks the run."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=self._layout(),
@@ -388,6 +435,7 @@ class TestReadiness:
         assert any("readout-error abort" in reason for reason in readiness["reasons"])
 
     def test_blocked_by_depth(self) -> None:
+        """Excess depth blocks the run."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=self._layout(),
@@ -398,6 +446,7 @@ class TestReadiness:
         assert any("depth ceiling" in reason for reason in readiness["reasons"])
 
     def test_blocked_by_budget(self) -> None:
+        """An exceeded QPU-second cap blocks the run."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=self._layout(),
@@ -409,13 +458,19 @@ class TestReadiness:
 
 
 class TestEstimate:
+    """The QPU time estimate."""
+
     def test_uses_the_empirical_anchor(self) -> None:
+        """The estimate scales the measured anchor."""
         assert script.estimate_qpu_seconds(20) == pytest.approx(22.0)
         assert pytest.approx(1.1) == script.ESTIMATED_SECONDS_PER_CIRCUIT
 
 
 class TestIoHelpers:
+    """The file helpers."""
+
     def test_write_json_roundtrip_with_matching_digest(self, tmp_path: Path) -> None:
+        """Written JSON reads back and its SHA-256 matches."""
         target = tmp_path / "nested" / "payload.json"
         digest = script._write_json(target, {"a": 1})
         assert json.loads(target.read_text(encoding="utf-8")) == {"a": 1}
@@ -423,56 +478,74 @@ class TestIoHelpers:
         assert len(digest) == 64
 
     def test_timestamp_shape(self) -> None:
+        """The timestamp has 16 characters and ends in Z."""
         stamp = script._timestamp()
         assert len(stamp) == 16
         assert stamp.endswith("Z")
 
 
 class FakeRegister:
+    """A classical register with fixed counts."""
+
     def __init__(self, counts: dict[str, int]) -> None:
         self._counts = counts
 
     def get_counts(self) -> dict[str, int]:
+        """Return the register's counts."""
         return self._counts
 
 
 class FakePubResult:
+    """A sampler result holding one named register."""
+
     def __init__(self, counts: dict[str, int], register: str = "meas") -> None:
         self.data = types.SimpleNamespace(**{register: FakeRegister(counts)})
 
 
 class TestPubCounts:
+    """Reading counts from a sampler result."""
+
     def test_reads_meas_register(self) -> None:
+        """Counts are read from the measurement register."""
         assert script._pub_counts(FakePubResult({"0000": 8})) == {"0000": 8}
 
     def test_reads_alternate_register_names(self) -> None:
+        """Counts are read from another register name."""
         assert script._pub_counts(FakePubResult({"0000": 8}, register="c0")) == {"0000": 8}
 
     def test_no_register_fails_closed(self) -> None:
+        """A result without a classical register fails closed."""
         empty = types.SimpleNamespace(data=types.SimpleNamespace())
         with pytest.raises(RuntimeError, match="no classical register"):
             script._pub_counts(empty)
 
 
 class FakeJob:
+    """A sampler job with fixed results."""
+
     def __init__(self, results: list[FakePubResult]) -> None:
         self._results = results
 
     def job_id(self) -> str:
+        """Return the fixed job id."""
         return "test-bell-rerun-job"
 
     def result(self, timeout: float) -> list[FakePubResult]:
+        """Return the results after checking the timeout is positive."""
         assert timeout > 0
         return self._results
 
 
 class FakeSampler:
+    """A sampler that records its inputs and returns ideal counts."""
+
     last_pubs: list[tuple[Any, Any, int]] = []
 
     def __init__(self, mode: Any) -> None:
         self.mode = mode
 
     def run(self, pubs: list[tuple[Any, Any, int]]) -> FakeJob:
+        """Record the inputs and return ideal setting and calibration counts."""
         FakeSampler.last_pubs = pubs
         results = [FakePubResult(counts) for counts in ideal_setting_counts()]
         results += [FakePubResult({label: CAL_SHOTS}) for label in LABELS]
@@ -493,9 +566,12 @@ def mocked_hardware(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 class TestMain:
+    """The submission command."""
+
     def test_submit_without_confirm_budget_is_refused(
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """Submitting without --confirm-budget is refused."""
         assert script.main(["--submit"]) == 2
         assert "requires --confirm-budget" in capsys.readouterr().err
 
@@ -505,6 +581,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A dry run writes only the readiness record."""
         assert script.main(["--out-dir", str(tmp_path)]) == 0
         output = capsys.readouterr().out
         assert "readiness=ready_for_submission" in output
@@ -519,6 +596,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Blocked readiness exits 3."""
         exit_code = script.main(["--out-dir", str(tmp_path), "--readout-error-abort", "0.001"])
         assert exit_code == 3
         assert "readiness=blocked" in capsys.readouterr().out
@@ -529,6 +607,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A full submission against fakes writes every document."""
         exit_code = script.main(["--out-dir", str(tmp_path), "--submit", "--confirm-budget"])
         assert exit_code == 0
         output = capsys.readouterr().out
@@ -557,6 +636,7 @@ class TestMain:
             )
 
     def test_parse_args_defaults(self) -> None:
+        """The arguments have their documented defaults."""
         args = script._parse_args([])
         assert args.backend == script.DEFAULT_BACKEND
         assert args.shots == SHOTS
@@ -566,7 +646,10 @@ class TestMain:
 
 
 class TestModuleBootstrap:
+    """Loading the script as a module."""
+
     def test_reload_inserts_repo_root_when_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A reload puts the repository root first on the path."""
         import importlib
 
         stripped = [entry for entry in sys.path if entry != str(script.REPO_ROOT)]

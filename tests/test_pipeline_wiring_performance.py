@@ -75,6 +75,7 @@ class TestTopLevelExports:
 
     @pytest.mark.parametrize("name", sqc.__all__)
     def test_export_exists(self, name: str) -> None:
+        """Each public export is wired and not None."""
         obj = getattr(sqc, name, None)
         assert obj is not None, f"{name} is None — not wired"
 
@@ -85,8 +86,11 @@ class TestTopLevelExports:
 
 
 class TestBridgePipeline:
+    """The coupling bridges."""
+
     @pytest.mark.parametrize("L", [2, 4, 8, 16])
     def test_knm_to_hamiltonian_pipeline(self, L: int) -> None:
+        """A coupling matrix becomes a Hamiltonian of the right size."""
         K, dt_k = _timed(build_knm_paper27, L=L)
         omega = OMEGA_N_16[:L]
         H, dt_h = _timed(sqc.knm_to_hamiltonian, K, omega)
@@ -95,6 +99,7 @@ class TestBridgePipeline:
 
     @pytest.mark.parametrize("L", [2, 4, 8])
     def test_knm_to_ansatz_pipeline(self, L: int) -> None:
+        """A coupling matrix becomes an ansatz with its parameter count."""
         K = build_knm_paper27(L=L)
         qc, dt = _timed(sqc.knm_to_ansatz, K, reps=2)
         assert qc.num_qubits == L
@@ -108,7 +113,10 @@ class TestBridgePipeline:
 
 
 class TestPhaseSolverPipeline:
+    """The phase solvers."""
+
     def test_phase_vqe_pipeline(self) -> None:
+        """Phase VQE returns a finite negative energy."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = sqc.PhaseVQE(K, omega, ansatz_reps=1)
@@ -120,6 +128,7 @@ class TestPhaseSolverPipeline:
         _report("PhaseVQE (2q)", dt, f"E={energy:.4f}")
 
     def test_trotter_upde_pipeline(self) -> None:
+        """The Trotter UPDE solver returns one order parameter per step plus the start."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         solver = sqc.QuantumUPDESolver(K=K, omega=omega)
@@ -128,6 +137,7 @@ class TestPhaseSolverPipeline:
         _report("TrotterUPDE (3q, 5 steps)", dt, f"R_final={result['R'][-1]:.4f}")
 
     def test_kuramoto_solver_pipeline(self) -> None:
+        """The Kuramoto solver returns order parameters."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         solver = sqc.QuantumKuramotoSolver(4, K, omega)
@@ -142,7 +152,10 @@ class TestPhaseSolverPipeline:
 
 
 class TestHardwarePipeline:
+    """The hardware runner on a simulator."""
+
     def test_hardware_runner_full_pipeline(self, tmp_path: Path) -> None:
+        """The runner returns counts for all 1,000 shots."""
         from qiskit import QuantumCircuit
 
         runner = sqc.HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
@@ -162,6 +175,7 @@ class TestHardwarePipeline:
         _report("HW sampler (4q GHZ)", dt_t + dt_r, f"depth={stats['depth']}")
 
     def test_noise_model_pipeline(self, tmp_path: Path) -> None:
+        """A noisy simulation returns counts."""
         from scpn_quantum_control.hardware.noise_model import heron_r2_noise_model
 
         nm, dt_n = _timed(heron_r2_noise_model)
@@ -188,7 +202,10 @@ class TestHardwarePipeline:
 
 
 class TestMitigationPipeline:
+    """Error mitigation."""
+
     def test_zne_pipeline(self) -> None:
+        """Zero-noise extrapolation gives a finite estimate."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         solver = sqc.QuantumKuramotoSolver(3, K, omega)
@@ -213,6 +230,7 @@ class TestMitigationPipeline:
         _report("ZNE (3q Kuramoto)", dt, f"R_zne={zne_result.zero_noise_estimate:.4f}")
 
     def test_pec_pipeline(self) -> None:
+        """Probabilistic error cancellation gives a decomposition."""
         decomp, dt = _timed(sqc.pauli_twirl_decompose, 0.01, n_qubits=1)
         assert decomp.shape[0] > 0
         _report("PEC decompose (1q, p=0.01)", dt, f"shape={decomp.shape}")
@@ -224,7 +242,10 @@ class TestMitigationPipeline:
 
 
 class TestQECPipeline:
+    """Quantum error correction."""
+
     def test_control_qec_pipeline(self) -> None:
+        """A clean code state has no Z syndrome."""
         qec, dt_init = _timed(sqc.ControlQEC, distance=3)
         n_data = 2 * 3**2
         err_x = np.zeros(n_data, dtype=np.int8)
@@ -234,6 +255,7 @@ class TestQECPipeline:
         _report("ControlQEC (d=3)", dt_init)
 
     def test_surface_code_pipeline(self) -> None:
+        """The surface-code UPDE is built for four oscillators."""
         upde, dt = _timed(sqc.SurfaceCodeUPDE, n_osc=4, code_distance=3)
         assert upde is not None
         assert upde.n_osc == 4
@@ -246,7 +268,10 @@ class TestQECPipeline:
 
 
 class TestQSNNPipeline:
+    """The quantum spiking network parts."""
+
     def test_synapse_pipeline(self) -> None:
+        """A synapse builds a circuit."""
         syn = sqc.QuantumSynapse(0.7)
         from qiskit import QuantumCircuit
 
@@ -256,6 +281,7 @@ class TestQSNNPipeline:
         _report("QuantumSynapse", 0, f"theta={syn.theta:.4f}")
 
     def test_lif_neuron_pipeline(self) -> None:
+        """A LIF neuron spikes 0 or 1 and builds a circuit."""
         neuron = sqc.QuantumLIFNeuron()
         spike, dt = _timed(neuron.step, 1.5)
         assert spike in (0, 1)
@@ -264,6 +290,7 @@ class TestQSNNPipeline:
         _report("QuantumLIFNeuron step", dt, f"spike={spike}")
 
     def test_stdp_pipeline(self) -> None:
+        """STDP raises the weight within its bounds."""
         stdp = sqc.QuantumSTDP()
         syn = sqc.QuantumSynapse(0.5)
         w_before = syn.weight
@@ -279,12 +306,16 @@ class TestQSNNPipeline:
 
 
 class TestIdentityPipeline:
+    """The identity components."""
+
     def test_identity_attractor_pipeline(self) -> None:
+        """The identity attractor is built."""
         attractor, dt = _timed(sqc.build_identity_attractor)
         assert attractor is not None
         _report("IdentityAttractor (default spec)", dt)
 
     def test_identity_key_pipeline(self) -> None:
+        """The identity fingerprint carries a commitment."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         fp, dt = _timed(sqc.identity_fingerprint, K, omega, maxiter=10)
@@ -299,7 +330,10 @@ class TestIdentityPipeline:
 
 
 class TestCryptoPipeline:
+    """The cryptographic components."""
+
     def test_key_hierarchy_pipeline(self) -> None:
+        """The key hierarchy has a 32-byte master and verifies."""
         from scpn_quantum_control.crypto.hierarchical_keys import (
             key_hierarchy,
             verify_key_chain,
@@ -315,6 +349,7 @@ class TestCryptoPipeline:
         _report("key_hierarchy (4 layers)", dt)
 
     def test_qkd_protocol_pipeline(self) -> None:
+        """The QKD protocol gives a valid QBER and a negative ground energy."""
         from scpn_quantum_control.crypto.entanglement_qkd import scpn_qkd_protocol
 
         K = build_knm_paper27(L=4)
@@ -331,7 +366,10 @@ class TestCryptoPipeline:
 
 
 class TestAnalysisPipeline:
+    """The analysis tools."""
+
     def test_finite_size_scaling_pipeline(self) -> None:
+        """Finite-size scaling gives one critical coupling per size."""
         from scpn_quantum_control.analysis.finite_size_scaling import finite_size_scaling
 
         result, dt = _timed(
@@ -341,6 +379,7 @@ class TestAnalysisPipeline:
         _report("FSS (L=2,3)", dt, f"K_c={result.k_c_values}")
 
     def test_h1_persistence_pipeline(self) -> None:
+        """H1 persistence finds a positive critical coupling."""
         from scpn_quantum_control.analysis.h1_persistence import scan_h1_persistence
 
         omega = OMEGA_N_16[:3]
@@ -349,6 +388,7 @@ class TestAnalysisPipeline:
         _report("H1 persistence (3 osc)", dt, f"K_c={result.k_critical:.4f}")
 
     def test_otoc_pipeline(self) -> None:
+        """The OTOC run reports its qubit count."""
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
 
         K = build_knm_paper27(L=2)
@@ -358,6 +398,7 @@ class TestAnalysisPipeline:
         _report("OTOC scan (2q)", dt, f"n_K={len(result.K_base_values)}")
 
     def test_xxz_phase_diagram_pipeline(self) -> None:
+        """The XXZ phase diagram gives one critical coupling per anisotropy."""
         from scpn_quantum_control.analysis.xxz_phase_diagram import anisotropy_phase_diagram
 
         T = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=float)
@@ -379,7 +420,11 @@ class TestAnalysisPipeline:
 
 
 class TestSSGFPipeline:
+    """The SSGF loop."""
+
     def test_ssgf_full_loop(self) -> None:
+        """The SSGF loop returns four phases and a global order parameter in [0, 1]."""
+
         class _NS:
             def __init__(self) -> None:
                 self.W = build_knm_paper27(L=4).copy()
@@ -404,7 +449,10 @@ class TestSSGFPipeline:
 
 
 class TestOrchestratorPipeline:
+    """The orchestrator adapter."""
+
     def test_full_adapter_roundtrip(self) -> None:
+        """A round trip through the adapter reports the nominal regime."""
         payload = {
             "layers": [
                 {"R": 0.8, "psi": 0.5, "locks": {"0_1": {"plv": 0.9, "lag": 0.1}}},
@@ -427,7 +475,10 @@ class TestOrchestratorPipeline:
 
 
 class TestCuttingPipeline:
+    """Circuit cutting."""
+
     def test_cutting_24_oscillators(self) -> None:
+        """Cutting 24 oscillators gives three partitions with a local energy sum."""
         from scpn_quantum_control.hardware.cutting_runner import run_cutting_simulation
 
         result, dt = _timed(
@@ -453,7 +504,10 @@ class TestCuttingPipeline:
 
 
 class TestControlPipeline:
+    """The control components."""
+
     def test_vqls_pipeline(self) -> None:
+        """VQLS returns a finite solution vector of length four."""
         vqls = sqc.VQLS_GradShafranov(n_qubits=2)
         result, dt = _timed(vqls.solve, reps=1, maxiter=5, seed=42)
         assert result.shape == (4,)
@@ -461,10 +515,12 @@ class TestControlPipeline:
         _report("VQLS Grad-Shafranov (2q)", dt)
 
     def test_qaoa_mpc_importable(self) -> None:
+        """QAOA-MPC is exported."""
         assert sqc.QAOA_MPC is not None
         _report("QAOA_MPC", 0, "importable ✓")
 
     def test_quantum_petri_net_importable(self) -> None:
+        """The quantum Petri net is exported."""
         assert sqc.QuantumPetriNet is not None
         _report("QuantumPetriNet", 0, "importable ✓")
 
@@ -475,7 +531,10 @@ class TestControlPipeline:
 
 
 class TestBenchmarkPipeline:
+    """The benchmarks."""
+
     def test_scaling_benchmark(self) -> None:
+        """The scaling benchmark returns results."""
         result, dt = _timed(sqc.run_scaling_benchmark, sizes=[2, 3])
         assert len(result) > 0
         _report("Scaling benchmark (L=2,3)", dt, f"n_results={len(result)}")
@@ -487,7 +546,10 @@ class TestBenchmarkPipeline:
 
 
 class TestMSQECPipeline:
+    """Multiscale error correction."""
+
     def test_build_multiscale_qec(self) -> None:
+        """A five-level code is built with physical qubits."""
         from scpn_quantum_control.qec.multiscale_qec import build_multiscale_qec
 
         K = build_knm_paper27()
@@ -501,6 +563,7 @@ class TestMSQECPipeline:
         )
 
     def test_concatenated_logical_rate(self) -> None:
+        """Each of the five levels has a logical rate in [0, 1)."""
         from scpn_quantum_control.qec.multiscale_qec import concatenated_logical_rate
 
         result, dt = _timed(concatenated_logical_rate, 0.001, [5, 5, 5, 5, 5])
@@ -509,6 +572,7 @@ class TestMSQECPipeline:
         _report("Concatenated rates (5 levels)", dt, f"p_L_final={result[-1]:.2e}")
 
     def test_syndrome_flow(self) -> None:
+        """Each of the four levels has a finite syndrome weight."""
         from scpn_quantum_control.qec.multiscale_qec import build_multiscale_qec
         from scpn_quantum_control.qec.syndrome_flow import syndrome_flow_analysis
 
@@ -530,7 +594,10 @@ class TestMSQECPipeline:
 
 
 class TestFEPPipeline:
+    """The free-energy principle tools."""
+
     def test_variational_free_energy(self) -> None:
+        """The variational free energy is a finite float."""
         from scpn_quantum_control.fep.variational_free_energy import variational_free_energy
 
         K = build_knm_paper27()
@@ -544,6 +611,7 @@ class TestFEPPipeline:
         _report("Variational free energy (n=16)", dt, f"F={result.free_energy:.4f}")
 
     def test_predictive_coding_step(self) -> None:
+        """A predictive-coding step gives a finite free energy."""
         from scpn_quantum_control.fep.predictive_coding import predictive_coding_step
 
         K = build_knm_paper27(L=4)
@@ -559,6 +627,7 @@ class TestFEPPipeline:
         )
 
     def test_free_energy_gradient(self) -> None:
+        """The free-energy gradient is finite and has one entry per oscillator."""
         from scpn_quantum_control.fep.variational_free_energy import free_energy_gradient
 
         K = build_knm_paper27()
@@ -578,7 +647,10 @@ class TestFEPPipeline:
 
 
 class TestPsiFieldPipeline:
+    """The lattice gauge field."""
+
     def test_scpn_to_lattice(self) -> None:
+        """The network maps to a 16-layer lattice with 120 edges."""
         from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
 
         lattice, dt = _timed(scpn_to_lattice, beta=2.0, seed=42)
@@ -591,6 +663,7 @@ class TestPsiFieldPipeline:
         )
 
     def test_hmc_update(self) -> None:
+        """An HMC update returns an acceptance flag and a finite energy change."""
         from scpn_quantum_control.psi_field.lattice import U1LatticGauge, hmc_update
 
         K = build_knm_paper27(L=4)
@@ -601,6 +674,7 @@ class TestPsiFieldPipeline:
         _report("HMC step (n=4, 10 leapfrog)", dt, f"accepted={accepted}, dH={dH:.4f}")
 
     def test_topological_charge(self) -> None:
+        """The topological charge is a finite float."""
         from scpn_quantum_control.psi_field.observables import topological_charge
         from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
 
@@ -611,6 +685,7 @@ class TestPsiFieldPipeline:
         _report("Topological charge (16 layers, Rust)", dt, f"Q={q:.4f}")
 
     def test_gauge_covariant_kinetic(self) -> None:
+        """The gauge-covariant kinetic energy is non-negative."""
         from scpn_quantum_control.psi_field.infoton import gauge_covariant_kinetic
         from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
 
@@ -626,7 +701,10 @@ class TestPsiFieldPipeline:
 
 
 class TestGUESSPipeline:
+    """GUESS error mitigation."""
+
     def test_learn_decay(self) -> None:
+        """The learnt decay rate is positive."""
         from scpn_quantum_control.mitigation.symmetry_decay import learn_symmetry_decay
 
         model, dt = _timed(learn_symmetry_decay, 4.0, [3.8, 3.5, 3.0, 2.5, 2.0], [1, 3, 5, 7, 9])
@@ -634,6 +712,7 @@ class TestGUESSPipeline:
         _report("GUESS learn (5 scales, Rust)", dt, f"alpha={model.alpha:.4f}")
 
     def test_extrapolate(self) -> None:
+        """Extrapolation gives a finite mitigated value."""
         from scpn_quantum_control.mitigation.symmetry_decay import (
             guess_extrapolate,
             learn_symmetry_decay,
@@ -652,7 +731,10 @@ class TestGUESSPipeline:
 
 
 class TestDynQPipeline:
+    """DynQ qubit placement."""
+
     def test_community_detection(self) -> None:
+        """Community detection finds regions."""
         import numpy as np
 
         from scpn_quantum_control.hardware.qubit_mapper import (
@@ -672,6 +754,7 @@ class TestDynQPipeline:
         _report("DynQ detection (156 qubits)", dt, f"n_regions={len(regions)}")
 
     def test_full_pipeline(self) -> None:
+        """The full placement returns a five-qubit initial layout."""
         import numpy as np
 
         from scpn_quantum_control.hardware.qubit_mapper import dynq_initial_layout
@@ -697,6 +780,7 @@ class TestPulseShapingPipeline:
     """Pipeline wiring tests for pulse_shaping module."""
 
     def test_ici_pulse_build(self) -> None:
+        """An ICI pulse has fidelity above 0.5 over 200 time points."""
         from scpn_quantum_control.phase.pulse_shaping import build_ici_pulse
 
         pulse, dt = _timed(build_ici_pulse, 1.0, 10.0, 0.1)
@@ -705,6 +789,7 @@ class TestPulseShapingPipeline:
         _report("ICI pulse build", dt, f"fidelity={pulse.fidelity:.4f}")
 
     def test_hypergeometric_envelope(self) -> None:
+        """The hypergeometric envelope is a finite array of 200 points."""
         import numpy as np
 
         from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
@@ -716,6 +801,7 @@ class TestPulseShapingPipeline:
         _report("Hypergeometric pulse build", dt, f"peak={np.max(pulse.envelope):.4f}")
 
     def test_trotter_pulse_schedule(self) -> None:
+        """A Trotter pulse schedule has six pulses and a positive infidelity bound."""
         import numpy as np
 
         from scpn_quantum_control.phase.pulse_shaping import build_trotter_pulse_schedule

@@ -18,6 +18,7 @@ from scpn_quantum_control import bench_cli
 
 
 def test_methods_selection_excludes_gpu_by_default() -> None:
+    """The methods selection leaves out the GPU, scaling and FIM harnesses by default."""
     harnesses = bench_cli._selected_harnesses("methods", include_gpu=False)
 
     labels = [harness.label for harness in harnesses]
@@ -28,6 +29,7 @@ def test_methods_selection_excludes_gpu_by_default() -> None:
 
 
 def test_methods_selection_can_include_gpu() -> None:
+    """The methods selection can include the GPU harness."""
     harnesses = bench_cli._selected_harnesses("methods", include_gpu=True)
 
     labels = [harness.label for harness in harnesses]
@@ -35,6 +37,7 @@ def test_methods_selection_can_include_gpu() -> None:
 
 
 def test_methods_selection_can_include_scaling() -> None:
+    """The methods selection can include the scaling harness."""
     harnesses = bench_cli._selected_harnesses(
         "methods",
         include_gpu=False,
@@ -46,6 +49,7 @@ def test_methods_selection_can_include_scaling() -> None:
 
 
 def test_all_selection_includes_methods_and_fim() -> None:
+    """The all selection includes methods and FIM but not the optional harnesses."""
     harnesses = bench_cli._selected_harnesses("all", include_gpu=False)
 
     labels = {harness.label for harness in harnesses}
@@ -57,6 +61,7 @@ def test_all_selection_includes_methods_and_fim() -> None:
 
 
 def test_fim_selection_can_include_readout_matrix_mitigation() -> None:
+    """The FIM selection can include readout-matrix mitigation."""
     harnesses = bench_cli._selected_harnesses(
         "fim",
         include_gpu=False,
@@ -68,6 +73,7 @@ def test_fim_selection_can_include_readout_matrix_mitigation() -> None:
 
 
 def test_s1_feedback_selection_is_no_qpu_latency_harness() -> None:
+    """The s1 selection is exactly the s1-feedback-loop harness."""
     harnesses = bench_cli._selected_harnesses("s1", include_gpu=False)
 
     assert harnesses == [
@@ -80,6 +86,7 @@ def test_s1_feedback_selection_is_no_qpu_latency_harness() -> None:
 
 
 def test_s1_feedback_ready_selection_is_bundle_harness() -> None:
+    """The s1-ready selection is exactly the s1-feedback-readiness harness."""
     harnesses = bench_cli._selected_harnesses("s1-ready", include_gpu=False)
 
     assert harnesses == [
@@ -92,6 +99,7 @@ def test_s1_feedback_ready_selection_is_bundle_harness() -> None:
 
 
 def test_realtime_control_e2e_selection_is_no_qpu_e2e_harness() -> None:
+    """The realtime-e2e selection is exactly the realtime-control-e2e harness."""
     harnesses = bench_cli._selected_harnesses("realtime-e2e", include_gpu=False)
 
     assert harnesses == [
@@ -104,6 +112,7 @@ def test_realtime_control_e2e_selection_is_no_qpu_e2e_harness() -> None:
 
 
 def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
+    """The s2 selection runs protocol, lite rows and claim boundary in order."""
     harnesses = bench_cli._selected_harnesses("s2", include_gpu=False)
 
     labels = [harness.label for harness in harnesses]
@@ -112,6 +121,7 @@ def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
 
 
 def test_s2_tn_mps_design_selection_is_design_harness() -> None:
+    """The s2-tn-design selection is exactly the s2-tn-mps-baseline-design harness."""
     harnesses = bench_cli._selected_harnesses("s2-tn-design", include_gpu=False)
 
     assert harnesses == [
@@ -124,6 +134,7 @@ def test_s2_tn_mps_design_selection_is_design_harness() -> None:
 
 
 def test_tn_mps_crossover_admission_selection_is_design_harness() -> None:
+    """The tn-mps-admission selection is exactly the tn-mps-crossover-admission harness."""
     harnesses = bench_cli._selected_harnesses("tn-mps-admission", include_gpu=False)
 
     assert harnesses == [
@@ -136,6 +147,7 @@ def test_tn_mps_crossover_admission_selection_is_design_harness() -> None:
 
 
 def test_knm_josephson_magnitude_study_selection_is_design_harness() -> None:
+    """The knm-josephson-study selection is exactly the knm-josephson-magnitude-study harness."""
     harnesses = bench_cli._selected_harnesses("knm-josephson-study", include_gpu=False)
 
     assert harnesses == [
@@ -148,6 +160,7 @@ def test_knm_josephson_magnitude_study_selection_is_design_harness() -> None:
 
 
 def test_ground_state_optimizer_convergence_selection_is_harness() -> None:
+    """The diff-optimizer-convergence selection is exactly the ground-state-optimizer-convergence harness."""
     harnesses = bench_cli._selected_harnesses("diff-optimizer-convergence", include_gpu=False)
 
     assert harnesses == [
@@ -160,6 +173,7 @@ def test_ground_state_optimizer_convergence_selection_is_harness() -> None:
 
 
 def test_open_system_objective_evidence_selection_is_harness() -> None:
+    """The diff-open-system-objectives selection is exactly the open-system-objective-evidence harness."""
     harnesses = bench_cli._selected_harnesses("diff-open-system-objectives", include_gpu=False)
 
     assert harnesses == [
@@ -172,6 +186,7 @@ def test_open_system_objective_evidence_selection_is_harness() -> None:
 
 
 def test_coupling_recovery_evidence_selection_is_harness() -> None:
+    """The diff-coupling-recovery selection is exactly the coupling-recovery-evidence harness."""
     harnesses = bench_cli._selected_harnesses("diff-coupling-recovery", include_gpu=False)
 
     assert harnesses == [
@@ -184,6 +199,7 @@ def test_coupling_recovery_evidence_selection_is_harness() -> None:
 
 
 def test_sync_witness_evidence_selection_is_harness() -> None:
+    """The diff-sync-witness selection is exactly the sync-witness-evidence harness."""
     harnesses = bench_cli._selected_harnesses("diff-sync-witness", include_gpu=False)
 
     assert harnesses == [
@@ -196,6 +212,7 @@ def test_sync_witness_evidence_selection_is_harness() -> None:
 
 
 def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
+    """The p-h1-open-guard selection is exactly the p-h1-open-guard harness."""
     harnesses = bench_cli._selected_harnesses("p-h1-open-guard", include_gpu=False)
 
     assert harnesses == [
@@ -208,6 +225,7 @@ def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
 
 
 def test_s3_design_ready_selection_is_readiness_harness() -> None:
+    """The s3 selection is exactly the s3-design-readiness harness."""
     harnesses = bench_cli._selected_harnesses("s3", include_gpu=False)
 
     assert harnesses == [
@@ -220,6 +238,7 @@ def test_s3_design_ready_selection_is_readiness_harness() -> None:
 
 
 def test_s3_design_surrogate_selection_is_surrogate_harness() -> None:
+    """The s3-surrogate selection is exactly the s3-design-surrogate harness."""
     harnesses = bench_cli._selected_harnesses("s3-surrogate", include_gpu=False)
 
     assert harnesses == [
@@ -232,6 +251,7 @@ def test_s3_design_surrogate_selection_is_surrogate_harness() -> None:
 
 
 def test_s3_ansatz_observables_selection_is_observable_harness() -> None:
+    """The s3-observables selection is exactly the s3-ansatz-observables harness."""
     harnesses = bench_cli._selected_harnesses("s3-observables", include_gpu=False)
 
     assert harnesses == [
@@ -244,6 +264,7 @@ def test_s3_ansatz_observables_selection_is_observable_harness() -> None:
 
 
 def test_s3_pulse_feasibility_selection_is_probe_harness() -> None:
+    """The s3-pulse selection is exactly the s3-pulse-feasibility harness."""
     harnesses = bench_cli._selected_harnesses("s3-pulse", include_gpu=False)
 
     assert harnesses == [
@@ -256,6 +277,7 @@ def test_s3_pulse_feasibility_selection_is_probe_harness() -> None:
 
 
 def test_s3_hardware_dossiers_selection_is_dossier_harness() -> None:
+    """The s3-dossiers selection is exactly the s3-hardware-dossiers harness."""
     harnesses = bench_cli._selected_harnesses("s3-dossiers", include_gpu=False)
 
     assert harnesses == [
@@ -268,6 +290,7 @@ def test_s3_hardware_dossiers_selection_is_dossier_harness() -> None:
 
 
 def test_s4_multi_hardware_selection_is_readiness_harness() -> None:
+    """The s4 selection is exactly the s4-multi-hardware-readiness harness."""
     harnesses = bench_cli._selected_harnesses("s4", include_gpu=False)
 
     assert harnesses == [
@@ -280,6 +303,7 @@ def test_s4_multi_hardware_selection_is_readiness_harness() -> None:
 
 
 def test_s4_provider_preregistration_selection_is_dossier_harness() -> None:
+    """The s4-provider selection is exactly the s4-provider-preregistration harness."""
     harnesses = bench_cli._selected_harnesses("s4-provider", include_gpu=False)
 
     assert harnesses == [
@@ -292,6 +316,7 @@ def test_s4_provider_preregistration_selection_is_dossier_harness() -> None:
 
 
 def test_s4_neutral_atom_preregistration_selection_is_dossier_harness() -> None:
+    """The s4-neutral selection is exactly the s4-neutral-atom-preregistration harness."""
     harnesses = bench_cli._selected_harnesses("s4-neutral", include_gpu=False)
 
     assert harnesses == [
@@ -304,6 +329,7 @@ def test_s4_neutral_atom_preregistration_selection_is_dossier_harness() -> None:
 
 
 def test_s5_benchmark_suite_selection_is_open_data_harness() -> None:
+    """The s5 selection is exactly the s5-benchmark-suite harness."""
     harnesses = bench_cli._selected_harnesses("s5", include_gpu=False)
 
     assert harnesses == [
@@ -316,6 +342,7 @@ def test_s5_benchmark_suite_selection_is_open_data_harness() -> None:
 
 
 def test_s5_benchmark_registry_selection_is_registry_harness() -> None:
+    """The s5-registry selection is exactly the s5-benchmark-registry harness."""
     harnesses = bench_cli._selected_harnesses("s5-registry", include_gpu=False)
 
     assert harnesses == [
@@ -328,6 +355,7 @@ def test_s5_benchmark_registry_selection_is_registry_harness() -> None:
 
 
 def test_stable_core_capability_matrix_selection_is_export_harness() -> None:
+    """The stable-core selection is exactly the stable-core-capability-matrix harness."""
     harnesses = bench_cli._selected_harnesses("stable-core", include_gpu=False)
 
     assert harnesses == [
@@ -340,6 +368,7 @@ def test_stable_core_capability_matrix_selection_is_export_harness() -> None:
 
 
 def test_stable_core_capability_gate_selection_is_harness() -> None:
+    """The stable-core-gate selection is exactly the stable-core-capability-gate harness."""
     harnesses = bench_cli._selected_harnesses("stable-core-gate", include_gpu=False)
 
     assert harnesses == [
@@ -352,6 +381,7 @@ def test_stable_core_capability_gate_selection_is_harness() -> None:
 
 
 def test_stable_core_contract_gate_selection_is_harness() -> None:
+    """The stable-core-contract-gate selection is exactly the stable-core-contract-gate harness."""
     harnesses = bench_cli._selected_harnesses("stable-core-contract-gate", include_gpu=False)
 
     assert harnesses == [
@@ -364,6 +394,7 @@ def test_stable_core_contract_gate_selection_is_harness() -> None:
 
 
 def test_stable_core_preflight_gate_selection_is_harness() -> None:
+    """The stable-core-preflight-gate selection is exactly the stable-core-preflight-gate harness."""
     harnesses = bench_cli._selected_harnesses("stable-core-preflight-gate", include_gpu=False)
 
     assert harnesses == [
@@ -376,6 +407,7 @@ def test_stable_core_preflight_gate_selection_is_harness() -> None:
 
 
 def test_stable_core_release_gate_selection_is_harness() -> None:
+    """The stable-core-release-gate selection is exactly the stable-core-release-gate harness."""
     harnesses = bench_cli._selected_harnesses("stable-core-release-gate", include_gpu=False)
 
     assert harnesses == [
@@ -388,6 +420,7 @@ def test_stable_core_release_gate_selection_is_harness() -> None:
 
 
 def test_capability_manifest_check_selection_is_harness() -> None:
+    """The capability-manifest-check selection is exactly the capability-manifest-check harness."""
     harnesses = bench_cli._selected_harnesses("capability-manifest-check", include_gpu=False)
 
     assert harnesses == [
@@ -400,6 +433,7 @@ def test_capability_manifest_check_selection_is_harness() -> None:
 
 
 def test_s6_split_audit_selection_is_boundary_harness() -> None:
+    """The s6 selection is exactly the s6-split-audit harness."""
     harnesses = bench_cli._selected_harnesses("s6", include_gpu=False)
 
     assert harnesses == [
@@ -412,6 +446,7 @@ def test_s6_split_audit_selection_is_boundary_harness() -> None:
 
 
 def test_s6_boundary_review_selection_is_review_harness() -> None:
+    """The s6-review selection is exactly the s6-boundary-review harness."""
     harnesses = bench_cli._selected_harnesses("s6-review", include_gpu=False)
 
     assert harnesses == [
@@ -424,6 +459,7 @@ def test_s6_boundary_review_selection_is_review_harness() -> None:
 
 
 def test_s6_api_contract_selection_is_contract_harness() -> None:
+    """The s6-contract selection is exactly the s6-api-contract harness."""
     harnesses = bench_cli._selected_harnesses("s6-contract", include_gpu=False)
 
     assert harnesses == [
@@ -436,6 +472,7 @@ def test_s6_api_contract_selection_is_contract_harness() -> None:
 
 
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
+    """A dry run of fim-all lists the selected harnesses."""
     rc = bench_cli.run(["fim-all", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -447,6 +484,7 @@ def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -
 def test_stable_core_capability_matrix_dry_run_selects_matrix_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of stable-core-capability-matrix selects that harness and names its script."""
     rc = bench_cli.run(["stable-core-capability-matrix", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -459,6 +497,7 @@ def test_stable_core_capability_matrix_dry_run_selects_matrix_harness(
 def test_s2_tn_mps_design_dry_run_selects_design_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of s2-tn-mps-baseline-design selects that harness and names its script."""
     rc = bench_cli.run(["s2-tn-mps-baseline-design", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -470,6 +509,7 @@ def test_s2_tn_mps_design_dry_run_selects_design_harness(
 def test_tn_mps_crossover_admission_dry_run_selects_admission_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of tn-mps-crossover-admission selects that harness and names its script."""
     rc = bench_cli.run(["tn-mps-crossover-admission", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -481,6 +521,7 @@ def test_tn_mps_crossover_admission_dry_run_selects_admission_harness(
 def test_ground_state_optimizer_convergence_dry_run_selects_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of ground-state-optimizer-convergence selects that harness and names its script."""
     rc = bench_cli.run(["ground-state-optimizer-convergence", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -492,6 +533,7 @@ def test_ground_state_optimizer_convergence_dry_run_selects_harness(
 def test_coupling_recovery_evidence_dry_run_selects_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of coupling-recovery-evidence selects that harness and names its script."""
     rc = bench_cli.run(["coupling-recovery-evidence", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -503,6 +545,7 @@ def test_coupling_recovery_evidence_dry_run_selects_harness(
 def test_sync_witness_evidence_dry_run_selects_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of sync-witness-evidence selects that harness and names its script."""
     rc = bench_cli.run(["sync-witness-evidence", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -514,6 +557,7 @@ def test_sync_witness_evidence_dry_run_selects_harness(
 def test_realtime_control_e2e_dry_run_selects_e2e_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of realtime-control-e2e selects that harness and names its script."""
     rc = bench_cli.run(["realtime-control-e2e", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -526,6 +570,7 @@ def test_realtime_control_e2e_dry_run_selects_e2e_harness(
 def test_stable_core_capability_gate_dry_run_selects_gate_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of stable-core-capability-gate selects that harness and names its script."""
     rc = bench_cli.run(["stable-core-capability-gate", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -538,6 +583,7 @@ def test_stable_core_capability_gate_dry_run_selects_gate_harness(
 def test_stable_core_contract_gate_dry_run_selects_gate_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of stable-core-contract-gate selects that harness and names its script."""
     rc = bench_cli.run(["stable-core-contract-gate", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -550,6 +596,7 @@ def test_stable_core_contract_gate_dry_run_selects_gate_harness(
 def test_stable_core_preflight_gate_dry_run_selects_gate_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of stable-core-preflight-gate selects that harness and names its script."""
     rc = bench_cli.run(["stable-core-preflight-gate", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -562,6 +609,7 @@ def test_stable_core_preflight_gate_dry_run_selects_gate_harness(
 def test_stable_core_release_gate_dry_run_selects_gate_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of stable-core-release-gate selects that harness and names its script."""
     rc = bench_cli.run(["stable-core-release-gate", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -574,6 +622,7 @@ def test_stable_core_release_gate_dry_run_selects_gate_harness(
 def test_capability_manifest_check_dry_run_selects_gate_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A dry run of capability-manifest-check selects that harness and names its script."""
     rc = bench_cli.run(["capability-manifest-check", "--dry-run"])
 
     captured = capsys.readouterr()
@@ -588,6 +637,7 @@ def test_diff_summary_returns_two_when_artifacts_changed(
     capsys: pytest.CaptureFixture[str],
     tmp_path: Path,
 ) -> None:
+    """The diff summary returns 2 and names changed artefacts."""
     artifact = tmp_path / "data" / "rust_vqe_methods" / "example.json"
     artifact.parent.mkdir(parents=True)
     artifact.write_text('{"value": 1}\n', encoding="utf-8")
@@ -616,6 +666,7 @@ def _run_git(root: Path, *args: str) -> None:
 def test_diff_summary_propagates_missing_git(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """Without git on the path the diff summary returns 127."""
     empty_path = tmp_path / "empty-path"
     empty_path.mkdir()
     monkeypatch.setenv("PATH", str(empty_path))
@@ -628,6 +679,7 @@ def test_run_harness_dispatches_repo_script_with_current_python(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    """A harness runs its repository script with the current interpreter."""
     script = tmp_path / "scripts" / "benchmark_rust_core_methods.py"
     script.parent.mkdir(parents=True)
     script.write_text(
@@ -696,6 +748,7 @@ def test_run_harness_rejects_non_executable_python(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    """An interpreter that cannot be executed gives 127."""
     script = tmp_path / "scripts" / "benchmark_rust_core_methods.py"
     script.parent.mkdir(parents=True)
     script.write_text("raise SystemExit(0)\n", encoding="utf-8")
@@ -720,6 +773,7 @@ def test_run_returns_two_when_dispatch_selects_no_harnesses(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """A selection with no harnesses returns 2."""
     monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: [])
 
     rc = bench_cli.run(["reproduce-methods"])
@@ -730,6 +784,7 @@ def test_run_returns_two_when_dispatch_selects_no_harnesses(
 
 
 def test_run_propagates_harness_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A failing harness makes the run return 1."""
     selected = [bench_cli.Harness("broken", "scripts/missing.py", frozenset({"methods"}))]
     monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: selected)
     monkeypatch.setattr(bench_cli, "_run_harness", lambda harness: 9)
@@ -739,6 +794,7 @@ def test_run_propagates_harness_failure(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_run_returns_diff_status_when_harnesses_pass(monkeypatch: pytest.MonkeyPatch) -> None:
+    """When every harness passes the run returns the diff status."""
     selected = [bench_cli.Harness("ok", "scripts/ok.py", frozenset({"methods"}))]
     monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: selected)
     monkeypatch.setattr(bench_cli, "_run_harness", lambda harness: 0)
@@ -748,6 +804,7 @@ def test_run_returns_diff_status_when_harnesses_pass(monkeypatch: pytest.MonkeyP
 
 
 def test_run_stops_after_first_failure_without_keep_going(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without --keep-going the run stops at the first failure."""
     selected = [
         bench_cli.Harness("broken", "scripts/broken.py", frozenset({"methods"})),
         bench_cli.Harness("skipped", "scripts/skipped.py", frozenset({"methods"})),
@@ -769,6 +826,7 @@ def test_run_stops_after_first_failure_without_keep_going(monkeypatch: pytest.Mo
 def test_run_keep_going_executes_later_harnesses_after_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """With --keep-going later harnesses still run after a failure."""
     selected = [
         bench_cli.Harness("broken", "scripts/broken.py", frozenset({"methods"})),
         bench_cli.Harness("later", "scripts/later.py", frozenset({"methods"})),
@@ -788,6 +846,7 @@ def test_run_keep_going_executes_later_harnesses_after_failure(
 
 
 def test_run_no_diff_skips_diff_summary(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The --no-diff flag skips the diff summary."""
     selected = [bench_cli.Harness("ok", "scripts/ok.py", frozenset({"methods"}))]
     diff_called = False
 
@@ -806,7 +865,6 @@ def test_run_no_diff_skips_diff_summary(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_sync_benchmark_registry_harness_is_registered() -> None:
     """The synchronisation benchmark registry is exposed through scpn-bench."""
-
     from scpn_quantum_control.bench_cli import _selected_harnesses
 
     harnesses = _selected_harnesses("sync-registry", include_gpu=False)
@@ -817,7 +875,6 @@ def test_sync_benchmark_registry_harness_is_registered() -> None:
 
 def test_sync_benchmark_run_harness_is_registered() -> None:
     """The first synchronisation benchmark runner is exposed through scpn-bench."""
-
     from scpn_quantum_control.bench_cli import _selected_harnesses
 
     harnesses = _selected_harnesses("sync-run", include_gpu=False)
@@ -828,7 +885,6 @@ def test_sync_benchmark_run_harness_is_registered() -> None:
 
 def test_sync_benchmark_compare_harness_is_registered() -> None:
     """The synchronisation benchmark comparator is exposed through scpn-bench."""
-
     from scpn_quantum_control.bench_cli import _selected_harnesses
 
     harnesses = _selected_harnesses("sync-compare", include_gpu=False)
@@ -839,7 +895,6 @@ def test_sync_benchmark_compare_harness_is_registered() -> None:
 
 def test_sync_benchmark_gate_harness_is_registered() -> None:
     """The full synchronisation benchmark gate is exposed through scpn-bench."""
-
     from scpn_quantum_control.bench_cli import _selected_harnesses
 
     harnesses = _selected_harnesses("sync-gate", include_gpu=False)
@@ -850,7 +905,6 @@ def test_sync_benchmark_gate_harness_is_registered() -> None:
 
 def test_symmetry_sector_mitigation_gate_harness_is_registered() -> None:
     """The symmetry-sector fixture gate is exposed through scpn-bench."""
-
     from scpn_quantum_control.bench_cli import _selected_harnesses
 
     harnesses = _selected_harnesses("symmetry-sector-gate", include_gpu=False)

@@ -1,22 +1,19 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "a614b037ac10f1bf12376ab889c45182b8b1109f",
+ "measured_commit": "1554d0ef17045882ddc86088f7441042b2a384df",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 735,
- "total_files": 9,
+ "total_findings": 541,
+ "total_files": 6,
  "files": {
   "oscillatools/tests/test_accel_dispatch.py": 95,
-  "tests/test_bench_cli.py": 64,
   "tests/test_hardware_runner_contracts.py": 80,
   "tests/test_pgbo_qgt_product.py": 116,
-  "tests/test_pipeline_wiring_performance.py": 66,
   "tests/test_rust_ffi_validation.py": 94,
   "tests/test_rust_path_benchmarks.py": 71,
-  "tests/test_submit_bell_rerun_mitigated.py": 64,
   "tests/test_thermo_readiness_product.py": 85
  },
  "history": [
