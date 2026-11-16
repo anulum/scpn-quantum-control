@@ -29,6 +29,7 @@ class TestOrchestratorFeedback:
     """Tests for compute_orchestrator_feedback action selection."""
 
     def test_rollback_on_weak_coupling(self) -> None:
+        """Weak coupling gives a valid action with non-negative confidence."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -40,6 +41,7 @@ class TestOrchestratorFeedback:
         assert fb.confidence >= 0.0
 
     def test_hold_on_medium_coupling(self) -> None:
+        """Medium coupling gives a valid action with confidence in [0, 1]."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -51,6 +53,7 @@ class TestOrchestratorFeedback:
         assert 0.0 <= fb.confidence <= 1.0
 
     def test_advance_on_strong_coupling(self) -> None:
+        """Strong coupling gives a valid action."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -61,6 +64,7 @@ class TestOrchestratorFeedback:
         assert fb.action in ("advance", "hold", "rollback")
 
     def test_confidence_bounded_01(self) -> None:
+        """Confidence lies in [0, 1]."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -74,6 +78,7 @@ class TestOrchestratorFeedback:
             )
 
     def test_feedback_has_reason(self) -> None:
+        """Feedback carries a non-empty reason."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -86,6 +91,7 @@ class TestOrchestratorFeedback:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_multiple_system_sizes(self, n: int) -> None:
+        """Several system sizes give valid feedback."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -112,6 +118,7 @@ class TestSNNBackward:
     """Tests for quantum SNN parameter-shift gradients."""
 
     def test_zero_shift_gradient(self) -> None:
+        """The gradient is returned for the parameters and the spikes."""
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
@@ -123,6 +130,7 @@ class TestSNNBackward:
         assert result.grad_spikes is not None
 
     def test_gradient_shapes(self) -> None:
+        """The spike gradient has the shape of the spike rates."""
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
@@ -133,6 +141,7 @@ class TestSNNBackward:
         assert result.grad_spikes.shape == spike_rates.shape
 
     def test_gradient_finite(self) -> None:
+        """The spike gradient is finite."""
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
@@ -155,7 +164,10 @@ class TestSNNBackward:
 
 
 class TestKnmHamiltonianEdge:
+    """Edge cases of the coupling Hamiltonian."""
+
     def test_knm_to_dense_matrix_complex(self) -> None:
+        """The dense matrix has the right size."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K = build_knm_paper27(L=2)
@@ -206,7 +218,10 @@ def test_spn_multi_inhibitor() -> None:
 
 
 class TestKnmToDenseMatrix:
+    """The dense coupling Hamiltonian."""
+
     def test_matches_qiskit(self) -> None:
+        """The dense matrix matches Qiskit's."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H_dense = knm_to_dense_matrix(K, omega)
@@ -216,12 +231,14 @@ class TestKnmToDenseMatrix:
         np.testing.assert_allclose(H_dense, np.array(H_qiskit), atol=1e-12)
 
     def test_hermitian(self) -> None:
+        """The matrix is Hermitian."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         H = knm_to_dense_matrix(K, omega)
         np.testing.assert_allclose(H, H.conj().T, atol=1e-12)
 
     def test_shape(self) -> None:
+        """The matrix is 2^n by 2^n."""
         for n in [2, 3, 4]:
             K = build_knm_paper27(L=n)
             omega = OMEGA_N_16[:n]
@@ -229,6 +246,7 @@ class TestKnmToDenseMatrix:
             assert H.shape == (2**n, 2**n)
 
     def test_zero_coupling(self) -> None:
+        """Zero coupling gives a diagonal matrix."""
         n = 3
         K = np.zeros((n, n))
         omega = OMEGA_N_16[:n]
@@ -237,7 +255,10 @@ class TestKnmToDenseMatrix:
 
 
 class TestKnmToXXZ:
+    """The XXZ Hamiltonian."""
+
     def test_xy_equals_xxz_delta0(self) -> None:
+        """At zero anisotropy XXZ equals XY."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         H_xy = knm_to_hamiltonian(K, omega).to_matrix()
@@ -245,6 +266,7 @@ class TestKnmToXXZ:
         np.testing.assert_allclose(np.array(H_xy), np.array(H_xxz), atol=1e-12)
 
     def test_empty_pauli_list(self) -> None:
+        """A coupling without terms still gives an operator of the right size."""
         n = 3
         K = np.full((n, n), 1e-20)
         np.fill_diagonal(K, 0)
@@ -254,18 +276,23 @@ class TestKnmToXXZ:
 
 
 class TestBuildKuramotoRing:
+    """Building a Kuramoto ring."""
+
     def test_returns_tuple(self) -> None:
+        """The builder returns a coupling and frequencies of the right size."""
         K, omega = build_kuramoto_ring(4)
         assert K.shape == (4, 4)
         assert omega.shape == (4,)
 
     def test_ring_topology(self) -> None:
+        """Only ring neighbours are coupled."""
         K, _ = build_kuramoto_ring(4, coupling=2.0)
         assert K[0, 1] == 2.0
         assert K[3, 0] == 2.0
         assert K[0, 2] == 0.0
 
     def test_custom_omega(self) -> None:
+        """Custom frequencies are kept."""
         omega_in = np.array([1.0, 2.0, 3.0])
         K, omega_out = build_kuramoto_ring(3, omega=omega_in)
         np.testing.assert_array_equal(omega_out, omega_in)

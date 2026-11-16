@@ -27,17 +27,22 @@ from scpn_quantum_control.hardware.plugin_registry import PluginRegistry, regist
 
 
 class TestPluginRegistryInit:
+    """A new plugin registry."""
+
     def test_default_lazy_loaders(self) -> None:
+        """Qiskit, PennyLane and Cirq have lazy loaders."""
         r = PluginRegistry()
         assert "qiskit" in r._lazy_loaders
         assert "pennylane" in r._lazy_loaders
         assert "cirq" in r._lazy_loaders
 
     def test_empty_backends_at_init(self) -> None:
+        """No backend is registered at first."""
         r = PluginRegistry()
         assert len(r._backends) == 0
 
     def test_list_includes_lazy(self) -> None:
+        """Listing includes the lazy backends."""
         r = PluginRegistry()
         backends = r.list_backends()
         assert "qiskit" in backends
@@ -46,7 +51,10 @@ class TestPluginRegistryInit:
 
 
 class TestRegister:
+    """Registering backends."""
+
     def test_decorator_register(self) -> None:
+        """The decorator registers a runner under its name."""
         r = PluginRegistry()
 
         @r.register("test_backend")
@@ -60,6 +68,7 @@ class TestRegister:
         assert r._backends["test_backend"] is TestRunner
 
     def test_register_class(self) -> None:
+        """A class can be registered directly."""
         r = PluginRegistry()
 
         class MyRunner:
@@ -69,31 +78,39 @@ class TestRegister:
         assert "my_runner" in r._backends
 
     def test_registered_appears_in_list(self) -> None:
+        """A registered backend is listed."""
         r = PluginRegistry()
         r.register_class("custom", type("Custom", (), {}))
         assert "custom" in r.list_backends()
 
 
 class TestIsAvailable:
+    """Backend availability."""
+
     def test_registered_is_available(self) -> None:
+        """A registered backend is available."""
         r = PluginRegistry()
         r.register_class("mock_be", type("MockBE", (), {}))
         assert r.is_available("mock_be") is True
 
     def test_qiskit_lazy_available(self) -> None:
+        """Qiskit is available through its lazy loader."""
         r = PluginRegistry()
         assert r.is_available("qiskit") is True
 
     def test_unknown_not_available(self) -> None:
+        """An unknown backend is not available."""
         r = PluginRegistry()
         assert r.is_available("nonexistent_backend") is False
 
     def test_lazy_import_failure(self) -> None:
+        """A lazy loader whose import fails is not available."""
         r = PluginRegistry()
         r._lazy_loaders["broken"] = ("nonexistent.module.path", "Cls")
         assert r.is_available("broken") is False
 
     def test_lazy_attribute_error(self) -> None:
+        """A lazy loader with a missing attribute is not available."""
         r = PluginRegistry()
         r._lazy_loaders["bad_attr"] = (
             "scpn_quantum_control.phase.xy_kuramoto",
@@ -103,7 +120,10 @@ class TestIsAvailable:
 
 
 class TestGetRunner:
+    """Getting a runner."""
+
     def test_registered_runner(self) -> None:
+        """A registered runner is built with the coupling."""
         r = PluginRegistry()
 
         class FakeRunner:
@@ -157,13 +177,17 @@ class TestGetRunner:
             assert "fake_lazy" in r._backends
 
     def test_unknown_raises(self) -> None:
+        """An unknown backend is refused."""
         r = PluginRegistry()
         with pytest.raises(ValueError, match="Unknown backend"):
             r.get_runner("nonexistent", np.eye(2), np.ones(2))
 
 
 class TestAvailableBackends:
+    """Listing available backends."""
+
     def test_returns_subset_of_list(self) -> None:
+        """Available backends are a subset of all backends."""
         r = PluginRegistry()
         available = r.available_backends()
         all_backends = r.list_backends()
@@ -171,15 +195,20 @@ class TestAvailableBackends:
             assert b in all_backends
 
     def test_qiskit_available(self) -> None:
+        """Qiskit is among the available backends."""
         r = PluginRegistry()
         assert "qiskit" in r.available_backends()
 
 
 class TestGlobalRegistry:
+    """The global registry."""
+
     def test_singleton_exists(self) -> None:
+        """The global registry exists."""
         assert isinstance(registry, PluginRegistry)
 
     def test_list_backends_works(self) -> None:
+        """The global registry lists backends."""
         backends = registry.list_backends()
         assert isinstance(backends, list)
         assert len(backends) > 0

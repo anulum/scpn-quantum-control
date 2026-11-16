@@ -24,57 +24,74 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestEEGData:
+    """The built-in alpha-band PLV matrix."""
+
     def test_plv_symmetric(self) -> None:
+        """The matrix is symmetric."""
         np.testing.assert_allclose(EEG_ALPHA_PLV, EEG_ALPHA_PLV.T, atol=1e-10)
 
     def test_plv_8x8(self) -> None:
+        """The matrix is 8 by 8."""
         assert EEG_ALPHA_PLV.shape == (8, 8)
 
     def test_plv_bounded(self) -> None:
+        """Entries lie in [0, 1]."""
         assert np.all(EEG_ALPHA_PLV >= 0)
         assert np.all(EEG_ALPHA_PLV <= 1.0)
 
     def test_plv_zero_diagonal(self) -> None:
+        """The diagonal is zero."""
         np.testing.assert_allclose(np.diag(EEG_ALPHA_PLV), 0.0)
 
 
 class TestEEGCouplingMatrix:
+    """The EEG coupling matrix."""
+
     def test_builtin_alpha_requires_explicit_opt_in(self) -> None:
+        """The built-in alpha reference needs an explicit opt-in."""
         with pytest.raises(RuntimeError, match="allow_builtin_reference"):
             eeg_coupling_matrix("alpha")
 
     def test_alpha_shape(self) -> None:
+        """The alpha coupling has eight channels."""
         K, omega = eeg_coupling_matrix("alpha", allow_builtin_reference=True)
         assert K.shape == (8, 8)
         assert omega.shape == (8,)
 
 
 class TestEEGBenchmark:
+    """The SCPN-versus-EEG benchmark."""
+
     def test_returns_result(self) -> None:
+        """The benchmark returns a result record."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert isinstance(result, EEGBenchmarkResult)
 
     def test_n_channels(self) -> None:
+        """The result records eight channels."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_channels == 8
 
     def test_correlation_bounded(self) -> None:
+        """The topology correlation lies in [-1, 1]."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert -1 <= result.topology_correlation <= 1
 
     def test_fewer_oscillators(self) -> None:
+        """Fewer oscillators use fewer channels."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_channels == 4
 
     def test_constant_frequency_vector_returns_zero_correlation(self) -> None:
+        """Constant frequencies give zero frequency correlation."""
         K = build_knm_paper27(L=4)
         omega = np.ones(4)
         with warnings.catch_warnings():
@@ -85,12 +102,14 @@ class TestEEGBenchmark:
         assert "freq r=0.000" in result.summary
 
     def test_summary_string(self) -> None:
+        """The summary names the comparison."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert "SCPN vs EEG" in result.summary
 
     def test_result_labels_builtin_reference_source_mode(self) -> None:
+        """A built-in reference is labelled as such and not publication-safe."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
@@ -106,18 +125,21 @@ class TestEEGBenchmark:
         assert isinstance(result.topology_correlation, float)
 
     def test_rejects_non_square_scpn_coupling(self) -> None:
+        """A non-square SCPN coupling is refused."""
         K = np.ones((2, 3))
         omega = np.ones(2)
         with pytest.raises(ValueError, match="K_scpn must be a square"):
             eeg_benchmark(K, omega, allow_builtin_reference=True)
 
     def test_rejects_scpn_frequency_shape_mismatch(self) -> None:
+        """SCPN frequencies of the wrong shape are refused."""
         K = build_knm_paper27(L=4)
         omega = np.ones(3)
         with pytest.raises(ValueError, match="omega_scpn must match"):
             eeg_benchmark(K, omega, allow_builtin_reference=True)
 
     def test_rejects_non_finite_scpn_coupling(self) -> None:
+        """A non-finite SCPN coupling is refused."""
         K = build_knm_paper27(L=4)
         K[0, 1] = np.nan
         omega = OMEGA_N_16[:4]
@@ -125,12 +147,14 @@ class TestEEGBenchmark:
             eeg_benchmark(K, omega, allow_builtin_reference=True)
 
     def test_rejects_too_small_comparison_system(self) -> None:
+        """Fewer than two coupled channels are refused."""
         K = np.array([[0.0]])
         omega = np.array([10.0])
         with pytest.raises(ValueError, match="at least two coupled channels"):
             eeg_benchmark(K, omega, allow_builtin_reference=True)
 
     def test_rejects_measured_eeg_asymmetry(self) -> None:
+        """An asymmetric measured EEG coupling is refused."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         eeg_K = np.array(
@@ -145,6 +169,7 @@ class TestEEGBenchmark:
             eeg_benchmark(K, omega, eeg_coupling=eeg_K, eeg_frequencies=eeg_omega)
 
     def test_rejects_measured_eeg_outside_unit_interval(self) -> None:
+        """Measured EEG values outside [0, 1] are refused."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         eeg_K = np.array(
@@ -159,6 +184,7 @@ class TestEEGBenchmark:
             eeg_benchmark(K, omega, eeg_coupling=eeg_K, eeg_frequencies=eeg_omega)
 
     def test_rejects_measured_eeg_nonzero_diagonal(self) -> None:
+        """A measured EEG coupling with a non-zero diagonal is refused."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         eeg_K = np.array(

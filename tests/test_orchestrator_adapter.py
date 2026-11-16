@@ -51,7 +51,10 @@ class _DummyState:
 
 
 class TestFromDataclassState:
+    """Reading orchestrator state from a dataclass."""
+
     def test_accepts_dataclass(self) -> None:
+        """A dataclass state gives its regime, locks and alignment."""
         state = _DummyState(
             layers=[
                 _DummyLayer(R=0.81, psi=0.5, lock_signatures={"0_1": _DummyLock(0, 1, 0.93, 0.1)}),
@@ -67,6 +70,7 @@ class TestFromDataclassState:
         np.testing.assert_allclose(artifact.cross_layer_alignment[0, 1], 0.93)
 
     def test_stability_proxy_preserved(self) -> None:
+        """The stability proxy is kept."""
         state = _DummyState(
             layers=[_DummyLayer(R=0.5, psi=0.0, lock_signatures={})],
             cross_layer_alignment=np.eye(1),
@@ -77,6 +81,7 @@ class TestFromDataclassState:
         assert artifact.stability_proxy == -0.75
 
     def test_metadata_injected(self) -> None:
+        """Source and adapter metadata are added."""
         state = _DummyState(
             layers=[_DummyLayer(R=0.5, psi=0.0, lock_signatures={})],
             cross_layer_alignment=np.eye(1),
@@ -96,7 +101,10 @@ class TestFromDataclassState:
 
 
 class TestFromDictPayload:
+    """Reading orchestrator state from a dict payload."""
+
     def test_legacy_lock_keys(self) -> None:
+        """Legacy lock keys are read."""
         payload = {
             "layers": [
                 {"R": 0.6, "psi": 1.2, "locks": {"2_3": {"plv": 0.88, "lag": 0.25}}},
@@ -113,6 +121,7 @@ class TestFromDictPayload:
         assert sig.mean_lag == 0.25
 
     def test_canonical_field_names(self) -> None:
+        """Canonical field names are read."""
         payload = {
             "layers": [{"R": 0.9, "psi": 0.1, "lock_signatures": {}}],
             "cross_layer_alignment": [[1.0]],
@@ -130,7 +139,10 @@ class TestFromDictPayload:
 
 
 class TestTelemetry:
+    """Telemetry from an artefact."""
+
     def test_layout(self) -> None:
+        """Telemetry reports the regime, stability and layer order parameters."""
         payload = {
             "layers": [
                 {"R": 0.75, "psi": 0.9, "lock_signatures": {}},
@@ -148,6 +160,7 @@ class TestTelemetry:
         assert telemetry["cross_alignment"][0][1] == 0.4
 
     def test_locks_in_telemetry(self) -> None:
+        """Telemetry includes the locks."""
         payload = {
             "layers": [
                 {"R": 0.8, "psi": 0.0, "locks": {"0_1": {"plv": 0.95, "lag": 0.1}}},
@@ -167,7 +180,10 @@ class TestTelemetry:
 
 
 class TestToOrchestratorPayload:
+    """Writing an orchestrator payload."""
+
     def test_roundtrip(self) -> None:
+        """A payload round-trips."""
         payload = {
             "layers": [{"R": 0.7, "psi": 1.0, "lock_signatures": {}}],
             "cross_layer_alignment": [[1.0]],
@@ -186,6 +202,8 @@ class TestToOrchestratorPayload:
 
 
 class TestBuildKnmFromBindingSpec:
+    """Building the coupling matrix from a binding spec."""
+
     def _make_spec(self, n_osc_per_layer: list[int] | None = None) -> dict[str, Any]:
         if n_osc_per_layer is None:
             n_osc_per_layer = [2, 1]
@@ -204,31 +222,37 @@ class TestBuildKnmFromBindingSpec:
         }
 
     def test_shape(self) -> None:
+        """The matrix has one row and column per oscillator."""
         spec = self._make_spec([2, 1])
         knm = PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec)
         assert knm.shape == (3, 3)
 
     def test_diagonal_equals_base_strength(self) -> None:
+        """The diagonal holds the base strength."""
         spec = self._make_spec([2, 1])
         knm = PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec)
         np.testing.assert_allclose(np.diag(knm), 0.45)
 
     def test_zero_diagonal_option(self) -> None:
+        """The zero-diagonal option empties the diagonal."""
         spec = self._make_spec([2, 1])
         knm = PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec, zero_diagonal=True)
         np.testing.assert_allclose(np.diag(knm), 0.0)
 
     def test_symmetric(self) -> None:
+        """The matrix is symmetric."""
         spec = self._make_spec([3, 2])
         knm = PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec)
         np.testing.assert_allclose(knm, knm.T)
 
     def test_empty_raises(self) -> None:
+        """A spec without oscillators is refused."""
         spec = {"layers": [], "coupling": {"base_strength": 0.1, "decay_alpha": 0.1}}
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec)
 
     def test_coupling_decays_with_distance(self) -> None:
+        """Coupling decays with distance."""
         spec = self._make_spec([4])
         knm = PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec)
         # K(0,1) > K(0,3) because closer oscillators are more strongly coupled
@@ -241,7 +265,10 @@ class TestBuildKnmFromBindingSpec:
 
 
 class TestBuildOmegaFromBindingSpec:
+    """Building frequencies from a binding spec."""
+
     def test_shape_and_values(self) -> None:
+        """Each oscillator gets its layer's frequency."""
         spec = {
             "layers": [
                 {
@@ -258,6 +285,7 @@ class TestBuildOmegaFromBindingSpec:
         np.testing.assert_allclose(omega, [1.4, 1.4, 1.0])
 
     def test_default_omega_applied(self) -> None:
+        """A layer without a frequency gets the default."""
         spec = {
             "layers": [{"name": "x", "index": 0, "oscillator_ids": ["o0"]}],
             "coupling": {"base_strength": 0.1, "decay_alpha": 0.1, "templates": {}},
@@ -266,6 +294,7 @@ class TestBuildOmegaFromBindingSpec:
         np.testing.assert_allclose(omega, [2.5])
 
     def test_empty_raises(self) -> None:
+        """A spec without oscillators is refused."""
         spec = {"layers": [], "coupling": {"base_strength": 0.1, "decay_alpha": 0.1}}
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_omega_from_binding_spec(spec)

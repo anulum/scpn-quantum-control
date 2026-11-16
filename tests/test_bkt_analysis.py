@@ -23,23 +23,29 @@ from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
 class TestCouplingLaplacian:
+    """The Laplacian of the coupling."""
+
     def test_laplacian_symmetric(self) -> None:
+        """The Laplacian is symmetric."""
         K = build_knm_paper27(L=8)
         L = coupling_laplacian(K)
         np.testing.assert_allclose(L, L.T, atol=1e-12)
 
     def test_laplacian_row_sums_zero(self) -> None:
+        """Each Laplacian row sums to zero."""
         K = build_knm_paper27(L=8)
         L = coupling_laplacian(K)
         np.testing.assert_allclose(L.sum(axis=1), 0.0, atol=1e-12)
 
     def test_laplacian_positive_semidefinite(self) -> None:
+        """The Laplacian is positive semidefinite."""
         K = build_knm_paper27(L=8)
         L = coupling_laplacian(K)
         eigenvalues = np.linalg.eigvalsh(L)
         assert np.all(eigenvalues >= -1e-12)
 
     def test_laplacian_zero_diagonal_coupling(self) -> None:
+        """A coupling with a zero diagonal gives the expected Laplacian."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         L = coupling_laplacian(K)
         expected = np.array([[0.5, -0.5], [-0.5, 0.5]])
@@ -47,12 +53,16 @@ class TestCouplingLaplacian:
 
 
 class TestFiedlerEigenvalue:
+    """The Fiedler eigenvalue of the coupling."""
+
     def test_fiedler_positive_connected_graph(self) -> None:
+        """A connected graph has a positive Fiedler value."""
         K = build_knm_paper27(L=8)
         lam2 = fiedler_eigenvalue(K)
         assert lam2 > 0, "Connected graph must have positive Fiedler value"
 
     def test_fiedler_increases_with_coupling(self) -> None:
+        """Stronger coupling raises the Fiedler value."""
         lam_weak = fiedler_eigenvalue(build_knm_paper27(L=8, K_base=0.1))
         lam_strong = fiedler_eigenvalue(build_knm_paper27(L=8, K_base=1.0))
         assert lam_strong > lam_weak
@@ -68,12 +78,16 @@ class TestFiedlerEigenvalue:
 
 
 class TestEstimateTBKT:
+    """Estimating the BKT temperature."""
+
     def test_t_bkt_positive(self) -> None:
+        """The BKT temperature is positive."""
         K = build_knm_paper27(L=16)
         t = estimate_t_bkt(K)
         assert t > 0
 
     def test_t_bkt_scales_with_coupling(self) -> None:
+        """Stronger coupling raises the BKT temperature."""
         t_weak = estimate_t_bkt(build_knm_paper27(L=16, K_base=0.1))
         t_strong = estimate_t_bkt(build_knm_paper27(L=16, K_base=1.0))
         assert t_strong > t_weak
@@ -88,17 +102,22 @@ class TestEstimateTBKT:
 
 
 class TestBKTAnalysis:
+    """The BKT analysis."""
+
     def test_returns_bkt_result(self) -> None:
+        """The analysis returns a result record."""
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert isinstance(result, BKTResult)
 
     def test_n_oscillators(self) -> None:
+        """The result records ten oscillators."""
         K = build_knm_paper27(L=10)
         result = bkt_analysis(K)
         assert result.n_oscillators == 10
 
     def test_eta_universal(self) -> None:
+        """The critical exponent eta is the universal 1/4."""
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert result.eta_critical == 0.25
@@ -111,11 +130,13 @@ class TestBKTAnalysis:
         np.testing.assert_allclose(result.stiffness_jump, expected, atol=1e-14)
 
     def test_critical_ratio_positive(self) -> None:
+        """The critical ratio is positive."""
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert result.critical_ratio > 0
 
     def test_p_h1_predicted_bounded(self) -> None:
+        """The predicted persistence lies in (0, 1]."""
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert result.p_h1_predicted is not None
@@ -137,11 +158,13 @@ class TestBKTAnalysis:
         print(f"  Deviation = {deviation:.4f}")
 
     def test_p_h1_none_for_single_oscillator(self) -> None:
+        """A single oscillator has no predicted persistence."""
         K = np.array([[0.0]])
         result = bkt_analysis(K)
         assert result.p_h1_predicted is None
 
     def test_fiedler_matches_direct(self) -> None:
+        """The reported Fiedler value matches a direct computation."""
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         direct = fiedler_eigenvalue(K)
@@ -149,7 +172,10 @@ class TestBKTAnalysis:
 
 
 class TestScanSynchronizationTransition:
+    """Scanning the synchronisation transition."""
+
     def test_scan_returns_all_keys(self) -> None:
+        """Each series has one value per coupling."""
         K_vals = np.linspace(0.1, 1.0, 5)
         results = scan_synchronization_transition(K_vals, n=8)
         for key in ["K_base", "T_BKT", "fiedler", "critical_ratio", "p_h1_predicted"]:
@@ -157,6 +183,7 @@ class TestScanSynchronizationTransition:
             assert len(results[key]) == 5
 
     def test_t_bkt_monotonic(self) -> None:
+        """The BKT temperature never decreases with the coupling."""
         K_vals = np.linspace(0.1, 2.0, 10)
         results = scan_synchronization_transition(K_vals, n=8)
         t_bkt = results["T_BKT"]
@@ -164,6 +191,7 @@ class TestScanSynchronizationTransition:
             assert t_bkt[i] >= t_bkt[i - 1], "T_BKT must increase with K_base"
 
     def test_fiedler_monotonic(self) -> None:
+        """The Fiedler value never decreases with the coupling."""
         K_vals = np.linspace(0.1, 2.0, 10)
         results = scan_synchronization_transition(K_vals, n=8)
         fiedler = results["fiedler"]

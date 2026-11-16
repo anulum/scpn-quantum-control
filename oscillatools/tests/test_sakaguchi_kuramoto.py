@@ -56,7 +56,10 @@ def _finite_difference_jacobian(
 
 
 class TestPythonSakaguchiForceFloor:
+    """The Python floor of the Sakaguchi force."""
+
     def test_matches_closed_form(self) -> None:
+        """The force matches its closed form."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         coupling = _random_coupling(7, 5, symmetric=False)
@@ -84,6 +87,7 @@ class TestPythonSakaguchiForceFloor:
     def test_reduces_to_networked_at_zero_frustration(
         self, n: int, symmetric: bool, seed: int
     ) -> None:
+        """Zero frustration reduces to the networked force."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=symmetric)
@@ -94,15 +98,20 @@ class TestPythonSakaguchiForceFloor:
         )
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 4"):
             sk._python_sakaguchi_force(np.zeros(4), np.zeros((4, 3)), 0.3)
 
     def test_empty(self) -> None:
+        """No oscillators give an empty force."""
         assert sk._python_sakaguchi_force(np.array([]), np.zeros((0, 0)), 0.5).shape == (0,)
 
 
 class TestPythonSakaguchiJacobianFloor:
+    """The Python floor of the Sakaguchi Jacobian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Jacobian matches its closed form."""
         rng = np.random.default_rng(12)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = _random_coupling(6, 8, symmetric=False)
@@ -125,6 +134,7 @@ class TestPythonSakaguchiJacobianFloor:
     def test_matches_finite_difference_of_force(
         self, n: int, symmetric: bool, alpha: float, seed: int
     ) -> None:
+        """The Jacobian agrees with finite differences of the force."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=symmetric)
@@ -142,6 +152,7 @@ class TestPythonSakaguchiJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rows_sum_to_zero(self, n: int, symmetric: bool, alpha: float, seed: int) -> None:
+        """Each Jacobian row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 2, symmetric=symmetric)
@@ -149,6 +160,7 @@ class TestPythonSakaguchiJacobianFloor:
         np.testing.assert_allclose(jacobian.sum(axis=1), np.zeros(n), atol=1e-11)
 
     def test_frustration_breaks_symmetry_for_symmetric_coupling(self) -> None:
+        """Frustration makes the Jacobian of a symmetric coupling asymmetric."""
         rng = np.random.default_rng(2)
         theta = rng.uniform(-math.pi, math.pi, size=8)
         coupling = _random_coupling(8, 3, symmetric=True)
@@ -158,14 +170,18 @@ class TestPythonSakaguchiJacobianFloor:
         assert np.max(np.abs(frustrated - frustrated.T)) > 1e-2
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             sk._python_sakaguchi_jacobian(np.zeros(3), np.zeros((2, 2)), 0.3)
 
     def test_empty(self) -> None:
+        """No oscillators give an empty Jacobian."""
         assert sk._python_sakaguchi_jacobian(np.array([]), np.zeros((0, 0)), 0.5).shape == (0, 0)
 
 
 class TestRustSakaguchiTier:
+    """The native Sakaguchi tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -176,6 +192,7 @@ class TestRustSakaguchiTier:
     def test_rust_matches_python_floor(
         self, n: int, symmetric: bool, alpha: float, seed: int
     ) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "sakaguchi_force", None)):
             pytest.skip("scpn_quantum_engine.sakaguchi_force unavailable")
@@ -194,16 +211,20 @@ class TestRustSakaguchiTier:
         )
 
     def test_rust_force_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native force raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             sk._rust_sakaguchi_force(np.zeros(3), np.zeros((3, 3)), 0.3)
 
     def test_rust_jacobian_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Jacobian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             sk._rust_sakaguchi_jacobian(np.zeros(3), np.zeros((3, 3)), 0.3)
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -221,7 +242,10 @@ class TestRustSakaguchiTier:
 
 
 class TestJuliaSakaguchiTier:
+    """The Julia Sakaguchi tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import sakaguchi_force as julia_force
         from oscillatools.accel.julia import sakaguchi_jacobian as julia_jacobian
@@ -244,6 +268,8 @@ class TestJuliaSakaguchiTier:
 
 
 class TestSakaguchiDispatch:
+    """Dispatch across the Sakaguchi tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=16),
@@ -251,6 +277,7 @@ class TestSakaguchiDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, alpha: float, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=False)
@@ -267,6 +294,7 @@ class TestSakaguchiDispatch:
                 np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected shapes."""
         from oscillatools.accel import (
             last_sakaguchi_force_tier_used,
             last_sakaguchi_jacobian_tier_used,
@@ -285,5 +313,6 @@ class TestSakaguchiDispatch:
         assert last_sakaguchi_jacobian_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert sk._SAKAGUCHI_FORCE_CHAIN[-1][0] == "python"
         assert sk._SAKAGUCHI_JACOBIAN_CHAIN[-1][0] == "python"

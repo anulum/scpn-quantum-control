@@ -56,7 +56,10 @@ def _finite_difference_jacobian(
 
 
 class TestPythonLocalOrderFloor:
+    """The Python floor of the local order parameter."""
+
     def test_matches_closed_form(self) -> None:
+        """The local order parameter matches its closed form."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         adjacency = _random_adjacency(7, 5, symmetric=False)
@@ -77,6 +80,7 @@ class TestPythonLocalOrderFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_to_all_equals_global_order_parameter(self, n: int, seed: int) -> None:
+        """With all-to-all coupling every local value equals the global order parameter."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         adjacency = np.ones((n, n))
@@ -91,6 +95,7 @@ class TestPythonLocalOrderFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_within_unit_interval(self, n: int, symmetric: bool, seed: int) -> None:
+        """Local values lie in [0, 1]."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         adjacency = _random_adjacency(n, seed + 1, symmetric=symmetric)
@@ -99,6 +104,7 @@ class TestPythonLocalOrderFloor:
         assert np.all(local <= 1.0 + 1e-12)
 
     def test_zero_degree_node_is_zero(self) -> None:
+        """A node without neighbours has local order zero."""
         rng = np.random.default_rng(7)
         theta = rng.uniform(-math.pi, math.pi, size=5)
         adjacency = _random_adjacency(5, 3, symmetric=True)
@@ -108,14 +114,18 @@ class TestPythonLocalOrderFloor:
         assert local[2] == 0.0
 
     def test_rejects_non_square_adjacency(self) -> None:
+        """A non-square adjacency is refused."""
         with pytest.raises(ValueError, match="square matrix of order 4"):
             lo._python_local_order_parameter(np.zeros(4), np.zeros((4, 3)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty result."""
         assert lo._python_local_order_parameter(np.array([]), np.zeros((0, 0))).shape == (0,)
 
 
 class TestPythonLocalOrderJacobianFloor:
+    """The Python floor of the local order Jacobian."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=18),
@@ -123,6 +133,7 @@ class TestPythonLocalOrderJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference(self, n: int, symmetric: bool, seed: int) -> None:
+        """The Jacobian agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         adjacency = _random_adjacency(n, seed + 1, symmetric=symmetric)
@@ -133,6 +144,7 @@ class TestPythonLocalOrderJacobianFloor:
         )
 
     def test_zero_degree_node_has_zero_subgradient(self) -> None:
+        """A node without neighbours has a zero Jacobian row."""
         rng = np.random.default_rng(4)
         theta = rng.uniform(-math.pi, math.pi, size=5)
         adjacency = _random_adjacency(5, 6, symmetric=True)
@@ -142,10 +154,12 @@ class TestPythonLocalOrderJacobianFloor:
         np.testing.assert_array_equal(jacobian[1], np.zeros(5))
 
     def test_rejects_non_square_adjacency(self) -> None:
+        """A non-square adjacency is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             lo._python_local_order_parameter_jacobian(np.zeros(3), np.zeros((2, 2)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty Jacobian."""
         assert lo._python_local_order_parameter_jacobian(np.array([]), np.zeros((0, 0))).shape == (
             0,
             0,
@@ -153,6 +167,8 @@ class TestPythonLocalOrderJacobianFloor:
 
 
 class TestRustLocalOrderTier:
+    """The native local order tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -160,6 +176,7 @@ class TestRustLocalOrderTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, symmetric: bool, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "local_order_parameter", None)):
             pytest.skip("scpn_quantum_engine.local_order_parameter unavailable")
@@ -178,16 +195,20 @@ class TestRustLocalOrderTier:
         )
 
     def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native value raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             lo._rust_local_order_parameter(np.zeros(3), np.zeros((3, 3)))
 
     def test_rust_jacobian_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Jacobian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             lo._rust_local_order_parameter_jacobian(np.zeros(3), np.zeros((3, 3)))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -205,7 +226,10 @@ class TestRustLocalOrderTier:
 
 
 class TestJuliaLocalOrderTier:
+    """The Julia local order tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import local_order_parameter as julia_value
         from oscillatools.accel.julia import (
@@ -229,12 +253,15 @@ class TestJuliaLocalOrderTier:
 
 
 class TestLocalOrderDispatch:
+    """Dispatch across the local order tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=16),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         adjacency = _random_adjacency(n, seed + 1, symmetric=False)
@@ -251,6 +278,7 @@ class TestLocalOrderDispatch:
                 np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected shapes."""
         from oscillatools.accel import (
             last_local_order_parameter_jacobian_tier_used,
             last_local_order_parameter_tier_used,
@@ -269,5 +297,6 @@ class TestLocalOrderDispatch:
         assert last_local_order_parameter_jacobian_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert lo._LOCAL_ORDER_PARAMETER_CHAIN[-1][0] == "python"
         assert lo._LOCAL_ORDER_PARAMETER_JACOBIAN_CHAIN[-1][0] == "python"
