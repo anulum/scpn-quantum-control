@@ -48,6 +48,7 @@ from scpn_quantum_control.thermodynamics.readiness import (
 
 
 def test_list_capability_ids_includes_k_sweep_and_entropy() -> None:
+    """The capability ids include the K sweep, entropy production and work identity."""
     ids = list_readiness_capability_ids()
     assert "k_sweep_protocol" in ids
     assert "entropy_production" in ids
@@ -58,6 +59,7 @@ def test_list_capability_ids_includes_k_sweep_and_entropy() -> None:
 
 
 def test_list_fep_module_ids_is_research_inventory() -> None:
+    """The FEP inventory lists its two research modules."""
     fep_ids = list_fep_module_ids()
     assert "predictive_coding" in fep_ids
     assert "variational_free_energy" in fep_ids
@@ -65,30 +67,35 @@ def test_list_fep_module_ids_is_research_inventory() -> None:
 
 
 def test_iter_readiness_capabilities_unfiltered_returns_all() -> None:
+    """Without a filter every capability is returned."""
     rows = iter_readiness_capabilities()
     assert len(rows) == len(list_readiness_capability_ids())
     assert {row.capability_id for row in rows} == set(list_readiness_capability_ids())
 
 
 def test_iter_readiness_capabilities_filters_by_kind() -> None:
+    """Filtering by kind returns only the K sweep."""
     sweeps = iter_readiness_capabilities(kind="k_sweep_protocol")
     assert len(sweeps) == 1
     assert sweeps[0].capability_id == "k_sweep_protocol"
 
 
 def test_iter_fep_inventory_unfiltered_returns_all() -> None:
+    """Without a filter every FEP module is returned."""
     rows = iter_fep_inventory()
     assert len(rows) == len(list_fep_module_ids())
     assert {row.module_id for row in rows} == set(list_fep_module_ids())
 
 
 def test_iter_fep_inventory_filters_by_status() -> None:
+    """Filtering by status returns the research-only modules."""
     research = iter_fep_inventory(status="research_only")
     assert len(research) == 2
     assert all(row.status == "research_only" for row in research)
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """A known capability carries its boundary and closed flags; an unknown one is refused."""
     row = get_readiness_capability("k_sweep_protocol")
     assert row.claim_boundary == THERMO_READINESS_CLAIM_BOUNDARY
     assert row.hardware_submission_allowed is False
@@ -108,6 +115,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_ambient_claim_boundary_machine_checked() -> None:
+    """The ambient claim boundary rules out peaks and hardware submission."""
     boundary = verify_ambient_claim_boundary()
     assert boundary == AMBIENT_CLAIM_BOUNDARY
     assert "no thermodynamic peak" in boundary
@@ -115,6 +123,7 @@ def test_ambient_claim_boundary_machine_checked() -> None:
 
 
 def test_decide_readiness_path() -> None:
+    """The readiness decision allows a valid path and refuses others."""
     ok = decide_readiness_path("k_sweep_protocol")
     assert ok.allowed is True
     assert ok.outcome == "allowed"
@@ -142,6 +151,7 @@ def test_decide_readiness_path() -> None:
 
 
 def test_k_sweep_probe_real_ambient_path() -> None:
+    """The K-sweep probe runs on the real ambient path with a digest and rows."""
     probe = materialise_demo_k_sweep_probe()
     assert probe.capability_id == "k_sweep_protocol"
     assert len(probe.probe_digest) == 64
@@ -175,6 +185,7 @@ def test_k_sweep_probe_real_ambient_path() -> None:
 
 
 def test_k_sweep_probe_refuses_invent_green() -> None:
+    """The K-sweep probe refuses peak claims, hardware flags and other capabilities."""
     with pytest.raises(ValueError, match="peak"):
         materialise_k_sweep_probe("k_sweep_protocol", invent_green_peak_claim=True)
     with pytest.raises(ValueError, match="hardware|submission"):
@@ -184,6 +195,7 @@ def test_k_sweep_probe_refuses_invent_green() -> None:
 
 
 def test_quantum_thermo_payload_probe() -> None:
+    """A quantum payload is wrapped with the schema and closed flags."""
     wrapped = materialise_quantum_thermo_payload_probe()
     assert wrapped["product_schema"] == THERMO_READINESS_PRODUCT_SCHEMA
     assert wrapped["hardware_submission_allowed"] is False
@@ -195,6 +207,7 @@ def test_quantum_thermo_payload_probe() -> None:
 
 
 def test_request_digest() -> None:
+    """The request digest is stable, 64 characters and input-sensitive."""
     d1 = compute_k_sweep_request_digest(
         k_values=(0.4, 0.6, 0.8, 1.0, 1.2),
         transition_k=0.8,
@@ -229,6 +242,7 @@ def test_request_digest() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """The product and readiness modules are public surfaces."""
     surfaces = map_thermo_readiness_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -249,6 +263,7 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """The integrity check refuses drift and empty catalogues."""
     registry = build_thermo_readiness_product_registry()
     capabilities = cast(list[dict[str, object]], registry["capabilities"])
 
@@ -365,76 +380,91 @@ def _valid_probe(**overrides: Any) -> MaterialisedKSweepProbe:
 
 
 def test_capability_row_rejects_blank_capability_id() -> None:
+    """A capability row needs an id."""
     with pytest.raises(ValueError, match="capability_id"):
         _valid_capability_row(capability_id="")
 
 
 def test_capability_row_rejects_unknown_kind() -> None:
+    """A capability row needs a known kind."""
     with pytest.raises(ValueError, match="unknown capability kind"):
         _valid_capability_row(kind=cast(Any, "not_a_kind"))
 
 
 def test_capability_row_rejects_blank_title() -> None:
+    """A capability row needs a title."""
     with pytest.raises(ValueError, match="title"):
         _valid_capability_row(title="")
 
 
 def test_capability_row_rejects_blank_summary() -> None:
+    """A capability row needs a summary."""
     with pytest.raises(ValueError, match="summary"):
         _valid_capability_row(summary="  ")
 
 
 def test_capability_row_rejects_blank_ambient_symbol() -> None:
+    """A capability row needs an ambient symbol."""
     with pytest.raises(ValueError, match="ambient_symbol"):
         _valid_capability_row(ambient_symbol="")
 
 
 def test_capability_row_rejects_hardware_submission_allowed() -> None:
+    """A capability row may not allow hardware submission."""
     with pytest.raises(ValueError, match="hardware_submission_allowed"):
         _valid_capability_row(hardware_submission_allowed=True)
 
 
 def test_capability_row_rejects_thermodynamic_peak_claim_allowed() -> None:
+    """A capability row may not allow a peak claim."""
     with pytest.raises(ValueError, match="thermodynamic_peak_claim_allowed"):
         _valid_capability_row(thermodynamic_peak_claim_allowed=True)
 
 
 def test_capability_row_rejects_unknown_support_posture() -> None:
+    """A capability row needs a known support posture."""
     with pytest.raises(ValueError, match="support_posture"):
         _valid_capability_row(support_posture=cast(Any, "bogus"))
 
 
 def test_capability_row_rejects_blank_as_of() -> None:
+    """A capability row needs its as-of date."""
     with pytest.raises(ValueError, match="as_of"):
         _valid_capability_row(as_of="")
 
 
 def test_capability_row_to_dict_preserves_capability_id() -> None:
+    """A capability row keeps its id when serialised."""
     ok_cap = _valid_capability_row()
     assert ok_cap.to_dict()["capability_id"] == "x"
 
 
 def test_fep_row_rejects_blank_module_id() -> None:
+    """An FEP row needs a module id."""
     with pytest.raises(ValueError, match="module_id"):
         FepInventoryRow(module_id="", module_path="m", title="t", summary="s")
 
 
 def test_fep_row_rejects_blank_module_path() -> None:
+    """An FEP row needs a module path."""
     with pytest.raises(ValueError, match="module_path"):
         FepInventoryRow(module_id="x", module_path="", title="t", summary="s")
 
 
 def test_fep_row_rejects_blank_title() -> None:
+    """An FEP row needs a title."""
     with pytest.raises(ValueError, match="title"):
         FepInventoryRow(module_id="x", module_path="m", title="", summary="s")
 
 
 def test_fep_row_rejects_blank_summary() -> None:
+    """An FEP row needs a summary."""
     with pytest.raises(ValueError, match="summary"):
         FepInventoryRow(module_id="x", module_path="m", title="t", summary="")
 
 
 def test_fep_row_rejects_unknown_status() -> None:
+    """An FEP row needs a known status."""
     with pytest.raises(ValueError, match="status"):
         FepInventoryRow(
             module_id="x",
@@ -446,6 +476,7 @@ def test_fep_row_rejects_unknown_status() -> None:
 
 
 def test_fep_row_rejects_blank_research_lane_pointer() -> None:
+    """An FEP row needs a research-lane pointer."""
     with pytest.raises(ValueError, match="research_lane_pointer"):
         FepInventoryRow(
             module_id="x",
@@ -457,6 +488,7 @@ def test_fep_row_rejects_blank_research_lane_pointer() -> None:
 
 
 def test_fep_row_rejects_research_only_product_hook_proven() -> None:
+    """A research-only FEP row may not claim a proven product hook."""
     with pytest.raises(ValueError, match="research_only rows cannot set product_hook_proven"):
         FepInventoryRow(
             module_id="x",
@@ -469,6 +501,7 @@ def test_fep_row_rejects_research_only_product_hook_proven() -> None:
 
 
 def test_fep_row_rejects_product_hook_proven_on_open_status() -> None:
+    """A product-surface FEP row may not claim a proven hook while open."""
     with pytest.raises(ValueError, match="product_hook_proven must be False on product surface"):
         FepInventoryRow(
             module_id="x",
@@ -481,11 +514,13 @@ def test_fep_row_rejects_product_hook_proven_on_open_status() -> None:
 
 
 def test_fep_row_to_dict_defaults_research_only() -> None:
+    """An FEP row serialises as research-only by default."""
     ok_fep = FepInventoryRow(module_id="x", module_path="m", title="t", summary="s")
     assert ok_fep.to_dict()["status"] == "research_only"
 
 
 def test_path_decision_rejects_unknown_outcome() -> None:
+    """A path decision needs a known outcome."""
     with pytest.raises(ValueError, match="outcome"):
         PathEligibilityDecision(
             outcome=cast(Any, "maybe"),
@@ -496,6 +531,7 @@ def test_path_decision_rejects_unknown_outcome() -> None:
 
 
 def test_path_decision_rejects_blank_reason() -> None:
+    """A path decision needs a reason."""
     with pytest.raises(ValueError, match="reason"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -506,6 +542,7 @@ def test_path_decision_rejects_blank_reason() -> None:
 
 
 def test_path_decision_rejects_allowed_with_refused_outcome() -> None:
+    """An allowed flag needs the allowed outcome."""
     with pytest.raises(ValueError, match="outcome=allowed"):
         PathEligibilityDecision(
             outcome="refused",
@@ -516,6 +553,7 @@ def test_path_decision_rejects_allowed_with_refused_outcome() -> None:
 
 
 def test_path_decision_rejects_refused_flag_with_allowed_outcome() -> None:
+    """A refused flag needs the refused outcome."""
     with pytest.raises(ValueError, match="outcome=refused"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -526,6 +564,7 @@ def test_path_decision_rejects_refused_flag_with_allowed_outcome() -> None:
 
 
 def test_path_decision_rejects_blockers_on_allowed_path() -> None:
+    """An allowed path lists no blockers."""
     with pytest.raises(ValueError, match="cannot list blockers"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -536,6 +575,7 @@ def test_path_decision_rejects_blockers_on_allowed_path() -> None:
 
 
 def test_path_decision_rejects_empty_blockers_when_refused() -> None:
+    """A refused path lists its blockers."""
     with pytest.raises(ValueError, match="blockers"):
         PathEligibilityDecision(
             outcome="refused",
@@ -546,6 +586,7 @@ def test_path_decision_rejects_empty_blockers_when_refused() -> None:
 
 
 def test_path_decision_rejects_blank_blocker_entries() -> None:
+    """Blocker entries may not be blank."""
     with pytest.raises(ValueError, match="blockers entries"):
         PathEligibilityDecision(
             outcome="refused",
@@ -556,6 +597,7 @@ def test_path_decision_rejects_blank_blocker_entries() -> None:
 
 
 def test_path_decision_to_dict_reports_allowed() -> None:
+    """A path decision serialises its allowed flag."""
     ok_dec = PathEligibilityDecision(
         outcome="allowed",
         allowed=True,
@@ -566,61 +608,73 @@ def test_path_decision_to_dict_reports_allowed() -> None:
 
 
 def test_probe_rejects_blank_capability_id() -> None:
+    """A probe needs a capability id."""
     with pytest.raises(ValueError, match="capability_id"):
         _valid_probe(capability_id="")
 
 
 def test_probe_rejects_blank_schema() -> None:
+    """A probe needs a schema."""
     with pytest.raises(ValueError, match="schema"):
         _valid_probe(schema="")
 
 
 def test_probe_rejects_row_count_below_three() -> None:
+    """A probe needs at least three rows."""
     with pytest.raises(ValueError, match="row_count"):
         _valid_probe(row_count=2)
 
 
 def test_probe_rejects_hardware_submission_allowed() -> None:
+    """A probe may not allow hardware submission."""
     with pytest.raises(ValueError, match="hardware_submission_allowed"):
         _valid_probe(hardware_submission_allowed=True)
 
 
 def test_probe_rejects_thermodynamic_peak_claim_allowed() -> None:
+    """A probe may not allow a peak claim."""
     with pytest.raises(ValueError, match="thermodynamic_peak_claim_allowed"):
         _valid_probe(thermodynamic_peak_claim_allowed=True)
 
 
 def test_probe_rejects_blank_ambient_claim_boundary() -> None:
+    """A probe needs an ambient claim boundary."""
     with pytest.raises(ValueError, match="ambient_claim_boundary"):
         _valid_probe(ambient_claim_boundary="")
 
 
 def test_probe_rejects_promotional_ambient_claim_boundary() -> None:
+    """A probe refuses a promotional claim boundary."""
     with pytest.raises(ValueError, match="no-thermodynamic-peak|ambient_claim_boundary"):
         _valid_probe(ambient_claim_boundary="peak claim allowed")
 
 
 def test_probe_rejects_blank_falsifier() -> None:
+    """A probe needs a falsifier."""
     with pytest.raises(ValueError, match="falsifier"):
         _valid_probe(falsifier="")
 
 
 def test_probe_rejects_blank_probe_digest() -> None:
+    """A probe needs a digest."""
     with pytest.raises(ValueError, match="probe_digest"):
         _valid_probe(probe_digest="")
 
 
 def test_probe_rejects_non_hex_length_digest() -> None:
+    """A probe digest must be 64 hex characters."""
     with pytest.raises(ValueError, match="64-char"):
         _valid_probe(probe_digest="abc")
 
 
 def test_probe_rejects_blank_demo_label() -> None:
+    """A probe needs a demo label."""
     with pytest.raises(ValueError, match="demo_label"):
         _valid_probe(demo_label="")
 
 
 def test_probe_to_dict_preserves_row_count() -> None:
+    """A probe keeps its row count when serialised."""
     ok_probe = _valid_probe()
     assert ok_probe.to_dict()["row_count"] == 5
 
@@ -628,6 +682,8 @@ def test_probe_to_dict_preserves_row_count() -> None:
 def test_materialise_k_sweep_refuses_ambient_hardware_flag(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The K-sweep probe refuses an ambient result flagged for hardware."""
+
     class _BadSweep:
         schema = "bad"
         k_values = (0.4, 0.6, 0.8)
@@ -645,6 +701,8 @@ def test_materialise_k_sweep_refuses_ambient_hardware_flag(
 def test_materialise_k_sweep_refuses_empty_ambient_result(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The K-sweep probe refuses an empty ambient result."""
+
     class _EmptySweep:
         schema = "s"
         k_values = ()
@@ -662,6 +720,8 @@ def test_materialise_k_sweep_refuses_empty_ambient_result(
 def test_quantum_payload_probe_refuses_wrong_schema(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A quantum payload with the wrong schema is refused."""
+
     def _bad_payload() -> dict[str, Any]:
         return {
             "schema": "wrong",
@@ -679,6 +739,8 @@ def test_quantum_payload_probe_refuses_wrong_schema(
 def test_quantum_payload_probe_refuses_peak_claim(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A quantum payload allowing a peak claim is refused."""
+
     def _peak_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -696,6 +758,8 @@ def test_quantum_payload_probe_refuses_peak_claim(
 def test_quantum_payload_probe_refuses_hardware_submission(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A quantum payload allowing hardware submission is refused."""
+
     def _hw_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -713,6 +777,8 @@ def test_quantum_payload_probe_refuses_hardware_submission(
 def test_quantum_payload_probe_refuses_qpu_submission(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A quantum payload without the no-QPU-submission flag is refused."""
+
     def _qpu_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -730,6 +796,8 @@ def test_quantum_payload_probe_refuses_qpu_submission(
 def test_quantum_payload_probe_refuses_promotional_boundary(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A quantum payload with a promotional boundary is refused."""
+
     def _boundary_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -747,6 +815,7 @@ def test_quantum_payload_probe_refuses_promotional_boundary(
 def test_verify_ambient_boundary_rejects_blank(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A blank ambient boundary is refused."""
     monkeypatch.setattr(thermo_product, "AMBIENT_CLAIM_BOUNDARY", "")
     with pytest.raises(ValueError, match="non-empty"):
         verify_ambient_claim_boundary()
@@ -755,6 +824,7 @@ def test_verify_ambient_boundary_rejects_blank(
 def test_verify_ambient_boundary_rejects_missing_peak_clause(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """An ambient boundary without the peak clause is refused."""
     monkeypatch.setattr(
         thermo_product,
         "AMBIENT_CLAIM_BOUNDARY",
@@ -767,6 +837,7 @@ def test_verify_ambient_boundary_rejects_missing_peak_clause(
 def test_verify_ambient_boundary_rejects_missing_hardware_clause(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """An ambient boundary without the hardware clause is refused."""
     monkeypatch.setattr(
         thermo_product,
         "AMBIENT_CLAIM_BOUNDARY",
@@ -777,6 +848,7 @@ def test_verify_ambient_boundary_rejects_missing_hardware_clause(
 
 
 def test_integrity_rejects_non_mapping_capability_row() -> None:
+    """A capability row that is not a mapping is refused."""
     registry = build_thermo_readiness_product_registry()
     not_map = dict(registry)
     not_map["capabilities"] = cast(list[dict[str, object]], ["not-a-mapping"])
@@ -785,6 +857,7 @@ def test_integrity_rejects_non_mapping_capability_row() -> None:
 
 
 def test_integrity_rejects_blank_capability_id() -> None:
+    """A blank capability id is refused."""
     registry = build_thermo_readiness_product_registry()
     caps = cast(list[dict[str, object]], registry["capabilities"])
     blank_id = dict(registry)
@@ -796,6 +869,7 @@ def test_integrity_rejects_blank_capability_id() -> None:
 
 
 def test_integrity_rejects_duplicate_capability_id() -> None:
+    """A duplicate capability id is refused."""
     registry = build_thermo_readiness_product_registry()
     caps = cast(list[dict[str, object]], registry["capabilities"])
     dup = dict(registry)
@@ -807,6 +881,7 @@ def test_integrity_rejects_duplicate_capability_id() -> None:
 
 
 def test_integrity_rejects_missing_k_sweep_protocol() -> None:
+    """A catalogue without the K sweep is refused."""
     registry = build_thermo_readiness_product_registry()
     caps = cast(list[dict[str, object]], registry["capabilities"])
     no_ksweep = dict(registry)
@@ -818,6 +893,7 @@ def test_integrity_rejects_missing_k_sweep_protocol() -> None:
 
 
 def test_integrity_rejects_capability_peak_claim_flag() -> None:
+    """A capability allowing a peak claim is refused."""
     registry = build_thermo_readiness_product_registry()
     caps = cast(list[dict[str, object]], registry["capabilities"])
     peak_cap = dict(registry)
@@ -829,6 +905,7 @@ def test_integrity_rejects_capability_peak_claim_flag() -> None:
 
 
 def test_integrity_rejects_blank_ambient_symbol() -> None:
+    """A blank ambient symbol is refused."""
     registry = build_thermo_readiness_product_registry()
     caps = cast(list[dict[str, object]], registry["capabilities"])
     no_symbol = dict(registry)
@@ -840,6 +917,7 @@ def test_integrity_rejects_blank_ambient_symbol() -> None:
 
 
 def test_integrity_rejects_non_mapping_fep_row() -> None:
+    """An FEP row that is not a mapping is refused."""
     registry = build_thermo_readiness_product_registry()
     fep_not_map = dict(registry)
     fep_not_map["fep_inventory"] = cast(list[dict[str, object]], [123])
@@ -848,6 +926,7 @@ def test_integrity_rejects_non_mapping_fep_row() -> None:
 
 
 def test_integrity_rejects_blank_fep_module_id() -> None:
+    """A blank FEP module id is refused."""
     registry = build_thermo_readiness_product_registry()
     fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
     blank_fep = dict(registry)
@@ -859,6 +938,7 @@ def test_integrity_rejects_blank_fep_module_id() -> None:
 
 
 def test_integrity_rejects_duplicate_fep_module_id() -> None:
+    """A duplicate FEP module id is refused."""
     registry = build_thermo_readiness_product_registry()
     fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
     dup_fep = dict(registry)
@@ -870,6 +950,7 @@ def test_integrity_rejects_duplicate_fep_module_id() -> None:
 
 
 def test_integrity_rejects_fep_set_drift() -> None:
+    """An FEP set that drifts from the registry is refused."""
     registry = build_thermo_readiness_product_registry()
     fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
     drifted = dict(registry)
@@ -881,6 +962,7 @@ def test_integrity_rejects_fep_set_drift() -> None:
 
 
 def test_integrity_rejects_capability_count_mismatch() -> None:
+    """A wrong capability count is refused."""
     registry = build_thermo_readiness_product_registry()
     count_mismatch = dict(registry)
     count_mismatch["capability_count"] = 99
@@ -889,6 +971,7 @@ def test_integrity_rejects_capability_count_mismatch() -> None:
 
 
 def test_integrity_rejects_fep_inventory_count_mismatch() -> None:
+    """A wrong FEP inventory count is refused."""
     registry = build_thermo_readiness_product_registry()
     fep_count = dict(registry)
     fep_count["fep_inventory_count"] = 99
@@ -897,6 +980,7 @@ def test_integrity_rejects_fep_inventory_count_mismatch() -> None:
 
 
 def test_request_digest_rejects_non_finite_k_value() -> None:
+    """A non-finite coupling in the request is refused."""
     with pytest.raises(ValueError, match="finite"):
         compute_k_sweep_request_digest(
             k_values=(0.4, float("nan"), 0.8),
@@ -905,6 +989,7 @@ def test_request_digest_rejects_non_finite_k_value() -> None:
 
 
 def test_request_digest_rejects_non_finite_transition_k() -> None:
+    """A non-finite transition coupling is refused."""
     with pytest.raises(ValueError, match="finite"):
         compute_k_sweep_request_digest(
             k_values=(0.4, 0.6, 0.8),
@@ -913,6 +998,7 @@ def test_request_digest_rejects_non_finite_transition_k() -> None:
 
 
 def test_capability_map_rejects_blank_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The capability map refuses a blank id."""
     blank = _valid_capability_row(capability_id="tmp")
     object.__setattr__(blank, "capability_id", "  ")
     monkeypatch.setattr(thermo_product, "_CAPABILITIES", (blank,))
@@ -921,6 +1007,7 @@ def test_capability_map_rejects_blank_id(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_capability_map_rejects_duplicate_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The capability map refuses a duplicate id."""
     row = get_readiness_capability("k_sweep_protocol")
     monkeypatch.setattr(thermo_product, "_CAPABILITIES", (row, row))
     with pytest.raises(RuntimeError, match="duplicate capability_id"):
@@ -928,12 +1015,14 @@ def test_capability_map_rejects_duplicate_id(monkeypatch: pytest.MonkeyPatch) ->
 
 
 def test_capability_map_rejects_empty_catalogue(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The capability map refuses an empty catalogue."""
     monkeypatch.setattr(thermo_product, "_CAPABILITIES", ())
     with pytest.raises(RuntimeError, match="non-empty"):
         thermo_product._capability_map()
 
 
 def test_fep_map_rejects_blank_module_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The FEP map refuses a blank module id."""
     blank = FepInventoryRow(module_id="tmp", module_path="m", title="t", summary="s")
     object.__setattr__(blank, "module_id", "  ")
     monkeypatch.setattr(thermo_product, "_FEP_INVENTORY", (blank,))
@@ -942,6 +1031,7 @@ def test_fep_map_rejects_blank_module_id(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_fep_map_rejects_duplicate_module_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The FEP map refuses a duplicate module id."""
     row = get_fep_inventory_row("predictive_coding")
     monkeypatch.setattr(thermo_product, "_FEP_INVENTORY", (row, row))
     with pytest.raises(RuntimeError, match="duplicate module_id"):
@@ -949,12 +1039,14 @@ def test_fep_map_rejects_duplicate_module_id(monkeypatch: pytest.MonkeyPatch) ->
 
 
 def test_fep_map_rejects_empty_inventory(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The FEP map refuses an empty inventory."""
     monkeypatch.setattr(thermo_product, "_FEP_INVENTORY", ())
     with pytest.raises(RuntimeError, match="non-empty"):
         thermo_product._fep_map()
 
 
 def test_module_exports_stable() -> None:
+    """The module exports its public names and schema."""
     assert "assert_thermo_readiness_product_integrity" in thermo_product.__all__
     assert "materialise_demo_k_sweep_probe" in thermo_product.__all__
     assert THERMO_READINESS_PRODUCT_SCHEMA == "thermo_readiness_product.v1"
