@@ -27,13 +27,18 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 class TestSeedTranspiler:
+    """The transpiler seed of the hardware runner."""
+
     def test_default_seed(self) -> None:
+        """The runner has a fixed default seed."""
         assert HardwareRunner(use_simulator=True).seed_transpiler == 20260718
 
     def test_custom_seed_stored(self) -> None:
+        """A custom seed is stored."""
         assert HardwareRunner(use_simulator=True, seed_transpiler=42).seed_transpiler == 42
 
     def test_seed_reaches_pass_manager(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The seed reaches the pass manager."""
         captured: dict[str, object] = {}
         import scpn_quantum_control.hardware.runner as runner_mod
 
@@ -65,12 +70,16 @@ class _Props:
 
 
 class TestCalibrationSnapshot:
+    """The calibration snapshot of the hardware runner."""
+
     def test_requires_connect(self) -> None:
+        """A snapshot needs a connection."""
         runner = HardwareRunner(use_simulator=True)
         with pytest.raises(RuntimeError, match="connect"):
             runner.calibration_snapshot()
 
     def test_simulator_reports_unavailable(self) -> None:
+        """The simulator reports calibration as unavailable, with its seed."""
         runner = HardwareRunner(use_simulator=True)
         runner.connect()  # Aer/basic simulator: no calibration properties
         snap = runner.calibration_snapshot()
@@ -78,6 +87,7 @@ class TestCalibrationSnapshot:
         assert snap["seed_transpiler"] == 20260718
 
     def test_populated_snapshot_from_backend_properties(self) -> None:
+        """Backend properties populate the snapshot."""
         runner = HardwareRunner(use_simulator=True, seed_transpiler=5)
         runner._backend = SimpleNamespace(
             name="ibm_fez",
@@ -94,6 +104,7 @@ class TestCalibrationSnapshot:
         assert snap["last_update_date"] == "2026-03-29"
 
     def test_backend_without_properties_callable(self) -> None:
+        """A backend without properties reports calibration as unavailable."""
         runner = HardwareRunner(use_simulator=True)
         runner._backend = SimpleNamespace(name="stub", num_qubits=1, properties=lambda: None)
         assert runner.calibration_snapshot()["available"] is False
@@ -103,6 +114,7 @@ class TestSaveResultEmbedsCalibration:
     """Every saved pack carries a ``calibration`` snapshot block."""
 
     def test_single_result_carries_calibration(self, tmp_path: Path) -> None:
+        """A single result carries the calibration record."""
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         path = runner.save_result(
@@ -113,6 +125,7 @@ class TestSaveResultEmbedsCalibration:
         assert data["calibration"]["seed_transpiler"] == 20260718
 
     def test_list_result_carries_calibration(self, tmp_path: Path) -> None:
+        """A list of results carries the calibration record."""
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         path = runner.save_result(
@@ -123,6 +136,7 @@ class TestSaveResultEmbedsCalibration:
         assert data["calibration"]["backend"] == runner.backend_name
 
     def test_calibration_fail_open_when_not_connected(self, tmp_path: Path) -> None:
+        """Without a connection the record states why calibration is unavailable."""
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         # No connect(): save must still succeed with a fail-open record.
         record = runner._calibration_for_pack()

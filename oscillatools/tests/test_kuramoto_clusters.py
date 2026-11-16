@@ -38,7 +38,7 @@ def _drift(steps: int) -> np.ndarray:
 
 
 def _planted(sizes_and_offsets: list[tuple[int, float]], steps: int = 400) -> np.ndarray:
-    """A trajectory of rigid clusters, each a block of a given size at a constant phase offset."""
+    """Build a trajectory of rigid clusters, each a block of a given size at a constant phase offset."""
     grid = _drift(steps)
     columns = []
     for size, offset in sizes_and_offsets:
@@ -50,6 +50,7 @@ def _planted(sizes_and_offsets: list[tuple[int, float]], steps: int = 400) -> np
 
 
 def test_full_synchrony_is_a_single_cluster() -> None:
+    """Full synchrony forms one cluster of every oscillator with unit coherence."""
     trajectory = np.repeat((_drift(300) + 0.3)[:, None], 8, axis=1)
     partition = cluster_partition(mean_coherence_matrix(trajectory))
     assert partition.count == 1
@@ -58,6 +59,7 @@ def test_full_synchrony_is_a_single_cluster() -> None:
 
 
 def test_planted_three_cluster_state_recovers_count_and_sizes() -> None:
+    """Three planted clusters are recovered with their sizes in descending order."""
     trajectory = _planted([(4, 0.0), (3, _TWO_PI / 3), (2, 2 * _TWO_PI / 3)])
     partition = cluster_partition(mean_coherence_matrix(trajectory))
     assert partition.count == 3
@@ -68,6 +70,7 @@ def test_planted_three_cluster_state_recovers_count_and_sizes() -> None:
 
 
 def test_cluster_count_matches_partition() -> None:
+    """The cluster count equals the partition's count."""
     trajectory = _planted([(2, 0.0), (2, np.pi / 2), (2, np.pi)])
     matrix = mean_coherence_matrix(trajectory)
     assert cluster_count(matrix) == cluster_partition(matrix).count == 3
@@ -77,6 +80,7 @@ def test_cluster_count_matches_partition() -> None:
 
 
 def test_signed_coherence_splits_antiphase_clusters() -> None:
+    """Signed coherence separates two antiphase clusters."""
     trajectory = _planted([(3, 0.0), (3, np.pi)])
     partition = cluster_partition(mean_coherence_matrix(trajectory))
     assert partition.count == 2
@@ -84,6 +88,7 @@ def test_signed_coherence_splits_antiphase_clusters() -> None:
 
 
 def test_phase_locking_value_merges_antiphase_clusters() -> None:
+    """The phase-locking value merges antiphase clusters into one."""
     trajectory = _planted([(3, 0.0), (3, np.pi)])
     partition = cluster_partition(phase_locking_matrix(trajectory))
     assert partition.count == 1
@@ -94,6 +99,7 @@ def test_phase_locking_value_merges_antiphase_clusters() -> None:
 
 
 def test_isolated_oscillator_forms_a_singleton_with_unit_coherence() -> None:
+    """An isolated oscillator forms a singleton with unit coherence."""
     grid = _drift(400)
     trajectory = np.empty((400, 5))
     trajectory[:, :4] = grid[:, None]
@@ -107,6 +113,7 @@ def test_isolated_oscillator_forms_a_singleton_with_unit_coherence() -> None:
 def test_threshold_controls_cluster_granularity() -> None:
     # Two clusters 36 degrees apart: cos(36 deg) ~ 0.81 across-cluster. A loose threshold merges
     # them into one cluster, a tight threshold keeps them separate.
+    """A higher threshold splits clusters more finely."""
     trajectory = _planted([(3, 0.0), (3, _TWO_PI / 10)])
     matrix = mean_coherence_matrix(trajectory)
     assert cluster_count(matrix, threshold=0.7) == 1
@@ -114,6 +121,7 @@ def test_threshold_controls_cluster_granularity() -> None:
 
 
 def test_labels_are_ordered_by_descending_size() -> None:
+    """Cluster labels follow descending cluster size."""
     trajectory = _planted([(1, 0.0), (5, np.pi / 2)])
     partition = cluster_partition(mean_coherence_matrix(trajectory))
     assert partition.sizes.tolist() == [5, 1]
@@ -123,6 +131,7 @@ def test_labels_are_ordered_by_descending_size() -> None:
 
 
 def test_partition_is_frozen() -> None:
+    """A partition cannot be modified."""
     partition = ClusterPartition(
         labels=np.zeros(2, dtype=int),
         count=1,
@@ -137,10 +146,12 @@ def test_partition_is_frozen() -> None:
 
 
 def test_phase_clusters_rejects_non_square_matrix() -> None:
+    """A non-square matrix is refused."""
     with pytest.raises(ValueError, match="non-empty square"):
         phase_clusters(np.zeros((3, 4)))
 
 
 def test_cluster_partition_rejects_empty_matrix() -> None:
+    """An empty matrix is refused."""
     with pytest.raises(ValueError, match="non-empty square"):
         cluster_partition(np.zeros((0, 0)))

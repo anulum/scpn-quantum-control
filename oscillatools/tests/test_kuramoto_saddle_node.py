@@ -39,6 +39,7 @@ _TRIANGLE = np.array([[0.0, 1.0, 1.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0]])
     [(0.7, -0.3), (1.0, 0.0), (0.4, 0.1), (-0.2, 0.6)],
 )
 def test_two_oscillator_fold_matches_closed_form(omega0: float, omega1: float) -> None:
+    """The two-oscillator fold matches its closed form."""
     omega = np.array([omega0, omega1])
     fold = sn.locate_saddle_node(omega, _PAIR, initial_coupling=2.0)
     expected = abs(omega0 - omega1) / 2.0
@@ -56,6 +57,7 @@ def test_two_oscillator_fold_matches_closed_form(omega0: float, omega1: float) -
 
 
 def test_three_oscillator_fold_is_a_genuine_saddle_node() -> None:
+    """The three-oscillator fold is a genuine saddle-node."""
     omega = np.array([1.0, 0.1, -1.1])
     fold = sn.locate_saddle_node(omega, _TRIANGLE, initial_coupling=3.0)
     assert fold.converged
@@ -72,6 +74,7 @@ def test_three_oscillator_fold_is_a_genuine_saddle_node() -> None:
 
 
 def test_fold_sits_on_the_existence_boundary() -> None:
+    """A locked state exists just above the fold and not just below it."""
     omega = np.array([1.0, 0.1, -1.1])
     fold = sn.locate_saddle_node(omega, _TRIANGLE, initial_coupling=3.0)
     # A locked state exists above the fold (seeded from the aligned state, as the
@@ -100,6 +103,7 @@ def test_fold_sits_on_the_existence_boundary() -> None:
 
 
 def test_initial_phases_seed_is_accepted() -> None:
+    """Initial phases can seed the fold search."""
     omega = np.array([0.7, -0.3])
     fold = sn.locate_saddle_node(
         omega, _PAIR, initial_coupling=2.0, initial_phases=np.array([0.0, -0.4])
@@ -121,6 +125,7 @@ def _solution_vector(omega: np.ndarray, structure: np.ndarray, k0: float) -> np.
 
 
 def test_defining_residual_vanishes_at_the_fold() -> None:
+    """The defining residual vanishes at the fold."""
     omega = np.array([1.0, 0.1, -1.1])
     n = omega.shape[0]
     x, cvec = _solution_vector(omega, _TRIANGLE, 3.0)
@@ -132,6 +137,7 @@ def test_defining_residual_vanishes_at_the_fold() -> None:
 
 
 def test_defining_jacobian_matches_finite_difference() -> None:
+    """The defining Jacobian agrees with finite differences."""
     omega = np.array([1.0, 0.1, -1.1])
     # evaluate away from the solution (a generic point) so every block is exercised
     x, cvec = _solution_vector(omega, _TRIANGLE, 3.0)
@@ -165,6 +171,7 @@ def test_defining_jacobian_matches_finite_difference() -> None:
     ],
 )
 def test_shape_validation(kwargs: dict, message: str) -> None:
+    """Inputs of the wrong shape are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         sn.locate_saddle_node(initial_coupling=1.0, **kwargs)
 
@@ -184,18 +191,21 @@ def test_shape_validation(kwargs: dict, message: str) -> None:
     ],
 )
 def test_parameter_validation(overrides: dict, message: str) -> None:
+    """Invalid parameters are refused with their reasons."""
     with pytest.raises(ValueError, match=message):
         sn.locate_saddle_node(np.array([0.7, -0.3]), _PAIR, **overrides)
 
 
 def test_no_locked_state_at_initial_coupling_raises() -> None:
     # start below the two-oscillator fold (0.5) => no locked state to continue from
+    """Without a locked state at the initial coupling the search is refused."""
     with pytest.raises(ValueError, match="no phase-locked state"):
         sn.locate_saddle_node(np.array([0.7, -0.3]), _PAIR, initial_coupling=0.3)
 
 
 def test_persistent_lock_without_fold_raises() -> None:
     # identical frequencies lock at every positive coupling => no fold down to zero
+    """A lock that persists without bracketing a fold raises."""
     omega = np.array([0.4, 0.4])
     with pytest.raises(RuntimeError, match="without bracketing a fold"):
         sn.locate_saddle_node(omega, _PAIR, initial_coupling=1.0, continuation_step=0.2)
@@ -207,6 +217,7 @@ def test_persistent_lock_without_fold_raises() -> None:
 
 
 def test_newton_fold_reports_non_convergence() -> None:
+    """Newton's method reports non-convergence."""
     omega = np.array([1.0, 0.1, -1.1])
     x, cvec = _solution_vector(omega, _TRIANGLE, 3.0)
     seed = x + 0.4  # far seed, one step is not enough
@@ -218,6 +229,8 @@ def test_newton_fold_reports_non_convergence() -> None:
 
 
 def test_solve_locked_state_returns_none_on_singular_step(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A singular step returns no locked state."""
+
     def _raise(*_a: object, **_k: object) -> np.ndarray:
         raise np.linalg.LinAlgError("singular")
 

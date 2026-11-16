@@ -74,7 +74,6 @@ class _FakeIonQShotMismatchClient(_FakeIonQClient):
 
 def test_ionq_direct_adapter_submits_status_results_and_cancel() -> None:
     """IonQ direct adapter should implement the v0.4 job lifecycle."""
-
     client = _FakeIonQClient()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -141,7 +140,6 @@ def test_ionq_direct_adapter_submits_status_results_and_cancel() -> None:
 
 def test_ionq_direct_adapter_rejects_malformed_qis_payload() -> None:
     """IonQ helper should fail closed on malformed circuit instructions."""
-
     with pytest.raises(ValueError, match="target"):
         ionq_qis_workload(
             [{"gate": "h"}],
@@ -153,7 +151,6 @@ def test_ionq_direct_adapter_rejects_malformed_qis_payload() -> None:
 
 def test_ionq_direct_adapter_requires_route_credentials() -> None:
     """IonQ construction should fail closed without client credentials."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("ionq_cloud")
 
     with pytest.raises(ValueError, match="api_key"):
@@ -162,7 +159,6 @@ def test_ionq_direct_adapter_requires_route_credentials() -> None:
 
 def test_ionq_direct_adapter_rejects_missing_n_qubits_metadata() -> None:
     """IonQ result decoding should fail closed when job metadata is corrupted."""
-
     client = _FakeIonQClient()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     adapter = IonQCloudHALAdapter(
@@ -192,7 +188,6 @@ def test_ionq_direct_adapter_rejects_missing_n_qubits_metadata() -> None:
 
 def test_ionq_direct_adapter_normalises_provider_status_tokens() -> None:
     """IonQ status fields should map to canonical HAL status values."""
-
     from scpn_quantum_control.hardware import hal_ionq as ionq_mod
 
     assert ionq_mod._normalise_status("CANCELED") == "cancelled"
@@ -208,27 +203,23 @@ def test_ionq_direct_adapter_normalises_provider_status_tokens() -> None:
 
 def test_ionq_direct_adapter_rejects_control_characters_in_provider_job_id() -> None:
     """IonQ job creation response ids must pass strict provider-id validation."""
-
     with pytest.raises(ValueError, match="provider job id"):
         ionq_mod._provider_job_id_from_response({"id": "job-\n42"})
 
 
 def test_ionq_provider_job_id_rejects_control_characters() -> None:
     """IonQ provider identifiers must reject control-character payloads."""
-
     with pytest.raises(ValueError, match="provider job id"):
         ionq_mod._provider_job_id_from_response({"id": "ionq-provider-\n2"})
 
 
 def test_ionq_direct_adapter_trims_provider_job_id_padding() -> None:
     """IonQ provider ids should be trimmed to canonical form."""
-
     assert ionq_mod._provider_job_id_from_response({"id": "  ionq-job-42  "}) == "ionq-job-42"
 
 
 def test_ionq_direct_adapter_rejects_non_positive_expected_shots() -> None:
     """IonQ result decoding must fail closed without a positive expected shot count."""
-
     client = _FakeIonQClient()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     adapter = IonQCloudHALAdapter(
@@ -255,7 +246,6 @@ def test_ionq_direct_adapter_rejects_non_positive_expected_shots() -> None:
 
 def test_ionq_direct_adapter_rejects_shot_mismatch() -> None:
     """IonQ result decoding must fail closed when counts overshoot expected shots."""
-
     client = _FakeIonQShotMismatchClient()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -278,12 +268,14 @@ def test_ionq_direct_adapter_rejects_shot_mismatch() -> None:
 
 
 def test_ionq_backend_rejects_control_characters() -> None:
+    """An IonQ backend name with control characters is refused."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("ionq_cloud")
     with pytest.raises(ValueError, match="IonQ backend"):
         IonQCloudHALAdapter(profile, api_key="test-key", backend="qpu.\naria-1")
 
 
 def test_ionq_backend_trims_padding() -> None:
+    """An IonQ backend name is trimmed of padding."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("ionq_cloud")
     adapter = IonQCloudHALAdapter(profile, api_key="test-key", backend="  simulator  ")
     assert adapter._backend == "simulator"

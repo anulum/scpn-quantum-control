@@ -27,20 +27,24 @@ _HELPERS = {"KURAMOTO_CAPABILITIES", "capabilities", "describe"}
 
 
 def test_facade_reexports_exactly_the_accel_toolkit() -> None:
+    """The facade re-exports exactly the accelerated toolkit."""
     reexported = set(kuramoto.__all__) - _HELPERS
     assert reexported == set(accel.__all__)
 
 
 def test_every_reexported_name_is_the_same_object() -> None:
+    """Every re-exported name is the toolkit's own object."""
     for name in accel.__all__:
         assert getattr(kuramoto, name) is getattr(accel, name)
 
 
 def test_facade_all_has_no_duplicates() -> None:
+    """The facade's __all__ has no duplicates."""
     assert len(kuramoto.__all__) == len(set(kuramoto.__all__))
 
 
 def test_helpers_are_exported() -> None:
+    """The facade exports its helpers."""
     assert set(kuramoto.__all__) >= _HELPERS
 
 
@@ -48,6 +52,7 @@ def test_helpers_are_exported() -> None:
 
 
 def test_capability_map_partitions_the_toolkit() -> None:
+    """The capability groups partition the toolkit without overlap."""
     union: set[str] = set()
     for symbols in kuramoto.KURAMOTO_CAPABILITIES.values():
         group = set(symbols)
@@ -57,6 +62,7 @@ def test_capability_map_partitions_the_toolkit() -> None:
 
 
 def test_capability_groups_are_non_empty_tuples() -> None:
+    """Each capability group is a named, non-empty tuple."""
     for group, symbols in kuramoto.KURAMOTO_CAPABILITIES.items():
         assert isinstance(group, str)
         assert isinstance(symbols, tuple)
@@ -64,6 +70,7 @@ def test_capability_groups_are_non_empty_tuples() -> None:
 
 
 def test_capabilities_returns_the_immutable_map() -> None:
+    """The capability map is returned unchanged and cannot be modified."""
     mapping = kuramoto.capabilities()
     assert mapping is kuramoto.KURAMOTO_CAPABILITIES
     with pytest.raises(TypeError):
@@ -71,6 +78,7 @@ def test_capabilities_returns_the_immutable_map() -> None:
 
 
 def test_expected_groups_are_present() -> None:
+    """The expected capability groups are present."""
     assert set(kuramoto.KURAMOTO_CAPABILITIES) == {
         "forces",
         "integrators",
@@ -89,17 +97,20 @@ def test_expected_groups_are_present() -> None:
 
 
 def test_describe_overview_lists_every_group_with_counts() -> None:
+    """The overview lists every group with its symbol count."""
     overview = kuramoto.describe()
     for group, symbols in kuramoto.KURAMOTO_CAPABILITIES.items():
         assert f"{group}: {len(symbols)} symbols" in overview
 
 
 def test_describe_group_lists_its_symbols() -> None:
+    """Describing a group lists its symbols."""
     listing = kuramoto.describe("diagnostics").splitlines()
     assert set(listing) == set(kuramoto.KURAMOTO_CAPABILITIES["diagnostics"])
 
 
 def test_describe_rejects_unknown_group() -> None:
+    """An unknown group is refused."""
     with pytest.raises(ValueError, match="unknown capability group"):
         kuramoto.describe("nonexistent")
 
@@ -108,6 +119,7 @@ def test_describe_rejects_unknown_group() -> None:
 
 
 def test_representative_symbols_import_and_are_callable() -> None:
+    """Representative symbols import and are callable."""
     from oscillatools import (
         chimera_index,
         kuramoto_dopri_trajectory,

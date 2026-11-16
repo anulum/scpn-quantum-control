@@ -45,6 +45,7 @@ from scpn_quantum_control.open_system_mcwf_product import (
 
 
 def test_list_and_filters() -> None:
+    """The product lists the trajectory, ensemble and density surfaces."""
     ids = list_open_system_surface_ids()
     assert "mcwf_ensemble" in ids
     assert "mcwf_trajectory" in ids
@@ -63,6 +64,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Known surfaces carry their boundary; unknown ones fail closed."""
     row = get_open_system_surface("mcwf_ensemble")
     assert row.claim_boundary == OPEN_SYSTEM_MCWF_CLAIM_BOUNDARY
     assert row.hardware_submit_allowed is False
@@ -79,6 +81,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_open_system_path() -> None:
+    """A simulation path is allowed and a hardware path is blocked."""
     ok = decide_open_system_path("mcwf_ensemble")
     assert ok.allowed is True
     hw = decide_open_system_path("mcwf_ensemble", invent_green_hardware_noise=True)
@@ -95,6 +98,7 @@ def test_decide_open_system_path() -> None:
 
 
 def test_mcwf_ensemble_probe_real_ambient() -> None:
+    """The ensemble probe runs real trajectories and time steps."""
     probe = materialise_demo_mcwf_ensemble_probe()
     assert probe.surface_id == "mcwf_ensemble"
     assert probe.n_trajectories >= 1
@@ -114,6 +118,7 @@ def test_mcwf_ensemble_probe_real_ambient() -> None:
 
 
 def test_mcwf_probe_refuses_invent_green() -> None:
+    """Hardware, adjoint and invented-success requests are refused."""
     with pytest.raises(ValueError, match="hardware"):
         materialise_mcwf_ensemble_probe("mcwf_ensemble", invent_green_hardware_noise=True)
     with pytest.raises(ValueError, match="adjoint"):
@@ -123,6 +128,7 @@ def test_mcwf_probe_refuses_invent_green() -> None:
 
 
 def test_reproducibility_probe() -> None:
+    """The reproducibility probe passes with identical results for the same seed."""
     probe = materialise_reproducibility_probe()
     assert probe.surface_id == "mcwf_ensemble"
     assert probe.certificate["passed"] is True
@@ -135,6 +141,7 @@ def test_reproducibility_probe() -> None:
 
 
 def test_noise_model_io() -> None:
+    """The exported noise model is simulation-only and claims no hardware fidelity."""
     exported = export_sim_noise_model(gamma_amp=0.1, gamma_deph=0.05, label="demo")
     assert exported["schema"] == NOISE_MODEL_SCHEMA_ID
     assert exported["hardware_noise_fidelity_claim"] is False
@@ -171,6 +178,7 @@ def test_noise_model_io() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """The public surfaces and registry list the product's modules."""
     surfaces = map_open_system_mcwf_public_surfaces()
     paths = {row["module_path"] for row in surfaces}
     assert "scpn_quantum_control.open_system_mcwf_product" in paths
@@ -191,6 +199,7 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """The integrity check refuses drift and policy violations."""
     registry = build_open_system_mcwf_product_registry()
     surfaces = cast(list[dict[str, object]], registry["surfaces"])
 
@@ -261,6 +270,7 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_dataclass_invariants() -> None:
+    """The record types refuse invalid fields."""
     with pytest.raises(ValueError, match="surface_id"):
         OpenSystemSurfaceRow(
             surface_id="",
@@ -684,6 +694,7 @@ def test_dataclass_invariants() -> None:
 
 
 def test_subprocess_and_integrity_edges(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Invalid trajectory counts and other edge inputs are refused."""
     with pytest.raises(ValueError, match="n_trajectories"):
         materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=0)
     with pytest.raises(ValueError, match="n_trajectories"):
@@ -998,6 +1009,7 @@ def test_integrity_rejects_boundary_set_drift() -> None:
 
 
 def test_module_exports_stable() -> None:
+    """The module's exports are stable."""
     assert "assert_open_system_mcwf_product_integrity" in mcwf_product.__all__
     assert "materialise_demo_mcwf_ensemble_probe" in mcwf_product.__all__
     assert OPEN_SYSTEM_MCWF_PRODUCT_SCHEMA == "open_system_mcwf_product.v1"

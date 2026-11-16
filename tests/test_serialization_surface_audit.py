@@ -32,6 +32,7 @@ scan_text = _MODULE.scan_text
 
 
 def test_serialization_audit_flags_qpy_load() -> None:
+    """A raw QPY load is flagged."""
     findings = scan_text(
         Path("scripts/load_qpy.py"),
         "from qiskit import qpy\nqpy.load(handle)\n",
@@ -41,6 +42,7 @@ def test_serialization_audit_flags_qpy_load() -> None:
 
 
 def test_serialization_audit_allows_reviewed_qpy_wrapper_only() -> None:
+    """Only the reviewed QPY wrapper is allowed."""
     reviewed_findings = scan_text(
         Path("src/scpn_quantum_control/hardware/hal_qiskit.py"),
         "from qiskit import qpy\n"
@@ -57,6 +59,7 @@ def test_serialization_audit_allows_reviewed_qpy_wrapper_only() -> None:
 
 
 def test_serialization_audit_flags_pickle_loads() -> None:
+    """pickle.loads is flagged."""
     findings = scan_text(
         Path("src/example.py"),
         "import pickle as p\np.loads(payload)\n",
@@ -66,6 +69,7 @@ def test_serialization_audit_flags_pickle_loads() -> None:
 
 
 def test_serialization_audit_flags_np_load_allow_pickle_true() -> None:
+    """A NumPy load that allows pickles is flagged."""
     findings = scan_text(
         Path("scripts/example.py"),
         "import numpy as np\nnp.load(path, allow_pickle=True)\n",
@@ -76,6 +80,7 @@ def test_serialization_audit_flags_np_load_allow_pickle_true() -> None:
 
 
 def test_serialization_audit_allows_default_np_load_and_json() -> None:
+    """Default NumPy loads and JSON are allowed."""
     findings = scan_text(
         Path("scripts/example.py"),
         "import json\nimport numpy as np\njson.load(handle)\nnp.load(path)\n",
@@ -85,6 +90,7 @@ def test_serialization_audit_allows_default_np_load_and_json() -> None:
 
 
 def test_serialization_audit_candidate_files_scans_default_roots(tmp_path: Path) -> None:
+    """The default roots are scanned and documentation is not."""
     (tmp_path / "src").mkdir()
     (tmp_path / "docs").mkdir()
     (tmp_path / "src" / "module.py").write_text("print('ok')\n", encoding="utf-8")
@@ -97,6 +103,7 @@ def test_serialization_audit_candidate_files_scans_default_roots(tmp_path: Path)
 
 
 def test_serialization_audit_json_output_is_deterministic() -> None:
+    """The JSON output is ordered and has fixed keys."""
     findings = scan_text(Path("scripts/example.py"), "import joblib\njoblib.load(path)\n")
 
     decoded = json.loads(findings_to_json(findings))
@@ -108,6 +115,7 @@ def test_serialization_audit_json_output_is_deterministic() -> None:
 def test_serialization_audit_cli_returns_nonzero_on_findings(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails on findings and names them."""
     fixture = tmp_path / "unsafe.py"
     fixture.write_text("import marshal\nmarshal.loads(payload)\n", encoding="utf-8")
 
@@ -118,6 +126,7 @@ def test_serialization_audit_cli_returns_nonzero_on_findings(
 def test_serialization_audit_cli_returns_zero_on_safe_file(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command passes on a safe file."""
     fixture = tmp_path / "safe.py"
     fixture.write_text("import json\njson.load(handle)\n", encoding="utf-8")
 
@@ -126,6 +135,7 @@ def test_serialization_audit_cli_returns_zero_on_safe_file(
 
 
 def test_serialization_audit_flags_weights_only_false() -> None:
+    """A torch load without weights_only is flagged."""
     findings = scan_text(
         Path("scripts/replay.py"),
         "import torch\ntorch.load(path, weights_only=False)\n",
@@ -136,6 +146,7 @@ def test_serialization_audit_flags_weights_only_false() -> None:
 
 
 def test_serialization_audit_allows_digest_gated_torch_load_wrapper_only() -> None:
+    """Only the digest-gated torch load wrapper is allowed."""
     gated_findings = scan_text(
         Path("src/scpn_quantum_control/phase/torch_aot_autograd_export.py"),
         "def _torch_load_graph(torch_module, path, *, expected_sha256):\n"
@@ -152,6 +163,7 @@ def test_serialization_audit_allows_digest_gated_torch_load_wrapper_only() -> No
 
 
 def test_serialization_audit_allows_weights_only_true_and_absent() -> None:
+    """A weights-only or absent torch load is allowed."""
     findings = scan_text(
         Path("scripts/replay.py"),
         "import torch\ntorch.load(path, weights_only=True)\njson.load(handle)\n",

@@ -17,22 +17,28 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
 
 
 class TestScanH1Persistence:
+    """Scanning the first persistence probability across couplings."""
+
     def test_returns_result(self) -> None:
+        """The scan returns a result record."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=8)
         assert isinstance(result, H1PersistenceResult)
 
     def test_k_critical_positive(self) -> None:
+        """The critical coupling is positive."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=8)
         assert result.k_critical > 0
 
     def test_p_h1_bounded(self) -> None:
+        """The persistence probability at the critical coupling lies in [0, 1]."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=8)
         assert 0 <= result.p_h1_at_critical <= 1.0
 
     def test_arrays_length(self) -> None:
+        """Every series has one value per coupling."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=10)
         assert len(result.k_values) == 10
@@ -40,6 +46,7 @@ class TestScanH1Persistence:
         assert len(result.derivative) == 10
 
     def test_deviation_non_negative(self) -> None:
+        """The deviation from the target is non-negative."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=8)
         assert result.deviation_from_target >= 0
@@ -55,12 +62,14 @@ class TestScanH1Persistence:
         assert isinstance(result.p_h1_at_critical, float)
 
     def test_3osc_scan(self) -> None:
+        """The scan runs on three oscillators."""
         omega = OMEGA_N_16[:3]
         result = scan_h1_persistence(omega, n_points=6)
         assert isinstance(result, H1PersistenceResult)
         assert result.k_critical > 0
 
     def test_k_values_sorted(self) -> None:
+        """Couplings are strictly increasing."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=10)
         import numpy as np
@@ -68,12 +77,14 @@ class TestScanH1Persistence:
         assert np.all(np.diff(result.k_values) > 0)
 
     def test_vortex_densities_bounded(self) -> None:
+        """Vortex densities lie in [0, 1]."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=8)
         for v in result.vortex_densities:
             assert 0.0 <= v <= 1.0 + 1e-10
 
     def test_derivative_length(self) -> None:
+        """The derivative has one value per coupling."""
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=12)
         assert len(result.derivative) == 12
@@ -85,8 +96,11 @@ class TestScanH1Persistence:
 
 
 class TestH1Pipeline:
+    """The frequency-to-persistence pipeline."""
+
     def test_pipeline_knm_to_h1(self) -> None:
         """Full pipeline: OMEGA → H1 persistence scan → K_critical.
+
         Verifies H1 persistence is wired and produces topological data.
         """
         import time

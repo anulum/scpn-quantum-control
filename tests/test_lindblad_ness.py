@@ -33,7 +33,10 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestComputeNESS:
+    """The non-equilibrium steady state of a small system."""
+
     def test_returns_result(self) -> None:
+        """The computation returns a result record."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -50,6 +53,7 @@ class TestComputeNESS:
         assert result.purity <= 1.0 + 0.01
 
     def test_R_bounded(self) -> None:
+        """The steady and ideal order parameters lie in [0, 1]."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -67,6 +71,7 @@ class TestComputeNESS:
         assert result.purity > 0.5
 
     def test_3qubit(self) -> None:
+        """The computation runs on three qubits."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -94,7 +99,10 @@ class TestComputeNESS:
 
 
 class TestNESSVsCoupling:
+    """Scanning the steady state across couplings."""
+
     def test_returns_scan(self) -> None:
+        """The scan returns one entry per coupling."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -103,6 +111,7 @@ class TestNESSVsCoupling:
         assert len(result.k_values) == 2
 
     def test_noise_resilience_in_range(self) -> None:
+        """The noise-resilience coupling lies in the scanned range."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -111,6 +120,7 @@ class TestNESSVsCoupling:
         assert result.noise_resilience in k_range
 
     def test_all_values_finite(self) -> None:
+        """Every scanned value is finite."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -120,6 +130,7 @@ class TestNESSVsCoupling:
         assert np.all(np.isfinite(result.purity))
 
     def test_scan_propagates_dense_budget_gate(self) -> None:
+        """The scan refuses a superoperator above the dense budget."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -139,6 +150,8 @@ class TestNESSVsCoupling:
 
 
 class TestNESSPhysicalInvariants:
+    """Physical invariants of the steady state."""
+
     def test_zero_gamma_matches_ideal(self) -> None:
         """gamma=0 → NESS = ground state → R_ness ≈ R_ideal."""
         n = 2
@@ -157,6 +170,7 @@ class TestNESSPhysicalInvariants:
         assert r_weak.purity >= r_strong.purity - 0.1
 
     def test_R_ness_finite_for_all_gammas(self) -> None:
+        """The steady order parameter is finite for every damping rate."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -171,6 +185,8 @@ class TestNESSPhysicalInvariants:
 
 
 class TestNESSPipeline:
+    """The coupling-to-steady-state pipeline."""
+
     def test_knm_to_ness_pipeline(self) -> None:
         """Full pipeline: build_knm_paper27 → Lindblad → NESS → R and purity."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27

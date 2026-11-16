@@ -26,6 +26,7 @@ from scpn_quantum_control.execution_surface import (
 
 
 def test_every_bench_harness_has_explicit_execution_policy() -> None:
+    """Every benchmark harness is a trusted offline executable without network."""
     for harness in bench_cli.HARNESS_REGISTRY:
         assert harness.policy.classification == "trusted_offline_executable"
         assert harness.policy.network_allowed is False
@@ -37,6 +38,7 @@ def test_every_bench_harness_has_explicit_execution_policy() -> None:
 
 
 def test_bench_harness_policy_rejects_missing_or_out_of_tree_script() -> None:
+    """A missing or out-of-tree script is refused."""
     missing = bench_cli.Harness("missing", "scripts/does_not_exist.py", frozenset({"unit"}))
     with pytest.raises(FileNotFoundError, match="does_not_exist"):
         bench_cli._validate_harness_policy(missing)
@@ -47,6 +49,7 @@ def test_bench_harness_policy_rejects_missing_or_out_of_tree_script() -> None:
 
 
 def test_bench_harness_policy_rejects_untrusted_execution() -> None:
+    """An untrusted execution is refused."""
     policy = bench_cli.ExecutionSurfacePolicy(
         classification="untrusted_user",
         network_allowed=False,
@@ -68,6 +71,7 @@ def test_bench_harness_policy_rejects_untrusted_execution() -> None:
 
 
 def test_notebook_scanner_reports_known_ibm_submission_surface() -> None:
+    """The scanner reports a notebook's credential read and hardware submission."""
     findings = scan_execution_surface_path(Path("notebooks/39_ibm_hardware_v2.ipynb"))
     rules = {finding.rule for finding in findings}
 
@@ -76,6 +80,7 @@ def test_notebook_scanner_reports_known_ibm_submission_surface() -> None:
 
 
 def test_notebook_scanner_reports_colab_shell_install_surface() -> None:
+    """The scanner reports shell magics."""
     findings = scan_execution_surface_path(
         Path("notebooks/colab/kaggle_protein_folding_kuramoto.ipynb")
     )
@@ -84,6 +89,7 @@ def test_notebook_scanner_reports_colab_shell_install_surface() -> None:
 
 
 def test_notebook_scanner_reports_kaggle_public_push_surface() -> None:
+    """The scanner reports a public Kaggle push."""
     findings = scan_execution_surface_path(Path("notebooks/kaggle_push/push_all.sh"))
 
     assert any(finding.rule == "external_publication" for finding in findings)
@@ -91,6 +97,7 @@ def test_notebook_scanner_reports_kaggle_public_push_surface() -> None:
 
 
 def test_execution_surface_finding_is_stable_machine_readable_record() -> None:
+    """A finding converts to a stable machine-readable record."""
     finding = ExecutionSurfaceFinding(
         path="notebooks/example.ipynb",
         rule="network_access",
@@ -107,12 +114,14 @@ def test_execution_surface_finding_is_stable_machine_readable_record() -> None:
 
 
 def test_default_execution_surface_manifest_accepts_classified_surfaces() -> None:
+    """The default manifest accepts every classified surface."""
     violations = evaluate_execution_surface_manifest(Path.cwd())
 
     assert violations == ()
 
 
 def test_execution_surface_manifest_uses_declared_classifications() -> None:
+    """Manifest entries use only declared classifications."""
     entries = load_execution_surface_manifest()
 
     assert {entry.path for entry in entries} >= {
@@ -125,6 +134,7 @@ def test_execution_surface_manifest_uses_declared_classifications() -> None:
 
 
 def test_execution_surface_manifest_covers_high_risk_inventory() -> None:
+    """The manifest covers the high-risk notebooks and scripts."""
     paths = {
         path.relative_to(Path.cwd()).as_posix()
         for path in iter_execution_surface_paths(Path.cwd())
@@ -136,6 +146,7 @@ def test_execution_surface_manifest_covers_high_risk_inventory() -> None:
 
 
 def test_execution_surface_manifest_blocks_unapproved_findings(tmp_path: Path) -> None:
+    """An unapproved finding is a violation."""
     notebook = tmp_path / "network.ipynb"
     notebook.write_text(
         """
@@ -168,6 +179,7 @@ ci_blocking = true
 
 
 def test_execution_surface_manifest_rejects_paths_outside_repo(tmp_path: Path) -> None:
+    """A path outside the repository is a violation."""
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         """

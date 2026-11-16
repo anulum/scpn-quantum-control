@@ -24,33 +24,42 @@ from scpn_quantum_control.hardware.qiskit_compat import (
 
 
 class TestQiskitCompat:
+    """Compatibility helpers against the installed Qiskit."""
+
     def test_version_string(self) -> None:
+        """The version is a dotted string."""
         v = qiskit_version()
         assert isinstance(v, str)
         assert "." in v
 
     def test_major_is_int(self) -> None:
+        """The major version is a positive integer."""
         m = qiskit_major()
         assert isinstance(m, int)
         assert m >= 1
 
     def test_pauli_evolution_gate(self) -> None:
+        """The Pauli evolution gate resolves."""
         PEG = get_pauli_evolution_gate()
         assert PEG is not None
 
     def test_lie_trotter(self) -> None:
+        """The Lie-Trotter product formula resolves."""
         LT = get_lie_trotter()
         assert LT is not None
 
     def test_statevector(self) -> None:
+        """The statevector class resolves."""
         SV = get_statevector()
         assert SV is not None
 
     def test_sparse_pauli_op(self) -> None:
+        """The sparse Pauli operator resolves."""
         SPO = get_sparse_pauli_op()
         assert SPO is not None
 
     def test_check_compatibility(self) -> None:
+        """The compatibility check reports the version and a boolean verdict."""
         result = check_qiskit_compatibility()
         assert "version" in result
         assert "compatible" in result
@@ -58,6 +67,7 @@ class TestQiskitCompat:
 
 
 def test_qiskit_version_string() -> None:
+    """The compatibility report names the Qiskit version."""
     result = check_qiskit_compatibility()
     assert isinstance(result["version"], str)
     assert len(result["version"]) > 0
@@ -72,12 +82,14 @@ def test_all_imports_succeed() -> None:
 
 
 def test_statevector_class_callable() -> None:
+    """The statevector class builds a two-qubit state."""
     SV = get_statevector()
     sv = SV.from_label("00")
     assert len(sv) == 4
 
 
 def test_sparse_pauli_op_constructable() -> None:
+    """The sparse Pauli operator builds a two-qubit operator."""
     SPO = get_sparse_pauli_op()
     op = SPO.from_list([("ZZ", 1.0)])
     assert op.num_qubits == 2
@@ -87,6 +99,8 @@ def test_sparse_pauli_op_constructable() -> None:
 
 
 class TestQiskit2xMocked:
+    """Compatibility helpers against a mocked Qiskit 2.x."""
+
     def test_v2_compatibility_check(self) -> None:
         """Mock Qiskit 2.x to cover the v2 warning branch."""
         from unittest.mock import patch

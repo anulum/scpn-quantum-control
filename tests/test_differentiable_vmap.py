@@ -45,13 +45,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed vmap result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_vmap_vectorizes_single_argument_scalar_objective() -> None:
     """Canonical vmap should map scalar objectives over a selected input axis."""
-
     batched = vmap(lambda row: row[0] ** 2 + 3.0 * row[1])
     values = np.array([[2.0, -1.0], [0.5, 4.0], [-2.0, 3.0]], dtype=np.float64)
 
@@ -60,14 +58,13 @@ def test_vmap_vectorizes_single_argument_scalar_objective() -> None:
 
 def test_vmap_facade_delegates_to_extracted_module() -> None:
     """The differentiable facade should expose the module-owned vmap transform."""
-
     assert vmap is module_vmap
     assert vars(differentiable)["vmap"] is module_vmap
     assert _normalise_vmap_in_axes((0, None), 2) == (0, None)
 
 
 def test_vmap_supports_broadcast_arguments_out_axes_and_nested_outputs() -> None:
-    """vmap should preserve nested output structure and broadcast static inputs."""
+    """The vmap transform should preserve nested output structure and broadcast static inputs."""
 
     def affine(row: FloatArray, weights: FloatArray, bias: float) -> dict[str, object]:
         projection = row * weights + bias
@@ -90,7 +87,6 @@ def test_vmap_supports_broadcast_arguments_out_axes_and_nested_outputs() -> None
 
 def test_vmap_dispatches_registered_primitive_batching_rule() -> None:
     """Primitive identities should route vmap through registered batching rules."""
-
     identity = PrimitiveIdentity("scpn.test.vmap", "batch")
     registry = CustomDerivativeRegistry()
 
@@ -132,8 +128,7 @@ def test_vmap_dispatches_registered_primitive_batching_rule() -> None:
 
 
 def test_vmap_preserves_whole_program_trace_values() -> None:
-    """vmap should slice and stack facade-owned whole-program trace arrays lazily."""
-
+    """The vmap transform should slice and stack facade-owned whole-program trace arrays lazily."""
     context = _WholeProgramTraceContext(2, scalar_factory=differentiable.TraceADScalar)
     first = context.make("parameter", ("x0",), 2.0, np.array([1.0, 0.0], dtype=np.float64))
     second = context.make("parameter", ("x1",), 3.0, np.array([0.0, 1.0], dtype=np.float64))
@@ -154,8 +149,7 @@ def test_vmap_preserves_whole_program_trace_values() -> None:
 
 
 def test_vmap_composes_with_grad_transform() -> None:
-    """vmap should compose with canonical gradient transforms over batches."""
-
+    """The vmap transform should compose with canonical gradient transforms over batches."""
     batched_grad = vmap(
         lambda row: grad(
             lambda values: values[0] ** 2 + np.sin(values[1]), row, method="finite_difference"
@@ -172,8 +166,7 @@ def test_vmap_composes_with_grad_transform() -> None:
 
 
 def test_vmap_rejects_invalid_axes_and_ragged_outputs() -> None:
-    """vmap should fail closed on ambiguous vectorization contracts."""
-
+    """The vmap transform should fail closed on ambiguous vectorization contracts."""
     with pytest.raises(ValueError, match="must be callable"):
         vmap(cast(Any, 1.0))
     with pytest.raises(ValueError, match="out_axes must be an integer"):
@@ -261,7 +254,6 @@ def test_vmap_rejects_invalid_axes_and_ragged_outputs() -> None:
 
 def test_vmap_is_exported_from_package_root() -> None:
     """The vectorization transform should be stable as a root-level API."""
-
     import scpn_quantum_control as scpn
 
     assert scpn.vmap is vmap

@@ -67,6 +67,7 @@ class _Backend:
 
 
 def test_select_layout_returns_lowest_scoring_connected_window() -> None:
+    """Layout selection returns the lowest-scoring connected window."""
     module = _load_module()
 
     layout = module.select_layout(_Backend())
@@ -77,6 +78,7 @@ def test_select_layout_returns_lowest_scoring_connected_window() -> None:
 
 
 def test_build_circuits_matches_promoted_readiness_scope() -> None:
+    """The circuit build matches the promoted readiness scope."""
     module = _load_module()
     layout = module.select_layout(_Backend())
 
@@ -93,6 +95,7 @@ def test_build_circuits_matches_promoted_readiness_scope() -> None:
 
 
 def test_parse_physical_qubits_requires_four_distinct_indices() -> None:
+    """Four distinct qubit indices are accepted in order."""
     module = _load_module()
 
     assert module.parse_physical_qubits("21,22,23,24") == (21, 22, 23, 24)
@@ -107,6 +110,7 @@ def test_parse_physical_qubits_requires_four_distinct_indices() -> None:
 
 
 def test_select_pinned_layout_preserves_requested_qubits() -> None:
+    """A pinned layout keeps the requested qubits."""
     module = _load_module()
 
     layout = module.select_pinned_layout(_Backend(), (2, 3, 4, 5))
@@ -116,6 +120,7 @@ def test_select_pinned_layout_preserves_requested_qubits() -> None:
 
 
 def test_pending_job_roles_preserve_main_and_readout_ids() -> None:
+    """Pending job roles keep the main and readout job IDs."""
     module = _load_module()
 
     assert module._pending_job_roles("job-main", "job-readout") == {
@@ -125,6 +130,7 @@ def test_pending_job_roles_preserve_main_and_readout_ids() -> None:
 
 
 def test_async_hydrator_elapsed_seconds_from_runtime_timestamps() -> None:
+    """Elapsed time comes from the runtime timestamps and is None when they are invalid."""
     module = _load_hydrator_module()
 
     assert (
@@ -142,6 +148,7 @@ def test_async_hydrator_elapsed_seconds_from_runtime_timestamps() -> None:
 
 
 def test_async_hydrator_rows_attach_counts_and_metadata_defaults() -> None:
+    """Hydrated rows attach counts and default metadata."""
     module = _load_hydrator_module()
 
     class _Pub:
@@ -172,6 +179,7 @@ def test_async_hydrator_rows_attach_counts_and_metadata_defaults() -> None:
 
 
 def test_build_circuits_can_emit_full_readout_calibration() -> None:
+    """The build can emit a full readout calibration."""
     module = _load_module()
     layout = module.select_layout(_Backend())
 
@@ -199,6 +207,7 @@ def test_build_circuits_can_emit_full_readout_calibration() -> None:
 
 
 def test_zne_subset_selects_dla_transverse_edges_and_one_fim_control() -> None:
+    """The extrapolation subset selects the transverse edges and one control."""
     module = _load_module()
     rows = [
         {
@@ -287,6 +296,7 @@ def test_zne_subset_selects_dla_transverse_edges_and_one_fim_control() -> None:
 
 
 def test_build_zne_subset_circuits_adds_odd_scale_metadata() -> None:
+    """Extrapolation circuits carry their odd noise scales."""
     module = _load_module()
     layout = module.select_layout(_Backend())
     selected_rows = [
@@ -315,6 +325,7 @@ def test_build_zne_subset_circuits_adds_odd_scale_metadata() -> None:
 
 
 def test_apply_measurement_basis_adds_expected_rotations() -> None:
+    """The measurement basis adds the expected rotations."""
     module = _load_module()
     circuit = QuantumCircuit(4)
 
@@ -327,6 +338,7 @@ def test_apply_measurement_basis_adds_expected_rotations() -> None:
 
 
 def test_readiness_rejects_basis_depth_expansion() -> None:
+    """Readiness refuses a basis change that expands the depth."""
     module = _load_module()
     layout = module.select_layout(_Backend())
     main, _readout = module.build_circuits(layout)

@@ -46,6 +46,7 @@ def _random_graph(rng: np.random.Generator, n: int) -> KnmGraph:
 # Graph and config validation
 # --------------------------------------------------------------------------- #
 def test_validate_graph_symmetrises() -> None:
+    """Graph validation symmetrises the coupling."""
     coupling = np.array([[0.0, 1.0], [3.0, 0.0]])
     graph = validate_graph(KnmGraph(coupling=coupling, node_frequencies=np.zeros(2)))
     assert np.allclose(graph.coupling, graph.coupling.T)
@@ -64,6 +65,7 @@ def test_validate_graph_symmetrises() -> None:
 def test_validate_graph_rejects_bad_input(
     coupling: NDArray[np.float64], freqs: NDArray[np.float64]
 ) -> None:
+    """An invalid graph is refused."""
     with pytest.raises(ValueError):
         validate_graph(KnmGraph(coupling=coupling, node_frequencies=freqs))
 
@@ -78,6 +80,7 @@ def test_validate_graph_rejects_bad_input(
     ],
 )
 def test_config_rejects_bad_input(kwargs: ConfigOverrides) -> None:
+    """An invalid configuration is refused."""
     with pytest.raises(ValueError):
         QGNNConfig(**kwargs)
 
@@ -86,12 +89,14 @@ def test_config_rejects_bad_input(kwargs: ConfigOverrides) -> None:
 # Parameters and forward pass
 # --------------------------------------------------------------------------- #
 def test_parameter_count_matches_initialiser() -> None:
+    """The parameter count matches the initialiser."""
     config = QGNNConfig(hidden_dim=5, n_message_layers=2, angles_per_node=2)
     params = initialise_parameters(config, seed=0)
     assert params.shape == (parameter_count(config),)
 
 
 def test_predict_is_deterministic_and_bounded() -> None:
+    """Predictions are deterministic and lie in [-1, 1]."""
     rng = np.random.default_rng(1)
     config = QGNNConfig()
     graph = _random_graph(rng, 4)
@@ -103,6 +108,7 @@ def test_predict_is_deterministic_and_bounded() -> None:
 
 
 def test_predict_rejects_wrong_parameter_length() -> None:
+    """Parameters of the wrong length are refused."""
     config = QGNNConfig()
     graph = _random_graph(np.random.default_rng(3), 3)
     with pytest.raises(ValueError):
@@ -110,6 +116,7 @@ def test_predict_rejects_wrong_parameter_length() -> None:
 
 
 def test_single_node_graph() -> None:
+    """A single-node graph gives a bounded prediction."""
     config = QGNNConfig(hidden_dim=3, n_message_layers=1, angles_per_node=1)
     graph = KnmGraph(coupling=np.zeros((1, 1)), node_frequencies=np.array([0.5]))
     params = initialise_parameters(config, seed=4)
@@ -129,6 +136,7 @@ def test_single_node_graph() -> None:
     ],
 )
 def test_gradient_matches_finite_difference(config: QGNNConfig) -> None:
+    """The gradient agrees with finite differences."""
     rng = np.random.default_rng(5)
     graph = _random_graph(rng, 4)
     params = initialise_parameters(config, seed=6)
@@ -149,6 +157,7 @@ def test_gradient_matches_finite_difference(config: QGNNConfig) -> None:
 # Synthetic targets and training
 # --------------------------------------------------------------------------- #
 def test_synthetic_target_is_bounded_and_deterministic() -> None:
+    """The synthetic target is deterministic and lies in [-1, 1]."""
     graph = _random_graph(np.random.default_rng(7), 5)
     a = synthetic_kuramoto_target(graph)
     b = synthetic_kuramoto_target(graph)
@@ -157,6 +166,7 @@ def test_synthetic_target_is_bounded_and_deterministic() -> None:
 
 
 def test_training_reduces_loss() -> None:
+    """Training reduces the loss and records its boundary."""
     rng = np.random.default_rng(8)
     config = QGNNConfig(hidden_dim=4, n_message_layers=2, angles_per_node=2)
     graphs = tuple(_random_graph(rng, 4) for _ in range(6))
@@ -169,6 +179,7 @@ def test_training_reduces_loss() -> None:
 
 
 def test_train_rejects_bad_input() -> None:
+    """Invalid training inputs are refused."""
     config = QGNNConfig()
     graph = _random_graph(np.random.default_rng(10), 3)
     params = initialise_parameters(config, seed=11)
@@ -185,6 +196,7 @@ def test_train_rejects_bad_input() -> None:
 def test_edge_threshold_controls_entanglers() -> None:
     # Weak coupling below the threshold places no entangling edge, so the two
     # gradient circuits differ only by the rotation structure.
+    """An edge threshold still gives a bounded prediction."""
     config = QGNNConfig(edge_threshold=0.5)
     graph = KnmGraph(coupling=np.array([[0.0, 0.1], [0.1, 0.0]]), node_frequencies=np.zeros(2))
     params = initialise_parameters(config, seed=12)

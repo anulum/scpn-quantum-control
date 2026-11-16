@@ -50,6 +50,7 @@ def _central_difference_jacobian(theta, coupling, order, step=1e-6):
 
 
 def test_force_matches_closed_form() -> None:
+    """The simplex force matches its closed form."""
     rng = np.random.default_rng(0)
     theta = rng.uniform(0.0, 2.0 * np.pi, 7)
     coupling, order = 1.4, 3
@@ -59,6 +60,7 @@ def test_force_matches_closed_form() -> None:
 
 
 def test_first_order_reduces_to_classic_mean_field() -> None:
+    """At first order the force is the classical mean field."""
     rng = np.random.default_rng(1)
     theta = rng.uniform(0.0, 2.0 * np.pi, 8)
     coupling = 2.1
@@ -68,6 +70,7 @@ def test_first_order_reduces_to_classic_mean_field() -> None:
 
 
 def test_second_order_equals_triadic_force() -> None:
+    """At second order the force equals the triadic force."""
     rng = np.random.default_rng(2)
     theta = rng.uniform(0.0, 2.0 * np.pi, 9)
     coupling = 1.7
@@ -77,16 +80,19 @@ def test_second_order_equals_triadic_force() -> None:
 
 
 def test_force_rejects_non_vector_theta() -> None:
+    """Phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="one-dimensional"):
         simplex_mean_field_force(np.zeros((2, 2)), 1.0, 2)
 
 
 def test_force_rejects_non_positive_order() -> None:
+    """A non-positive order is refused."""
     with pytest.raises(ValueError, match="positive integer"):
         simplex_mean_field_force(np.zeros(3), 1.0, 0)
 
 
 def test_force_on_empty_is_empty() -> None:
+    """No oscillators give an empty force."""
     result = simplex_mean_field_force(np.empty(0), 1.0, 2)
     assert result.shape == (0,)
 
@@ -96,6 +102,7 @@ def test_force_on_empty_is_empty() -> None:
 
 @pytest.mark.parametrize("order", [1, 2, 3, 4])
 def test_jacobian_matches_central_difference(order: int) -> None:
+    """The Jacobian agrees with central differences."""
     rng = np.random.default_rng(order)
     theta = rng.uniform(0.0, 2.0 * np.pi, 6)
     coupling = 1.3
@@ -105,6 +112,7 @@ def test_jacobian_matches_central_difference(order: int) -> None:
 
 
 def test_jacobian_second_order_equals_triadic_jacobian() -> None:
+    """At second order the Jacobian equals the triadic Jacobian."""
     rng = np.random.default_rng(5)
     theta = rng.uniform(0.0, 2.0 * np.pi, 7)
     coupling = 1.9
@@ -115,6 +123,7 @@ def test_jacobian_second_order_equals_triadic_jacobian() -> None:
 
 
 def test_jacobian_rows_sum_to_zero() -> None:
+    """Each Jacobian row sums to zero."""
     rng = np.random.default_rng(6)
     theta = rng.uniform(0.0, 2.0 * np.pi, 8)
     for order in (1, 2, 3):
@@ -123,15 +132,18 @@ def test_jacobian_rows_sum_to_zero() -> None:
 
 
 def test_jacobian_rejects_non_vector_theta() -> None:
+    """Phases that are not a vector are refused."""
     with pytest.raises(ValueError, match="one-dimensional"):
         simplex_mean_field_jacobian(np.zeros((3, 3)), 1.0, 2)
 
 
 def test_jacobian_rejects_non_positive_order() -> None:
+    """A non-positive order is refused."""
     with pytest.raises(ValueError, match="positive integer"):
         simplex_mean_field_jacobian(np.zeros(3), 1.0, -2)
 
 
 def test_jacobian_on_empty_is_zero_by_zero() -> None:
+    """No oscillators give a zero-by-zero Jacobian."""
     result = simplex_mean_field_jacobian(np.empty(0), 1.0, 2)
     assert result.shape == (0, 0)
