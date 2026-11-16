@@ -34,7 +34,10 @@ def _energy(
 
 
 class TestPhaseVQEInit:
+    """Constructing the phase VQE."""
+
     def test_stores_params(self) -> None:
+        """The solver keeps its coupling and frequencies."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -42,12 +45,14 @@ class TestPhaseVQEInit:
         np.testing.assert_array_equal(vqe.omega, omega)
 
     def test_hamiltonian_built(self) -> None:
+        """The Hamiltonian is built for the system size."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega)
         assert vqe.hamiltonian.num_qubits == 2
 
     def test_ansatz_built(self) -> None:
+        """The ansatz is built with parameters."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -55,6 +60,7 @@ class TestPhaseVQEInit:
         assert vqe.n_params > 0
 
     def test_no_optimal_params_before_solve(self) -> None:
+        """Before solving there are no optimal parameters or energy."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega)
@@ -68,7 +74,10 @@ class TestPhaseVQEInit:
 
 
 class TestSolve:
+    """Solving for the ground state."""
+
     def test_returns_expected_keys(self) -> None:
+        """The solution has its documented keys."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -91,6 +100,7 @@ class TestSolve:
         assert set(result) == expected_keys
 
     def test_energy_is_finite(self) -> None:
+        """The ground and exact energies are finite."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -99,6 +109,7 @@ class TestSolve:
         assert np.isfinite(_energy(result, "exact_energy"))
 
     def test_energy_gap_nonnegative(self) -> None:
+        """The energy gap is non-negative."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -115,6 +126,7 @@ class TestSolve:
         assert _energy(result, "ground_energy") >= _energy(result, "exact_energy") - 0.5
 
     def test_seed_determinism(self) -> None:
+        """The same seed gives the same energy."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe1 = PhaseVQE(K, omega, ansatz_reps=1)
@@ -124,6 +136,7 @@ class TestSolve:
         assert _energy(r1, "ground_energy") == _energy(r2, "ground_energy")
 
     def test_parameter_shift_preserves_gradient_optimizer(self) -> None:
+        """Parameter-shift gradients keep the BFGS optimiser."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = PhaseVQE(K, omega, ansatz_reps=1).solve(
@@ -138,6 +151,7 @@ class TestSolve:
 
     @pytest.mark.parametrize("L", [2, 3, 4])
     def test_various_sizes(self, L: int) -> None:
+        """Several sizes give finite energies."""
         K = build_knm_paper27(L=L)
         omega = OMEGA_N_16[:L]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -146,7 +160,10 @@ class TestSolve:
 
 
 class TestParameterValidation:
+    """Validating optimiser parameters."""
+
     def test_rejects_wrong_parameter_width(self) -> None:
+        """Parameters of the wrong width are refused."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -155,6 +172,7 @@ class TestParameterValidation:
             vqe.parameter_shift_gradient(np.zeros(vqe.n_params + 1))
 
     def test_rejects_non_finite_parameters(self) -> None:
+        """Non-finite parameters are refused."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -171,13 +189,17 @@ class TestParameterValidation:
 
 
 class TestGroundState:
+    """The ground state after solving."""
+
     def test_none_before_solve(self) -> None:
+        """Before solving there is no ground state."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega)
         assert vqe.ground_state() is None
 
     def test_normalised_after_solve(self) -> None:
+        """After solving the ground state is normalised."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -187,6 +209,7 @@ class TestGroundState:
         np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-10)
 
     def test_correct_dimension(self) -> None:
+        """The ground state has one amplitude per basis state."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
@@ -204,7 +227,10 @@ class TestGroundState:
 
 
 class TestConvergence:
+    """Convergence with more repetitions."""
+
     def test_more_reps_lower_or_equal_energy(self) -> None:
+        """More repetitions do not raise the energy beyond the tolerance."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe_short = PhaseVQE(K, omega, ansatz_reps=1)

@@ -34,25 +34,33 @@ from oscillatools.accel import (
 
 
 class TestCriticalCoupling:
+    """The critical coupling from a frequency density."""
+
     def test_lorentzian_matches_closed_form(self) -> None:
+        """For a Lorentzian the critical coupling is twice the half-width."""
         for gamma in (0.3, 0.7, 1.5):
             general = critical_coupling(lorentzian_density(gamma))
             assert general == pytest.approx(lorentzian_critical_coupling(gamma))
             assert general == pytest.approx(2.0 * gamma)
 
     def test_gaussian_matches_closed_form(self) -> None:
+        """For a Gaussian the critical coupling is sigma times sqrt(8/pi)."""
         for sigma in (0.5, 1.0, 2.0):
             general = critical_coupling(gaussian_density(sigma))
             assert general == pytest.approx(gaussian_critical_coupling(sigma))
             assert general == pytest.approx(sigma * math.sqrt(8.0 / math.pi))
 
     def test_critical_coupling_rejects_non_positive_density(self) -> None:
+        """A density that is not positive at the centre is refused."""
         with pytest.raises(ValueError, match="density at the centre must be positive"):
             critical_coupling(lambda _omega: 0.0)
 
 
 class TestDensityFactories:
+    """The Lorentzian and Gaussian density factories."""
+
     def test_lorentzian_normalised_and_peaked(self) -> None:
+        """The Lorentzian density is normalised with the expected peak."""
         gamma = 0.6
         density = lorentzian_density(gamma)
         assert density(0.0) == pytest.approx(1.0 / (math.pi * gamma))
@@ -60,6 +68,7 @@ class TestDensityFactories:
         assert mass == pytest.approx(1.0, abs=1e-8)
 
     def test_gaussian_normalised_and_peaked(self) -> None:
+        """The Gaussian density is normalised with the expected peak."""
         sigma = 0.8
         density = gaussian_density(sigma)
         assert density(0.0) == pytest.approx(1.0 / (sigma * math.sqrt(2.0 * math.pi)))
@@ -67,6 +76,7 @@ class TestDensityFactories:
         assert mass == pytest.approx(1.0, abs=1e-8)
 
     def test_density_factories_reject_non_positive_scale(self) -> None:
+        """A non-positive scale is refused."""
         with pytest.raises(ValueError, match="half_width must be positive"):
             lorentzian_density(0.0)
         with pytest.raises(ValueError, match="std must be positive"):
@@ -74,11 +84,15 @@ class TestDensityFactories:
 
 
 class TestClosedFormCriticalCoupling:
+    """The closed-form critical couplings."""
+
     def test_lorentzian_and_gaussian_values(self) -> None:
+        """The closed forms give their known values."""
         assert lorentzian_critical_coupling(0.9) == pytest.approx(1.8)
         assert gaussian_critical_coupling(1.0) == pytest.approx(math.sqrt(8.0 / math.pi))
 
     def test_reject_non_positive_scale(self) -> None:
+        """A non-positive scale is refused."""
         with pytest.raises(ValueError, match="half_width must be positive"):
             lorentzian_critical_coupling(0.0)
         with pytest.raises(ValueError, match="std must be positive"):
@@ -86,7 +100,10 @@ class TestClosedFormCriticalCoupling:
 
 
 class TestSelfConsistentOrderParameter:
+    """The self-consistent order parameter."""
+
     def test_numerical_matches_lorentzian_closed_form(self) -> None:
+        """The numerical solution matches the Lorentzian closed form."""
         gamma = 0.5  # K_c = 1.0
         for coupling in (1.5, 2.0, 4.0, 8.0):
             numeric = synchronised_order_parameter(coupling, lorentzian_density(gamma))
@@ -95,6 +112,7 @@ class TestSelfConsistentOrderParameter:
             assert closed == pytest.approx(math.sqrt(1.0 - 2.0 * gamma / coupling))
 
     def test_incoherent_below_critical(self) -> None:
+        """At or below the critical coupling the order parameter is zero."""
         gamma = 0.5  # K_c = 1.0
         assert synchronised_order_parameter(0.9, lorentzian_density(gamma)) == 0.0
         assert synchronised_order_parameter(1.0, lorentzian_density(gamma)) == 0.0
@@ -102,6 +120,7 @@ class TestSelfConsistentOrderParameter:
         assert synchronised_order_parameter(1.0, gaussian_density(sigma)) == 0.0
 
     def test_gaussian_order_parameter_rises_with_coupling(self) -> None:
+        """For a Gaussian the order parameter rises with the coupling."""
         sigma = 0.7
         critical = gaussian_critical_coupling(sigma)
         radii = [
@@ -115,6 +134,8 @@ class TestSelfConsistentOrderParameter:
     def test_flat_density_clamps_to_full_coherence(self) -> None:
         # A constant density has no sub-unity self-consistent root above its onset, so the
         # coherence saturates at the r = 1 ceiling.
+        """A flat density clamps to full coherence."""
+
         def flat_density(_omega: float) -> float:
             return 0.5
 
@@ -122,22 +143,28 @@ class TestSelfConsistentOrderParameter:
         assert synchronised_order_parameter(coupling, flat_density) == 1.0
 
     def test_rejects_non_positive_coupling(self) -> None:
+        """A non-positive coupling is refused."""
         with pytest.raises(ValueError, match="coupling must be positive"):
             synchronised_order_parameter(0.0, lorentzian_density(0.5))
 
     def test_propagates_density_validation(self) -> None:
+        """An invalid density is refused."""
         with pytest.raises(ValueError, match="density at the centre must be positive"):
             synchronised_order_parameter(2.0, lambda _omega: 0.0)
 
 
 class TestLorentzianOrderParameter:
+    """The Lorentzian order parameter branch."""
+
     def test_branch_above_and_below_critical(self) -> None:
+        """The branch is zero up to the critical coupling and sqrt(1 - Kc/K) above it."""
         gamma = 0.5  # K_c = 1.0
         assert lorentzian_order_parameter(0.8, gamma) == 0.0
         assert lorentzian_order_parameter(1.0, gamma) == 0.0
         assert lorentzian_order_parameter(2.0, gamma) == pytest.approx(math.sqrt(0.5))
 
     def test_rejects_non_positive_inputs(self) -> None:
+        """A non-positive coupling or half-width is refused."""
         with pytest.raises(ValueError, match="coupling must be positive"):
             lorentzian_order_parameter(0.0, 0.5)
         with pytest.raises(ValueError, match="half_width must be positive"):

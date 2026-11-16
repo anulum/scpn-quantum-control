@@ -36,9 +36,12 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestPairingMap:
+    """The pairing correlation map."""
+
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense computation above the budget is refused before the Hamiltonian is built."""
         n = 10
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -54,6 +57,7 @@ class TestPairingMap:
             pairing_map(omega, T, K_base=1.0, max_dense_gib=1e-12)
 
     def test_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The dense budget reaches the bridge."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen_budgets: list[float | None] = []
@@ -71,6 +75,7 @@ class TestPairingMap:
         assert seen_budgets == [0.25]
 
     def test_returns_result(self) -> None:
+        """The map returns a result with one entry per qubit pair."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -110,6 +115,7 @@ class TestPairingMap:
                 assert abs(P[i, j] - P[j, i].conjugate()) < 1e-10
 
     def test_4qubit(self) -> None:
+        """Four qubits give a 4-by-4 map."""
         n = 4
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -119,7 +125,10 @@ class TestPairingMap:
 
 
 class TestPairingVsAnisotropy:
+    """Pairing across anisotropies."""
+
     def test_propagates_dense_budget_to_each_delta(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The dense budget reaches every anisotropy."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen: list[float | None] = []
@@ -150,6 +159,7 @@ class TestPairingVsAnisotropy:
         assert seen == [0.5, 0.5, 0.5]
 
     def test_returns_dict(self) -> None:
+        """The scan returns the anisotropies and the maximum pairing."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -159,6 +169,7 @@ class TestPairingVsAnisotropy:
         assert len(result["delta"]) == 3
 
     def test_all_values_finite(self) -> None:
+        """Every value is finite."""
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -168,6 +179,7 @@ class TestPairingVsAnisotropy:
 
 
 def test_pairing_map_2q() -> None:
+    """Two qubits give a result for two qubits."""
     T = _ring(2)
     omega = OMEGA_N_16[:2]
     result = pairing_map(omega, T, K_base=2.0)
@@ -175,6 +187,7 @@ def test_pairing_map_2q() -> None:
 
 
 def test_pairing_map_finite() -> None:
+    """The map is finite."""
     T = _ring(3)
     omega = OMEGA_N_16[:3]
     result = pairing_map(omega, T, K_base=2.0)
@@ -182,6 +195,7 @@ def test_pairing_map_finite() -> None:
 
 
 def test_pairing_vs_anisotropy_length() -> None:
+    """The anisotropy scan has one value per anisotropy."""
     T = _ring(3)
     omega = OMEGA_N_16[:3]
     deltas = np.array([0.0, 0.5, 1.0, 1.5])
@@ -191,6 +205,7 @@ def test_pairing_vs_anisotropy_length() -> None:
 
 
 def test_pairing_map_4q() -> None:
+    """Four qubits give a result for four qubits."""
     T = _ring(4)
     omega = OMEGA_N_16[:4]
     result = pairing_map(omega, T, K_base=1.5)
@@ -203,7 +218,10 @@ def test_pairing_map_4q() -> None:
 
 
 class TestPairingCorrelatorInternal:
+    """The pairing correlator for single states."""
+
     def test_product_state_low_pairing(self) -> None:
+        """A product state has little pairing."""
         from scpn_quantum_control.analysis.pairing_correlator import _pairing_correlator
 
         psi = np.array([1, 0, 0, 0], dtype=complex)  # |00⟩
@@ -211,6 +229,7 @@ class TestPairingCorrelatorInternal:
         assert abs(c) < 0.1
 
     def test_bell_state_nonzero(self) -> None:
+        """A singlet-like state has pairing."""
         from scpn_quantum_control.analysis.pairing_correlator import _pairing_correlator
 
         psi = np.array([0, 1, 1, 0], dtype=complex) / np.sqrt(2)  # |01⟩+|10⟩
@@ -219,13 +238,17 @@ class TestPairingCorrelatorInternal:
 
 
 class TestPairingVsAnisotropyDefaults:
+    """Default arguments of the anisotropy scan."""
+
     def test_default_delta_range(self) -> None:
+        """The default range has six anisotropies."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         result = pairing_vs_anisotropy(omega, T, K_base=2.0)
         assert len(result["delta"]) == 6  # default linspace 0-1, 6 pts
 
     def test_topology_correlation_bounded(self) -> None:
+        """The topology correlation lies in [-1, 1]."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = pairing_vs_anisotropy(omega, T, K_base=2.0, delta_range=np.array([0.5]))
@@ -233,7 +256,10 @@ class TestPairingVsAnisotropyDefaults:
 
 
 class TestPairingZeroCoupling:
+    """Pairing without coupling."""
+
     def test_zero_coupling_low_pairing(self) -> None:
+        """Zero coupling gives almost no pairing."""
         K_zero = np.zeros((3, 3))
         omega = OMEGA_N_16[:3]
         result = pairing_map(omega, K_zero, K_base=0.0)

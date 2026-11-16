@@ -57,9 +57,12 @@ non_positive_distance = st.sampled_from([0, -1, -3])
 
 
 class TestSurfaceCodeSpecFuzz:
+    """Fuzzing the surface-code specification."""
+
     @_GLOBAL_SETTINGS
     @given(d=odd_distance)
     def test_valid_odd_distance_constructs(self, d: int) -> None:
+        """Every odd distance from three builds a specification."""
         spec = SurfaceCodeSpec.from_distance(d)
         assert spec.distance == d
         assert spec.n_data == d * d
@@ -69,12 +72,14 @@ class TestSurfaceCodeSpecFuzz:
     @_GLOBAL_SETTINGS
     @given(d=even_distance)
     def test_rejects_even_distance(self, d: int) -> None:
+        """An even distance is refused."""
         with pytest.raises(ValueError, match="odd"):
             SurfaceCodeSpec.from_distance(d)
 
     @_GLOBAL_SETTINGS
     @given(d=st.sampled_from([-5, -3, -1, 0, 1]))
     def test_rejects_distance_below_three(self, d: int) -> None:
+        """A distance below three is refused."""
         with pytest.raises(ValueError, match=r">= 3"):
             SurfaceCodeSpec.from_distance(d)
 
@@ -85,9 +90,12 @@ class TestSurfaceCodeSpecFuzz:
 
 
 class TestRepetitionCodeUPDEFuzz:
+    """Fuzzing the repetition-code encoding."""
+
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=odd_rep_distance)
     def test_valid_inputs_construct(self, n_osc: int, d: int) -> None:
+        """Valid inputs build an encoding with their sizes."""
         rep = RepetitionCodeUPDE(n_osc=n_osc, code_distance=d)
         assert rep.n_osc == n_osc
         assert rep.d == d
@@ -100,32 +108,38 @@ class TestRepetitionCodeUPDEFuzz:
     @_GLOBAL_SETTINGS
     @given(n_osc=tiny_n_osc)
     def test_rejects_n_osc_below_two(self, n_osc: int) -> None:
+        """Fewer than two oscillators are refused."""
         with pytest.raises(ValueError, match=r">= 2 oscillators"):
             RepetitionCodeUPDE(n_osc=n_osc, code_distance=3)
 
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=even_distance)
     def test_rejects_even_code_distance(self, n_osc: int, d: int) -> None:
+        """An even code distance is refused."""
         with pytest.raises(ValueError, match="odd positive"):
             RepetitionCodeUPDE(n_osc=n_osc, code_distance=d)
 
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=non_positive_distance)
     def test_rejects_non_positive_code_distance(self, n_osc: int, d: int) -> None:
+        """A non-positive code distance is refused."""
         with pytest.raises(ValueError, match="odd positive"):
             RepetitionCodeUPDE(n_osc=n_osc, code_distance=d)
 
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=odd_rep_distance)
     def test_physical_qubit_count_invariant(self, n_osc: int, d: int) -> None:
-        """total_qubits must equal n_osc * (2d - 1) for all valid inputs —
-        a regression guard against the qubit-layout code."""
+        """The total qubit count is n_osc * (2d - 1) for every valid input.
+
+        This guards the qubit-layout code against regressions.
+        """
         rep = RepetitionCodeUPDE(n_osc=n_osc, code_distance=d)
         assert rep.total_qubits == n_osc * (2 * d - 1)
 
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=odd_rep_distance)
     def test_data_and_ancilla_ranges_dont_overlap(self, n_osc: int, d: int) -> None:
+        """Data and ancilla qubits do not overlap."""
         rep = RepetitionCodeUPDE(n_osc=n_osc, code_distance=d)
         for osc in range(n_osc):
             data = set(rep._osc_data_range(osc))
@@ -141,9 +155,12 @@ class TestRepetitionCodeUPDEFuzz:
 
 
 class TestSurfaceCodeUPDEFuzz:
+    """Fuzzing the surface-code encoding."""
+
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=odd_distance)
     def test_valid_inputs_construct(self, n_osc: int, d: int) -> None:
+        """Valid inputs build an encoding with 2d^2 - 1 qubits per oscillator."""
         upde = SurfaceCodeUPDE(n_osc=n_osc, code_distance=d)
         assert upde.n_osc == n_osc
         assert upde.spec.distance == d
@@ -152,12 +169,14 @@ class TestSurfaceCodeUPDEFuzz:
     @_GLOBAL_SETTINGS
     @given(n_osc=tiny_n_osc)
     def test_rejects_n_osc_below_two(self, n_osc: int) -> None:
+        """Fewer than two oscillators are refused."""
         with pytest.raises(ValueError, match=r">= 2 oscillators"):
             SurfaceCodeUPDE(n_osc=n_osc, code_distance=3)
 
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=even_distance)
     def test_rejects_even_distance(self, n_osc: int, d: int) -> None:
+        """An even distance is refused."""
         with pytest.raises(ValueError, match="odd"):
             SurfaceCodeUPDE(n_osc=n_osc, code_distance=d)
 
@@ -168,8 +187,7 @@ class TestSurfaceCodeUPDEFuzz:
         n_osc: int,
         d: int,
     ) -> None:
-        """Every oscillator's data-qubit block must occupy a disjoint
-        range within the physical register."""
+        """Each oscillator's data qubits occupy a disjoint range of the physical register."""
         upde = SurfaceCodeUPDE(n_osc=n_osc, code_distance=d)
         all_data = []
         for osc in range(n_osc):
@@ -181,14 +199,17 @@ class TestSurfaceCodeUPDEFuzz:
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=odd_distance)
     def test_physical_qubit_count_invariant(self, n_osc: int, d: int) -> None:
+        """The physical qubit count is 2d^2 - 1 per oscillator."""
         upde = SurfaceCodeUPDE(n_osc=n_osc, code_distance=d)
         assert upde.total_qubits == n_osc * (2 * d * d - 1)
 
     @_GLOBAL_SETTINGS
     @given(n_osc=valid_n_osc, d=odd_distance)
     def test_custom_K_omega_accepted(self, n_osc: int, d: int) -> None:
-        """User-supplied K and omega override the paper-27 defaults
-        without triggering a downstream validator."""
+        """User-supplied K and omega override the paper-27 defaults.
+
+        No downstream validator is triggered.
+        """
         rng = np.random.default_rng(n_osc * 31 + d)
         K = rng.normal(0.0, 0.3, size=(n_osc, n_osc))
         K = 0.5 * (K + K.T)

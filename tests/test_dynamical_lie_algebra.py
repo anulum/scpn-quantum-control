@@ -24,6 +24,8 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestDLAComputation:
+    """Computing the dynamical Lie algebra."""
+
     def test_single_qubit_z(self) -> None:
         """Single Z generator has DLA dimension 1."""
         from qiskit.quantum_info import SparsePauliOp
@@ -133,6 +135,7 @@ class TestDLAComputation:
 
 
 def test_dla_dimension_2q() -> None:
+    """Two qubits give a positive dimension."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     gens = build_xy_generators(K, omega)
@@ -142,6 +145,7 @@ def test_dla_dimension_2q() -> None:
 
 
 def test_dla_dimension_finite() -> None:
+    """The dimension is finite."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     gens = build_xy_generators(K, omega)
@@ -150,6 +154,7 @@ def test_dla_dimension_finite() -> None:
 
 
 def test_xy_generators_nonempty() -> None:
+    """The XY generators are not empty."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     gens = build_xy_generators(K, omega)
@@ -162,7 +167,10 @@ def test_xy_generators_nonempty() -> None:
 
 
 class TestInternalHelpers:
+    """Internal helpers of the computation."""
+
     def test_commutator_antisymmetric(self) -> None:
+        """The commutator is antisymmetric."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _commutator
 
         A = np.array([[0, 1], [0, 0]], dtype=np.complex128)
@@ -172,30 +180,35 @@ class TestInternalHelpers:
         np.testing.assert_allclose(ab, -ba, atol=1e-12)
 
     def test_commutator_diagonal_is_zero(self) -> None:
+        """An operator commutes with itself."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _commutator
 
         A = np.diag([1.0, 2.0, 3.0]).astype(complex)
         np.testing.assert_allclose(_commutator(A, A), 0.0, atol=1e-12)
 
     def test_is_independent_empty_basis(self) -> None:
+        """Any non-zero operator is independent of an empty basis."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
         op = np.eye(2, dtype=np.complex128)
         assert _is_independent(op, []) is True
 
     def test_is_independent_zero_op(self) -> None:
+        """The zero operator is not independent."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
         op = np.zeros((2, 2), dtype=np.complex128)
         assert _is_independent(op, []) is False
 
     def test_is_independent_duplicate(self) -> None:
+        """An operator already in the basis is not independent."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
         op = np.eye(2, dtype=np.complex128)
         assert _is_independent(op, [op]) is False
 
     def test_is_independent_orthogonal(self) -> None:
+        """An orthogonal operator is independent."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
         A = np.array([[1, 0], [0, 0]], dtype=np.complex128)
@@ -204,6 +217,8 @@ class TestInternalHelpers:
 
 
 class TestComputeDlaEdgeCases:
+    """Edge cases of the computation."""
+
     def test_max_dimension_cap(self) -> None:
         """When max_dimension is reached, DLA stops expanding."""
         K = build_knm_paper27(L=3)
@@ -230,6 +245,7 @@ class TestComputeDlaEdgeCases:
         assert result.classical_simulable is True
 
     def test_exponential_regime(self) -> None:
+        """The exponential regime is not classically simulable."""
         result = DLAResult(
             dimension=200,
             n_qubits=4,
@@ -244,6 +260,8 @@ class TestComputeDlaEdgeCases:
 
 
 class TestComputeDlaRust:
+    """The native computation."""
+
     def test_rust_fallback_to_python(self) -> None:
         """compute_dla_rust falls back to Python when Rust unavailable."""
         from unittest.mock import patch
@@ -274,7 +292,10 @@ class TestComputeDlaRust:
 
 
 class TestBuildPgboGenerators:
+    """Building the PGBO generators."""
+
     def test_pgbo_more_generators(self) -> None:
+        """PGBO adds generators to the XY set."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import build_pgbo_generators
 
         K = build_knm_paper27(L=3)
@@ -289,6 +310,7 @@ class TestBuildPgboGenerators:
         assert len(pgbo_gens) >= len(xy_gens)
 
     def test_pgbo_zero_weight_equals_xy(self) -> None:
+        """At zero weight PGBO equals the XY set."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import build_pgbo_generators
 
         K = build_knm_paper27(L=2)
@@ -302,7 +324,10 @@ class TestBuildPgboGenerators:
 
 
 class TestBuildTcboConnectivity:
+    """Connectivity of the TCBO generators."""
+
     def test_full_connectivity(self) -> None:
+        """Full connectivity gives at least as many generators as nearest neighbours."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         gens_near = build_tcbo_generators(K, omega, connectivity="nearest")
@@ -311,7 +336,10 @@ class TestBuildTcboConnectivity:
 
 
 class TestBuildFullScpnNoneInputs:
+    """Building the full generator set without optional inputs."""
+
     def test_no_ssgf_no_pgbo(self) -> None:
+        """Without SSGF and PGBO the set still contains the XY generators."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         gens = build_full_scpn_generators(K, omega, W=None, h_munu=None)

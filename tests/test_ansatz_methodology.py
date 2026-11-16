@@ -29,7 +29,10 @@ from scpn_quantum_control.phase.ansatz_methodology import (
 
 
 class TestCountEntanglingGates:
+    """Counting entangling gates."""
+
     def test_no_entangling(self) -> None:
+        """A circuit without two-qubit gates counts zero."""
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(2)
@@ -38,6 +41,7 @@ class TestCountEntanglingGates:
         assert _count_entangling_gates(qc) == 0
 
     def test_cx_counted(self) -> None:
+        """A CX gate is counted."""
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(2)
@@ -45,6 +49,7 @@ class TestCountEntanglingGates:
         assert _count_entangling_gates(qc) == 1
 
     def test_cz_counted(self) -> None:
+        """CZ gates are counted."""
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(2)
@@ -53,6 +58,7 @@ class TestCountEntanglingGates:
         assert _count_entangling_gates(qc) == 2
 
     def test_knm_ansatz(self) -> None:
+        """The coupling-informed ansatz on three qubits has one to three entangling gates."""
         K = build_knm_paper27(L=3)
         ansatz = knm_to_ansatz(K, reps=1)
         # K_nm for 3 qubits: at most 3 pairs, reps=1
@@ -62,25 +68,34 @@ class TestCountEntanglingGates:
 
 
 class TestConvergence99pct:
+    """The step at which a history reaches 99% of its final value."""
+
     def test_monotonic(self) -> None:
+        """A monotone history converges within its length."""
         history = [-1.0, -2.0, -3.0, -3.5, -3.9, -4.0]
         idx = _convergence_99pct(history)
         assert idx < len(history)
 
     def test_already_converged(self) -> None:
+        """A converged history converges at step zero."""
         history = [-4.0, -4.0, -4.0]
         idx = _convergence_99pct(history)
         assert idx == 0
 
     def test_empty(self) -> None:
+        """An empty history gives zero."""
         assert _convergence_99pct([]) == 0
 
     def test_single(self) -> None:
+        """A single value gives zero."""
         assert _convergence_99pct([-3.0]) == 0
 
 
 class TestGradientVariance:
+    """Gradient variance of an ansatz."""
+
     def test_returns_nonneg(self) -> None:
+        """The variance is non-negative."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         H = knm_to_hamiltonian(K, omega)
@@ -89,6 +104,7 @@ class TestGradientVariance:
         assert var >= 0.0
 
     def test_small_circuit_has_variance(self) -> None:
+        """A small circuit has non-zero variance."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         H = knm_to_hamiltonian(K, omega)
@@ -99,8 +115,11 @@ class TestGradientVariance:
 
 
 class TestBenchmarkSingleAnsatz:
+    """Benchmarking one ansatz."""
+
     @pytest.mark.parametrize("name", ["knm_informed", "two_local", "efficient_su2"])
     def test_all_ansatze_run(self, name: str) -> None:
+        """Every ansatz runs and reports its name and size."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = benchmark_single_ansatz(K, omega, name, maxiter=20, reps=1, gradient_samples=5)
@@ -112,6 +131,7 @@ class TestBenchmarkSingleAnsatz:
         assert result.relative_error >= 0
 
     def test_knm_has_fewer_gates(self) -> None:
+        """The coupling-informed ansatz stays within three times the hardware-efficient gate count."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         knm = benchmark_single_ansatz(
@@ -123,6 +143,7 @@ class TestBenchmarkSingleAnsatz:
         assert knm.n_entangling_gates <= hea.n_entangling_gates * 3
 
     def test_unknown_ansatz_raises(self) -> None:
+        """An unknown ansatz is refused."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         with pytest.raises(ValueError, match="Unknown ansatz"):
@@ -130,7 +151,10 @@ class TestBenchmarkSingleAnsatz:
 
 
 class TestRunFullBenchmark:
+    """Running the full benchmark."""
+
     def test_small_benchmark(self) -> None:
+        """A small benchmark runs each ansatz twice."""
         results = run_full_benchmark(system_sizes=[2, 3], maxiter=10, reps=1, gradient_samples=3)
         # 2 sizes × 3 ansatze = 6 results
         assert len(results) == 6
@@ -141,7 +165,10 @@ class TestRunFullBenchmark:
 
 
 class TestSummarizeBenchmark:
+    """Summarising the benchmark."""
+
     def test_produces_table(self) -> None:
+        """The summary holds one result row per ansatz."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         results = [

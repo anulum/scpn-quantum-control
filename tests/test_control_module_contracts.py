@@ -23,7 +23,10 @@ from scpn_quantum_control.qec.control_qec import ControlQEC
 
 
 class TestQDisruptionIter:
+    """Synthetic ITER disruption data."""
+
     def test_default_rng(self) -> None:
+        """The default generator produces 20 samples."""
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -34,6 +37,7 @@ class TestQDisruptionIter:
 
     @pytest.mark.parametrize("n_samples", [1, 10, 50, 100])
     def test_shape_varies_with_n_samples(self, n_samples: int) -> None:
+        """The sample count sets the data size."""
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -47,6 +51,7 @@ class TestQDisruptionIter:
         assert y.shape[0] == n_samples
 
     def test_labels_binary(self) -> None:
+        """Labels are binary."""
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -57,6 +62,7 @@ class TestQDisruptionIter:
         assert set(np.unique(y)).issubset({0, 1})
 
     def test_features_finite(self) -> None:
+        """Features are finite."""
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -67,6 +73,7 @@ class TestQDisruptionIter:
         assert np.all(np.isfinite(X))
 
     def test_reproducible_with_rng(self) -> None:
+        """The same generator gives the same data."""
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -82,7 +89,10 @@ class TestQDisruptionIter:
 
 
 class TestQPetri:
+    """The quantum Petri net."""
+
     def test_w_out_shape_mismatch_raises(self) -> None:
+        """An output weight matrix of the wrong shape is refused."""
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         W_in = np.array([[1.0, 0.0], [0.0, 1.0]])
@@ -98,6 +108,7 @@ class TestQPetri:
             )
 
     def test_valid_construction(self) -> None:
+        """A valid net records its places and transitions."""
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         n_p, n_t = 2, 2
@@ -115,6 +126,7 @@ class TestQPetri:
         assert net.n_transitions == n_t
 
     def test_encode_marking(self) -> None:
+        """Encoding a marking uses one qubit per place."""
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         W_in = np.eye(2)
@@ -131,6 +143,7 @@ class TestQPetri:
         assert qc.num_qubits == 2
 
     def test_step_returns_marking(self) -> None:
+        """A step returns a finite marking per place."""
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         W_in = np.eye(2)
@@ -149,7 +162,10 @@ class TestQPetri:
 
 
 class TestVQLSGradShafranov:
+    """The VQLS Grad-Shafranov solver."""
+
     def test_denominator_near_zero_returns_array(self) -> None:
+        """A near-zero denominator still returns an array."""
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2)
@@ -157,6 +173,7 @@ class TestVQLSGradShafranov:
         assert isinstance(result, np.ndarray)
 
     def test_solve_returns_correct_shape(self) -> None:
+        """The solution has one entry per basis state."""
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2)
@@ -164,6 +181,7 @@ class TestVQLSGradShafranov:
         assert result.shape == (4,)  # 2^n_qubits
 
     def test_solve_output_finite(self) -> None:
+        """The solution is finite."""
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2)
@@ -171,6 +189,7 @@ class TestVQLSGradShafranov:
         assert np.all(np.isfinite(result))
 
     def test_imaginary_tolerance_zero_raises(self) -> None:
+        """A zero imaginary tolerance is refused."""
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2, imag_tol=0.0)
@@ -178,6 +197,7 @@ class TestVQLSGradShafranov:
             solver.solve(reps=1, maxiter=1, seed=0)
 
     def test_reproducible_with_seed(self) -> None:
+        """The same seed gives the same solution."""
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         s1 = VQLS_GradShafranov(n_qubits=2)
@@ -199,7 +219,6 @@ def test_qaoa_optimize_triggers_lazy_build() -> None:
 
 def test_qaoa_zz_circuit_path() -> None:
     """Verify ZZ terms are translated into two-qubit QAOA cost evolution."""
-
     B = np.eye(2)
     target = np.array([0.5, 0.5])
     mpc = QAOA_MPC(B, target, horizon=4, p_layers=1)
@@ -315,7 +334,10 @@ def test_qec_no_error_clean_syndrome() -> None:
 
 
 class TestL16Actions:
+    """Actions of the layer-16 director."""
+
     def test_adjust_action(self) -> None:
+        """The director returns a valid action."""
         from scpn_quantum_control.l16.quantum_director import compute_l16_lyapunov
 
         K = build_knm_paper27(L=2) * 0.01
@@ -324,6 +346,7 @@ class TestL16Actions:
         assert result.action in ("continue", "adjust", "halt")
 
     def test_halt_action(self) -> None:
+        """The director returns a valid action for a halting input."""
         from scpn_quantum_control.l16.quantum_director import compute_l16_lyapunov
 
         K = np.zeros((2, 2))

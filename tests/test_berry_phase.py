@@ -33,7 +33,10 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestBerryPhaseScan:
+    """Scanning the Berry phase across couplings."""
+
     def test_returns_result(self) -> None:
+        """The scan returns one midpoint per coupling interval."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -88,6 +91,7 @@ class TestBerryPhaseScan:
         assert np.all(result.fidelity_susceptibility >= -1e-10)
 
     def test_gap_varies(self) -> None:
+        """The spectral gap changes across the scan."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -95,6 +99,7 @@ class TestBerryPhaseScan:
         assert result.spectral_gap[0] != result.spectral_gap[-1]
 
     def test_4qubit_scan(self) -> None:
+        """A four-qubit scan returns its connection."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -118,6 +123,8 @@ class TestBerryPhaseScan:
 
 
 class TestBerryPhasePhysics:
+    """Physical bounds of the Berry phase scan."""
+
     def test_fidelity_bounded_0_1(self) -> None:
         """Fidelity |<ψ(K)|ψ(K+dK)>|² must be in [0, 1]."""
         n = 3
@@ -136,6 +143,7 @@ class TestBerryPhasePhysics:
         assert np.all(np.array(result.spectral_gap) > 0)
 
     def test_berry_curvature_finite(self) -> None:
+        """The Berry curvature is finite."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -149,8 +157,11 @@ class TestBerryPhasePhysics:
 
 
 class TestBerryPipeline:
+    """The coupling-to-curvature pipeline."""
+
     def test_pipeline_knm_to_berry_curvature(self) -> None:
         """Full pipeline: Knm topology → Berry phase scan → curvature → peak K_c.
+
         Verifies Berry phase module is wired and produces topological data.
         """
         import time
@@ -178,7 +189,10 @@ class TestBerryPipeline:
 
 
 class TestGroundState:
+    """The ground state used by the scan."""
+
     def test_returns_vector_and_gap(self) -> None:
+        """The ground state is normalised and has a positive gap."""
         from scpn_quantum_control.analysis.berry_phase import _ground_state
 
         T = _ring_topology(2)
@@ -192,6 +206,7 @@ class TestGroundState:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense eigensolve above the budget is refused before the Hamiltonian is built."""
         from scpn_quantum_control.analysis.berry_phase import _ground_state
 
         T = _ring_topology(4)
@@ -211,9 +226,12 @@ class TestGroundState:
 
 
 class TestBerryPhaseBudget:
+    """Memory budgets of the scan."""
+
     def test_scan_rejects_retained_state_budget_before_ground_state_calls(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A retained-state budget breach is refused before any ground state is computed."""
         omega = np.ones(20)
         topology = _ring_topology(20)
 
@@ -236,6 +254,7 @@ class TestBerryPhaseBudget:
     def test_scan_propagates_dense_budget_to_ground_state(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """The dense budget reaches every ground-state call."""
         omega = OMEGA_N_16[:2]
         topology = _ring_topology(2)
         seen_budgets = []
@@ -267,7 +286,10 @@ class TestBerryPhaseBudget:
 
 
 class TestFixGauge:
+    """Fixing the gauge of a state."""
+
     def test_aligned_overlap_real_positive(self) -> None:
+        """After gauge fixing the overlap is real and positive."""
         from scpn_quantum_control.analysis.berry_phase import _fix_gauge
 
         psi_ref = np.array([1, 0, 0, 0], dtype=complex)
@@ -278,6 +300,7 @@ class TestFixGauge:
         assert overlap.real > 0.99
 
     def test_zero_overlap_unchanged(self) -> None:
+        """A zero overlap leaves the state unchanged."""
         from scpn_quantum_control.analysis.berry_phase import _fix_gauge
 
         psi_ref = np.array([1, 0, 0, 0], dtype=complex)
@@ -288,7 +311,10 @@ class TestFixGauge:
 
 
 class TestBerryPhaseDefaults:
+    """Default arguments of the scan."""
+
     def test_default_k_range(self) -> None:
+        """The default 30 couplings give 29 midpoints."""
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
         result = berry_phase_scan(omega, T)
@@ -296,7 +322,10 @@ class TestBerryPhaseDefaults:
 
 
 class TestBerryPhaseSingleStep:
+    """A scan of a single interval."""
+
     def test_two_k_values(self) -> None:
+        """Two couplings give one connection and one curvature."""
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
         result = berry_phase_scan(omega, T, k_range=np.array([1.0, 2.0]))

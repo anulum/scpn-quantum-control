@@ -20,31 +20,40 @@ from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 
 class TestQuantumSynapseInit:
+    """Constructing a quantum synapse."""
+
     def test_theta_at_zero_weight(self) -> None:
+        """Zero weight gives angle zero."""
         syn = QuantumSynapse(0.0)
         assert syn.theta == pytest.approx(0.0)
 
     def test_theta_at_max_weight(self) -> None:
+        """Maximum weight gives angle pi."""
         syn = QuantumSynapse(1.0)
         assert syn.theta == pytest.approx(np.pi)
 
     def test_theta_at_midpoint(self) -> None:
+        """The midpoint weight gives angle pi/2."""
         syn = QuantumSynapse(0.5)
         assert syn.theta == pytest.approx(np.pi / 2)
 
     def test_custom_range(self) -> None:
+        """A custom range maps its midpoint to pi/2."""
         syn = QuantumSynapse(5.0, w_min=0.0, w_max=10.0)
         assert syn.theta == pytest.approx(np.pi / 2)
 
     def test_weight_clamped_above_max(self) -> None:
+        """A weight above the maximum is clamped."""
         syn = QuantumSynapse(2.0, w_min=0.0, w_max=1.0)
         assert syn.weight == 1.0
 
     def test_weight_clamped_below_min(self) -> None:
+        """A weight below the minimum is clamped."""
         syn = QuantumSynapse(-1.0, w_min=0.0, w_max=1.0)
         assert syn.weight == 0.0
 
     def test_invalid_range_raises(self) -> None:
+        """A maximum that does not exceed the minimum is refused."""
         with pytest.raises(ValueError, match="must exceed"):
             QuantumSynapse(0.5, w_min=1.0, w_max=0.5)
 
@@ -55,16 +64,21 @@ class TestQuantumSynapseInit:
 
 
 class TestEffectiveWeight:
+    """The effective weight of a synapse."""
+
     def test_matches_sin_squared(self) -> None:
+        """The effective weight is sin squared of half the angle."""
         syn = QuantumSynapse(0.5)
         expected = np.sin(syn.theta / 2.0) ** 2
         assert syn.effective_weight() == pytest.approx(expected)
 
     def test_zero_weight_gives_zero(self) -> None:
+        """Zero weight gives zero effective weight."""
         syn = QuantumSynapse(0.0)
         assert syn.effective_weight() == pytest.approx(0.0)
 
     def test_max_weight_gives_one(self) -> None:
+        """Maximum weight gives an effective weight of one."""
         syn = QuantumSynapse(1.0)
         assert syn.effective_weight() == pytest.approx(1.0)
 
@@ -76,6 +90,7 @@ class TestEffectiveWeight:
         assert syn_hi.effective_weight() > syn_lo.effective_weight()
 
     def test_bounded_zero_one(self) -> None:
+        """The effective weight lies in [0, 1]."""
         for w in np.linspace(0, 1, 20):
             ew = QuantumSynapse(w).effective_weight()
             assert 0.0 <= ew <= 1.0
@@ -87,7 +102,10 @@ class TestEffectiveWeight:
 
 
 class TestApply:
+    """Applying the synapse to a circuit."""
+
     def test_adds_cry_gate(self) -> None:
+        """Applying adds a controlled-RY gate."""
         syn = QuantumSynapse(0.7)
         qc = QuantumCircuit(2)
         syn.apply(qc, 0, 1)
@@ -95,6 +113,7 @@ class TestApply:
         assert "cry" in ops
 
     def test_gate_angle_matches_theta(self) -> None:
+        """The gate angle is the synapse angle."""
         syn = QuantumSynapse(0.6)
         qc = QuantumCircuit(2)
         syn.apply(qc, 0, 1)
@@ -128,22 +147,28 @@ class TestApply:
 
 
 class TestUpdateWeight:
+    """Updating the synapse weight."""
+
     def test_update_within_range(self) -> None:
+        """A weight within range is set."""
         syn = QuantumSynapse(0.5)
         syn.update_weight(0.8)
         assert syn.weight == pytest.approx(0.8)
 
     def test_update_clamped_above(self) -> None:
+        """A weight above range is clamped."""
         syn = QuantumSynapse(0.5)
         syn.update_weight(1.5)
         assert syn.weight == 1.0
 
     def test_update_clamped_below(self) -> None:
+        """A weight below range is clamped."""
         syn = QuantumSynapse(0.5)
         syn.update_weight(-0.5)
         assert syn.weight == 0.0
 
     def test_theta_updates_after_weight_change(self) -> None:
+        """The angle follows the new weight."""
         syn = QuantumSynapse(0.0)
         assert syn.theta == pytest.approx(0.0)
         syn.update_weight(1.0)

@@ -45,7 +45,10 @@ def _sorted_eigenvalues(values: np.ndarray) -> np.ndarray:
 
 
 class TestSpectrumCorrectness:
+    """Correctness of the stability spectrum."""
+
     def test_eigenvalues_match_numpy_symmetric(self) -> None:
+        """For a symmetric coupling the eigenvalues match NumPy."""
         theta = np.linspace(-0.4, 0.4, 6)
         coupling = _random_symmetric_coupling(6, 3)
         spectrum = stability_spectrum(theta, coupling)
@@ -58,6 +61,7 @@ class TestSpectrumCorrectness:
         assert spectrum.is_symmetric
 
     def test_eigenvalues_match_numpy_directed(self) -> None:
+        """For a directed coupling the eigenvalues match NumPy."""
         rng = np.random.default_rng(11)
         coupling = rng.uniform(0.1, 0.9, size=(5, 5))  # not symmetrised -> directed network
         np.fill_diagonal(coupling, 0.0)
@@ -72,6 +76,7 @@ class TestSpectrumCorrectness:
         assert not spectrum.is_symmetric
 
     def test_eigenpairs_reconstruct_the_jacobian_action(self) -> None:
+        """Each eigenpair reproduces the Jacobian's action."""
         theta = np.linspace(0.0, 1.0, 7)
         coupling = _random_symmetric_coupling(7, 8)
         jacobian = networked_kuramoto_jacobian(theta, coupling)
@@ -83,6 +88,7 @@ class TestSpectrumCorrectness:
             )
 
     def test_eigenvalues_ordered_by_descending_real_part(self) -> None:
+        """Eigenvalues are ordered by descending real part."""
         theta = np.linspace(-1.0, 1.0, 8)
         coupling = _random_symmetric_coupling(8, 21)
         spectrum = stability_spectrum(theta, coupling)
@@ -91,7 +97,10 @@ class TestSpectrumCorrectness:
 
 
 class TestGoldstoneMode:
+    """The zero Goldstone mode."""
+
     def test_goldstone_is_zero_and_uniform(self) -> None:
+        """The Goldstone eigenvalue is zero with a uniform eigenvector."""
         theta = np.linspace(-0.3, 0.5, 6)
         coupling = _random_symmetric_coupling(6, 4)
         spectrum = stability_spectrum(theta, coupling)
@@ -102,6 +111,7 @@ class TestGoldstoneMode:
         assert overlap > 1.0 - 1e-9
 
     def test_jacobian_rows_sum_to_zero(self) -> None:
+        """Each Jacobian row sums to zero."""
         theta = np.linspace(0.0, 2.0, 5)
         coupling = _random_symmetric_coupling(5, 7)
         jacobian = networked_kuramoto_jacobian(theta, coupling)
@@ -109,10 +119,13 @@ class TestGoldstoneMode:
 
 
 class TestStabilityClassification:
+    """Classifying a state as stable or unstable."""
+
     def test_synchronised_state_is_stable(self) -> None:
         # All phases equal: J = -L (the negative graph Laplacian of a connected positive network),
         # so every transverse eigenvalue is negative and the Goldstone is the largest -> at index 0
         # after the descending sort (exercises the leading_position >= goldstone_index branch).
+        """A synchronised state is linearly stable."""
         coupling = _random_symmetric_coupling(6, 5)
         theta = np.full(6, 0.3)
         spectrum = stability_spectrum(theta, coupling)
@@ -125,6 +138,7 @@ class TestStabilityClassification:
         # Two positively coupled oscillators in anti-phase: eigenvalues {0, 2k}; the transverse
         # mode 2k > 0 is unstable and sorts above the Goldstone (Goldstone at index 1, exercising
         # the leading_position < goldstone_index branch).
+        """An antiphase pair is unstable."""
         k = 0.75
         coupling = np.array([[0.0, k], [k, 0.0]])
         theta = np.array([0.0, math.pi])
@@ -140,6 +154,7 @@ class TestStabilityClassification:
         np.testing.assert_allclose(abs(unstable[0]), abs(unstable[1]), atol=1e-12)
 
     def test_spectral_gap_is_goldstone_minus_leading(self) -> None:
+        """The spectral gap is the Goldstone eigenvalue minus the leading one."""
         theta = np.linspace(-0.2, 0.7, 5)
         coupling = _random_symmetric_coupling(5, 33)
         spectrum = stability_spectrum(theta, coupling)
@@ -149,6 +164,7 @@ class TestStabilityClassification:
 
     def test_stability_tolerance_governs_classification(self) -> None:
         # A marginal transverse eigenvalue just above the default tolerance flips the verdict.
+        """The stability tolerance decides the classification."""
         coupling = _random_symmetric_coupling(4, 14)
         theta = np.full(4, -0.1)
         assert is_synchronisation_stable(theta, coupling)
@@ -156,19 +172,24 @@ class TestStabilityClassification:
 
 
 class TestConvenienceWrappers:
+    """The convenience wrappers."""
+
     def test_synchronisation_rate_equals_spectral_gap(self) -> None:
+        """The synchronisation rate is the spectral gap."""
         theta = np.linspace(0.0, 0.6, 5)
         coupling = _random_symmetric_coupling(5, 9)
         spectrum = stability_spectrum(theta, coupling)
         assert synchronisation_rate(theta, coupling) == pytest.approx(spectrum.spectral_gap)
 
     def test_is_synchronisation_stable_equals_flag(self) -> None:
+        """The stability wrapper returns the spectrum's flag."""
         theta = np.full(5, 0.2)
         coupling = _random_symmetric_coupling(5, 2)
         spectrum = stability_spectrum(theta, coupling)
         assert is_synchronisation_stable(theta, coupling) == spectrum.is_linearly_stable
 
     def test_result_is_a_frozen_dataclass(self) -> None:
+        """The result is a frozen record."""
         theta = np.full(3, 0.0)
         coupling = _random_symmetric_coupling(3, 1)
         spectrum = stability_spectrum(theta, coupling)
@@ -178,17 +199,22 @@ class TestConvenienceWrappers:
 
 
 class TestValidation:
+    """Input validation."""
+
     def test_too_few_oscillators(self) -> None:
+        """Fewer than two oscillators are refused."""
         with pytest.raises(ValueError, match="at least 2 oscillators"):
             stability_spectrum(np.array([0.1]), np.array([[0.0]]))
         with pytest.raises(ValueError, match="at least 2 oscillators"):
             stab._stability_jacobian(np.zeros(0), np.zeros((0, 0)))
 
     def test_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             stability_spectrum(np.zeros(3), np.zeros((3, 2)))
 
     def test_wrappers_validate_too(self) -> None:
+        """The wrappers validate their inputs too."""
         with pytest.raises(ValueError, match="at least 2 oscillators"):
             synchronisation_rate(np.array([0.0]), np.array([[0.0]]))
         with pytest.raises(ValueError, match="square matrix of order 2"):
