@@ -40,7 +40,7 @@ import numpy as np
 from .dense_budget import DenseAllocationError
 from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan, json_encoded_bytes
 from .execution_reservations import reserve_execution_memory
-from .program_ad_effect_admission import find_objective_effects
+from .program_ad_effect_admission import _EXCEPTION_HANDLER_DETAIL, find_objective_effects
 from .source_admission import objective_source_block, read_source_lines
 from .whole_program_frontend_contracts import (
     WholeProgramBytecodeBasicBlock,
@@ -752,6 +752,8 @@ def _accepted_python_semantics(
         accepted.add("list_comprehension")
     if _source_has_node(source, ast.GeneratorExp):
         accepted.add("generator_expression")
+    if _source_has_node(source, ast.Raise, ast.Assert):
+        accepted.add("exception_exit")
     return tuple(sorted(accepted))
 
 
@@ -832,8 +834,8 @@ def _unsupported_python_semantic_diagnostics(
             add(node, "generator")
         elif isinstance(node, ast.With | ast.AsyncWith):
             add(node, "context_manager")
-        elif isinstance(node, ast.Try | ast.Raise | ast.Assert):
-            add(node, "exception_control_flow")
+        elif isinstance(node, ast.Try | ast.TryStar):
+            add(node, "exception_control_flow", _EXCEPTION_HANDLER_DETAIL)
         elif isinstance(node, ast.FunctionDef):
             if node.decorator_list:
                 add(node, "decorator")

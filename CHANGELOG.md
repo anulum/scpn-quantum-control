@@ -456,6 +456,41 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   rises from 84.19% to 100%. Three older docstrings are fixed, so the test
   documentation ceiling falls to 6988 findings in 549 files.
 
+- **Fixed: whole-program AD let exception handlers catch a fail-closed
+  refusal, and one rule now governs exceptions.** The frontend refused `try`,
+  `raise` and `assert` in the objective, but effect admission inspected
+  helpers for effects only. A `try` in a helper could therefore catch a
+  runtime refusal such as the derivative-losing `np.sign` and continue. So
+  could a `try ... except*` in the objective itself, because the frontend
+  matched `ast.Try` but not `ast.TryStar`. An assertion message in a helper
+  could also carry a traced value out of the program, which the payload rule
+  refused only for a raised exception.
+
+  The single rule now applies to the objective and to every admitted helper:
+  - An exception may leave the program. `raise` with a native exception
+    built without keyword operands, and `assert`, are admitted, and the
+    frontend reports them as the accepted semantic `exception_exit`.
+  - Its payload must not carry a traced value. An assertion message is
+    checked like the operands of a raised exception, and an effect in the
+    asserted expression or the message is inspected as anywhere else.
+  - No handler may catch an exception. Every `try`, `except*` included, is
+    refused as `exception_control_flow` with its reason.
+
+  Raising helpers keep their behaviour and their trace release. No existing
+  test used a handler inside traced code. The API reference, the
+  differentiable API page, the programming guide and the tutorial state the
+  rule. New tests cover:
+  - an exit from the objective, releasing its reservation, with value and
+    gradient once disarmed;
+  - traced and wrapped assertion messages, in the objective and in a helper;
+  - handlers in helpers (`except`, `finally`, `except*`) and in the
+    objective (`except*`), refused before execution with one diagnostic;
+  - the frontend's own grouped-handler refusal.
+
+  The assertion objectives live outside a test module, because pytest's
+  assertion rewriting changes their code and source binding would refuse
+  them.
+
 - **Fixed: parameter-shift gradients for a parameter shared by distinct gates
   that include a controlled rotation.** The gate-aware planner gave every
   group of `n` distinct gates the gaps `1..n`. A controlled rotation's

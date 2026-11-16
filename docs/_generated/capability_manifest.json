@@ -13,7 +13,7 @@
     "python_model_source_modules": 893,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1663
+    "test_files": 1665
   },
   "documentation": {
     "examples": [
@@ -9643,6 +9643,7 @@
       "tests/_phase_pennylane_bridge_test_helpers.py",
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_pickle_identity.py",
+      "tests/_program_ad_exception_objectives.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/_qualification_receipt_vectors.py",
       "tests/_test_identifier_limits.py",
@@ -10748,6 +10749,7 @@
       "tests/test_program_ad_effect_source_binding.py",
       "tests/test_program_ad_effect_values.py",
       "tests/test_program_ad_elementwise_registry.py",
+      "tests/test_program_ad_exception_rule.py",
       "tests/test_program_ad_fail_closed_boundaries.py",
       "tests/test_program_ad_finite_difference_gradient_check.py",
       "tests/test_program_ad_finite_difference_stencils.py",

@@ -183,11 +183,11 @@ For compiler-backed AD users, the current native whole-program path supports
 verified static dense determinant lowering through `19x19`, static inverse and
 solve routes through `7x7`, and fail-closed reports for wider unsupported linalg.
 Its Python frontend now records accepted closure, default-argument, keyword-only,
-`*args`, `**kwargs`, and generator-expression semantics, while materialized
-comprehensions, captured object/dataclass attributes, recursion, async
-functions, await expressions, async iteration, generator functions, context
-managers, exception control flow, and decorators fail closed before objective
-execution.
+`*args`, `**kwargs`, generator-expression and `raise`/`assert` exit semantics,
+while materialized comprehensions, captured object/dataclass attributes,
+recursion, async functions, await expressions, async iteration, generator
+functions, context managers, exception handlers (`try`, also in helpers), and
+decorators fail closed before objective execution.
 Treat the `20x20+` determinant boundary as useful engineering evidence: it
 identifies where the present loop-helper formulation needs a stronger numerical
 factorisation before promotion.

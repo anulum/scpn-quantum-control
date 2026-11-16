@@ -151,6 +151,15 @@ def find_objective_effects(
     )
 
 
+# One rule for exceptions in the objective and in every admitted helper: an
+# exception may leave the program, carrying no traced value, but no handler may
+# catch one, because a handler could catch a fail-closed refusal and continue.
+_EXCEPTION_PAYLOAD_DETAIL = "exception payload must not carry a traced value"
+_EXCEPTION_HANDLER_DETAIL = (
+    "an exception handler could catch a fail-closed refusal and continue the trace"
+)
+
+
 class _Visitor(ast.NodeVisitor):
     def __init__(
         self,
@@ -684,6 +693,21 @@ class _Visitor(ast.NodeVisitor):
             self.visit(node.value)
             self.returns.append(self.value(node.value))
 
+    def visit_Try(self, node: ast.Try | ast.TryStar) -> None:
+        """Refuse exception handlers, which could catch a fail-closed refusal and continue."""
+        self.add(node, "exception_control_flow", _EXCEPTION_HANDLER_DETAIL)
+        self.generic_visit(node)
+
+    visit_TryStar = visit_Try
+
+    def visit_Assert(self, node: ast.Assert) -> None:
+        """Admit an assertion as an exception exit whose message carries no traced value."""
+        self.visit(node.test)
+        if node.msg is not None:
+            self.visit(node.msg)
+            if self.value(node.msg).active:
+                self.add(node, "external_callback", _EXCEPTION_PAYLOAD_DETAIL)
+
     def visit_If(self, node: ast.If) -> None:
         """Join both branch environments without dropping captured alias origins."""
         self.visit(node.test)
@@ -1161,11 +1185,7 @@ class _Visitor(ast.NodeVisitor):
             if any(argument.active for argument in arguments) or (
                 variadic is not None and variadic.active
             ):
-                self.add(
-                    node,
-                    "external_callback",
-                    "exception payload must not carry a traced value",
-                )
+                self.add(node, "external_callback", _EXCEPTION_PAYLOAD_DETAIL)
             return
         if (
             callee.value is type
