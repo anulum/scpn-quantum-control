@@ -497,6 +497,29 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains its packaged compressor fit
+  (`experimental/llm_qpu/data/compression_fit.py`).
+  - `fit_train_compressor` validates the latent batch and requires a
+    contextual train batch covering exactly the split's train groups,
+    with more rows than output components.
+  - It then fits the frozen `pca_train_svd_v1` map:
+    - per-row RMS normalisation;
+    - a train-only centre;
+    - deterministic SVD principal directions, each signed so its
+      largest absolute loading is positive;
+    - sample-standard-deviation scales, refusing any zero-variance
+      component.
+  - It freezes the arrays as float32 descriptors and builds the
+    `CompressorArtifact`, whose software digest names the fitter, NumPy
+    and Python versions, and checks it with `validate_compressor_artifact`.
+  - `compress_latents` maps any split's contextual or chunk-isolated
+    batch through the stored float32 arrays as `(π/2)·tanh(z/s)`, keeps
+    padding at zero, and checks every angle with
+    `validate_compressed_latent_batch`.
+  - The `fit_compressor` and `transform_latents` ports now point to these
+    functions; they still refuse, because they need inputs the owner
+    pack's signatures do not carry.
+
 - The experimental LLM-QPU lane gains typed port refusal surfaces
   (`experimental/llm_qpu/ports.py`). `PORTS` registers the fourteen lane
   ports with the owner pack's exact signatures, each in one side-effect

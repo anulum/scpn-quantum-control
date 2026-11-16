@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1661,
-    "python_model_source_modules": 876,
+    "python_model_classes": 1662,
+    "python_model_source_modules": 877,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1649
+    "test_files": 1650
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 32
+        "python_modules": 33
       },
       {
         "package": "fep",
@@ -2816,6 +2816,10 @@
       {
         "name": "FisherVectorProductResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "FittedCompressor",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/data/compression_fit.py"
       },
       {
         "name": "FixedPointSensitivityResult",
@@ -7818,6 +7822,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/artifact_store.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/cache.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/data/compression_fit.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/dedup.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/splits.py",
@@ -9577,6 +9582,7 @@
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
       "tests/experimental/llm_qpu/test_compiled_bundle_contract.py",
+      "tests/experimental/llm_qpu/test_compression_fit.py",
       "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
       "tests/experimental/llm_qpu/test_contract_wire.py",
       "tests/experimental/llm_qpu/test_cost_quote_contract.py",

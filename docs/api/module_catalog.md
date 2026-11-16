@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **876 modules** across **41 package families**
-- **4724 documented public module-level symbols**
+- **877 modules** across **41 package families**
+- **4727 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2612,6 +2612,16 @@ Fail-closed cache references across model, compressor, and SDK revisions.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/cache.py) · Public symbols: **3**
 
 **Classes:** `StaleCacheError`, `CacheKey`, `ArtifactCache`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.compression_fit`
+
+Train-only PCA compressor fit and frozen-map compression of latent batches.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/compression_fit.py) · Public symbols: **3**
+
+**Classes:** `FittedCompressor`
+
+**Functions:** `fit_train_compressor()`, `compress_latents()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.dedup`
 

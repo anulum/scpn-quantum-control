@@ -98,14 +98,16 @@ PORTS: tuple[PortSpec, ...] = (
         ("LatentBatch", "SplitManifest", "CompressionSpec"),
         "CompressorArtifact",
         "offline_planning",
-        _NOT_BUILT,
+        "the fit also needs the task, model and latent bytes; use "
+        "data.compression_fit.fit_train_compressor",
     ),
     PortSpec(
         "transform_latents",
         ("LatentBatch", "CompressorArtifact"),
         "CompressedLatentBatch",
         "offline_planning",
-        _NOT_BUILT,
+        "the transform also needs the latent and array bytes; use "
+        "data.compression_fit.compress_latents",
     ),
     PortSpec(
         "build_circuit_plan",
@@ -197,7 +199,7 @@ def ports_for(side_effect: str) -> tuple[PortSpec, ...]:
 
 
 def transform_latents(batch: LatentBatch, fitted: CompressorArtifact) -> CompressedLatentBatch:
-    """Refuse: the compressor transform has no implementation yet."""
+    """Refuse: the transform needs bytes this signature lacks; see ``compress_latents``."""
     port("transform_latents").refuse()
 
 

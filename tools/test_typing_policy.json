@@ -928,6 +928,7 @@
         "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
         "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
         "tests/experimental/llm_qpu/test_compiled_bundle_contract.py",
+        "tests/experimental/llm_qpu/test_compression_fit.py",
         "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
         "tests/experimental/llm_qpu/test_contract_wire.py",
         "tests/experimental/llm_qpu/test_cost_quote_contract.py",

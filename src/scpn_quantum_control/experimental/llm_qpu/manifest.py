@@ -45,6 +45,7 @@ _INVENTORY = (
     "llm_qpu/contracts/wire.py",
     "llm_qpu/data/artifact_store.py",
     "llm_qpu/data/cache.py",
+    "llm_qpu/data/compression_fit.py",
     "llm_qpu/data/dedup.py",
     "llm_qpu/data/lineage.py",
     "llm_qpu/data/splits.py",
