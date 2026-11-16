@@ -1,19 +1,18 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "fe8ca7612d99483ba0a77f617f6fce957c82525b",
+ "measured_commit": "80e225f28cf5fb5d54c3b728127402a0a4996265",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 3279,
- "total_files": 98,
+ "total_findings": 3159,
+ "total_files": 92,
  "files": {
   "oscillatools/tests/test_accel_dispatch.py": 95,
   "oscillatools/tests/test_daido_observables.py": 42,
   "oscillatools/tests/test_daido_phase.py": 39,
   "oscillatools/tests/test_diff_kuramoto_dopri.py": 27,
-  "oscillatools/tests/test_diff_kuramoto_euler.py": 20,
   "oscillatools/tests/test_diff_kuramoto_rk4.py": 21,
   "oscillatools/tests/test_kuramoto_adaptive.py": 25,
   "oscillatools/tests/test_kuramoto_chimera.py": 27,
@@ -37,10 +36,8 @@
   "tests/test_adapt_vqe.py": 24,
   "tests/test_adiabatic_preparation.py": 23,
   "tests/test_ansatz_methodology.py": 21,
-  "tests/test_backend_dispatch.py": 20,
   "tests/test_backend_registry.py": 41,
   "tests/test_bench_cli.py": 64,
-  "tests/test_benchmark_native_speedup_gate.py": 20,
   "tests/test_benchmark_scaling_contracts.py": 32,
   "tests/test_berry_phase.py": 21,
   "tests/test_bkt_analysis.py": 23,
@@ -67,7 +64,6 @@
   "tests/test_iqm_lattice_calibration.py": 28,
   "tests/test_iqm_layout_transfer_benchmark.py": 39,
   "tests/test_iter_benchmark.py": 27,
-  "tests/test_knm_hamiltonian_mutation_kills.py": 20,
   "tests/test_krylov_complexity.py": 29,
   "tests/test_lindblad.py": 25,
   "tests/test_loschmidt_echo.py": 23,
@@ -76,7 +72,6 @@
   "tests/test_parametrized_sweeps.py": 40,
   "tests/test_pgbo_qgt_product.py": 116,
   "tests/test_phase_dynamics_contracts.py": 41,
-  "tests/test_phase_natural_gradient.py": 20,
   "tests/test_phase_qiskit_runtime.py": 25,
   "tests/test_phase_vqe.py": 21,
   "tests/test_physics_invariants.py": 33,
@@ -105,7 +100,6 @@
   "tests/test_tier_benchmark_regression_gate.py": 28,
   "tests/test_tn_baseline_flagship_workloads.py": 22,
   "tests/test_topology_auth_edge.py": 26,
-  "tests/test_vortex_detector.py": 20,
   "tests/test_vqls_edge_cases.py": 26
  },
  "history": [

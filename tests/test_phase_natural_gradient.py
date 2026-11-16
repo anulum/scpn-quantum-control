@@ -32,6 +32,8 @@ from scpn_quantum_control.phase import (
 
 
 def test_parameter_shift_natural_gradient_converges_with_callable_metric() -> None:
+    """With a callable metric the optimiser converges on the gradient tolerance."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float((1.0 - np.cos(params[0])) + 0.05 * (1.0 - np.cos(params[1])))
 
@@ -77,6 +79,8 @@ def test_parameter_shift_natural_gradient_converges_with_callable_metric() -> No
 
 
 def test_parameter_shift_natural_gradient_preconditions_slow_phase_axis() -> None:
+    """The natural gradient preconditions the slow axis and beats the Euclidean step."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float((1.0 - np.cos(params[0])) + 0.05 * (1.0 - np.cos(params[1])))
 
@@ -106,6 +110,7 @@ def test_parameter_shift_natural_gradient_preconditions_slow_phase_axis() -> Non
 
 
 def test_parameter_shift_natural_gradient_accepts_phase_qnode_metric_provider() -> None:
+    """A phase QNode metric provider is accepted."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -134,6 +139,7 @@ def test_parameter_shift_natural_gradient_accepts_phase_qnode_metric_provider() 
 
 
 def test_solve_natural_gradient_direction_rejects_bad_metric_boundaries() -> None:
+    """Metrics that are not square, finite and symmetric are refused."""
     gradient = np.array([1.0, -0.5], dtype=float)
 
     with pytest.raises(ValueError, match="one-dimensional"):
@@ -178,6 +184,7 @@ def test_solve_natural_gradient_direction_rejects_bad_metric_boundaries() -> Non
 
 
 def test_solve_natural_gradient_direction_records_unshifted_metric_policy() -> None:
+    """A well-conditioned metric is used unshifted, and that is recorded."""
     direction = solve_natural_gradient_direction(
         np.array([0.5, -0.25], dtype=float),
         np.eye(2, dtype=float),
@@ -193,6 +200,7 @@ def test_solve_natural_gradient_direction_records_unshifted_metric_policy() -> N
 
 
 def test_solve_natural_gradient_direction_records_degenerate_unregularized_metric() -> None:
+    """A degenerate metric left unregularised is recorded with its rank and nullity."""
     direction = solve_natural_gradient_direction(
         np.array([1.0, 1.0e-12], dtype=float),
         np.diag(np.array([1.0, 1.0e-12], dtype=float)),
@@ -210,6 +218,7 @@ def test_solve_natural_gradient_direction_records_degenerate_unregularized_metri
 def test_solve_natural_gradient_direction_fails_closed_on_linalg_backend_edges(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Non-finite eigenvalues or condition numbers fail closed."""
     gradient = np.array([1.0], dtype=float)
     metric = np.eye(1, dtype=float)
 
@@ -282,6 +291,7 @@ def test_solve_natural_gradient_direction_fails_closed_on_linalg_backend_edges(
 
 
 def test_solve_natural_gradient_direction_regularizes_singular_metric() -> None:
+    """A singular metric is regularised, and that is recorded."""
     gradient = np.array([1.0, 0.0], dtype=float)
 
     direction = solve_natural_gradient_direction(
@@ -303,6 +313,7 @@ def test_solve_natural_gradient_direction_regularizes_singular_metric() -> None:
 
 
 def test_solve_natural_gradient_direction_caps_ill_conditioned_metric() -> None:
+    """An ill-conditioned metric is shifted to cap its condition number."""
     gradient = np.array([1.0, 1.0], dtype=float)
 
     direction = solve_natural_gradient_direction(
@@ -319,6 +330,7 @@ def test_solve_natural_gradient_direction_caps_ill_conditioned_metric() -> None:
 
 
 def test_parameter_shift_natural_gradient_records_degenerate_qfi_policy() -> None:
+    """A degenerate QFI is recorded with its eigenvalue floor and nullity."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("rz", (0,), 0),),
@@ -348,6 +360,8 @@ def test_parameter_shift_natural_gradient_records_degenerate_qfi_policy() -> Non
 
 
 def test_parameter_shift_natural_gradient_rejects_invalid_public_inputs() -> None:
+    """Invalid public inputs are refused."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -391,6 +405,8 @@ def test_parameter_shift_natural_gradient_rejects_invalid_public_inputs() -> Non
 
 
 def test_parameter_shift_natural_gradient_records_multi_term_rule() -> None:
+    """A multi-term shift rule is recorded."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -413,6 +429,8 @@ def test_parameter_shift_natural_gradient_records_multi_term_rule() -> None:
 def test_parameter_shift_natural_gradient_fails_closed_on_gradient_contract_edges(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Gradient contract violations fail closed."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -497,6 +515,8 @@ def test_parameter_shift_natural_gradient_fails_closed_on_gradient_contract_edge
 
 
 def test_parameter_shift_natural_gradient_records_line_search_failure() -> None:
+    """A failed line search is recorded as a rejected step."""
+
     def discontinuous_objective(params: NDArray[np.float64]) -> float:
         value = float(params[0])
         if np.isclose(value, float(np.pi / 2.0)):
@@ -523,6 +543,8 @@ def test_parameter_shift_natural_gradient_records_line_search_failure() -> None:
 
 
 def test_parameter_shift_natural_gradient_stops_on_initial_natural_norm() -> None:
+    """A small initial natural-gradient norm stops the run at once."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -542,6 +564,8 @@ def test_parameter_shift_natural_gradient_stops_on_initial_natural_norm() -> Non
 
 
 def test_parameter_shift_natural_gradient_converges_after_final_step_by_gradient() -> None:
+    """After its last step the run converges on the gradient tolerance."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -560,6 +584,8 @@ def test_parameter_shift_natural_gradient_converges_after_final_step_by_gradient
 
 
 def test_parameter_shift_natural_gradient_converges_after_final_step_by_natural_norm() -> None:
+    """After its last step the run converges on the natural-gradient tolerance."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -584,6 +610,8 @@ def test_parameter_shift_natural_gradient_converges_after_final_step_by_natural_
 
 
 def test_parameter_shift_natural_gradient_converges_after_final_step_by_value() -> None:
+    """After its last step the run converges on the value tolerance."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -603,6 +631,8 @@ def test_parameter_shift_natural_gradient_converges_after_final_step_by_value() 
 
 
 def test_parameter_shift_natural_gradient_fails_closed_for_hardware() -> None:
+    """Hardware gradient execution fails closed."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 
@@ -616,6 +646,8 @@ def test_parameter_shift_natural_gradient_fails_closed_for_hardware() -> None:
 
 
 def test_validate_natural_gradient_training_rejects_unbound_target_tolerance() -> None:
+    """A target tolerance without its target value is refused."""
+
     def objective(params: NDArray[np.float64]) -> float:
         return float(1.0 - np.cos(params[0]))
 

@@ -70,12 +70,14 @@ def _make_baseline(benchmarks: dict[str, Any], *, cpu: str = "TestCPU") -> dict[
 
 
 def test_metric_direction_splits_latency_and_throughput() -> None:
+    """Latency metrics are bounded above and throughput below."""
     assert gate_mod.metric_direction("p50_us") == "upper"
     assert gate_mod.metric_direction("p99_us") == "upper"
     assert gate_mod.metric_direction("throughput_ops_s") == "lower"
 
 
 def test_digests_are_deterministic_and_exclude_existing_field() -> None:
+    """Digests are deterministic and ignore the stored digest field."""
     payload = {"a": 1, "b": 2, "payload_sha256": "stale"}
     assert gate_mod._payload_digest(payload) == gate_mod._payload_digest({"a": 1, "b": 2})
     benches = _benchmarks()
@@ -83,6 +85,7 @@ def test_digests_are_deterministic_and_exclude_existing_field() -> None:
 
 
 def test_parse_thresholds_accepts_a_valid_policy() -> None:
+    """A valid threshold policy is accepted."""
     policy = gate_mod.parse_thresholds({"default": {"p50_us": 2.0}, "bench": {"p95_us": 1.5}})
     assert policy["default"]["p50_us"] == 2.0
     assert policy["bench"]["p95_us"] == 1.5
@@ -101,11 +104,13 @@ def test_parse_thresholds_accepts_a_valid_policy() -> None:
     ],
 )
 def test_parse_thresholds_rejects_bad_policy(raw: dict[str, Any], match: str) -> None:
+    """An invalid threshold policy is refused with its reason."""
     with pytest.raises(ValueError, match=match):
         gate_mod.parse_thresholds(raw)
 
 
 def test_resolve_threshold_prefers_per_benchmark_then_default() -> None:
+    """Thresholds resolve per benchmark first, then by default, else to None."""
     thresholds = {"default": {"p50_us": 2.0}, "bench": {"p50_us": 1.3}}
     assert gate_mod.resolve_threshold(thresholds, "bench", "p50_us") == 1.3
     assert gate_mod.resolve_threshold(thresholds, "other", "p50_us") == 2.0
@@ -113,10 +118,12 @@ def test_resolve_threshold_prefers_per_benchmark_then_default() -> None:
 
 
 def test_validate_report_accepts_a_well_formed_report() -> None:
+    """A well-formed report validates."""
     assert gate_mod.validate_report(_make_report(_benchmarks())) == []
 
 
 def test_validate_report_flags_missing_fields_and_tamper() -> None:
+    """Missing fields and tampering are flagged."""
     assert any(
         "schema_version" in e
         for e in gate_mod.validate_report({"benchmarks": {}, "payload_sha256": "x"})
@@ -130,6 +137,7 @@ def test_validate_report_flags_missing_fields_and_tamper() -> None:
 
 
 def test_verify_baseline_integrity_accepts_and_rejects() -> None:
+    """Baseline integrity accepts a sound baseline and rejects broken ones."""
     assert gate_mod.verify_baseline_integrity(_make_baseline(_benchmarks())) == []
     assert any("missing benchmarks" in e for e in gate_mod.verify_baseline_integrity({}))
     assert any(
@@ -146,12 +154,14 @@ def test_verify_baseline_integrity_accepts_and_rejects() -> None:
     [(1.5, 1.5), (3, 3.0), (True, None), ("x", None), (float("nan"), None)],
 )
 def test_coerce_float(value: Any, expected: float | None) -> None:
+    """Values are coerced to floats where possible."""
     assert gate_mod._coerce_float(value) == expected or (
         expected is None and gate_mod._coerce_float(value) is None
     )
 
 
 def test_hardware_mismatch_only_when_both_cpus_present_and_differ() -> None:
+    """A hardware mismatch is reported only when both CPUs are known and differ."""
     report = _make_report(_benchmarks(), cpu="CpuA")
     assert gate_mod.hardware_mismatch(report, _make_baseline(_benchmarks(), cpu="CpuA")) is None
     finding = gate_mod.hardware_mismatch(report, _make_baseline(_benchmarks(), cpu="CpuB"))
@@ -161,6 +171,7 @@ def test_hardware_mismatch_only_when_both_cpus_present_and_differ() -> None:
 
 
 def test_compare_passes_when_within_policy() -> None:
+    """A run within the policy passes."""
     thresholds = {
         "default": {"p50_us": 2.0, "p95_us": 2.0, "p99_us": 2.0, "throughput_ops_s": 0.5}
     }
@@ -171,6 +182,7 @@ def test_compare_passes_when_within_policy() -> None:
 
 
 def test_compare_flags_latency_regression() -> None:
+    """A latency regression is flagged."""
     thresholds = {
         "default": {"p50_us": 1.2, "p95_us": 2.0, "p99_us": 2.0, "throughput_ops_s": 0.5}
     }
@@ -183,6 +195,7 @@ def test_compare_flags_latency_regression() -> None:
 
 
 def test_compare_flags_throughput_regression() -> None:
+    """A throughput regression is flagged."""
     thresholds = {
         "default": {"p50_us": 5.0, "p95_us": 5.0, "p99_us": 5.0, "throughput_ops_s": 0.9}
     }
@@ -195,6 +208,7 @@ def test_compare_flags_throughput_regression() -> None:
 
 
 def test_compare_flags_policy_gap_and_missing_metric() -> None:
+    """A policy gap and a missing metric are flagged."""
     gap_thresholds = {"default": {"p95_us": 2.0, "p99_us": 2.0, "throughput_ops_s": 0.5}}
     gap = gate_mod.compare(
         _make_report(_benchmarks()), _make_baseline(_benchmarks()), gap_thresholds
@@ -213,6 +227,7 @@ def test_compare_flags_policy_gap_and_missing_metric() -> None:
 
 
 def test_gate_passes_clean_and_short_circuits_on_structural_failure() -> None:
+    """A clean run passes, and a structural failure fails at once."""
     thresholds = {
         "default": {"p50_us": 2.0, "p95_us": 2.0, "p99_us": 2.0, "throughput_ops_s": 0.5}
     }
@@ -241,6 +256,7 @@ def _write_thresholds(path: Path) -> Path:
 
 
 def test_load_thresholds_file_reads_toml(tmp_path: Path) -> None:
+    """The thresholds file is read as TOML."""
     policy = gate_mod.load_thresholds_file(_write_thresholds(tmp_path / "t.toml"))
     assert policy["default"]["p50_us"] == 2.0
 
@@ -257,6 +273,7 @@ def _write_run(tmp_path: Path, *, report_cpu: str = "TestCPU") -> tuple[Path, Pa
 
 
 def test_main_passes_on_matching_run(tmp_path: Path) -> None:
+    """The command passes on a matching run and writes its verdict."""
     report, baseline, thresholds = _write_run(tmp_path)
     out = tmp_path / "verdict.json"
     code = gate_mod.main(
@@ -276,6 +293,7 @@ def test_main_passes_on_matching_run(tmp_path: Path) -> None:
 
 
 def test_main_fails_on_hardware_mismatch(tmp_path: Path) -> None:
+    """The command fails on a hardware mismatch."""
     report, baseline, thresholds = _write_run(tmp_path, report_cpu="DifferentCPU")
     code = gate_mod.main(
         ["--report", str(report), "--baseline", str(baseline), "--thresholds", str(thresholds)]
@@ -284,6 +302,7 @@ def test_main_fails_on_hardware_mismatch(tmp_path: Path) -> None:
 
 
 def test_main_evidence_only_never_fails(tmp_path: Path) -> None:
+    """In evidence-only mode the command never fails."""
     report, baseline, thresholds = _write_run(tmp_path, report_cpu="DifferentCPU")
     code = gate_mod.main(
         [
@@ -300,6 +319,7 @@ def test_main_evidence_only_never_fails(tmp_path: Path) -> None:
 
 
 def test_main_fails_closed_on_missing_files(tmp_path: Path) -> None:
+    """The command fails closed on missing files."""
     _, baseline, thresholds = _write_run(tmp_path)
     code = gate_mod.main(
         [

@@ -54,11 +54,15 @@ def _reset_backend() -> Iterator[None]:
 
 
 class TestDefaultState:
+    """The backend before any change."""
+
     def test_default_backend_is_numpy(self) -> None:
+        """The default backend is NumPy."""
         set_backend("numpy")
         assert get_backend() == "numpy"
 
     def test_default_array_module_is_numpy(self) -> None:
+        """The default array module is NumPy."""
         set_backend("numpy")
         assert get_array_module() is np
 
@@ -67,21 +71,27 @@ class TestDefaultState:
 
 
 class TestNumpyBackend:
+    """The NumPy backend."""
+
     def test_set_numpy(self) -> None:
+        """NumPy can be selected."""
         set_backend("numpy")
         assert get_backend() == "numpy"
 
     def test_to_numpy_passthrough(self) -> None:
+        """Converting to NumPy returns the same array."""
         arr = np.array([1.0, 2.0, 3.0])
         result = to_numpy(arr)
         assert result is arr
 
     def test_from_numpy_passthrough(self) -> None:
+        """Converting from NumPy returns the same array."""
         arr = np.array([1.0, 2.0])
         result = from_numpy(arr)
         assert result is arr
 
     def test_round_trip(self) -> None:
+        """An array survives a round trip."""
         arr = np.array([[1.0, 2.0], [3.0, 4.0]])
         result = to_numpy(from_numpy(arr))
         np.testing.assert_array_equal(result, arr)
@@ -91,7 +101,10 @@ class TestNumpyBackend:
 
 
 class TestJAXBackend:
+    """The JAX backend."""
+
     def test_jax_import_error(self) -> None:
+        """Without JAX, selecting it raises ImportError."""
         with (
             patch.dict("sys.modules", {"jax": None, "jax.numpy": None}),
             pytest.raises(ImportError, match="JAX unavailable"),
@@ -120,6 +133,7 @@ class TestTorchBackend:
     """Optional real CPU tensor conversion and unavailable-provider errors."""
 
     def test_torch_import_error(self) -> None:
+        """Without PyTorch, selecting it raises ImportError."""
         with (
             patch.dict("sys.modules", {"torch": None}),
             pytest.raises(ImportError, match="PyTorch not installed"),
@@ -175,11 +189,15 @@ class TestTorchBackend:
 
 
 class TestInvalidBackend:
+    """Invalid backend names."""
+
     def test_unknown_backend_raises(self) -> None:
+        """An unknown backend is refused."""
         with pytest.raises(ValueError, match="Unknown backend"):
             set_backend("tensorflow")
 
     def test_case_insensitive(self) -> None:
+        """Backend names are case-insensitive."""
         set_backend("NUMPY")
         assert get_backend() == "numpy"
 
@@ -188,11 +206,15 @@ class TestInvalidBackend:
 
 
 class TestAvailableBackends:
+    """Listing the available backends."""
+
     def test_numpy_always_available(self) -> None:
+        """NumPy is always available."""
         backends = available_backends()
         assert "numpy" in backends
 
     def test_returns_list(self) -> None:
+        """The backends come as a list."""
         backends = available_backends()
         assert isinstance(backends, list)
 
@@ -201,6 +223,8 @@ class TestAvailableBackends:
 
 
 class TestToNumpyEdgeCases:
+    """Edge cases of the NumPy conversions."""
+
     def test_non_array_input(self) -> None:
         """to_numpy should handle plain lists.
 
@@ -346,6 +370,8 @@ class TestMockedJaxPath:
 
 
 class TestAvailableBackendsMocked:
+    """Backend detection with mocked imports."""
+
     def test_jax_detected_when_importable(self) -> None:
         """available_backends includes jax when import succeeds."""
         from unittest.mock import MagicMock
@@ -375,6 +401,8 @@ class TestAvailableBackendsMocked:
 
 
 class TestSetBackendMockedSuccess:
+    """Selecting a backend with mocked imports."""
+
     def test_set_jax_success(self) -> None:
         """set_backend('jax') success path with a mock jax.numpy module."""
         from unittest.mock import MagicMock

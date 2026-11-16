@@ -69,6 +69,7 @@ class TestSignConventionOnCouplingTerms:
 
     def test_xx_coefficient_is_minus_k(self) -> None:
         # 2-qubit K matrix with one non-zero coupling.
+        """The XX coefficient is minus the coupling."""
         K = np.array([[0.0, 0.7], [0.7, 0.0]])
         omega = np.array([0.0, 0.0])
         h = knm_to_hamiltonian(K, omega)
@@ -81,6 +82,7 @@ class TestSignConventionOnCouplingTerms:
         assert abs(np.imag(coeffs[xx_index])) < 1e-12
 
     def test_yy_coefficient_is_minus_k(self) -> None:
+        """The YY coefficient is minus the coupling."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.array([0.0, 0.0])
         h = knm_to_hamiltonian(K, omega)
@@ -92,6 +94,7 @@ class TestSignConventionOnCouplingTerms:
 
     def test_zz_coefficient_is_minus_k_delta(self) -> None:
         # Non-zero delta so the ZZ term exists.
+        """The ZZ coefficient is minus the coupling times the anisotropy."""
         K = np.array([[0.0, 0.3], [0.3, 0.0]])
         omega = np.array([0.0, 0.0])
         h = knm_to_xxz_hamiltonian(K, omega, delta=0.9)
@@ -102,6 +105,7 @@ class TestSignConventionOnCouplingTerms:
         assert np.real(coeffs[zz_index]) == pytest.approx(-0.3 * 0.9, abs=1e-12)
 
     def test_z_coefficient_is_minus_omega(self) -> None:
+        """Each Z coefficient is minus its frequency."""
         K = np.zeros((2, 2))  # no coupling, only onsite
         omega = np.array([1.25, -0.7])
         h = knm_to_hamiltonian(K, omega)
@@ -120,6 +124,7 @@ class TestLoopIteratesAllPairs:
 
     def test_n_coupling_pairs_equals_n_choose_2(self) -> None:
         # 4-qubit fully-connected K. Number of (XX + YY) terms = 2 * C(4, 2) = 12.
+        """There is one XX and one YY term per pair."""
         n = 4
         K = np.full((n, n), 0.3) - 0.3 * np.eye(n)
         omega = np.zeros(n)
@@ -134,6 +139,7 @@ class TestLoopIteratesAllPairs:
     def test_includes_nearest_neighbour_0_1(self) -> None:
         # If ``range(i + 1, n)`` were ``range(i + 2, n)``, i=0 would
         # start at j=2, skipping j=1. The (0, 1) pair must be present.
+        """The nearest-neighbour pair 0-1 has XX and YY terms."""
         K = np.array([[0.0, 0.9, 0.0], [0.9, 0.0, 0.0], [0.0, 0.0, 0.0]])
         omega = np.zeros(3)
         h = knm_to_hamiltonian(K, omega)
@@ -147,6 +153,7 @@ class TestReturnTypesAreNotNone:
     """Kill mutants 71, 150: ``None`` substitution on assignments."""
 
     def test_build_kuramoto_ring_returns_numpy_arrays_not_none(self) -> None:
+        """The ring builder returns NumPy arrays of the right size."""
         K, omega = build_kuramoto_ring(n=4, coupling=0.5)
         assert isinstance(K, np.ndarray)
         assert isinstance(omega, np.ndarray)
@@ -156,6 +163,7 @@ class TestReturnTypesAreNotNone:
         assert np.all(np.isfinite(K))
 
     def test_knm_to_sparse_matrix_returns_sparse_op_not_none(self) -> None:
+        """The sparse-matrix builder returns a matrix of the right size."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_sparse_matrix
 
         K = np.array([[0.0, 0.4], [0.4, 0.0]])
@@ -165,6 +173,7 @@ class TestReturnTypesAreNotNone:
         assert mat.shape == (4, 4)
 
     def test_knm_to_hamiltonian_returns_sparse_pauli_op(self) -> None:
+        """The Hamiltonian builder returns a SparsePauliOp."""
         K = np.array([[0.0, 0.4], [0.4, 0.0]])
         omega = np.array([1.0, 1.0])
         h = knm_to_hamiltonian(K, omega)
@@ -176,12 +185,14 @@ class TestBuildKnmPaper27Defaults:
 
     def test_default_L_is_16(self) -> None:
         # Kills mutant 19 (``L: int = 16 → L: int = 17``).
+        """The default size is 16 layers."""
         K = build_knm_paper27()
         assert K.shape == (16, 16)
 
     def test_L_greater_15_applies_L1_L16_boost(self) -> None:
         # Kills mutant 45 (``if L > 15`` → ``if L >= 15``); at L=15 the
         # boost touches K[0, 15] which doesn't exist.
+        """With 16 layers the L1-L16 link gets its boost."""
         K_15 = build_knm_paper27(L=15)
         assert K_15.shape == (15, 15)
         # L=16 applies the boost: K[0, 15] >= 0.05.
@@ -195,12 +206,14 @@ class TestBuildKnmPaper27Defaults:
         # K[6, 4] (symmetric). If the mutation fires, K[4, 6] is
         # seeded from K[5, 6] (the i=5 row) which is a different
         # base-exponential value.
+        """The L5-L7 boost lands on indices 4 and 6, symmetrically."""
         K = build_knm_paper27(L=8)
         assert K[4, 6] >= 0.15 - 1e-12
         assert K[4, 6] == pytest.approx(K[6, 4], abs=1e-12)
 
     def test_anchor_values_exact(self) -> None:
         # Kill the 8 mutants that target the anchor-dict keys / values.
+        """The anchor couplings take their exact values."""
         K = build_knm_paper27(L=16)
         assert K[0, 1] == pytest.approx(0.302, abs=1e-12)
         assert K[1, 0] == pytest.approx(0.302, abs=1e-12)
@@ -219,6 +232,7 @@ class TestOmega16ExactPaperValues:
     """
 
     def test_exact_values_match_paper27_table_1(self) -> None:
+        """The frequencies match the published table exactly."""
         expected = np.array(
             [
                 1.329,
@@ -243,9 +257,11 @@ class TestOmega16ExactPaperValues:
         np.testing.assert_array_equal(OMEGA_N_16, expected)
 
     def test_shape_is_16(self) -> None:
+        """There are 16 frequencies."""
         assert OMEGA_N_16.shape == (16,)
 
     def test_dtype_is_float64(self) -> None:
+        """The frequencies are float64."""
         assert OMEGA_N_16.dtype == np.float64
 
 
@@ -253,6 +269,7 @@ class TestOmegaForOscillators:
     """Regression tests for scalable default-frequency construction."""
 
     def test_prefix_returns_canonical_values_as_fresh_array(self) -> None:
+        """A prefix returns the canonical values in a fresh array."""
         frequencies = omega_for_oscillators(4)
 
         np.testing.assert_array_equal(frequencies, OMEGA_N_16[:4])
@@ -260,6 +277,7 @@ class TestOmegaForOscillators:
         assert OMEGA_N_16[0] == pytest.approx(1.329)
 
     def test_larger_than_16_uses_periodic_extension(self) -> None:
+        """More than 16 oscillators extend the frequencies periodically."""
         frequencies = omega_for_oscillators(20)
 
         assert frequencies.shape == (20,)
@@ -269,9 +287,11 @@ class TestOmegaForOscillators:
 
     @pytest.mark.parametrize("bad_count", [0, -1])
     def test_rejects_non_positive_counts(self, bad_count: int) -> None:
+        """A count below one is refused."""
         with pytest.raises(ValueError, match="n_oscillators must be >= 1"):
             omega_for_oscillators(bad_count)
 
     def test_rejects_non_integer_count(self) -> None:
+        """A non-integer count is refused."""
         with pytest.raises(TypeError, match="n_oscillators must be an integer"):
             omega_for_oscillators(3.5)  # type: ignore[arg-type]
