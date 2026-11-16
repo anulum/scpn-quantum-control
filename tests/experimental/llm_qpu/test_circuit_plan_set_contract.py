@@ -83,7 +83,7 @@ def _reservoir(
         "-0x1.999999999999ap-3",
     ),
 ) -> ReservoirSpec:
-    """Return the n4 open-chain reservoir of the W07 preview."""
+    """Return the n4 open-chain reservoir of the engineering preview."""
     return ReservoirSpec(
         kernel_id="xy_static_digital_v1",
         n_qubits=4,
