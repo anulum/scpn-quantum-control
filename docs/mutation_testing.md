@@ -250,6 +250,20 @@ measurement did not hide the engine: pytest puts the repository root first
 on the import path, and the guard package there finds the installed
 extension again.
 
+The weekly run of 2026-11-16 reported 41 `analysis/otoc.py` survivors against
+the ceiling of 40. The module, its runner and its three test files were
+unchanged since the green run of 2026-11-09. The new survivor was mutant 107,
+which turns `decay = 1.0 - otoc / f0` into `1.0 - otoc * f0` in the Lyapunov
+estimator.
+- Through `compute_otoc` the initial value F(0) is always +1 or -1 for Pauli
+  operators, and there dividing and multiplying agree.
+- The tests had caught this mutant only through rounding noise in F(0). That
+  noise vanished with the move to NumPy 2.5.4 and SciPy 1.18.1.
+- `tests/test_otoc_mutation_kills.py` now tests the estimator's own contract:
+  the exponent does not depend on the scale of F(0) (scales 2, 0.5 and -3).
+  This kills the mutant whatever the rounding.
+- The ceiling stays at 40.
+
 Run it locally with the pinned tool installed
 (`python -m pip install --require-hashes -r requirements-ci-mutation.txt`):
 

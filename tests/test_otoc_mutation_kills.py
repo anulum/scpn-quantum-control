@@ -134,3 +134,26 @@ class TestScramblingTimeBoundary:
         otoc = np.array([0.0, 0.0, 0.0])
         assert _estimate_scrambling_time(times, otoc) is None
         assert _estimate_lyapunov(times, otoc) is None
+
+
+class TestLyapunovNormalisesByInitialValue:
+    """Kill mutant 107: ``1.0 - otoc / f0`` → ``1.0 - otoc * f0``.
+
+    Through ``compute_otoc`` the initial value is always +1 or -1 for Pauli
+    operators, where dividing and multiplying agree, so the mutant was killed
+    only by rounding noise in F(0) and survived once that noise vanished. The
+    estimator's own contract is scale-free: it fits ``F(t)/F(0) = 1 - eps exp(lambda t)``.
+    """
+
+    @pytest.mark.parametrize("scale", [2.0, 0.5, -3.0])
+    def test_estimate_does_not_depend_on_the_scale_of_the_initial_value(
+        self, scale: float
+    ) -> None:
+        """A rescaled decay curve gives the same exponent as the unscaled one."""
+        times = np.linspace(0.0, 1.0, 11)
+        lam, eps = 1.3, 0.01
+        unit = 1.0 - eps * np.exp(lam * times)
+        unit = unit / unit[0]
+        reference = _estimate_lyapunov(times, unit)
+        assert reference is not None and np.isfinite(reference) and reference > 0.0
+        assert _estimate_lyapunov(times, scale * unit) == pytest.approx(reference, rel=1e-12)

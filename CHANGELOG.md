@@ -1151,6 +1151,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     fresh single-tenant runner. The 136 contract tests now check the
     private directory, and compare the workflow by database name.
 
+- The weekly mutation run of 2026-11-16 failed on `analysis/otoc.py`, with 41
+  survivors against a ceiling of 40.
+  - The new survivor, mutant 107, turns `1.0 - otoc / f0` into
+    `1.0 - otoc * f0` in the Lyapunov estimator. The module and its tests had
+    not changed.
+  - Through `compute_otoc` the initial value is always +1 or -1 for Pauli
+    operators, where the two forms agree. The tests had caught the mutant
+    only through rounding noise in F(0), which the move to NumPy 2.5.4 and
+    SciPy 1.18.1 removed.
+  - A new test checks that the estimated exponent does not depend on the
+    scale of F(0). It kills the mutant whatever the rounding.
+  - The ceiling stays at 40, and `docs/mutation_testing.md` records the case.
+
 - The CI security job now runs Bandit at medium severity over `tools/` too
   (`bandit -r src/ scripts/ tools/ -x tools/tests -ll -q`). Test code stays
   unscanned, as `tests/` always was. The five medium findings in `tools/`
