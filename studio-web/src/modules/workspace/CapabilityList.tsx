@@ -21,6 +21,7 @@ const tone: Readonly<Record<CapabilityState, string>> = {
  * The state is written out, so it never depends on colour. The kernels are
  * checked for this list only when the user asks.
  *
+ * @param props - Component inputs.
  * @param props.services - Resolved capabilities and the on-demand check.
  */
 export function CapabilityList({ services }: { readonly services: CapabilityServices }) {

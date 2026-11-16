@@ -15,6 +15,7 @@ import EvidenceCatalogueView from "./EvidenceCatalogueView";
 /**
  * The evidence catalogue followed by the attestation instrument and the benchmark databank.
  *
+ * @param props - Component inputs.
  * @param props.focusAttestation - Move focus to the attestation instrument after mounting, for its deep link.
  * @param props.focusBenchmarks - Move focus to the benchmark databank after mounting, for its deep link.
  */

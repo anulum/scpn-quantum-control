@@ -189,6 +189,7 @@ function DatabankView({ databank }: { readonly databank: BenchmarkDatabank }) {
 /**
  * The canonical tier benchmarks, verified here before they are shown.
  *
+ * @param props - Component inputs.
  * @param props.load - Verifier of the committed pin and artefacts; tests pass their own.
  */
 export function BenchmarkDatabankInspector({

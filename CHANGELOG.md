@@ -4,6 +4,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Studio API reference builds without warnings again. The capability
+  list, benchmark databank inspector and evidence view now document their
+  `props` argument before its fields, as TypeDoc requires.
+
 - The Program AD captured-state coverage gate now runs the exception-rule
   and structural-metadata tests.
   - Those two test files came with the admission changes for exception
