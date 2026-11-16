@@ -37,11 +37,13 @@ LABELS = computational_basis_labels(script.N_QUBITS)
 
 
 def statevector_probabilities(circuit: QuantumCircuit) -> list[float]:
+    """Return the ideal outcome probabilities of a circuit without its final measurements."""
     bare = circuit.remove_final_measurements(inplace=False)
     return [float(p) for p in Statevector(bare).probabilities()]
 
 
 def perfect_counts(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Return ideal counts of a circuit for a shot total."""
     probabilities = statevector_probabilities(circuit)
     counts: dict[str, int] = {}
     remaining = shots
@@ -54,16 +56,21 @@ def perfect_counts(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
 
 def perfect_calibration_counts() -> dict[str, dict[str, int]]:
+    """Return ideal counts for every calibration label."""
     return {label: {label: CAL_SHOTS} for label in LABELS}
 
 
 class TestCircuits:
+    """The matched-basis and calibration circuits."""
+
     def test_two_matched_basis_circuits_with_names(self) -> None:
+        """There are two matched-basis circuits with their names."""
         circuits = script.matched_basis_circuits()
         assert [c.name for c in circuits] == ["qkd_qber_zz", "qkd_qber_xx"]
 
     @pytest.mark.parametrize("index", [0, 1])
     def test_matched_bases_give_zero_mismatch_ideally(self, index: int) -> None:
+        """Matched bases give zero mismatch ideally."""
         circuit = script.matched_basis_circuits()[index]
         probabilities = statevector_probabilities(circuit)
         for pair in QUBIT_PAIRS:
@@ -71,6 +78,7 @@ class TestCircuits:
             assert mismatch == pytest.approx(0.0, abs=1e-12)
 
     def test_unmatched_basis_gives_half_mismatch(self) -> None:
+        """Unmatched bases give a mismatch of one half."""
         circuit = QuantumCircuit(script.N_QUBITS)
         for pair in QUBIT_PAIRS:
             circuit.h(pair[0])
@@ -83,6 +91,7 @@ class TestCircuits:
             assert mismatch == pytest.approx(0.5, abs=1e-12)
 
     def test_calibration_circuits_prepare_their_labels(self) -> None:
+        """Each of the 16 calibration circuits prepares its label."""
         circuits = script.calibration_circuits()
         assert len(circuits) == 16
         for label, circuit in zip(LABELS, circuits, strict=True):
@@ -92,27 +101,36 @@ class TestCircuits:
 
 
 class TestBasisMetadata:
+    """The basis metadata."""
+
     def test_metadata_records_bases_and_pairs(self) -> None:
+        """The metadata records the matched bases and the qubit pairs."""
         metadata = script.basis_metadata()
         assert [m["alice_basis"] for m in metadata] == ["Z", "X"]
         assert all(m["alice_basis"] == m["bob_basis"] for m in metadata)
         assert all(m["pairs"] == [list(p) for p in QUBIT_PAIRS] for m in metadata)
 
     def test_metadata_declares_no_per_shot_randomness(self) -> None:
+        """The metadata states there is no per-shot basis choice."""
         assert all(m["per_shot_random_basis"] is False for m in script.basis_metadata())
 
 
 class TestMismatchArithmetic:
+    """Mismatch rates and their errors."""
+
     def test_pair_mismatch_from_counts(self) -> None:
+        """Pair mismatch is read from counts."""
         counts = {"0000": 900, "0001": 50, "0010": 50}
         assert script.pair_mismatch_probability(counts, (0, 1)) == pytest.approx(0.1)
         assert script.pair_mismatch_probability(counts, (2, 3)) == pytest.approx(0.0)
 
     def test_pair_mismatch_rejects_empty_counts(self) -> None:
+        """Empty counts are refused."""
         with pytest.raises(ValueError, match="no shots"):
             script.pair_mismatch_probability({"0000": 0}, (0, 1))
 
     def test_quasi_probability_mismatch_keeps_negative_terms(self) -> None:
+        """The quasi-probability mismatch keeps negative terms."""
         probabilities = [0.0] * 16
         probabilities[int("0001", 2)] = 0.06
         probabilities[int("0010", 2)] = -0.01
@@ -121,15 +139,20 @@ class TestMismatchArithmetic:
         )
 
     def test_binomial_sigma_matches_direct_formula(self) -> None:
+        """The binomial error matches its formula."""
         assert script.binomial_sigma(0.05, 4096) == pytest.approx(math.sqrt(0.05 * 0.95 / 4096))
 
     def test_binomial_sigma_clamps_out_of_range_rates(self) -> None:
+        """Rates outside [0, 1] give zero error."""
         assert script.binomial_sigma(-0.2, 100) == 0.0
         assert script.binomial_sigma(1.7, 100) == 0.0
 
 
 class TestMarchNaiveSift:
+    """The naive sift of the earlier hardware run."""
+
     def make_artifact(self, tmp_path: Path) -> Path:
+        """Write a synthetic earlier-run artifact and return its path."""
         payload = {
             "backend": "ibm_fez",
             "results": [
@@ -143,6 +166,7 @@ class TestMarchNaiveSift:
         return path
 
     def test_synthetic_sift_rates(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The synthetic artifact gives the expected sift rates."""
         path = self.make_artifact(tmp_path)
         monkeypatch.setattr(script, "REPO_ROOT", tmp_path)
         sift = script.march_naive_sift(path)
@@ -154,6 +178,7 @@ class TestMarchNaiveSift:
         assert by_key[(1, (2, 3))]["mismatch_rate"] == pytest.approx(200 / 4000)
 
     def test_real_committed_artifact_stays_in_naive_band(self) -> None:
+        """The committed artifact stays within the naive band."""
         sift = script.march_naive_sift(script.REPO_ROOT / script.PARENT_ARTIFACT)
         rates = [entry["mismatch_rate"] for entry in sift["entries"]]
         assert all(0.0 <= rate <= 0.1 for rate in rates)
@@ -162,29 +187,39 @@ class TestMarchNaiveSift:
 
 
 class TestDecisionRule:
+    """The preregistered decision rule."""
+
     def sift(self) -> dict[str, Any]:
+        """Return a sift with two mismatch rates."""
         return {"entries": [{"mismatch_rate": 0.02}, {"mismatch_rate": 0.037}]}
 
     def measurement(self, rate: float) -> dict[str, Any]:
+        """Return a measurement with a mitigated rate and its error."""
         return {"mitigated_mismatch_rate": rate, "sigma_binomial": 0.003}
 
     def test_rates_inside_band_support_overstatement_reading(self) -> None:
+        """Rates inside the band support the overstatement reading."""
         outcome = script.decision_rule([self.measurement(0.03)], self.sift())
         assert outcome["all_mitigated_rates_within_2_sigma_of_band"] is True
         assert "overstate" in outcome["preregistered_reading"]
 
     def test_rate_above_band_flips_the_reading(self) -> None:
+        """A rate above the band flips the reading."""
         outcome = script.decision_rule([self.measurement(0.055)], self.sift())
         assert outcome["all_mitigated_rates_within_2_sigma_of_band"] is False
         assert "outside" in outcome["preregistered_reading"]
 
     def test_band_edges_stretch_by_two_sigma(self) -> None:
+        """The band edges stretch by two standard errors."""
         outcome = script.decision_rule([self.measurement(0.042)], self.sift())
         assert outcome["all_mitigated_rates_within_2_sigma_of_band"] is True
 
 
 class TestBuildAnalysis:
+    """Building the analysis."""
+
     def test_perfect_counts_give_zero_rates(self, tmp_path: Path) -> None:
+        """Ideal counts give zero rates and support the reading."""
         circuits = script.matched_basis_circuits()
         basis_counts = [perfect_counts(circuit, SHOTS) for circuit in circuits]
         artifact = TestMarchNaiveSift().make_artifact(tmp_path)
@@ -203,6 +238,7 @@ class TestBuildAnalysis:
         assert "no QKD" in analysis["claim_boundary"]
 
     def test_metadata_travels_into_the_analysis(self, tmp_path: Path) -> None:
+        """The metadata and the naive sift appear in the analysis."""
         circuits = script.matched_basis_circuits()
         basis_counts = [perfect_counts(circuit, SHOTS) for circuit in circuits]
         artifact = TestMarchNaiveSift().make_artifact(tmp_path)
@@ -217,6 +253,7 @@ class TestBuildAnalysis:
 
 
 def make_args(**overrides: Any) -> Any:
+    """Return command arguments with the defaults and the given overrides."""
     import argparse
 
     defaults = {
@@ -231,6 +268,7 @@ def make_args(**overrides: Any) -> Any:
 
 
 def make_layout(readout: float = 0.01) -> Any:
+    """Return a four-qubit layout with a chosen readout error."""
     from scripts.submit_bell_rerun_mitigated import LayoutSelection
 
     return LayoutSelection(
@@ -241,7 +279,10 @@ def make_layout(readout: float = 0.01) -> Any:
 
 
 class TestReadiness:
+    """The readiness gates."""
+
     def test_ready_when_all_gates_pass(self) -> None:
+        """With every gate passing the run is ready."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=make_layout(),
@@ -254,6 +295,7 @@ class TestReadiness:
         assert readiness["basis_metadata"] == script.basis_metadata()
 
     def test_blocked_on_readout_error(self) -> None:
+        """A high readout error blocks the run."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=make_layout(readout=0.5),
@@ -264,6 +306,7 @@ class TestReadiness:
         assert any("readout-error abort" in reason for reason in readiness["reasons"])
 
     def test_blocked_on_depth(self) -> None:
+        """Excess depth blocks the run."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=make_layout(),
@@ -273,6 +316,7 @@ class TestReadiness:
         assert readiness["status"] == "blocked"
 
     def test_blocked_on_budget(self) -> None:
+        """An exceeded budget blocks the run."""
         readiness = script.build_readiness(
             backend_name="ibm_fez",
             layout=make_layout(),
@@ -282,11 +326,15 @@ class TestReadiness:
         assert readiness["status"] == "blocked"
 
     def test_estimate_uses_the_empirical_anchor(self) -> None:
+        """The time estimate scales the measured anchor."""
         assert script.estimate_qpu_seconds(18) == pytest.approx(19.8)
 
 
 class TestWriteJson:
+    """Writing JSON files."""
+
     def test_returns_sha256_of_file(self, tmp_path: Path) -> None:
+        """Writing returns the SHA-256 of the file."""
         import hashlib
 
         path = tmp_path / "x.json"
@@ -295,28 +343,40 @@ class TestWriteJson:
 
 
 class FakeRegister:
+    """A classical register with fixed counts."""
+
     def __init__(self, counts: dict[str, int]) -> None:
         self._counts = counts
 
     def get_counts(self) -> dict[str, int]:
+        """Return the register's counts."""
         return self._counts
 
 
 class FakeData:
+    """Result data holding the measurement register."""
+
     def __init__(self, counts: dict[str, int]) -> None:
         self.meas = FakeRegister(counts)
 
 
 class FakePubResult:
+    """A sampler result holding fixed counts."""
+
     def __init__(self, counts: dict[str, int]) -> None:
         self.data = FakeData(counts)
 
 
 class TestPubCounts:
+    """Reading counts from a sampler result."""
+
     def test_extracts_from_meas_register(self) -> None:
+        """Counts are read from the measurement register."""
         assert script._pub_counts(FakePubResult({"0000": 4})) == {"0000": 4}
 
     def test_fails_without_a_counts_register(self) -> None:
+        """A result without a counts register fails closed."""
+
         class Empty:
             data = object()
 
@@ -325,6 +385,8 @@ class TestPubCounts:
 
 
 class FakeJob:
+    """A sampler job with fixed results and optional failing metrics."""
+
     def __init__(
         self,
         pubs: list[FakePubResult],
@@ -337,12 +399,15 @@ class FakeJob:
         self._metrics_non_mapping = metrics_non_mapping
 
     def job_id(self) -> str:
+        """Return the fixed job id."""
         return "testjobid0000000001"
 
     def result(self, timeout: float) -> list[FakePubResult]:
+        """Return the fixed results."""
         return self._pubs
 
     def metrics(self) -> Any:
+        """Return the metrics, raise, or return a non-mapping, as configured."""
         if self._metrics_error:
             raise RuntimeError("metrics endpoint down")
         if self._metrics_non_mapping:
@@ -351,6 +416,8 @@ class FakeJob:
 
 
 class TestMain:
+    """The submission command."""
+
     def prepare(
         self,
         tmp_path: Path,
@@ -359,6 +426,7 @@ class TestMain:
         metrics_error: bool = False,
         metrics_non_mapping: bool = False,
     ) -> dict[str, Any]:
+        """Route the backend, layout, transpiler and sampler to fakes and return what they receive."""
         import types as _fake_types
 
         from scripts import prepare_s1_ibm_live_readiness as readiness_module
@@ -407,15 +475,18 @@ class TestMain:
         return captured
 
     def march_artifact(self, tmp_path: Path) -> Path:
+        """Write the earlier-run artifact and return its path."""
         return TestMarchNaiveSift().make_artifact(tmp_path)
 
     def test_submit_requires_confirm_budget(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """Submitting without --confirm-budget is refused."""
         assert script.main(["--submit"]) == 2
         assert "requires --confirm-budget" in capsys.readouterr().err
 
     def test_dry_run_writes_readiness_only(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """A dry run writes only the readiness record."""
         self.prepare(tmp_path, monkeypatch)
         out_dir = tmp_path / "pack"
         code = script.main(
@@ -432,6 +503,7 @@ class TestMain:
     def test_blocked_readiness_returns_3(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Blocked readiness exits 3."""
         self.prepare(tmp_path, monkeypatch)
         code = script.main(
             [
@@ -453,6 +525,7 @@ class TestMain:
         metrics_error: bool = False,
         metrics_non_mapping: bool = False,
     ) -> tuple[int, Path, dict[str, Any]]:
+        """Run a full submission against fakes and return the exit code, output directory and capture."""
         captured = self.prepare(
             tmp_path,
             monkeypatch,
@@ -477,6 +550,7 @@ class TestMain:
     def test_full_submission_writes_hash_bound_packs(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """A full submission writes packs bound by their hashes."""
         code, out_dir, captured = self.run_submission(tmp_path, monkeypatch)
         assert code == 0
         raw = json.loads(
@@ -501,6 +575,7 @@ class TestMain:
     def test_metrics_failure_is_recorded_not_fatal(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A metrics failure is recorded and is not fatal."""
         code, out_dir, _ = self.run_submission(tmp_path, monkeypatch, metrics_error=True)
         assert code == 0
         raw = json.loads(
@@ -511,6 +586,7 @@ class TestMain:
     def test_non_mapping_metrics_leave_usage_empty(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Metrics that are not a mapping leave the usage empty."""
         code, out_dir, _ = self.run_submission(tmp_path, monkeypatch, metrics_non_mapping=True)
         assert code == 0
         raw = json.loads(

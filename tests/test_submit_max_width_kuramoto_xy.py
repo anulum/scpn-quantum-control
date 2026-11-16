@@ -61,7 +61,10 @@ def counts_from_circuit(circuit: Any, width: int, shots: int) -> dict[str, int]:
 
 
 class TestWorkloadFamily:
+    """The XY workload circuits."""
+
     def test_chain_coupling_is_nearest_neighbour_and_symmetric(self) -> None:
+        """The chain coupling is symmetric and nearest-neighbour."""
         coupling = script.chain_coupling(6)
         assert np.allclose(coupling, coupling.T)
         assert coupling[0, 2] == 0.0
@@ -70,11 +73,13 @@ class TestWorkloadFamily:
         assert coupling[4, 5] > 0.0
 
     def test_evolution_body_shape(self) -> None:
+        """The evolution body has the width and its name."""
         body = script.evolution_body(5, 2)
         assert body.num_qubits == 5
         assert body.name == "width5_reps2"
 
     def test_setting_circuits_rotate_and_measure(self) -> None:
+        """The X and Y settings rotate before they measure."""
         body = script.evolution_body(3, 1)
         x_circuit = script.measured_setting_circuit(body, "x")
         y_circuit = script.measured_setting_circuit(body, "y")
@@ -86,10 +91,12 @@ class TestWorkloadFamily:
         assert y_ops["h"] == 3 and y_ops["sdg"] == 3
 
     def test_unknown_setting_fails_closed(self) -> None:
+        """An unknown measurement setting fails closed."""
         with pytest.raises(ValueError, match="unknown measurement setting"):
             script.measured_setting_circuit(script.evolution_body(2, 1), "z")
 
     def test_calibration_circuits_prepare_extremes(self) -> None:
+        """The calibration circuits prepare all-zero and all-one."""
         zeros, ones = script.width_calibration_circuits(3)
         zero_probs = Statevector(
             zeros.remove_final_measurements(inplace=False)
@@ -100,7 +107,10 @@ class TestWorkloadFamily:
 
 
 class TestExpectationArithmetic:
+    """Expectations and the order parameter."""
+
     def test_measurement_route_matches_statevector(self) -> None:
+        """Expectations from counts match the statevector."""
         width, reps = 3, 1
         x_ref, y_ref = statevector_expectations(width, reps)
         body = script.evolution_body(width, reps)
@@ -111,6 +121,7 @@ class TestExpectationArithmetic:
         assert script.per_qubit_z_expectations(y_counts, width) == pytest.approx(y_ref, abs=1e-3)
 
     def test_mps_baseline_matches_statevector_exactly(self) -> None:
+        """The MPS baseline matches the statevector."""
         width, reps = 3, 2
         x_ref, y_ref = statevector_expectations(width, reps)
         x_mps, y_mps = script.exact_baseline_expectations(width, reps)
@@ -118,15 +129,18 @@ class TestExpectationArithmetic:
         assert y_mps == pytest.approx(y_ref, abs=1e-9)
 
     def test_zero_shot_table_fails_closed(self) -> None:
+        """A count table without shots fails closed."""
         with pytest.raises(ValueError, match="no shots"):
             script.per_qubit_z_expectations({}, 2)
 
     def test_order_parameter_known_values(self) -> None:
+        """The order parameter has its known values."""
         assert script.order_parameter([1.0, 1.0], [0.0, 0.0]) == pytest.approx(1.0)
         assert script.order_parameter([0.6, 0.6], [0.8, 0.8]) == pytest.approx(1.0)
         assert script.order_parameter([1.0, -1.0], [0.0, 0.0]) == pytest.approx(0.0)
 
     def test_order_parameter_shape_mismatch_fails_closed(self) -> None:
+        """Expectation lists of unequal length fail closed."""
         with pytest.raises(ValueError, match="equal-length"):
             script.order_parameter([1.0], [1.0, 0.0])
         with pytest.raises(ValueError, match="equal-length"):
@@ -134,7 +148,10 @@ class TestExpectationArithmetic:
 
 
 class TestReadoutMitigation:
+    """Readout mitigation of Z expectations."""
+
     def test_perfect_calibration_gives_zero_epsilon(self) -> None:
+        """A perfect calibration gives zero flip rates."""
         cal0 = {"00": CAL_SHOTS}
         cal1 = {"11": CAL_SHOTS}
         pairs = script.readout_error_pairs(cal0, cal1, 2)
@@ -142,6 +159,7 @@ class TestReadoutMitigation:
 
     def test_known_flip_rates_are_recovered(self) -> None:
         # Qubit 0 flips 0→1 a quarter of the time; qubit 1 flips 1→0 half.
+        """Known flip rates are recovered."""
         cal0 = {"00": 6144, "01": 2048}
         cal1 = {"11": 4096, "01": 4096}
         pairs = script.readout_error_pairs(cal0, cal1, 2)
@@ -151,21 +169,27 @@ class TestReadoutMitigation:
         assert pairs[1][1] == pytest.approx(0.5)
 
     def test_identity_channel_leaves_expectation_unchanged(self) -> None:
+        """Without flips the expectation is unchanged."""
         assert script.mitigate_z_expectation(0.42, 0.0, 0.0) == pytest.approx(0.42)
 
     def test_symmetric_channel_inverts_exactly(self) -> None:
         # ε₀ = ε₁ = 0.1 shrinks <Z> by (1 − 2ε); the inversion restores it.
+        """A symmetric flip channel is inverted exactly."""
         true_z = 0.6
         observed = true_z * (1.0 - 2.0 * 0.1)
         assert script.mitigate_z_expectation(observed, 0.1, 0.1) == pytest.approx(true_z)
 
     def test_non_invertible_calibration_fails_closed(self) -> None:
+        """A calibration that cannot be inverted fails closed."""
         with pytest.raises(ValueError, match="not invertible"):
             script.mitigate_z_expectation(0.0, 0.6, 0.5)
 
 
 class TestAnalyseWidth:
+    """Analysis of one width."""
+
     def test_ideal_counts_reproduce_the_baseline(self) -> None:
+        """Ideal counts reproduce the baseline, and mitigation changes nothing."""
         width, reps = 3, 1
         body = script.evolution_body(width, reps)
         big = 10**7
@@ -179,6 +203,7 @@ class TestAnalyseWidth:
         assert len(row["per_qubit"]["x_unmitigated"]) == width
 
     def test_baseline_can_be_deferred(self) -> None:
+        """The baseline can be left out."""
         cal = ({"00": CAL_SHOTS}, {"11": CAL_SHOTS})
         row = script.analyse_width(
             2, 1, {"00": SHOTS}, {"00": SHOTS}, *cal, include_baseline=False
@@ -187,41 +212,52 @@ class TestAnalyseWidth:
 
 
 class TestCoerceCounts:
+    """Checking and padding counts."""
+
     def test_valid_counts_pass_and_pad(self) -> None:
+        """Valid counts pass with padded bitstrings."""
         coerced = script.coerce_counts(
             {"11": 3, "000": 5}, width=3, expected_shots=8, field_name="test"
         )
         assert coerced == {"011": 3, "000": 5}
 
     def test_shot_mismatch_fails_closed(self) -> None:
+        """A shot total that does not match fails closed."""
         with pytest.raises(ValueError, match="expected 9, observed 8"):
             script.coerce_counts({"000": 8}, width=3, expected_shots=9, field_name="test")
 
     def test_duplicate_after_padding_fails_closed(self) -> None:
+        """Bitstrings that collide after padding fail closed."""
         with pytest.raises(ValueError, match="duplicate bitstring"):
             script.coerce_counts({"11": 4, "011": 4}, width=3, expected_shots=8, field_name="test")
 
     def test_negative_count_fails_closed(self) -> None:
+        """A negative count fails closed."""
         with pytest.raises(ValueError, match="test value"):
             script.coerce_counts({"000": -1}, width=3, expected_shots=8, field_name="test")
 
 
 class FakeProps:
+    """Gate properties with one error rate."""
+
     def __init__(self, error: float | None) -> None:
         self.error = error
 
 
 class FakeTarget:
+    """A backend target built from operation maps."""
+
     def __init__(self, op_maps: dict[str, Any]) -> None:
         self._op_maps = op_maps
         self.operation_names = tuple(op_maps)
 
     def __getitem__(self, name: str) -> Any:
+        """Return the qubit map of one operation."""
         return self._op_maps[name]
 
 
 def line_target(n: int, gate: float = 0.005, readout: float = 0.01) -> FakeTarget:
-    """A calibrated 1-D line of ``n`` qubits."""
+    """Return a calibrated 1-D line of ``n`` qubits."""
     return FakeTarget(
         {
             "cz": {(i, i + 1): FakeProps(gate) for i in range(n - 1)},
@@ -231,7 +267,10 @@ def line_target(n: int, gate: float = 0.005, readout: float = 0.01) -> FakeTarge
 
 
 class TestPlanWidths:
+    """Planning the widths to run."""
+
     def test_line_of_40_resolves_32_and_device_max(self) -> None:
+        """A 40-qubit line runs 32 and the device maximum and skips the rest."""
         resolved, skipped = script.plan_widths(line_target(40), median_edge_error_abort=0.03)
         widths = [width for width, _ in resolved]
         assert widths == [32, 40]
@@ -240,6 +279,7 @@ class TestPlanWidths:
         assert all("device-max" in entry["reason"] for entry in skipped)
 
     def test_noisy_chain_is_skipped_by_the_median_threshold(self) -> None:
+        """A noisy chain is skipped by the median threshold."""
         resolved, skipped = script.plan_widths(
             line_target(40, gate=0.08), median_edge_error_abort=0.03
         )
@@ -247,6 +287,7 @@ class TestPlanWidths:
         assert any("abort threshold" in entry["reason"] for entry in skipped)
 
     def test_no_calibrated_chain_fails_closed(self) -> None:
+        """A target without a calibrated chain fails closed."""
         empty = FakeTarget({"measure": {(0,): FakeProps(0.01)}})
         with pytest.raises(ValueError, match="no usable calibrated chain"):
             script.plan_widths(empty, median_edge_error_abort=0.03)
@@ -257,6 +298,7 @@ class TestPlanWidths:
         # Defensive branch: a preregistered width below device-max that no
         # seed reaches. Greedy growth cannot produce this on a static graph
         # (any prefix of the longest chain is reachable), so it is forced.
+        """An unreachable width is recorded with its reason."""
         monkeypatch.setattr(script, "select_error_aware_chain", lambda *args, **kwargs: None)
         resolved, skipped = script.plan_widths(line_target(40), median_edge_error_abort=0.03)
         widths = [width for width, _ in resolved]
@@ -265,6 +307,7 @@ class TestPlanWidths:
         assert "no chain of this width is reachable" in unreachable["reason"]
 
     def test_device_max_equal_to_preregistered_width_is_not_duplicated(self) -> None:
+        """A device maximum equal to a planned width is not run twice."""
         resolved, skipped = script.plan_widths(line_target(32), median_edge_error_abort=0.03)
         widths = [width for width, _ in resolved]
         assert widths == [32]
@@ -274,63 +317,84 @@ class TestPlanWidths:
 
 
 class TestEstimateAndIo:
+    """The time estimate and the file helpers."""
+
     def test_estimate_uses_the_anchor(self) -> None:
+        """The time estimate scales the anchor."""
         assert script.estimate_qpu_seconds(24) == pytest.approx(26.4)
 
     def test_write_json_roundtrip(self, tmp_path: Path) -> None:
+        """Written JSON reads back and its digest matches."""
         target = tmp_path / "payload.json"
         digest = script._write_json(target, {"a": 1})
         assert json.loads(target.read_text(encoding="utf-8")) == {"a": 1}
         assert digest == script._sha256(target)
 
     def test_timestamp_shape(self) -> None:
+        """The timestamp has 16 characters and ends in Z."""
         stamp = script._timestamp()
         assert len(stamp) == 16 and stamp.endswith("Z")
 
 
 class FakeRegister:
+    """A classical register with fixed counts."""
+
     def __init__(self, counts: dict[str, int]) -> None:
         self._counts = counts
 
     def get_counts(self) -> dict[str, int]:
+        """Return the register's counts."""
         return self._counts
 
 
 class FakePubResult:
+    """A sampler result holding one named register."""
+
     def __init__(self, counts: dict[str, int], register: str = "meas") -> None:
         self.data = types.SimpleNamespace(**{register: FakeRegister(counts)})
 
 
 class TestPubCounts:
+    """Reading counts from a sampler result."""
+
     def test_reads_registers(self) -> None:
+        """Counts are read from the default and from a named register."""
         assert script._pub_counts(FakePubResult({"0": 1})) == {"0": 1}
         assert script._pub_counts(FakePubResult({"0": 1}, register="c")) == {"0": 1}
 
     def test_no_register_fails_closed(self) -> None:
+        """A result without a classical register fails closed."""
         empty = types.SimpleNamespace(data=types.SimpleNamespace())
         with pytest.raises(RuntimeError, match="no classical register"):
             script._pub_counts(empty)
 
 
 class FakeJob:
+    """A sampler job with fixed results."""
+
     def __init__(self, results: list[FakePubResult]) -> None:
         self._results = results
 
     def job_id(self) -> str:
+        """Return the fixed job id."""
         return "test-max-width-job"
 
     def result(self, timeout: float) -> list[FakePubResult]:
+        """Return the results after checking the timeout is positive."""
         assert timeout > 0
         return self._results
 
 
 class FakeSampler:
+    """A sampler that records its inputs and returns ideal counts."""
+
     last_pubs: list[tuple[Any, Any, int]] = []
 
     def __init__(self, mode: Any) -> None:
         self.mode = mode
 
     def run(self, pubs: list[tuple[Any, Any, int]]) -> FakeJob:
+        """Record the inputs and return a job with ideal or calibration counts per circuit."""
         FakeSampler.last_pubs = pubs
         results = []
         for circuit, _, shots in pubs:
@@ -372,9 +436,12 @@ def mocked_hardware(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 class TestMain:
+    """The submission command."""
+
     def test_submit_without_confirm_budget_is_refused(
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """Submitting without --confirm-budget is refused."""
         assert script.main(["--submit"]) == 2
         assert "requires --confirm-budget" in capsys.readouterr().err
 
@@ -384,6 +451,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A dry run writes only the readiness record."""
         assert script.main(["--out-dir", str(tmp_path)]) == 0
         output = capsys.readouterr().out
         assert "readiness=ready_for_submission" in output
@@ -398,6 +466,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Blocked readiness exits 3."""
         exit_code = script.main(
             ["--out-dir", str(tmp_path), "--median-edge-error-abort", "0.0001"]
         )
@@ -410,6 +479,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A full submission against fakes writes every document."""
         exit_code = script.main(["--out-dir", str(tmp_path), "--submit", "--confirm-budget"])
         assert exit_code == 0
         output = capsys.readouterr().out
@@ -445,6 +515,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Skipping the baseline leaves the MPS run for later."""
         exit_code = script.main(
             ["--out-dir", str(tmp_path), "--submit", "--confirm-budget", "--skip-baseline"]
         )
@@ -455,6 +526,7 @@ class TestMain:
         assert "deferred" in analysis["baseline"]
 
     def test_parse_args_defaults(self) -> None:
+        """The arguments have their documented defaults."""
         args = script._parse_args([])
         assert args.backend == script.DEFAULT_BACKEND
         assert args.shots == SHOTS
@@ -464,7 +536,10 @@ class TestMain:
 
 
 class TestModuleBootstrap:
+    """Loading the script as a module."""
+
     def test_reload_inserts_repo_root_when_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A reload puts the repository root first on the path."""
         import importlib
 
         stripped = [entry for entry in sys.path if entry != str(script.REPO_ROOT)]
