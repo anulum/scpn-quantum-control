@@ -34,6 +34,7 @@ from oscillatools.accel.kuramoto_coordinated_reset import (
 
 
 def test_sites_and_reset_phases() -> None:
+    """Sites cycle through the groups and reset phases are evenly spaced."""
     assert coordinated_reset_sites(6, 3).tolist() == [0, 1, 2, 0, 1, 2]
     assert coordinated_reset_phases(4) == pytest.approx(np.array([0.0, 0.5, 1.0, 1.5]) * np.pi)
 
@@ -43,11 +44,13 @@ def test_sites_and_reset_phases() -> None:
     [(6, 1), (3, 5)],
 )
 def test_sites_validation(n_oscillators: int, n_sites: int) -> None:
+    """An invalid site assignment is refused."""
     with pytest.raises(ValueError):
         coordinated_reset_sites(n_oscillators, n_sites)
 
 
 def test_coordinated_reset_collapses_the_order_parameter() -> None:
+    """Coordinated reset collapses a synchronised order parameter."""
     rng = np.random.default_rng(0)
     n_oscillators = 40
     initial_phases = rng.normal(0.0, 0.05, size=n_oscillators)  # nearly synchronised
@@ -63,6 +66,7 @@ def test_coordinated_reset_collapses_the_order_parameter() -> None:
 
 
 def test_plastic_carryover_outlasts_stimulation() -> None:
+    """With plasticity the desynchronisation outlasts the stimulation."""
     rng = np.random.default_rng(0)
     n_oscillators = 60
     initial_phases = rng.normal(0.0, 0.05, size=n_oscillators)
@@ -91,6 +95,7 @@ def test_plastic_carryover_outlasts_stimulation() -> None:
 
 
 def test_trajectory_shapes_and_metadata() -> None:
+    """The trajectory records its series, stimulation steps and site assignment."""
     rng = np.random.default_rng(2)
     initial_phases = rng.uniform(0.0, 2.0 * np.pi, size=8)
     omega = np.zeros(8)
@@ -114,6 +119,7 @@ def test_trajectory_shapes_and_metadata() -> None:
 
 
 def test_desync_objective_gradient_matches_finite_difference() -> None:
+    """The desynchronisation gradient agrees with finite differences."""
     rng = np.random.default_rng(3)
     n_oscillators = 6
     initial_phases = rng.uniform(0.0, 2.0 * np.pi, size=n_oscillators)
@@ -169,6 +175,7 @@ def test_desync_objective_gradient_matches_finite_difference() -> None:
 
 
 def test_objective_grad_wrong_shape_raises() -> None:
+    """An objective gradient of the wrong shape is refused."""
     initial_phases = np.array([0.1, 0.2, 0.3, 0.4], dtype=np.float64)
     omega = np.zeros(4)
     coupling = np.full((4, 4), 0.5)
@@ -203,6 +210,7 @@ def test_objective_grad_wrong_shape_raises() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     call: dict[str, Any] = {
         "initial_phases": np.array([0.1, 0.2, 0.3, 0.4]),
         "omega": np.zeros(4),

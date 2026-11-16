@@ -48,17 +48,20 @@ def _cycle() -> HodgeStructure:
 
 
 def test_boundary_of_a_boundary_is_zero() -> None:
+    """The boundary of a boundary is zero."""
     structure = _filled()
     assert np.max(np.abs(structure.node_boundary @ structure.edge_boundary)) == pytest.approx(0.0)
 
 
 def test_betti_number_counts_independent_cycles() -> None:
     # a filled triangle has no hole; a hollow 4-cycle has one independent cycle
+    """The Betti number counts the independent cycles."""
     assert _filled().betti_number == 0
     assert _cycle().betti_number == 1
 
 
 def test_hodge_laplacian_is_the_sum_of_down_and_up_and_is_positive_semidefinite() -> None:
+    """The Hodge Laplacian is the sum of its two parts and positive semidefinite."""
     structure = _filled()
     assert structure.hodge_laplacian == pytest.approx(
         structure.down_laplacian + structure.up_laplacian
@@ -67,6 +70,7 @@ def test_hodge_laplacian_is_the_sum_of_down_and_up_and_is_positive_semidefinite(
 
 
 def test_hodge_decomposition_is_exact_and_orthogonal() -> None:
+    """The Hodge decomposition is exact and its parts are orthogonal."""
     structure = _filled()
     signal = np.random.default_rng(0).standard_normal(3)
     components = hodge_decomposition(signal, structure)
@@ -83,6 +87,7 @@ def test_hodge_decomposition_is_exact_and_orthogonal() -> None:
 
 
 def test_harmonic_signal_is_a_fixed_point_of_the_free_flow() -> None:
+    """A harmonic signal is a fixed point of the free flow."""
     structure = _cycle()
     harmonic = hodge_decomposition(np.random.default_rng(1).standard_normal(4), structure).harmonic
     # B_1 (harmonic) = 0 and B_2^T (harmonic) = 0, so the coupling vanishes
@@ -93,6 +98,7 @@ def test_harmonic_signal_is_a_fixed_point_of_the_free_flow() -> None:
 
 
 def test_field_matches_the_topological_kuramoto_formula() -> None:
+    """The field matches the topological Kuramoto formula."""
     structure = _filled()
     phases = np.array([0.3, -0.7, 1.1])
     frequencies = np.array([0.1, 0.2, -0.1])
@@ -108,6 +114,7 @@ def test_field_matches_the_topological_kuramoto_formula() -> None:
 
 
 def test_coupling_synchronises_the_edge_phases() -> None:
+    """Coupling synchronises the edge phases; without it they stay put."""
     structure = _filled()
     # a perturbation of the coherent state: the filled triangle has no harmonic mode, so the
     # Hodge Laplacian is positive definite and the coupling restores coherence (avoiding the
@@ -151,6 +158,7 @@ def test_coupling_synchronises_the_edge_phases() -> None:
     ],
 )
 def test_validation_errors(call: str, args: tuple[Any, ...], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     structure = _filled()
     with pytest.raises(ValueError, match=message):
         if call == "structure":

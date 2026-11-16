@@ -157,6 +157,7 @@ def _load_credible_runner(monkeypatch: pytest.MonkeyPatch) -> types.ModuleType:
 
 
 def test_dla_truncated_tensor_network_fails_until_implemented() -> None:
+    """The truncated tensor-network route refuses until it is implemented."""
     K_nm = np.zeros((4, 4), dtype=np.float64)
 
     with pytest.raises(NotImplementedError, match="not implemented"):
@@ -196,6 +197,7 @@ def test_dla_truncated_tensor_network_rejects_invalid_configuration(
 
 
 def test_rl_pulse_optimizer_is_research_disabled_by_default() -> None:
+    """The RL pulse optimiser is disabled by default and has no pulse route."""
     optimiser = RLPulseOptimizer(runner=object(), target_sync_order=0.5, episodes=1)
 
     with pytest.raises(RLResearchGovernanceError, match="research_extra_disabled"):
@@ -240,6 +242,7 @@ def test_rl_pulse_optimizer_rejects_invalid_configuration(
     ],
 )
 def test_retired_campaign_injectors_fail_fast(relative_path: str) -> None:
+    """The retired campaign injectors refuse at once."""
     repo_root = Path(__file__).resolve().parents[1]
 
     with pytest.raises(RuntimeError, match="Local campaign injectors are retired"):
@@ -249,6 +252,7 @@ def test_retired_campaign_injectors_fail_fast(relative_path: str) -> None:
 def test_frontier_orchestrator_classifies_implementation_gates(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The orchestrator classifies gated cases apart from failures."""
     orchestrator = _load_frontier_orchestrator(monkeypatch)
 
     def success() -> None:
@@ -275,6 +279,7 @@ def test_frontier_orchestrator_classifies_implementation_gates(
 
 
 def test_frontier_shell_launcher_delegates_to_python_orchestrator() -> None:
+    """The shell launcher delegates to the Python orchestrator."""
     repo_root = Path(__file__).resolve().parents[1]
     launcher = repo_root / "scripts/frontier_campaign_2026/run_frontier_campaign.sh"
     text = launcher.read_text(encoding="utf-8")
@@ -287,6 +292,7 @@ def test_frontier_shell_launcher_delegates_to_python_orchestrator() -> None:
 def test_credible_runner_summary_reflects_failed_tests(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The runner summary counts a failed test as a failure."""
     monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
     runner = _load_credible_runner(monkeypatch)
 
@@ -312,6 +318,7 @@ def test_credible_runner_summary_reflects_failed_tests(
 def test_credible_runner_default_results_are_campaign_local(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The runner writes its results inside the campaign."""
     monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
     runner = _load_credible_runner(monkeypatch)
     monkeypatch.setattr(runner, "campaign_path", lambda *parts: tmp_path.joinpath(*parts))
@@ -327,6 +334,7 @@ def test_credible_runner_default_results_are_campaign_local(
 
 
 def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path) -> None:
+    """Job retrieval discovers the campaign's local results."""
     repo_root = tmp_path
     root_result = repo_root / "results" / "root.json"
     hardware_result = (

@@ -127,7 +127,6 @@ def test_strangeworks_adapter_can_load_backend_from_workspace() -> None:
 
 def test_strangeworks_adapter_requires_backend_route() -> None:
     """Strangeworks construction should fail closed without a backend route."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("strangeworks_compute")
 
     with pytest.raises(ValueError, match="backend"):
@@ -169,7 +168,6 @@ def test_strangeworks_adapter_rejects_provider_job_without_id() -> None:
 
 def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
     """Strangeworks status values should map to canonical HAL status values."""
-
     from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
 
     assert sw_mod._normalise_status("CANCELED") == "cancelled"
@@ -185,7 +183,6 @@ def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
 
 def test_strangeworks_provider_job_id_rejects_control_characters() -> None:
     """Strangeworks provider job identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
 
     class BadJob:
@@ -197,7 +194,6 @@ def test_strangeworks_provider_job_id_rejects_control_characters() -> None:
 
 def test_strangeworks_provider_job_id_trims_padding() -> None:
     """Strangeworks provider job identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
 
     class PaddedJob:
@@ -208,7 +204,6 @@ def test_strangeworks_provider_job_id_trims_padding() -> None:
 
 def test_strangeworks_backend_id_rejects_control_characters() -> None:
     """Strangeworks backend identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
 
     class BadBackend:
@@ -220,7 +215,6 @@ def test_strangeworks_backend_id_rejects_control_characters() -> None:
 
 def test_strangeworks_backend_id_trims_padding() -> None:
     """Strangeworks backend identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
 
     class PaddedBackend:
@@ -275,6 +269,7 @@ def test_strangeworks_adapter_rejects_shot_mismatch() -> None:
 
 
 def test_strangeworks_adapter_backend_id_rejects_control_characters() -> None:
+    """A Strangeworks backend ID with control characters is refused."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("strangeworks_compute")
     with pytest.raises(ValueError, match="Strangeworks backend id"):
         StrangeworksComputeHALAdapter(
@@ -286,6 +281,7 @@ def test_strangeworks_adapter_backend_id_rejects_control_characters() -> None:
 
 
 def test_strangeworks_adapter_backend_id_trims_padding() -> None:
+    """A Strangeworks backend ID is trimmed of padding."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("strangeworks_compute")
     adapter = StrangeworksComputeHALAdapter(
         profile,

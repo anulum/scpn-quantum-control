@@ -28,7 +28,6 @@ _PAGE = _REPO_ROOT / "docs" / "gradient_coverage_matrix.md"
 
 def _load(name: str, relative: str) -> ModuleType:
     """Load a tool module from its repository file path."""
-
     spec = importlib.util.spec_from_file_location(name, _REPO_ROOT / relative)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -42,7 +41,6 @@ renderer = _load("render_gradient_coverage_matrix", "tools/render_gradient_cover
 
 def _derivative_like_symbols() -> set[str]:
     """Return derivative-like symbols from the live facade using the renderer classifier."""
-
     return {
         symbol
         for group, symbols in kuramoto.capabilities().items()
@@ -53,7 +51,6 @@ def _derivative_like_symbols() -> set[str]:
 
 def test_build_matrix_covers_every_derivative_like_facade_symbol() -> None:
     """The matrix rows must cover every derivative-bearing public facade symbol."""
-
     matrix = renderer.build_matrix()
     row_symbols = {row.symbol for row in matrix.rows}
 
@@ -67,7 +64,6 @@ def test_build_matrix_covers_every_derivative_like_facade_symbol() -> None:
 
 def test_matrix_classifies_representative_derivative_surfaces() -> None:
     """Representative gradients, Hessians, Jacobians, adjoints, and containers are classified."""
-
     rows = {row.symbol: row for row in renderer.build_matrix().rows}
 
     assert rows["order_parameter_gradient"].category == "Gradient"
@@ -85,7 +81,6 @@ def test_matrix_classifies_representative_derivative_surfaces() -> None:
 
 def test_render_markdown_lists_counts_boundary_and_every_row() -> None:
     """The generated page must publish counts, evidence boundary, and every row."""
-
     matrix = renderer.build_matrix()
     document = renderer.render_markdown(matrix)
 
@@ -100,14 +95,12 @@ def test_render_markdown_lists_counts_boundary_and_every_row() -> None:
 
 def test_checked_in_page_matches_renderer_output() -> None:
     """The tracked matrix page must be generated from the current renderer."""
-
     expected = renderer.render_markdown(renderer.build_matrix())
     assert _PAGE.read_text(encoding="utf-8") == expected
 
 
 def test_main_writes_page(tmp_path: Path) -> None:
     """The CLI writes the generated matrix page and reports success."""
-
     out = tmp_path / "gradient_coverage_matrix.md"
     code = renderer.main(["--output", str(out)])
 
@@ -117,6 +110,5 @@ def test_main_writes_page(tmp_path: Path) -> None:
 
 def test_mkdocs_nav_exposes_the_gradient_matrix() -> None:
     """The documentation site must link the generated matrix."""
-
     mkdocs = (_REPO_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
     assert "Gradient Coverage Matrix: gradient_coverage_matrix.md" in mkdocs

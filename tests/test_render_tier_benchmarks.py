@@ -112,14 +112,12 @@ def _artifact(environment: str, *, rust: bool) -> dict[str, object]:
 
 def test_load_returns_none_for_missing(tmp_path: Path) -> None:
     """Missing or omitted artefact paths degrade to absent environments."""
-
     assert render._load(None) is None
     assert render._load(tmp_path / "absent.json") is None
 
 
 def test_p50_placeholder_and_value() -> None:
     """P50 cells render measured values and placeholders honestly."""
-
     backends = {
         "rust": {"backend": "rust", "status": "measured", "stats": {"p50_us": 1.234}},
         "julia": {"backend": "julia", "status": "unavailable", "stats": None},
@@ -132,7 +130,6 @@ def test_p50_placeholder_and_value() -> None:
 
 def test_fastest_and_parity_from_artifact() -> None:
     """Fastest-tier and parity cells come directly from the CI artefact."""
-
     artifact = _artifact("ci", rust=True)
     assert render._fastest(artifact, "order_parameter", 8) == "rust"
     assert render._parity(artifact, "order_parameter", 8) == "1.50e-16"
@@ -144,7 +141,6 @@ def test_fastest_and_parity_from_artifact() -> None:
 
 def test_render_side_by_side_contains_both_columns() -> None:
     """The rendered page includes CI/local columns and competitive framing."""
-
     document = render.render(_artifact("ci", rust=True), _artifact("local", rust=False))
     assert "ci-cpu" in document
     assert "local-cpu" in document
@@ -159,7 +155,6 @@ def test_render_side_by_side_contains_both_columns() -> None:
 
 def test_render_degrades_when_ci_absent() -> None:
     """An absent CI artefact keeps the external-claim boundary fail-closed."""
-
     document = render.render(None, _artifact("local", rust=True))
     assert "| CPU model | — | local-cpu |" in document
     assert "| Internal tier competition | CI measures 0 primitive-size rows" in document
@@ -169,7 +164,6 @@ def test_render_degrades_when_ci_absent() -> None:
 
 def test_checked_in_tier_benchmark_matches_renderer() -> None:
     """The public benchmark page must be generated from committed artefacts."""
-
     ci = json.loads(
         (_REPO_ROOT / "docs" / "benchmarks" / "tiers" / "kuramoto_tiers.ci.json").read_text(
             encoding="utf-8"
@@ -188,7 +182,6 @@ def test_checked_in_tier_benchmark_matches_renderer() -> None:
 
 def test_main_writes_document(tmp_path: Path) -> None:
     """The CLI writes a Markdown document from a supplied artefact."""
-
     local_path = tmp_path / "kuramoto_tiers.local.json"
     local_path.write_text(json.dumps(_artifact("local", rust=True)), encoding="utf-8")
     out = tmp_path / "doc.md"
@@ -199,6 +192,5 @@ def test_main_writes_document(tmp_path: Path) -> None:
 
 def test_main_errors_when_no_artifact(tmp_path: Path) -> None:
     """The CLI refuses to render with no available artefact."""
-
     with pytest.raises(SystemExit):
         render.main(["--output", str(tmp_path / "doc.md")])

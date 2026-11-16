@@ -34,13 +34,11 @@ from scpn_quantum_control.whole_program_trace_runtime import (
 
 def _context() -> ExtractedWholeProgramTraceContext:
     """Return a trace context bound to the facade-owned scalar wrapper."""
-
     return ExtractedWholeProgramTraceContext(2, scalar_factory=TraceADScalar)
 
 
 def test_trace_context_factory_binding_uses_public_facade_scalar() -> None:
     """The extracted context requires and accepts the public facade scalar."""
-
     assert TraceADScalar is differentiable.TraceADScalar
     context = ExtractedWholeProgramTraceContext(1)
     with pytest.raises(RuntimeError, match="no scalar factory"):
@@ -58,7 +56,6 @@ def test_trace_context_factory_binding_uses_public_facade_scalar() -> None:
 
 def test_trace_context_emits_effect_alias_and_branch_metadata() -> None:
     """Scalar emission should preserve effect, mutation, primitive, and branch evidence."""
-
     context = _context()
     parameter = context.make("parameter", ("theta",), 2.0, np.array([1.0, 0.0]))
     mutation = context.make("mutation:list_setitem", (parameter.name,), 3.0, np.array([1.0, 0.0]))
@@ -89,7 +86,6 @@ def test_trace_context_emits_effect_alias_and_branch_metadata() -> None:
 
 def test_trace_context_records_array_view_aliases() -> None:
     """Array-view alias metadata should validate source indices and trace ownership."""
-
     context = _context()
     first = context.make("parameter", ("x",), 1.0, np.array([1.0, 0.0]))
     second = context.make("parameter", ("y",), 2.0, np.array([0.0, 1.0]))
@@ -113,7 +109,6 @@ def test_trace_context_records_array_view_aliases() -> None:
 
 def test_trace_context_builds_program_effect_ir_from_source_features() -> None:
     """Program IR assembly should merge runtime evidence with source-level features."""
-
     context = _context()
     context.make("parameter", ("theta",), 1.0, np.array([1.0, 0.0]))
     features = (
@@ -150,7 +145,6 @@ def test_trace_context_builds_program_effect_ir_from_source_features() -> None:
 
 def test_trace_context_rejects_malformed_explicit_alias_feature() -> None:
     """Explicit source alias features should encode a source and target."""
-
     context = _context()
     with pytest.raises(ValueError, match="must encode source->target"):
         context.program_ir(
@@ -163,7 +157,6 @@ def test_trace_context_rejects_malformed_explicit_alias_feature() -> None:
 
 def test_trace_whole_program_objective_captures_source_lines_and_restores_tracer() -> None:
     """The source-line tracer should capture objective lines and restore the previous hook."""
-
     values = np.array([2.0, 3.0], dtype=np.float64)
 
     def objective(parameters: NDArray[np.float64]) -> float:
@@ -185,7 +178,6 @@ def test_trace_whole_program_objective_deduplicates_manual_tracer_events(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The installed trace callback should record each source line only once."""
-
     captured: dict[str, object] = {}
 
     def fake_settrace(tracer: object) -> None:

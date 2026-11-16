@@ -25,12 +25,14 @@ from scpn_quantum_control.qec.logical_dla_parity import (
 
 
 def test_surface_code_qubit_formula_for_s7_default() -> None:
+    """The surface-code qubit count follows its formula for each distance."""
     assert surface_code_physical_qubits(16, 3) == 16 * 17
     assert surface_code_physical_qubits(16, 5) == 16 * 49
     assert surface_code_physical_qubits(16, 7) == 16 * 97
 
 
 def test_repetition_scaffold_is_marked_as_comparison_only() -> None:
+    """The repetition scaffold is smaller than the surface code and allows no survival claim."""
     row = estimate_logical_dla_parity_row(n_oscillators=16, code_distance=5)
 
     assert row.physical_qubits_repetition_scaffold == repetition_scaffold_physical_qubits(16, 5)
@@ -40,6 +42,7 @@ def test_repetition_scaffold_is_marked_as_comparison_only() -> None:
 
 
 def test_expected_fidelity_improves_with_distance() -> None:
+    """Larger distances raise the expected fidelity and lower the logical error rate."""
     rows = estimate_s7_resource_table(code_distances=(3, 5, 7), p_physical=0.003)
     fidelities = [row.expected_step_fidelity for row in rows]
     logical_rates = [row.logical_error_rate_per_round for row in rows]
@@ -49,6 +52,7 @@ def test_expected_fidelity_improves_with_distance() -> None:
 
 
 def test_multiscale_comparison_keeps_theory_review_blocker() -> None:
+    """The multiscale comparison keeps its theory-review blocker."""
     comparison = compare_flat_surface_code_to_multiscale(
         n_oscillators=16,
         flat_distance=7,
@@ -65,6 +69,7 @@ def test_multiscale_comparison_keeps_theory_review_blocker() -> None:
 
 
 def test_payload_blocks_hardware_and_survival_claims() -> None:
+    """The payload allows no submission and no survival claim."""
     payload = logical_dla_parity_payload()
 
     assert payload["schema"] == LOGICAL_DLA_PARITY_SCHEMA
@@ -76,6 +81,7 @@ def test_payload_blocks_hardware_and_survival_claims() -> None:
 
 
 def test_markdown_contains_regeneration_gate() -> None:
+    """The page names its regeneration command and its claim boundary."""
     markdown = logical_dla_parity_markdown(logical_dla_parity_payload())
 
     assert "# Logical DLA Parity Roadmap" in markdown
@@ -85,10 +91,12 @@ def test_markdown_contains_regeneration_gate() -> None:
 
 @pytest.mark.parametrize("distance", [0, 2, 4])
 def test_invalid_distances_fail_closed(distance: int) -> None:
+    """An even or non-integer distance is refused."""
     with pytest.raises(ValueError, match="odd integer"):
         surface_code_physical_qubits(16, distance)
 
 
 def test_invalid_physical_error_rate_fails_closed() -> None:
+    """An invalid physical error rate is refused."""
     with pytest.raises(ValueError, match="p_physical"):
         estimate_logical_dla_parity_row(code_distance=3, p_physical=1.0)

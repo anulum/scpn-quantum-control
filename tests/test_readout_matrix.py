@@ -34,6 +34,7 @@ from scpn_quantum_control.mitigation.readout_matrix import (
 
 
 def test_computational_basis_labels_are_big_endian() -> None:
+    """Basis labels are listed in big-endian order."""
     assert computational_basis_labels(2) == ("00", "01", "10", "11")
 
 
@@ -122,6 +123,7 @@ def test_nonstring_and_space_colliding_labels_are_refused() -> None:
 
 
 def test_identity_confusion_matrix_preserves_probabilities() -> None:
+    """Perfect calibration gives an identity confusion matrix with unit condition number."""
     calibrations = {
         "00": {"00": 100},
         "01": {"01": 100},
@@ -145,6 +147,7 @@ def test_identity_confusion_matrix_preserves_probabilities() -> None:
 
 
 def test_missing_calibration_state_is_rejected() -> None:
+    """A missing calibration state is refused."""
     calibrations = {
         "00": {"00": 100},
         "01": {"01": 100},
@@ -160,6 +163,7 @@ def test_missing_calibration_state_is_rejected() -> None:
 
 
 def test_counts_to_probabilities_rejects_unknown_labels_and_empty_counts() -> None:
+    """Unknown labels, empty counts and negative counts are refused."""
     labels = computational_basis_labels(2)
 
     with pytest.raises(ValueError, match="unknown bitstring"):
@@ -171,6 +175,7 @@ def test_counts_to_probabilities_rejects_unknown_labels_and_empty_counts() -> No
 
 
 def test_bitstring_index_accepts_spaced_labels_and_rejects_unknown_label() -> None:
+    """Spaced labels are accepted and unknown labels refused."""
     labels = computational_basis_labels(3)
 
     assert bitstring_index("1 0 1", labels) == 5
@@ -179,6 +184,7 @@ def test_bitstring_index_accepts_spaced_labels_and_rejects_unknown_label() -> No
 
 
 def test_pseudo_inverse_recovers_known_distribution() -> None:
+    """The pseudo-inverse recovers a known distribution."""
     calibrations = {
         "0": {"0": 90, "1": 10},
         "1": {"0": 20, "1": 80},
@@ -207,6 +213,7 @@ def test_pseudo_inverse_recovers_known_distribution() -> None:
 def test_mitigation_rejects_invalid_observed_probability_vectors(
     observed: NDArray[np.float64],
 ) -> None:
+    """An invalid observed probability vector is refused."""
     calibrations = {
         "0": {"0": 100},
         "1": {"1": 100},
@@ -218,6 +225,7 @@ def test_mitigation_rejects_invalid_observed_probability_vectors(
 
 
 def test_probability_observables_use_target_bitstring() -> None:
+    """Retention and leakage are measured against the target bitstring."""
     labels = computational_basis_labels(2)
     probabilities = np.array([0.1, 0.2, 0.3, 0.4])
 

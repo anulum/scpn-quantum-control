@@ -46,6 +46,7 @@ validated_https_url = eeg_module._validated_https_url
 
 
 def test_record_to_path_and_url_follow_physionet_layout(tmp_path: Path) -> None:
+    """Record paths and URLs follow the PhysioNet layout."""
     assert record_to_path("S012R01", raw_root=tmp_path) == tmp_path / "S012" / "S012R01.edf"
     assert (
         record_to_url("S012R01", dataset_base_url="https://physionet.org/files/eegmmidb/1.0.0/")
@@ -54,6 +55,7 @@ def test_record_to_path_and_url_follow_physionet_layout(tmp_path: Path) -> None:
 
 
 def test_validated_https_url_rejects_non_https_sources() -> None:
+    """Sources that are not absolute HTTPS URLs are refused."""
     with pytest.raises(ValueError, match="Only absolute HTTPS"):
         validated_https_url("file:///tmp/S001R01.edf")
 
@@ -62,6 +64,7 @@ def test_validated_https_url_rejects_non_https_sources() -> None:
 
 
 def test_records_for_subject_run_builds_full_eegmmidb_identifiers() -> None:
+    """Record identifiers are built for valid subjects and runs only."""
     assert records_for_subject_run([1, 9, 109], run=2) == [
         "S001R02",
         "S009R02",
@@ -76,18 +79,21 @@ def test_records_for_subject_run_builds_full_eegmmidb_identifiers() -> None:
 
 
 def test_record_condition_tracks_baseline_and_mixed_runs() -> None:
+    """The condition names each baseline run and marks mixed runs."""
     assert record_condition(["S001R01", "S002R01"]) == "baseline eyes open"
     assert record_condition(["S001R02", "S002R02"]) == "baseline eyes closed"
     assert record_condition(["S001R01", "S001R02"]) == "mixed EEGMMIDB runs"
 
 
 def test_segment_starts_uses_full_overlapping_window_grid() -> None:
+    """Segments start on the full overlapping window grid."""
     starts = segment_starts(10, sfreq=2.0, window_s=2.0, step_s=1.0)
 
     assert starts == [0, 2, 4, 6]
 
 
 def test_plv_edges_reports_near_locked_pair_with_uncertainty() -> None:
+    """A near-locked channel pair is reported with its uncertainty."""
     sfreq = 100.0
     t = np.arange(0.0, 4.0, 1.0 / sfreq)
     phase = np.vstack([2.0 * np.pi * 10.0 * t, 2.0 * np.pi * 10.0 * t + 0.2])
@@ -103,6 +109,7 @@ def test_plv_edges_reports_near_locked_pair_with_uncertainty() -> None:
 
 
 def test_bandpass_phase_preserves_channel_and_sample_shape() -> None:
+    """Band-pass phase extraction keeps the shape and gives finite values."""
     sfreq = 100.0
     t = np.arange(0.0, 3.0, 1.0 / sfreq)
     data = np.vstack([np.sin(2.0 * np.pi * 10.0 * t), np.cos(2.0 * np.pi * 10.0 * t)])
@@ -114,6 +121,7 @@ def test_bandpass_phase_preserves_channel_and_sample_shape() -> None:
 
 
 def test_aggregate_record_edges_uses_median_and_mad_uncertainty() -> None:
+    """Edges are aggregated by median with quartile uncertainty."""
     rows = [
         {"i": 1, "j": 2, "value": 0.2, "uncertainty": 0.01, "n_segments": 10},
         {"i": 1, "j": 2, "value": 0.4, "uncertainty": 0.01, "n_segments": 10},

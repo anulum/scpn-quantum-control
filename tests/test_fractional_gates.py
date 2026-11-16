@@ -13,15 +13,20 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 class TestFractionalGates:
+    """Fractional RZZ gates in the hardware runner's transpilation."""
+
     def test_default_fractional_enabled(self) -> None:
+        """Fractional gates are enabled by default."""
         runner = HardwareRunner(use_simulator=True)
         assert runner.use_fractional_gates is True
 
     def test_fractional_disabled(self) -> None:
+        """Fractional gates can be disabled."""
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=False)
         assert runner.use_fractional_gates is False
 
     def test_simulator_basis_includes_rzz_when_fractional(self) -> None:
+        """With fractional gates the transpiled circuit keeps RZZ or stays shallow."""
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=True)
         runner.connect()
         # Transpile a simple circuit and check that rzz is available
@@ -36,6 +41,7 @@ class TestFractionalGates:
         assert "rzz" in ops or isa.depth() <= qc.depth() + 5
 
     def test_simulator_without_fractional_decomposes_rzz(self) -> None:
+        """Without fractional gates RZZ is decomposed."""
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=False)
         runner.connect()
         from qiskit import QuantumCircuit
@@ -49,6 +55,7 @@ class TestFractionalGates:
         assert "rzz" not in ops
 
     def test_kuramoto_circuit_depth_reduction(self) -> None:
+        """Fractional gates do not deepen the Kuramoto circuit."""
         from scpn_quantum_control import OMEGA_N_16, QuantumKuramotoSolver, build_knm_paper27
 
         K = build_knm_paper27(L=4)
@@ -108,6 +115,7 @@ class TestFractionalGates:
             assert ideal > 900
 
     def test_fractional_preserves_qubit_count(self) -> None:
+        """Fractional transpilation keeps at least the logical qubits."""
         from qiskit import QuantumCircuit
 
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=True)
@@ -161,6 +169,7 @@ class TestFractionalGates:
 
     def test_pipeline_knm_to_fractional_execution(self) -> None:
         """Full pipeline: Knm → Kuramoto circuit → fractional transpile → execute.
+
         Verifies fractional gate path is wired end-to-end with performance data.
         """
         import time

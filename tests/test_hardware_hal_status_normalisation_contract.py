@@ -86,6 +86,7 @@ _BASELINE_FROZEN_ALIAS_MATRIX: dict[str, tuple[str, ...]] = {
 
 
 def test_status_normalisers_reject_raw_unknown_status_leakage() -> None:
+    """An unknown provider status becomes unknown instead of leaking through."""
     unknown_token = "vendor_future_terminal_state"
 
     assert hal_pasqal._normalise_status(unknown_token) == "unknown"
@@ -103,6 +104,7 @@ def test_status_normalisers_reject_raw_unknown_status_leakage() -> None:
 
 
 def test_status_normalisers_honour_explicit_default_overrides() -> None:
+    """An explicit default replaces unknown for an unrecognised status."""
     unknown_token = "vendor_status_v2"
 
     assert hal_azure._normalise_status(unknown_token, default="queued") == "queued"
@@ -114,6 +116,7 @@ def test_status_normalisers_honour_explicit_default_overrides() -> None:
 
 
 def test_status_normalisers_canonicalise_whitespace_and_spacing() -> None:
+    """Whitespace and spacing variants of a status are canonicalised."""
     completion_tokens = ("  COMPLETED  ", "job status.completed")
 
     for token in completion_tokens:
@@ -131,6 +134,7 @@ def test_status_normalisers_canonicalise_whitespace_and_spacing() -> None:
 
 
 def test_status_normalisers_map_failure_and_cancellation_aliases() -> None:
+    """Failure and cancellation aliases map to failed."""
     failure_tokens = ("FAILED", "error")
     cancellation_tokens = ("CANCELED", "cancelled")
 
@@ -162,6 +166,7 @@ def test_status_normalisers_map_failure_and_cancellation_aliases() -> None:
 
 
 def test_status_normalisers_map_running_and_queue_aliases() -> None:
+    """Running and queue aliases map to running."""
     running_tokens = ("RUNNING", "running")
     queued_tokens = ("QUEUED", "queued", "PENDING", "pending")
 
@@ -194,7 +199,6 @@ def test_status_normalisers_map_running_and_queue_aliases() -> None:
 
 def test_status_alias_matrix_is_frozen_across_extended_adapters() -> None:
     """Freeze accepted status aliases so drift requires explicit contract edits."""
-
     for canonical, aliases in _EXTENDED_FROZEN_ALIAS_MATRIX.items():
         for alias in aliases:
             for normalise in _EXTENDED_NORMALISERS_STRICT:
@@ -207,6 +211,7 @@ def test_status_alias_matrix_is_frozen_across_extended_adapters() -> None:
 
 
 def test_status_alias_matrix_is_frozen_for_baseline_adapters() -> None:
+    """Every alias in the frozen matrix maps to its canonical status in any case."""
     for canonical, aliases in _BASELINE_FROZEN_ALIAS_MATRIX.items():
         for alias in aliases:
             for normalise in _BASELINE_NORMALISERS_STRICT:
@@ -229,7 +234,6 @@ def test_extended_status_normalisers_property_whitespace_case_and_dot_prefix(
     dot_prefix: bool,
 ) -> None:
     """Property-style canonicalisation proof for common provider formatting drift."""
-
     expected = next(
         canonical
         for canonical, aliases in _EXTENDED_FROZEN_ALIAS_MATRIX.items()

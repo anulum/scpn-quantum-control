@@ -64,6 +64,7 @@ def _terminal_phase(
 @pytest.mark.parametrize("delay", [0.366, 0.5123, 0.913])
 @pytest.mark.parametrize("seed", [20260703, 7, 101])
 def test_delay_sensitivity_matches_central_finite_difference(delay: float, seed: int) -> None:
+    """The delay sensitivity agrees with a central finite difference."""
     history, omega, coupling = _problem(seed=seed)
     _, dtheta_dtau = delayed_delay_sensitivity(
         history, omega, coupling, delay=delay, dt=_DT, n_steps=_N_STEPS
@@ -76,6 +77,7 @@ def test_delay_sensitivity_matches_central_finite_difference(delay: float, seed:
 
 
 def test_objective_delay_gradient_matches_finite_difference() -> None:
+    """The objective's delay gradient agrees with a central finite difference."""
     history, omega, coupling = _problem()
     delay = 0.417
 
@@ -109,6 +111,7 @@ def test_forward_map_and_sensitivity_reproduce_the_production_integrator_by_tayl
     # function refuses that grid node, so approach it: a first-order Taylor step from just above it,
     # theta_N(m*dt + eps) - eps * dtheta/dtau(m*dt + eps), must reproduce the production terminal
     # phase to O(eps^2) — validating the forward map AND the sensitivity against production at once.
+    """A first-order Taylor step from the sensitivity reproduces the production integrator."""
     history, omega, coupling = _problem()
     delay_steps = 8
     node = delay_steps * _DT
@@ -133,6 +136,7 @@ def test_forward_map_and_sensitivity_reproduce_the_production_integrator_by_tayl
 def test_zero_coupling_has_zero_delay_sensitivity() -> None:
     # With no coupling the delayed term vanishes, theta(t) = theta0 + omega t is independent of tau,
     # so the delay sensitivity is exactly zero.
+    """Without coupling the delay has no effect and the phases drift freely."""
     history, omega, _ = _problem()
     coupling = np.zeros((history.size, history.size), dtype=np.float64)
     phases, dtheta_dtau = delayed_delay_sensitivity(
@@ -143,6 +147,7 @@ def test_zero_coupling_has_zero_delay_sensitivity() -> None:
 
 
 def test_gradient_is_consistent_with_the_sensitivity() -> None:
+    """The gradient equals the weighted sensitivity."""
     history, omega, coupling = _problem()
     delay = 0.371
     weights = np.linspace(0.5, 2.0, history.size)
@@ -171,6 +176,7 @@ def test_gradient_is_consistent_with_the_sensitivity() -> None:
 
 @pytest.mark.parametrize("multiple", [1.0, 2.0, 3.0, 1.5, 2.5])
 def test_rejects_delay_on_a_grid_node(multiple: float) -> None:
+    """A delay that is not a half-integer multiple of the step is refused."""
     history, omega, coupling = _problem()
     with pytest.raises(ValueError, match="half-integer multiple of dt"):
         delayed_delay_sensitivity(
@@ -179,6 +185,7 @@ def test_rejects_delay_on_a_grid_node(multiple: float) -> None:
 
 
 def test_rejects_malformed_inputs() -> None:
+    """Malformed history, oscillator count or frequencies are refused."""
     history, omega, coupling = _problem()
     good = {"dt": _DT, "n_steps": _N_STEPS}
     with pytest.raises(ValueError, match="one-dimensional constant history"):
@@ -202,6 +209,7 @@ def test_rejects_malformed_inputs() -> None:
 
 
 def test_rejects_wrong_shape_cotangent() -> None:
+    """A cotangent of the wrong shape is refused."""
     history, omega, coupling = _problem()
     with pytest.raises(ValueError, match="cotangent"):
         delayed_delay_gradient(

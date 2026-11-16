@@ -30,7 +30,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -38,7 +37,6 @@ def _manual_trapezoid_axis1(
     values: NDArray[np.float64], x_grid: NDArray[np.float64]
 ) -> NDArray[np.float64]:
     """Return a manual axis-1 trapezoid integral for coverage-instrumented NumPy."""
-
     widths = np.diff(x_grid)
     return cast(
         NDArray[np.float64],
@@ -48,7 +46,6 @@ def _manual_trapezoid_axis1(
 
 def test_program_ad_trapezoid_direct_rule_is_exposed_from_extracted_module() -> None:
     """The facade and extracted trapezoid module should expose the same factory."""
-
     from scpn_quantum_control.program_ad_trapezoid_primitives import (
         program_ad_reduction_trapezoid_derivative_rule as module_trapezoid_rule,
     )
@@ -58,7 +55,6 @@ def test_program_ad_trapezoid_direct_rule_is_exposed_from_extracted_module() -> 
 
 def test_program_ad_trapezoid_reduction_contract_is_registry_gated() -> None:
     """Trapezoid integration should expose static-grid reduction registry contracts."""
-
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
     contract = primitive_contract_for("scpn.program_ad.reduction:trapezoid")
@@ -82,7 +78,6 @@ def test_program_ad_trapezoid_reduction_contract_is_registry_gated() -> None:
 
 def test_program_ad_trapezoid_static_derivative_factory_is_axis_aware() -> None:
     """Static trapezoid factories should expose exact axis-aware JVP and VJP rules."""
-
     matrix = np.array([[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]], dtype=np.float64)
     tangent = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
     x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
@@ -109,7 +104,6 @@ def test_program_ad_trapezoid_static_derivative_factory_is_axis_aware() -> None:
 
 def test_program_ad_trapezoid_extracted_module_covers_flat_and_grid_boundaries() -> None:
     """Extracted trapezoid helpers should cover flat rules and static-grid validation."""
-
     from scpn_quantum_control import program_ad_trapezoid_primitives as trapezoid
 
     values = np.array([1.0, 3.0, 2.0], dtype=np.float64)
@@ -188,7 +182,6 @@ def test_program_ad_trapezoid_static_grid_fail_closed_branches() -> None:
 
 def test_program_ad_trapezoid_matches_static_grid_adjoint() -> None:
     """Program AD trapezoidal integration should apply exact static-grid adjoints."""
-
     x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
     row_weights = np.array([2.0, -1.5], dtype=np.float64)
 
@@ -218,7 +211,6 @@ def test_program_ad_trapezoid_matches_static_grid_adjoint() -> None:
 
 def test_program_ad_trapezoid_fails_closed_invalid_static_contracts() -> None:
     """Program AD trapezoidal integration should reject unsupported grid contracts."""
-
     with pytest.raises(ValueError, match="axis must be a static integer"):
         whole_program_value_and_grad(
             lambda values: np.trapezoid(np.reshape(values, (2, 2)), axis=True),

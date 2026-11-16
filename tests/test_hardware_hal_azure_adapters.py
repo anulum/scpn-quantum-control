@@ -85,7 +85,6 @@ def test_azure_quantum_adapter_uses_injected_target_and_approval_gate() -> None:
 
 def test_azure_adapter_requires_target_or_factory() -> None:
     """Azure adapter construction should fail closed without a target route."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("azure_quantum_rigetti_qvm")
 
     with pytest.raises(ValueError, match="target"):
@@ -132,7 +131,6 @@ def test_azure_adapter_rejects_provider_job_without_id() -> None:
 
 def test_azure_adapter_normalises_provider_status_tokens() -> None:
     """Azure status values should map to canonical HAL status values."""
-
     from scpn_quantum_control.hardware import hal_azure as azure_mod
 
     assert azure_mod._normalise_status("Succeeded") == "completed"
@@ -148,7 +146,6 @@ def test_azure_adapter_normalises_provider_status_tokens() -> None:
 
 def test_azure_provider_job_id_rejects_control_characters() -> None:
     """Azure provider job identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_azure as azure_mod
 
     class BadJob:
@@ -160,7 +157,6 @@ def test_azure_provider_job_id_rejects_control_characters() -> None:
 
 def test_azure_provider_job_id_trims_padding() -> None:
     """Azure provider job identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_azure as azure_mod
 
     class PaddedJob:
@@ -171,7 +167,6 @@ def test_azure_provider_job_id_trims_padding() -> None:
 
 def test_azure_target_name_rejects_control_characters() -> None:
     """Azure target names must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_azure as azure_mod
 
     class BadTarget:
@@ -183,7 +178,6 @@ def test_azure_target_name_rejects_control_characters() -> None:
 
 def test_azure_target_name_trims_padding() -> None:
     """Azure target names should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_azure as azure_mod
 
     class PaddedTarget:
@@ -240,6 +234,7 @@ def test_azure_adapter_rejects_shot_mismatch() -> None:
 
 
 def test_azure_adapter_target_name_rejects_control_characters() -> None:
+    """An Azure target name with control characters is refused."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile(
         "azure_quantum_ionq_simulator"
     )
@@ -253,6 +248,7 @@ def test_azure_adapter_target_name_rejects_control_characters() -> None:
 
 
 def test_azure_adapter_target_name_trims_padding() -> None:
+    """An Azure target name is trimmed of padding."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile(
         "azure_quantum_ionq_simulator"
     )

@@ -25,13 +25,11 @@ from scpn_quantum_control.differentiable_batch_helpers import (
 
 def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy closeness across helper arrays."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected)
 
 
 def test_facade_reuses_extracted_batch_helpers() -> None:
     """The differentiable facade should reuse the extracted helper objects."""
-
     facade_symbols = vars(differentiable)
     assert facade_symbols["_as_parameter_shift_sample_tensor"] is _as_parameter_shift_sample_tensor
     assert facade_symbols["_as_batch_parameter_array"] is _as_batch_parameter_array
@@ -40,7 +38,6 @@ def test_facade_reuses_extracted_batch_helpers() -> None:
 
 def test_parameter_shift_sample_tensor_accepts_single_and_multi_term_shapes() -> None:
     """Parameter-shift samples should normalize one-term vectors and preserve matrices."""
-
     _assert_allclose(
         _as_parameter_shift_sample_tensor("samples", [1.0, 2.0], term_count=1),
         [[1.0, 2.0]],
@@ -71,14 +68,12 @@ def test_parameter_shift_sample_tensor_rejects_invalid_shapes(
     message: str,
 ) -> None:
     """Parameter-shift samples should fail closed on malformed tensors."""
-
     with pytest.raises(ValueError, match=message):
         _as_parameter_shift_sample_tensor("samples", cast(Any, values), term_count=term_count)
 
 
 def test_batch_parameter_array_accepts_two_dimensional_parameter_batches() -> None:
     """Parameter batches should be finite and match the requested width."""
-
     _assert_allclose(
         _as_batch_parameter_array("parameters", [[1.0, 2.0], [3.0, 4.0]], 2),
         [[1.0, 2.0], [3.0, 4.0]],
@@ -97,14 +92,12 @@ def test_batch_parameter_array_accepts_two_dimensional_parameter_batches() -> No
 )
 def test_batch_parameter_array_rejects_invalid_batches(values: object, message: str) -> None:
     """Parameter batches should fail closed on invalid batch contracts."""
-
     with pytest.raises(ValueError, match=message):
         _as_batch_parameter_array("parameters", cast(Any, values), 1)
 
 
 def test_batch_vector_array_accepts_two_dimensional_vector_batches() -> None:
     """Cotangent batches should be finite and match the requested vector width."""
-
     _assert_allclose(
         _as_batch_vector_array("cotangents", [[1.0, 2.0], [3.0, 4.0]], 2),
         [[1.0, 2.0], [3.0, 4.0]],
@@ -123,6 +116,5 @@ def test_batch_vector_array_accepts_two_dimensional_vector_batches() -> None:
 )
 def test_batch_vector_array_rejects_invalid_batches(values: object, message: str) -> None:
     """Cotangent batches should fail closed on invalid vector-batch contracts."""
-
     with pytest.raises(ValueError, match=message):
         _as_batch_vector_array("cotangents", cast(Any, values), 1)

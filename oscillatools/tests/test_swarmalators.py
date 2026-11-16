@@ -42,6 +42,7 @@ def _initial(seed: int) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_static_synchrony_state() -> None:
+    """Attractive phase coupling reaches the static synchrony state."""
     positions, phases = _initial(0)
     trajectory = integrate_swarmalators(positions, phases, 0.1, 1.0, _DT, 3000)
     assert isinstance(trajectory, SwarmalatorTrajectory)
@@ -51,6 +52,7 @@ def test_static_synchrony_state() -> None:
 
 
 def test_static_phase_wave_state() -> None:
+    """Zero phase coupling reaches the static phase wave."""
     positions, phases = _initial(0)
     # J > 0, K = 0: phase locks to spatial angle — a rainbow order parameter saturates while the
     # ordinary phase coherence stays low (a state with no phase-only analogue)
@@ -61,6 +63,7 @@ def test_static_phase_wave_state() -> None:
 
 
 def test_static_asynchrony_state() -> None:
+    """Repulsive phase coupling reaches static asynchrony."""
     positions, phases = _initial(0)
     trajectory = integrate_swarmalators(positions, phases, 0.1, -1.0, _DT, 3000)
     order = swarmalator_order_parameters(trajectory.terminal_positions, trajectory.terminal_phases)
@@ -69,6 +72,7 @@ def test_static_asynchrony_state() -> None:
 
 
 def test_rainbow_order_parameters_on_constructed_states() -> None:
+    """The order parameters give the expected values on constructed states."""
     spatial_angle = np.linspace(0.0, 2.0 * np.pi, _N, endpoint=False, dtype=np.float64)
     positions = np.column_stack([np.cos(spatial_angle), np.sin(spatial_angle)])
     # phase locked to the spatial angle (θ = φ) → S_- = 1, S_+ ≈ 0, coherence ≈ 0
@@ -82,6 +86,7 @@ def test_rainbow_order_parameters_on_constructed_states() -> None:
 
 
 def test_field_and_trajectory_shapes() -> None:
+    """The field and trajectory have the documented shapes and finite values."""
     positions, phases = _initial(1)
     position_velocity, phase_velocity = swarmalator_field(positions, phases, 1.0, 1.0)
     assert position_velocity.shape == (_N, 2)
@@ -95,6 +100,7 @@ def test_field_and_trajectory_shapes() -> None:
 
 
 def test_field_is_translation_equivariant_and_rotation_covariant() -> None:
+    """The field is unchanged by translation and rotates with the positions."""
     positions, phases = _initial(2)
     base_position_velocity, base_phase_velocity = swarmalator_field(positions, phases, 0.7, -0.4)
 
@@ -117,6 +123,7 @@ def test_field_is_translation_equivariant_and_rotation_covariant() -> None:
 
 
 def test_public_kuramoto_facade_exports_swarmalators() -> None:
+    """The public facade exposes the same swarmalator functions."""
     positions, phases = _initial(3)
     direct_position_velocity, direct_phase_velocity = swarmalator_field(
         positions, phases, 0.2, 0.3
@@ -176,6 +183,7 @@ def test_public_kuramoto_facade_exports_swarmalators() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid arguments are refused with their reasons."""
     positions = np.random.default_rng(0).uniform(-1.0, 1.0, size=(5, 2))
     phases = np.zeros(5)
     with pytest.raises(ValueError, match=message):
