@@ -32,6 +32,7 @@ from scpn_quantum_control.phase import (
 def test_phase_jax_maturity_audit_records_bounded_passes_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The JAX maturity audit passes the bounded model and records provider gaps."""
     fake_jax = _FakeJAX()
     fake_jax.local_device_count_value = 2
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
@@ -74,6 +75,7 @@ def test_phase_jax_maturity_audit_records_bounded_passes_and_provider_gaps(
 def test_phase_jax_cloud_validation_batch_schedules_gtx1060_gap(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The cloud validation batch schedules the missing GPU check."""
     fake_jax = _FakeJAX()
     fake_jax.local_device_count_value = 1
     cast(Any, fake_jax).local_devices = lambda: ("NVIDIA GeForce GTX 1060",)
@@ -148,6 +150,7 @@ def test_phase_jax_cloud_validation_batch_rejects_invalid_plan_inputs(
 
 
 def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
+    """The phase-QNode lowering matrix reports which routes are ready without host callbacks."""
     result = run_jax_phase_qnode_lowering_matrix()
 
     assert isinstance(result, PhaseJAXPhaseQNodeLoweringMatrixResult)
@@ -200,6 +203,7 @@ def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes
 def test_phase_jax_maturity_audit_fails_closed_on_bad_batch_shape(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A parameter batch of the wrong shape is refused."""
     fake_jax = _FakeJAX()
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
 

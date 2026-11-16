@@ -32,6 +32,7 @@ def _load_module() -> ModuleType:
 
 
 def test_state_observables_use_qiskit_little_endian_initial_index() -> None:
+    """State observables read the initial index in Qiskit's little-endian order."""
     module = _load_module()
     state = np.zeros(16, dtype=np.complex128)
     state[int("0011"[::-1], 2)] = 1.0
@@ -44,6 +45,7 @@ def test_state_observables_use_qiskit_little_endian_initial_index() -> None:
 
 
 def test_ansatz_resource_rows_cover_preregistered_n4_n6_n8_matrix() -> None:
+    """Resource rows cover the preregistered four-, six- and eight-qubit matrix."""
     module = _load_module()
 
     rows = module.resource_rows(module.default_cases())
@@ -62,6 +64,7 @@ def test_ansatz_resource_rows_cover_preregistered_n4_n6_n8_matrix() -> None:
 
 
 def test_build_summary_blocks_when_accuracy_rows_fail_promotion_gate() -> None:
+    """Accuracy rows below the gate block promotion without submission or QPU time."""
     module = _load_module()
     cases = module.default_cases()
     res_rows = module.resource_rows(cases)
@@ -92,6 +95,7 @@ def test_build_summary_blocks_when_accuracy_rows_fail_promotion_gate() -> None:
 
 
 def test_write_outputs_records_manifest_and_hashes(tmp_path: Path) -> None:
+    """Written outputs include the manifest and the row files."""
     module = _load_module()
     cases = module.default_cases()
     res_rows = module.resource_rows(cases)

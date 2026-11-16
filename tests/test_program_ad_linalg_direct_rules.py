@@ -31,13 +31,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> None:
     """Feasible linalg primitive contracts should expose direct derivative kernels."""
-
     assert (
         program_ad_linalg_matrix_power_derivative_rule
         is linalg_primitives.program_ad_linalg_matrix_power_derivative_rule
@@ -171,7 +169,6 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
 
 def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> None:
     """Static linalg primitive factories should expose direct value/JVP kernels."""
-
     matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
     tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
     left = np.array([0.75, -1.5], dtype=np.float64)
@@ -344,7 +341,6 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
 
 def test_program_ad_linalg_solve_static_derivative_factory_supports_matrix_rhs() -> None:
     """Static solve factories should expose exact matrix-RHS JVP and VJP rules."""
-
     matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
     rhs = np.array([[0.25, -1.0, 0.5], [1.25, 0.75, -0.25]], dtype=np.float64)
     tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)

@@ -58,13 +58,13 @@ _CONFIG = dict(
 
 
 def _symmetric_coupling(strength: float) -> np.ndarray:
-    """A symmetric all-to-all coupling of the given strength (zero diagonal)."""
+    """Return a symmetric all-to-all coupling of the given strength (zero diagonal)."""
     return (np.ones((_N, _N)) - np.eye(_N)) * strength
 
 
 @pytest.fixture(scope="module")
 def certified() -> NeuralLyapunovCertificate:
-    """A certificate for identical oscillators under symmetric attractive coupling (certifiable)."""
+    """Fit a certificate for identical oscillators under symmetric attractive coupling."""
     return fit_neural_lyapunov_certificate(
         np.zeros(_N), np.zeros(_N), _symmetric_coupling(0.9), seed=1, **_CONFIG
     )
@@ -76,7 +76,7 @@ def test_value_is_zero_at_the_equilibrium(certified: NeuralLyapunovCertificate) 
 
 
 def test_decrease_is_zero_at_the_equilibrium(certified: NeuralLyapunovCertificate) -> None:
-    """``\\dot V_ψ(θ*) = 0`` — the relaxed state is a relative equilibrium and ``∇V ⟂ 1``."""
+    r"""``\dot V_ψ(θ*) = 0`` — the relaxed state is a relative equilibrium and ``∇V ⟂ 1``."""
     assert abs(neural_lyapunov_decrease(certified, certified.phases_star)) < 1e-8
 
 
@@ -264,7 +264,7 @@ def test_report_reports_the_sample_size(certified: NeuralLyapunovCertificate) ->
 def test_counterexample_violation_is_the_worse_of_the_two_conditions(
     certified: NeuralLyapunovCertificate,
 ) -> None:
-    """``violation = max(\\dot V_ψ, -V_ψ)`` at the returned state, of the right shape."""
+    r"""``violation = max(\dot V_ψ, -V_ψ)`` at the returned state, of the right shape."""
     counterexample = falsify_neural_lyapunov(certified, seed=9, restarts=8, steps=20)
     assert isinstance(counterexample, LyapunovCounterexample)
     assert counterexample.state.shape == (_N,)

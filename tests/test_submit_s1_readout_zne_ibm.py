@@ -23,6 +23,7 @@ from scripts.submit_s1_readout_zne_ibm import (
 
 
 def test_local_dynamic_folding_preserves_measurement_reset_and_conditionals() -> None:
+    """Folding keeps the circuit's measurement, reset and conditional."""
     qreg = QuantumRegister(2, "q")
     creg = ClassicalRegister(1, "c")
     qc = QuantumCircuit(qreg, creg)
@@ -44,6 +45,7 @@ def test_local_dynamic_folding_preserves_measurement_reset_and_conditionals() ->
 
 
 def test_lane_configuration_keeps_s1f_quadrature_observables() -> None:
+    """The lane keeps its quadrature observables, repetitions and policy."""
     config = _lane_config("s1f")
 
     assert config.observables == ("XXI", "YYI", "XYI", "YXI", "ZZI")
@@ -52,6 +54,7 @@ def test_lane_configuration_keeps_s1f_quadrature_observables() -> None:
 
 
 def test_calibration_entries_cover_full_three_bit_basis() -> None:
+    """Calibration covers every three-bit basis state on four qubits."""
     config = _lane_config("s1c")
     entries = _build_calibration_entries(config, shots=1024)
 
@@ -70,6 +73,7 @@ def test_calibration_entries_cover_full_three_bit_basis() -> None:
 
 
 def test_analysis_reduces_readout_calibrated_zne_channel_rows() -> None:
+    """The analysis reduces readout-calibrated scale rows to channel rows."""
     args = _parse_args(["--backend", "ibm_fez", "--lanes", "s1c"])
     rows = []
     for prepared in ("000", "001", "010", "011", "100", "101", "110", "111"):

@@ -70,6 +70,7 @@ def _energy_drift_ratio(
 
 
 def test_undamped_energy_stays_bounded_while_rk4_drifts() -> None:
+    """Without damping the symplectic integrator keeps energy bounded while RK4 drifts."""
     problem = _problem()
     coupling = problem["coupling"]
     force = lambda theta: networked_kuramoto_force(theta, coupling)  # noqa: E731
@@ -108,6 +109,7 @@ def test_undamped_energy_stays_bounded_while_rk4_drifts() -> None:
 
 
 def test_short_time_agreement_is_second_order() -> None:
+    """Over a short horizon the symplectic and RK4 trajectories agree closely."""
     problem = _problem(seed=1)
     coupling = problem["coupling"]
     force = lambda theta: networked_kuramoto_force(theta, coupling)  # noqa: E731
@@ -137,6 +139,7 @@ def test_short_time_agreement_is_second_order() -> None:
 
 
 def test_damped_energy_dissipates_monotonically() -> None:
+    """With damping the energy never increases and ends below its start."""
     problem = _problem(seed=2)
     coupling = problem["coupling"]
     force = lambda theta: networked_kuramoto_force(theta, coupling)  # noqa: E731
@@ -169,6 +172,7 @@ def test_damped_energy_dissipates_monotonically() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Invalid integrator arguments are refused with their reasons."""
     problem = _problem()
     coupling = problem["coupling"]
     force = lambda theta: networked_kuramoto_force(theta, coupling)  # noqa: E731

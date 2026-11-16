@@ -30,6 +30,7 @@ def _load_module() -> ModuleType:
 
 
 def test_loads_circuits_from_data_tree(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Circuits are loaded from a QPY file in the data tree unchanged."""
     module = _load_module()
     monkeypatch.setattr(module, "_ARTIFACT_ROOT", tmp_path)
     circuit = QuantumCircuit(2)
@@ -44,6 +45,7 @@ def test_loads_circuits_from_data_tree(tmp_path: Path, monkeypatch: pytest.Monke
 
 
 def test_rejects_non_qpy_suffix(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A file without the QPY suffix is refused."""
     module = _load_module()
     monkeypatch.setattr(module, "_ARTIFACT_ROOT", tmp_path)
     payload = tmp_path / "matrix.json"
@@ -55,6 +57,7 @@ def test_rejects_non_qpy_suffix(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
 def test_rejects_path_outside_artifact_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """A path outside the repository data tree is refused."""
     module = _load_module()
     monkeypatch.setattr(module, "_ARTIFACT_ROOT", tmp_path / "data")
     outside = tmp_path / "matrix.qpy"
@@ -65,5 +68,6 @@ def test_rejects_path_outside_artifact_root(
 
 
 def test_default_artifact_root_is_repo_data() -> None:
+    """The default artefact root is the repository's data directory."""
     module = _load_module()
     assert _MODULE_PATH.parent.parent / "data" == module._ARTIFACT_ROOT

@@ -49,6 +49,7 @@ def _fixture_rows() -> list[dict[str, str]]:
 
 
 def test_label_summary_preserves_promoted_result_order_and_metrics() -> None:
+    """The label summary keeps the promoted order and its deviation metrics."""
     module = _load_module()
     rows = _fixture_rows()
 
@@ -72,6 +73,7 @@ def test_label_summary_preserves_promoted_result_order_and_metrics() -> None:
 
 
 def test_top_deviations_identify_dla_odd_signal_transverse_edge() -> None:
+    """The largest deviations are the transverse-edge settings of the odd signal."""
     module = _load_module()
     rows = _fixture_rows()
 
@@ -83,6 +85,7 @@ def test_top_deviations_identify_dla_odd_signal_transverse_edge() -> None:
 
 
 def test_backend_comparison_tracks_raw_and_readout_mitigated_deviation() -> None:
+    """The backend comparison reports raw and readout-mitigated deviations."""
     module = _load_module()
     rows = [
         {
@@ -110,6 +113,7 @@ def test_backend_comparison_tracks_raw_and_readout_mitigated_deviation() -> None
 
 
 def test_full_readout_amplification_summary_separates_transverse_edges() -> None:
+    """The amplification summary separates the transverse-edge channels."""
     module = _load_module()
     rows = [
         {

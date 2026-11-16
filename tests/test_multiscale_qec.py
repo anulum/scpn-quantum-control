@@ -36,7 +36,7 @@ from scpn_quantum_control.qec.syndrome_flow import syndrome_flow_analysis
 
 @pytest.fixture
 def knm_16() -> np.ndarray:
-    """Standard 16-layer SCPN K_nm matrix."""
+    """Return the standard 16-layer coupling matrix."""
     return build_knm_paper27()
 
 
@@ -89,7 +89,7 @@ class TestErrorHandling:
     """Invalid inputs must raise clear errors."""
 
     def test_mismatched_distances_length(self, knm_16: np.ndarray) -> None:
-        """distances list must match number of active domains."""
+        """The list of distances must match the number of active domains."""
         with pytest.raises(ValueError, match="distances length"):
             build_multiscale_qec(knm_16, distances=[3, 5])  # too few
 
@@ -120,8 +120,7 @@ class TestNegativeCases:
             assert flow.syndrome_weight == pytest.approx(0.0, abs=1e-12)
 
     def test_identity_coupling_not_exponential(self) -> None:
-        """Identity K (uniform coupling) should NOT show exponential
-        decay between domains."""
+        """Uniform coupling shows no exponential decay between domains."""
         K = np.ones((16, 16)) * 0.1
         np.fill_diagonal(K, 0.0)
         near = knm_between_domains(K, (0, 3), (4, 7))

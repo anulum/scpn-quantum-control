@@ -40,6 +40,7 @@ def _problem() -> tuple[np.ndarray, np.ndarray]:
 
 
 def test_builds_bit_exact_recompute_unit() -> None:
+    """A recompute unit is built as bit-exact and verifiable by recomputation."""
     K_nm, omega = _problem()
 
     unit = build_xy_compile_recompute_unit(
@@ -62,6 +63,7 @@ def test_builds_bit_exact_recompute_unit() -> None:
 
 
 def test_recompute_unit_detects_digest_drift() -> None:
+    """A tampered recompute unit is reported as drift."""
     K_nm, omega = _problem()
     unit = build_xy_compile_recompute_unit(
         K_nm,
@@ -78,6 +80,7 @@ def test_recompute_unit_detects_digest_drift() -> None:
 
 
 def test_digest_changes_when_compile_input_changes() -> None:
+    """Changing a compile input changes the digest."""
     K_nm, omega = _problem()
     base = canonical_xy_compile_input_bytes(
         K_nm,
@@ -98,6 +101,7 @@ def test_digest_changes_when_compile_input_changes() -> None:
 
 
 def test_recompute_unit_rejects_invalid_exactness_or_inputs() -> None:
+    """An invalid exactness class or Trotter setting is refused."""
     K_nm, omega = _problem()
     unit = build_xy_compile_recompute_unit(
         K_nm,

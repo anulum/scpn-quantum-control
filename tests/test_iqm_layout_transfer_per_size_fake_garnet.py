@@ -52,6 +52,7 @@ def _install_iqm_stub(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_optional_loaders_resolve_and_fail_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The optional loaders resolve when present and fail closed otherwise."""
     runner = _runner()
     _install_iqm_stub(monkeypatch)
     assert runner._load_fake_backend_type() is object
@@ -117,6 +118,7 @@ def test_run_uses_descriptive_fail_closed_diagnostics(
     labels: list[str],
     message: str,
 ) -> None:
+    """Invalid runs fail with a descriptive reason."""
     runner = _runner()
     args, circuits = _args(
         tmp_path,
@@ -140,6 +142,7 @@ def test_run_executes_complete_provider_free_matrix(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A run executes the complete provider-free matrix and records every count."""
     runner = _runner()
     labels = _complete_labels()
     args, circuits = _args(tmp_path, labels=labels)
@@ -180,5 +183,6 @@ def test_run_executes_complete_provider_free_matrix(
 
 
 def test_main_exposes_per_size_fake_backend_responsibility() -> None:
+    """The entry point states its single responsibility."""
     runner = _runner()
     assert runner.main.__doc__ == ("Run the provider-free, resumable per-size fake-backend gate.")

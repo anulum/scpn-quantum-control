@@ -31,6 +31,7 @@ def _load_module() -> ModuleType:
 
 
 def test_parse_layout_rejects_invalid_values() -> None:
+    """A layout needs exactly four unique qubits."""
     module = _load_module()
 
     assert module.parse_layout("9,4,3,8") == (9, 4, 3, 8)
@@ -43,6 +44,7 @@ def test_parse_layout_rejects_invalid_values() -> None:
 
 
 def test_build_plan_pairs_even_odd_on_same_layout() -> None:
+    """The plan pairs even and odd parity circuits with readout baselines on one layout."""
     module = _load_module()
 
     rows = module.build_plan(layout=(9, 4, 3, 8), shots=256)
@@ -59,6 +61,7 @@ def test_build_plan_pairs_even_odd_on_same_layout() -> None:
 
 
 def test_analyse_counts_reports_parity_leakage_and_retention() -> None:
+    """Count analysis reports parity, in-sector counts and leakage."""
     module = _load_module()
 
     stats = module.analyse_counts({"1100": 7, "0001": 3}, initial="0011", n_qubits=4)
@@ -72,6 +75,7 @@ def test_analyse_counts_reports_parity_leakage_and_retention() -> None:
 
 
 def test_public_copy_removes_raw_job_id_from_timeout_record() -> None:
+    """The public copy replaces the raw job ID with its hash."""
     module = _load_module()
 
     clean = module._public_copy(

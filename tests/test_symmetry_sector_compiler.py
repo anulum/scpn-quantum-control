@@ -39,7 +39,6 @@ def _problem(**overrides: Any) -> SymmetrySectorProblem:
 
 def test_planner_returns_full_plan_when_evidence_is_present() -> None:
     """Valid XY/counts inputs enable parity, expansion, and GUESS primitives."""
-
     plan = plan_symmetry_sector_mitigation(_problem())
 
     assert plan.status == "eligible"
@@ -54,7 +53,6 @@ def test_planner_returns_full_plan_when_evidence_is_present() -> None:
 
 def test_planner_blocks_without_raw_counts() -> None:
     """Mitigation planning is not allowed without raw measurement counts."""
-
     plan = plan_symmetry_sector_mitigation(_problem(has_raw_counts=False))
 
     assert plan.status == "blocked"
@@ -64,7 +62,6 @@ def test_planner_blocks_without_raw_counts() -> None:
 
 def test_planner_blocks_guess_without_noise_scaled_observables() -> None:
     """GUESS is not silently enabled without its calibration evidence."""
-
     plan = plan_symmetry_sector_mitigation(_problem(has_noise_scaled_symmetry_observables=False))
 
     assert plan.status == "blocked"
@@ -73,7 +70,6 @@ def test_planner_blocks_guess_without_noise_scaled_observables() -> None:
 
 def test_planner_blocks_nonsymmetric_coupling() -> None:
     """Sector planning requires a symmetric XY-style coupling matrix."""
-
     plan = plan_symmetry_sector_mitigation(
         _problem(
             coupling_matrix=(

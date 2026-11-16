@@ -130,6 +130,7 @@ def test_R_from_xyz_known_distribution() -> None:
 
 
 def test_R_positive_for_all_sizes() -> None:
+    """The order parameter is finite and non-negative at every size."""
     for n in [2, 3, 4]:
         R = _simulate_R(n, t=0.5, trotter_reps=2)
         assert np.isfinite(R)
@@ -137,17 +138,20 @@ def test_R_positive_for_all_sizes() -> None:
 
 
 def test_R_from_xyz_uniform_counts() -> None:
+    """Uniform counts give a finite order parameter."""
     counts = {"0000": 2500, "0001": 2500, "0010": 2500, "0011": 2500}
     R, *_ = _R_from_xyz(counts, counts, counts, n_qubits=4)
     assert np.isfinite(R)
 
 
 def test_R_from_xyz_single_state() -> None:
+    """Counts concentrated on one state give a finite order parameter."""
     counts = {"0000": 10000}
     R, *_ = _R_from_xyz(counts, counts, counts, n_qubits=4)
     assert np.isfinite(R)
 
 
 def test_simulate_R_2q() -> None:
+    """The two-qubit simulation gives an order parameter in range."""
     R = _simulate_R(2, t=0.3, trotter_reps=3)
     assert 0 <= R <= 1.5

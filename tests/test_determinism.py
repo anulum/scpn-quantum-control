@@ -94,12 +94,14 @@ def test_statevector_simulation_deterministic() -> None:
 
 
 def test_knm_deterministic_repeat() -> None:
+    """Building the coupling matrix twice gives identical arrays."""
     K1 = build_knm_paper27(L=8)
     K2 = build_knm_paper27(L=8)
     np.testing.assert_array_equal(K1, K2)
 
 
 def test_hamiltonian_deterministic_repeat() -> None:
+    """Building the Hamiltonian twice gives identical matrices."""
     from scpn_quantum_control.bridge import knm_to_hamiltonian
 
     K = build_knm_paper27(L=4)
@@ -110,6 +112,7 @@ def test_hamiltonian_deterministic_repeat() -> None:
 
 
 def test_vqe_seed_deterministic() -> None:
+    """Two VQE runs with the same seed reach the same ground energy."""
     from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
     K = build_knm_paper27(L=2)
@@ -120,6 +123,7 @@ def test_vqe_seed_deterministic() -> None:
 
 
 def test_omega_immutable() -> None:
+    """Building the coupling matrix leaves the shared frequency array unchanged."""
     omega_copy = OMEGA_N_16.copy()
     _ = build_knm_paper27(L=4)
     np.testing.assert_array_equal(OMEGA_N_16, omega_copy)

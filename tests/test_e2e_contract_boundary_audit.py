@@ -32,6 +32,7 @@ main = _MODULE.main
 
 
 def test_boundary_audit_matches_expected_test_file_names(tmp_path: Path) -> None:
+    """Each contract boundary is matched to the test files that cover it."""
     (tmp_path / "test_hardware_runner.py").write_text("def test_a():\n    assert True\n")
     (tmp_path / "test_bridge_properties.py").write_text("def test_b():\n    assert True\n")
     (tmp_path / "test_snn_neurocore_e2e.py").write_text("def test_c():\n    assert True\n")
@@ -48,6 +49,7 @@ def test_boundary_audit_matches_expected_test_file_names(tmp_path: Path) -> None
 
 
 def test_boundary_audit_json_is_machine_readable(tmp_path: Path) -> None:
+    """The JSON output lists every boundary with its coverage."""
     (tmp_path / "test_example_workflow.py").write_text("def test_example():\n    assert True\n")
 
     decoded = json.loads(audits_to_json(audit_boundaries(tmp_path)))
@@ -58,6 +60,7 @@ def test_boundary_audit_json_is_machine_readable(tmp_path: Path) -> None:
 
 
 def test_boundary_audit_summary_lists_missing_boundaries(tmp_path: Path) -> None:
+    """The text summary lists covered and missing boundaries."""
     (tmp_path / "test_notebook_smoke.py").write_text("def test_notebook():\n    assert True\n")
 
     summary = format_audits(audit_boundaries(tmp_path))
@@ -70,6 +73,7 @@ def test_boundary_audit_summary_lists_missing_boundaries(tmp_path: Path) -> None
 def test_boundary_audit_cli_fail_on_missing(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails on a missing boundary only when asked to."""
     (tmp_path / "test_bridge_contract.py").write_text("def test_bridge():\n    assert True\n")
 
     assert main(["--tests-root", str(tmp_path), "--json"]) == 0

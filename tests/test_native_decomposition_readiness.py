@@ -34,6 +34,7 @@ def _load_module() -> ModuleType:
 
 
 def test_default_cases_cover_preregistered_sizes_and_families() -> None:
+    """The default cases cover the preregistered sizes and circuit families."""
     module = _load_module()
 
     cases = module.default_cases()
@@ -45,6 +46,7 @@ def test_default_cases_cover_preregistered_sizes_and_families() -> None:
 
 
 def test_native_targeted_matches_generic_for_n4_case() -> None:
+    """The native decomposition matches the generic one within the unitary tolerance."""
     module = _load_module()
     spec = module.CaseSpec(4, "test", "even", "0011", 2)
     generic = module.build_generic_pauli_circuit(spec)
@@ -56,6 +58,7 @@ def test_native_targeted_matches_generic_for_n4_case() -> None:
 
 
 def test_readiness_summary_is_bounded_and_non_submitting() -> None:
+    """The readiness summary has resource and equivalence rows and submits nothing."""
     module = _load_module()
 
     resource_rows, eq_rows, summary = module.build_readiness()
@@ -75,6 +78,7 @@ def test_readiness_summary_is_bounded_and_non_submitting() -> None:
 
 
 def test_write_outputs_records_manifest(tmp_path: Path) -> None:
+    """Written outputs include the summary, resource and equivalence files."""
     module = _load_module()
     resource_rows, eq_rows, summary = module.build_readiness()
 

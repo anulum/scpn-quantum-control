@@ -41,6 +41,7 @@ build_coupling_weighted_reconstruction_payload = (
 
 
 def test_classify_observer_source_identifies_delay_embedded_vietoris_rips() -> None:
+    """A delay-embedded Vietoris-Rips observer is classified as such, not coupling-weighted."""
     source = """
     cloud = delay_embed_multi(signal, self.cfg.embed_dim, self.cfg.tau_delay)
     result = _compute_ripser(cloud, maxdim=1)
@@ -53,6 +54,7 @@ def test_classify_observer_source_identifies_delay_embedded_vietoris_rips() -> N
 
 
 def test_classify_observer_source_requires_coupling_and_simplicial_terms() -> None:
+    """A coupling-weighted classification needs both coupling and simplicial terms."""
     source = """
     weight = K_ij * abs(cos_delta)
     filtration = weighted_simplicial_complex(simplex_weights=weight)
@@ -64,6 +66,7 @@ def test_classify_observer_source_requires_coupling_and_simplicial_terms() -> No
 
 
 def test_deterministic_phase_stream_is_reproducible() -> None:
+    """The deterministic phase stream is identical across two draws."""
     first = list(
         deterministic_phase_stream(
             kind="incoherent_noise",
@@ -87,6 +90,7 @@ def test_deterministic_phase_stream_is_reproducible() -> None:
 
 
 def test_coupling_weighted_reconstruction_payload_records_threshold_scan() -> None:
+    """The reconstruction payload records its construction, layers and target."""
     payload = build_coupling_weighted_reconstruction_payload(
         n_layers=4,
         seed=7,

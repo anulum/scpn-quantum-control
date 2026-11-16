@@ -27,7 +27,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -55,7 +54,6 @@ def test_program_ad_reciprocal_ufunc_matches_exact_adjoint() -> None:
 
 def test_program_ad_reciprocal_ufunc_fails_closed_at_zero() -> None:
     """Program AD reciprocal should reject singular inverse boundaries."""
-
     with pytest.raises(ValueError, match="reciprocal input must be non-zero"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.reciprocal(values)),
@@ -93,7 +91,6 @@ def test_program_ad_log1p_and_expm1_ufuncs_match_exact_adjoint() -> None:
 
 def test_program_ad_log1p_ufunc_fails_closed_at_domain_boundary() -> None:
     """Program AD log1p should reject inputs where the derivative is singular."""
-
     with pytest.raises(ValueError, match="log1p input must be greater than -1"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.log1p(values)),
@@ -130,7 +127,6 @@ def test_program_ad_tan_ufunc_matches_exact_adjoint() -> None:
 
 def test_program_ad_tan_ufunc_fails_closed_at_singular_boundary() -> None:
     """Program AD tangent should reject singular cosine-zero boundaries."""
-
     with pytest.raises(ValueError, match="tan input must have non-zero cosine"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.tan(values)),

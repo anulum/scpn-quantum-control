@@ -36,6 +36,7 @@ def _load_module() -> ModuleType:
 
 
 def test_observable_map_has_nine_reduced_pauli_settings() -> None:
+    """The observable map has the nine reduced Pauli settings."""
     module = _load_module()
 
     observables = module.observable_map()
@@ -48,6 +49,7 @@ def test_observable_map_has_nine_reduced_pauli_settings() -> None:
 
 
 def test_exact_product_state_purity_and_pauli_expectations() -> None:
+    """A product state has unit half-chain purity and the expected Pauli values."""
     module = _load_module()
     state = np.zeros(16, dtype=np.complex128)
     state[0] = 1.0
@@ -58,6 +60,7 @@ def test_exact_product_state_purity_and_pauli_expectations() -> None:
 
 
 def test_readiness_rows_are_under_preregistered_circuit_ceiling() -> None:
+    """Readiness stays under the preregistered circuit ceiling without submission or QPU time."""
     module = _load_module()
 
     rows, summary = module.build_rows()
@@ -73,6 +76,7 @@ def test_readiness_rows_are_under_preregistered_circuit_ceiling() -> None:
 
 
 def test_write_outputs_records_manifest_and_csv_hash(tmp_path: Path) -> None:
+    """Written outputs include the manifest and the CSV digest."""
     module = _load_module()
     rows, summary = module.build_rows()
 

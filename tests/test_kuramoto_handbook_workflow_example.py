@@ -60,7 +60,6 @@ class WorkflowModuleProtocol(Protocol):
 
 def _load_example() -> WorkflowModuleProtocol:
     """Load the numeric example filename as a module."""
-
     spec = importlib.util.spec_from_file_location("kuramoto_handbook_workflow_example", EXAMPLE)
     if spec is None or spec.loader is None:
         raise AssertionError(f"cannot load {EXAMPLE}")
@@ -73,7 +72,6 @@ def _load_example() -> WorkflowModuleProtocol:
 
 def test_kuramoto_handbook_workflow_runs_on_public_facade() -> None:
     """The worked example returns physically consistent deterministic diagnostics."""
-
     summary = _load_example().run_workflow()
 
     assert summary.oscillator_count == 6
@@ -102,7 +100,6 @@ def test_kuramoto_handbook_workflow_main_prints_json(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """The example command-line path emits machine-readable JSON."""
-
     _load_example().main()
     output = capsys.readouterr().out
     payload = json.loads(output)
@@ -113,7 +110,6 @@ def test_kuramoto_handbook_workflow_main_prints_json(
 
 def test_kuramoto_handbook_workflow_is_crosslinked() -> None:
     """The worked example and notebook are discoverable from public docs."""
-
     examples_readme = (ROOT / "examples" / "README.md").read_text(encoding="utf-8")
     gallery = (ROOT / "docs" / "examples_gallery.md").read_text(encoding="utf-8")
     notebooks = (ROOT / "docs" / "notebooks.md").read_text(encoding="utf-8")

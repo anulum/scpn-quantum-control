@@ -35,6 +35,7 @@ _COMMITTED = _DATA / "iqm_dla_depth_profile_primary_analysis_2026-07-22.json"
 def test_command_surface_reproduces_committed_depth_profile(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command reproduces the committed depth profile exactly."""
     output = tmp_path / "analysis.json"
     monkeypatch.setattr(
         sys,
@@ -65,6 +66,7 @@ def test_command_surface_reproduces_committed_depth_profile(
 def test_incomplete_matrix_and_missing_prior_depth_stay_nonpromotional(
     tmp_path: Path,
 ) -> None:
+    """An incomplete matrix names its missing labels and promotes nothing."""
     depth_payload = json.loads(_DEPTH_COUNTS[0].read_text(encoding="utf-8"))
     depth_payload["counts"].pop("main_d8_even_rep1")
     partial_depth = tmp_path / "partial-depth.json"
@@ -114,6 +116,7 @@ def test_incomplete_matrix_and_missing_prior_depth_stay_nonpromotional(
 def test_invalid_layout_empty_inputs_and_degenerate_statistics_fail_closed(
     tmp_path: Path,
 ) -> None:
+    """Disagreeing layouts, empty count blocks and empty samples are refused."""
     first = tmp_path / "first.json"
     second = tmp_path / "second.json"
     first.write_text(json.dumps({"counts": {}, "layout": [1]}), encoding="utf-8")
@@ -139,6 +142,7 @@ def test_invalid_layout_empty_inputs_and_degenerate_statistics_fail_closed(
 
 
 def test_missing_sector_and_degenerate_decay_variance_fail_closed(tmp_path: Path) -> None:
+    """A depth without a sector and a degenerate decay variance are refused."""
     missing_sector = tmp_path / "missing-sector.json"
     missing_sector.write_text(
         json.dumps({"counts": {}, "layout": [2, 7, 12, 13]}), encoding="utf-8"

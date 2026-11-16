@@ -58,6 +58,7 @@ def _final_order_parameter(
 
 
 def test_policy_gradient_matches_finite_differences() -> None:
+    """The analytic policy gradient agrees with finite differences of the rollout loss."""
     network = _network()
     initial = network["rng"].uniform(0.0, 2.0 * np.pi, size=_N)
     sine = np.array([0.3, -0.1])
@@ -101,6 +102,7 @@ def test_policy_gradient_matches_finite_differences() -> None:
 
 
 def test_learned_policy_desynchronises_a_held_out_initial_condition() -> None:
+    """A learned policy lowers synchrony from an initial condition it was not trained on."""
     network = _network()
     batch = np.array([network["rng"].uniform(0.0, 2.0 * np.pi, size=_N) for _ in range(5)])
     policy, history = learn_desynchronising_policy(
@@ -130,6 +132,7 @@ def test_learned_policy_desynchronises_a_held_out_initial_condition() -> None:
 
 
 def test_policy_control_evaluation() -> None:
+    """A policy's control equals its closed form, and a zero policy applies no control."""
     policy = DesynchronisingPolicy(np.array([-1.0]), np.array([0.0]))
     phases = np.linspace(0.0, 1.0, _N, dtype=np.float64)
     control = policy.control(phases)
@@ -161,6 +164,7 @@ def test_policy_control_evaluation() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Invalid policy-learning arguments are refused with their reasons."""
     network = _network()
     initial = network["rng"].uniform(0.0, 2.0 * np.pi, size=_N)
     with pytest.raises(ValueError, match=message):

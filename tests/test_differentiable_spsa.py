@@ -27,6 +27,7 @@ def _linear_objective(params: NDArray[np.float64]) -> float:
 
 
 def test_spsa_gradient_estimate_is_seeded_and_records_probe_pairs() -> None:
+    """A seeded SPSA estimate is reproducible and records its probe pairs."""
     params = np.array([0.4, -0.2, 0.8], dtype=np.float64)
 
     first = spsa_gradient_estimate(
@@ -69,6 +70,7 @@ def test_spsa_gradient_estimate_is_seeded_and_records_probe_pairs() -> None:
 
 
 def test_spsa_gradient_estimate_propagates_finite_shot_uncertainty() -> None:
+    """Finite-shot samples carry their uncertainty and shot total into the estimate."""
     params = np.array([0.4, -0.2], dtype=np.float64)
 
     def sample_objective(values: NDArray[np.float64], shots: int | None) -> SPSAObjectiveSample:
@@ -100,6 +102,7 @@ def test_spsa_gradient_estimate_propagates_finite_shot_uncertainty() -> None:
 
 
 def test_spsa_gradient_estimate_fails_closed_for_invalid_contracts() -> None:
+    """An invalid radius, repetition count or seed is refused."""
     with pytest.raises(ValueError, match="perturbation_radius"):
         spsa_gradient_estimate(_linear_objective, [0.1], perturbation_radius=0.0)
     with pytest.raises(ValueError, match="repetitions"):
@@ -115,6 +118,7 @@ def test_spsa_gradient_estimate_fails_closed_for_invalid_contracts() -> None:
 
 
 def test_spsa_exports_from_package_root() -> None:
+    """The package root re-exports the SPSA sample, result and estimator."""
     assert scpn.SPSAObjectiveSample is SPSAObjectiveSample
     assert scpn.SPSAGradientResult is SPSAGradientResult
     assert scpn.spsa_gradient_estimate is spsa_gradient_estimate

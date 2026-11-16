@@ -49,6 +49,7 @@ class _FakeIQMAdapter:
 
 
 def test_generate_manifest_contains_paper_critical_tiers(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The manifest covers the paper's tiers, is not submitted and authorises no QPU spend."""
     module = _load_module()
     monkeypatch.setattr(module, "IQMQuantumBackend", lambda: _FakeIQMAdapter())
 
@@ -71,6 +72,7 @@ def test_generate_manifest_contains_paper_critical_tiers(monkeypatch: pytest.Mon
 def test_generate_manifest_blocks_cleanly_when_iqm_dependency_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Without the IQM dependency every row is blocked with that reason."""
     module = _load_module()
 
     class MissingIQM:
@@ -89,6 +91,7 @@ def test_generate_manifest_blocks_cleanly_when_iqm_dependency_missing(
 def test_main_writes_json_csv_and_markdown(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """The command writes one JSON, CSV and Markdown file with matching totals."""
     module = _load_module()
     monkeypatch.setattr(module, "IQMQuantumBackend", lambda: _FakeIQMAdapter())
     monkeypatch.setattr(
@@ -116,6 +119,7 @@ def test_main_writes_json_csv_and_markdown(
 
 
 def test_iqm_fake_transpile_helper_backend_modules_are_consistent() -> None:
+    """Each fake backend's module and class names match its backend name."""
     module = _load_helper_module()
 
     for backend_name, (module_name, class_name) in module.FAKE_BACKENDS.items():

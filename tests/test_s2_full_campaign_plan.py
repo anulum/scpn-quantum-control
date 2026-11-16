@@ -28,6 +28,7 @@ def _load_module() -> ModuleType:
 
 
 def test_campaign_rows_cover_full_protocol_grid() -> None:
+    """The plan covers the whole protocol grid and keeps hardware rows blocked."""
     module = _load_module()
 
     rows = module.build_campaign_rows()
@@ -39,6 +40,7 @@ def test_campaign_rows_cover_full_protocol_grid() -> None:
 
 
 def test_hardware_rows_are_never_promoted_by_planner() -> None:
+    """Hardware rows stay blocked until explicit QPU approval."""
     module = _load_module()
 
     rows = module.build_campaign_rows()
@@ -50,6 +52,7 @@ def test_hardware_rows_are_never_promoted_by_planner() -> None:
 
 
 def test_summary_blocks_advantage_claim_and_counts_ready_rows() -> None:
+    """The summary submits nothing and blocks any advantage claim."""
     module = _load_module()
     rows = module.build_campaign_rows()
 
@@ -63,6 +66,7 @@ def test_summary_blocks_advantage_claim_and_counts_ready_rows() -> None:
 
 
 def test_write_outputs_records_manifest(tmp_path: Path) -> None:
+    """Written outputs include a manifest stating no submission."""
     module = _load_module()
     rows = module.build_campaign_rows()
     summary = module.build_summary(rows)

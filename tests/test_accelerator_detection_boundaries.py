@@ -16,6 +16,7 @@ import pytest
 
 
 def test_jax_detection_falls_back_when_package_missing() -> None:
+    """Without JAX installed, detection reports no JAX and no GPU."""
     from scpn_quantum_control.hardware import jax_accel
 
     with patch.dict("sys.modules", {"jax": None, "jax.numpy": None}):
@@ -27,6 +28,7 @@ def test_jax_detection_falls_back_when_package_missing() -> None:
 
 
 def test_jax_detection_propagates_present_runtime_failure() -> None:
+    """An installed JAX whose device query fails raises that failure instead of hiding it."""
     from scpn_quantum_control.hardware import jax_accel
 
     fake_jax = ModuleType("jax")
@@ -45,6 +47,7 @@ def test_jax_detection_propagates_present_runtime_failure() -> None:
 
 
 def test_cupy_detection_falls_back_when_package_missing() -> None:
+    """Without CuPy installed, detection reports no CuPy."""
     from scpn_quantum_control.hardware import gpu_accel
 
     with patch.dict("sys.modules", {"cupy": None}):
@@ -55,6 +58,7 @@ def test_cupy_detection_falls_back_when_package_missing() -> None:
 
 
 def test_cupy_detection_propagates_present_runtime_failure() -> None:
+    """An installed CuPy whose device count fails raises that failure instead of hiding it."""
     from scpn_quantum_control.hardware import gpu_accel
 
     fake_cupy = ModuleType("cupy")

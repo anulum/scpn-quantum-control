@@ -59,7 +59,6 @@ class WorkflowModuleProtocol(Protocol):
 
 def _load_example() -> WorkflowModuleProtocol:
     """Load the numeric example filename as a module."""
-
     spec = importlib.util.spec_from_file_location(
         "oscillatools_handbook_workflow_example", EXAMPLE
     )
@@ -74,7 +73,6 @@ def _load_example() -> WorkflowModuleProtocol:
 
 def test_handbook_workflow_runs_on_public_facade() -> None:
     """The worked example returns physically consistent deterministic diagnostics."""
-
     summary = _load_example().run_workflow()
 
     assert summary.oscillator_count == 6
@@ -103,7 +101,6 @@ def test_handbook_workflow_main_prints_json(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """The example command-line path emits machine-readable JSON."""
-
     _load_example().main()
     output = capsys.readouterr().out
     payload = json.loads(output)
@@ -114,7 +111,6 @@ def test_handbook_workflow_main_prints_json(
 
 def test_handbook_workflow_is_crosslinked() -> None:
     """The worked example is discoverable from the public docs and examples index."""
-
     examples_readme = (ROOT / "examples" / "README.md").read_text(encoding="utf-8")
     gallery = (ROOT / "docs" / "gallery.md").read_text(encoding="utf-8")
     handbook = (ROOT / "docs" / "handbook.md").read_text(encoding="utf-8")

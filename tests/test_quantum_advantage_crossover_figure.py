@@ -35,6 +35,7 @@ def crossover_module() -> types.ModuleType:
 def test_hardware_points_cover_full_committed_ibm_fez_scaling(
     crossover_module: types.ModuleType,
 ) -> None:
+    """Hardware points cover every committed size on the one backend with real job IDs."""
     points = crossover_module.load_hardware_points()
     assert [p.n_qubits for p in points] == [4, 6, 8, 10, 12, 14, 16]
     assert {p.backend for p in points} == {"ibm_fez"}
@@ -48,6 +49,7 @@ def test_hardware_points_cover_full_committed_ibm_fez_scaling(
 def test_classical_points_keep_exact_and_ode_boundaries(
     crossover_module: types.ModuleType,
 ) -> None:
+    """Classical points keep the exact-diagonalisation times and stop where it stops."""
     points = crossover_module.load_classical_points()
     by_n = {p.n_qubits: p for p in points}
     assert by_n[4].exact_diag_ms == 0.1
@@ -60,6 +62,7 @@ def test_classical_points_keep_exact_and_ode_boundaries(
 def test_exponential_fit_and_crossover_are_conservative(
     crossover_module: types.ModuleType,
 ) -> None:
+    """The exponential fits are positive and well determined."""
     hardware = crossover_module.load_hardware_points()
     classical = crossover_module.load_classical_points()
     exact_fit, hardware_fit, crossover = crossover_module.build_crossover_model(
@@ -79,6 +82,7 @@ def test_exponential_fit_and_crossover_are_conservative(
 def test_plot_generation_writes_png_and_pdf(
     crossover_module: types.ModuleType, tmp_path: Path
 ) -> None:
+    """Plotting writes non-trivial PNG and PDF files."""
     matplotlib = pytest.importorskip("matplotlib")
     matplotlib.use("Agg")
 

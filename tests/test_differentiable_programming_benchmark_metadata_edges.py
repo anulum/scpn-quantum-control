@@ -27,7 +27,6 @@ from scpn_quantum_control.benchmarks.differentiable_programming import (
 
 def test_benchmark_result_validation_rejects_empty_blocked_reason() -> None:
     """Differentiable benchmark rows should reject malformed blocker metadata."""
-
     row = _benchmark_row()
     assert row.passed is True
     with pytest.raises(ValueError, match="blocked_reasons"):
@@ -47,7 +46,6 @@ def test_benchmark_result_validation_rejects_empty_blocked_reason() -> None:
 
 def test_quantum_gradient_validation_rejects_remaining_malformed_fields() -> None:
     """Quantum-gradient rows should reject every remaining malformed metadata field."""
-
     gradient = _gradient(2)
     with pytest.raises(ValueError, match="category"):
         QuantumGradientBenchmarkResult(
@@ -126,7 +124,6 @@ def test_quantum_gradient_suite_optional_backend_gates(
     expected_optional: tuple[str, ...],
 ) -> None:
     """Quantum-gradient optional rows should be gated independently by backend."""
-
     monkeypatch.setattr(dp, "is_phase_torch_available", lambda: torch_available)
     monkeypatch.setattr(dp, "is_phase_jax_available", lambda: jax_available)
     monkeypatch.setattr(
@@ -177,7 +174,6 @@ def test_quantum_gradient_suite_optional_backend_gates(
 
 def test_structured_numeric_interpolation_fails_closed_outside_grid() -> None:
     """Structured numeric directional checks should reject out-of-grid samples."""
-
     source = np.zeros(16, dtype=np.float64)
     direction = np.zeros(16, dtype=np.float64)
     source[13:16] = np.array([-0.5, 0.5, 1.5], dtype=np.float64)

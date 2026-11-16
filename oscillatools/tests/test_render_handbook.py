@@ -30,7 +30,6 @@ _BENCHMARK = _REPO_ROOT / "docs" / "benchmarks" / "tiers" / "kuramoto_tiers.loca
 
 def _load(name: str, relative: str) -> ModuleType:
     """Load a tool module from its repository file path."""
-
     spec = importlib.util.spec_from_file_location(name, _REPO_ROOT / relative)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -44,7 +43,6 @@ renderer = _load("render_handbook", "tools/render_handbook.py")
 
 def test_handbook_render_uses_live_facade_and_benchmark_artifact() -> None:
     """The rendered handbook must enumerate the live facade and benchmark operations."""
-
     artifact = renderer.load_benchmark_artifact(_BENCHMARK)
     document = renderer.render_handbook(artifact)
 
@@ -65,13 +63,11 @@ def test_handbook_render_uses_live_facade_and_benchmark_artifact() -> None:
 
 def test_checked_in_handbook_matches_renderer_output() -> None:
     """The tracked handbook must be generated from the current renderer."""
-
     artifact = renderer.load_benchmark_artifact(_BENCHMARK)
     assert _HANDBOOK.read_text(encoding="utf-8") == renderer.render_handbook(artifact)
 
 
 def test_mkdocs_nav_exposes_the_handbook() -> None:
     """The documentation site must link the generated handbook."""
-
     mkdocs = (_REPO_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
     assert "Handbook: handbook.md" in mkdocs

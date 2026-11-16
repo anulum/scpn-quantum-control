@@ -21,6 +21,7 @@ from scpn_quantum_control.differentiable import (
 
 
 def test_score_function_gradient_estimate_uses_likelihood_ratio_samples() -> None:
+    """The estimate uses likelihood-ratio samples and names its parameters."""
     rewards = np.array([2.0, 0.0, 4.0], dtype=np.float64)
     score_vectors = np.array(
         [
@@ -59,6 +60,7 @@ def test_score_function_gradient_estimate_uses_likelihood_ratio_samples() -> Non
 
 
 def test_score_function_gradient_estimate_honours_frozen_parameters() -> None:
+    """A frozen parameter has zero gradient, error and covariance."""
     result = score_function_gradient_estimate(
         [2.0, 0.0, 4.0],
         [[1.0, 2.0], [-1.0, 0.0], [0.0, 1.0]],
@@ -73,6 +75,7 @@ def test_score_function_gradient_estimate_honours_frozen_parameters() -> None:
 
 
 def test_score_function_gradient_estimate_fails_closed_for_invalid_contracts() -> None:
+    """Too few samples, mismatched score vectors or a bad baseline are refused."""
     with pytest.raises(ValueError, match="at least two"):
         score_function_gradient_estimate([1.0], [[0.5]])
     with pytest.raises(ValueError, match="score_vectors"):
@@ -88,5 +91,6 @@ def test_score_function_gradient_estimate_fails_closed_for_invalid_contracts() -
 
 
 def test_score_function_exports_from_package_root() -> None:
+    """The package root re-exports the score-function result and estimator."""
     assert scpn.ScoreFunctionGradientResult is ScoreFunctionGradientResult
     assert scpn.score_function_gradient_estimate is score_function_gradient_estimate

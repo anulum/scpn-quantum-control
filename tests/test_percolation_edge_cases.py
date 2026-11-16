@@ -87,12 +87,14 @@ def test_best_path_boundary_validation() -> None:
 
 
 def test_best_path_same_source_target() -> None:
+    """The best path from a node to itself is that node."""
     K = np.array([[0.0, 0.5], [0.5, 0.0]])
     result = best_entanglement_path(K, source=0, target=0)
     assert result["path"] == [0]
 
 
 def test_best_path_direct_connection() -> None:
+    """A direct edge is the best path, with its weight as the bottleneck."""
     K = np.array([[0.0, 0.9], [0.9, 0.0]])
     result = best_entanglement_path(K, source=0, target=1)
     assert result["path"] == [0, 1]
@@ -100,6 +102,7 @@ def test_best_path_direct_connection() -> None:
 
 
 def test_best_path_3_nodes() -> None:
+    """The best path over three nodes starts at the source and ends at the target."""
     K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.8], [0.1, 0.8, 0]])
     result = best_entanglement_path(K, source=0, target=2)
     assert result["path"][0] == 0
@@ -107,6 +110,7 @@ def test_best_path_3_nodes() -> None:
 
 
 def test_active_channel_graph_4_nodes() -> None:
+    """A four-node coupling graph has active channels."""
     K = build_knm_paper27(L=4)
     channels = active_channel_graph(K, threshold=0.05)
     assert len(channels) > 0

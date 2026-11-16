@@ -81,6 +81,7 @@ def test_dense_matrix_hermitian(n: int) -> None:
 
 @pytest.mark.parametrize("n", [2, 3, 4])
 def test_dense_eigenvalues_real(n: int) -> None:
+    """The dense Hamiltonian has finite eigenvalues."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -113,6 +114,7 @@ def test_ground_energy_negative(n: int) -> None:
 
 
 def test_dense_matrix_shape() -> None:
+    """The dense Hamiltonian has one row and column per basis state."""
     n = 4
     K = np.eye(n) * 0.0
     omega = np.ones(n)
@@ -121,6 +123,7 @@ def test_dense_matrix_shape() -> None:
 
 
 def test_ansatz_qubit_count() -> None:
+    """The ansatz has one qubit per oscillator."""
     n = 4
     K = np.ones((n, n)) * 0.1
     np.fill_diagonal(K, 0)
@@ -176,6 +179,7 @@ def test_hamiltonian_traceless() -> None:
 
 def test_pipeline_knm_to_spectrum() -> None:
     """Full pipeline: build coupling → compile H → diagonalise → spectrum.
+
     Verifies Knm compiler is not decorative.
     """
     import time

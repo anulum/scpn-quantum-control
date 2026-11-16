@@ -21,7 +21,6 @@ from scpn_quantum_control.mitigation.symmetry_sector_fixtures import (
 
 def test_fixture_payload_locks_expected_planner_outcomes() -> None:
     """Fixture payload covers eligible and fail-closed planner branches."""
-
     payload = fixture_payload()
     fixtures = {row["fixture_id"]: row for row in payload["fixtures"]}
 
@@ -47,7 +46,6 @@ def test_fixture_payload_locks_expected_planner_outcomes() -> None:
 
 def test_fixture_payload_locks_expected_replay_outcomes() -> None:
     """Fixture payload covers applied and fail-closed replay branches."""
-
     payload = fixture_payload()
     fixtures = {row["fixture_id"]: row for row in payload["replay_fixtures"]}
 
@@ -70,7 +68,6 @@ def test_fixture_payload_locks_expected_replay_outcomes() -> None:
 
 def test_normalised_json_is_stable_and_round_trips() -> None:
     """Fixture JSON is deterministic and schema-preserving."""
-
     payload = fixture_payload()
     encoded = normalised_json(payload)
 
@@ -81,7 +78,6 @@ def test_normalised_json_is_stable_and_round_trips() -> None:
 
 def test_fixture_markdown_exposes_gate_and_claim_boundary() -> None:
     """Public fixture docs include the reproduction command and no-QPU boundary."""
-
     text = fixture_markdown(fixture_payload())
 
     assert "# Symmetry-Sector Mitigation Planner Fixtures" in text

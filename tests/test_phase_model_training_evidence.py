@@ -20,6 +20,7 @@ from scpn_quantum_control.phase.model_training_evidence import (
 
 
 def test_model_training_evidence_suite_covers_registered_medium_cases() -> None:
+    """The evidence suite covers the registered cases and lists unsuitable scenarios."""
     suite = run_differentiable_model_training_evidence_suite()
 
     assert suite.passed
@@ -45,6 +46,7 @@ def test_model_training_evidence_suite_covers_registered_medium_cases() -> None:
 
 
 def test_open_system_control_training_case_records_noise_aware_evidence() -> None:
+    """The open-system control case passes with a positive loss reduction."""
     suite = run_differentiable_model_training_evidence_suite()
 
     record = next(item for item in suite.records if item.name == "open_system_control_noise_aware")
@@ -56,6 +58,7 @@ def test_open_system_control_training_case_records_noise_aware_evidence() -> Non
 
 
 def test_inverse_coupling_recovery_case_records_identifiable_knm_evidence() -> None:
+    """The inverse coupling case passes with a positive loss reduction."""
     suite = run_differentiable_model_training_evidence_suite()
 
     record = next(
@@ -70,6 +73,7 @@ def test_inverse_coupling_recovery_case_records_identifiable_knm_evidence() -> N
 
 
 def test_registered_training_suite_audit_closes_only_evidenced_lanes() -> None:
+    """The suite audit promotes only the families with evidence and blocks none."""
     audit = run_registered_differentiable_training_suite_audit()
 
     assert audit.ready_for_training_suite_promotion
