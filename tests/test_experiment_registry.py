@@ -19,14 +19,19 @@ from scpn_quantum_control.hardware.experiments import ALL_EXPERIMENTS
 
 
 class TestRegistryCompleteness:
+    """Completeness of the experiment registry."""
+
     def test_all_keys_resolve_to_callables(self) -> None:
+        """Every registered name maps to a callable."""
         for name, func in ALL_EXPERIMENTS.items():
             assert callable(func), f"{name} maps to non-callable {func}"
 
     def test_no_duplicate_names(self) -> None:
+        """No name is registered twice."""
         assert len(ALL_EXPERIMENTS) == len(set(ALL_EXPERIMENTS.keys()))
 
     def test_registry_not_empty(self) -> None:
+        """The registry is not empty."""
         assert len(ALL_EXPERIMENTS) > 0
 
     def test_registry_size_at_least_15(self) -> None:
@@ -35,7 +40,10 @@ class TestRegistryCompleteness:
 
 
 class TestExperimentSignatures:
+    """Signatures of the registered experiments."""
+
     def test_first_param_is_runner(self) -> None:
+        """Every experiment takes the runner first."""
         for name, func in ALL_EXPERIMENTS.items():
             sig = inspect.signature(func)
             params = list(sig.parameters.keys())
@@ -61,16 +69,21 @@ class TestExperimentSignatures:
 
 
 class TestNamingConventions:
+    """Naming of the registered experiments."""
+
     def test_names_are_lowercase(self) -> None:
+        """Every name is lower case."""
         for name in ALL_EXPERIMENTS:
             assert name == name.lower(), f"{name} should be lowercase"
 
     def test_names_use_underscores(self) -> None:
+        """Names use underscores, not spaces or hyphens."""
         for name in ALL_EXPERIMENTS:
             assert " " not in name, f"{name} should use underscores, not spaces"
             assert "-" not in name, f"{name} should use underscores, not hyphens"
 
     def test_names_are_strings(self) -> None:
+        """Every name is a string."""
         for name in ALL_EXPERIMENTS:
             assert isinstance(name, str)
 
@@ -81,6 +94,8 @@ class TestNamingConventions:
 
 
 class TestRegistryWiring:
+    """Wiring of the registered experiments."""
+
     def test_runner_param_annotated(self) -> None:
         """First param should be typed (not bare name)."""
         for name, func in ALL_EXPERIMENTS.items():
@@ -107,8 +122,11 @@ class TestRegistryWiring:
 
 
 class TestRegistryPipeline:
+    """Listing every registered experiment."""
+
     def test_pipeline_list_all_experiments(self) -> None:
         """Full pipeline: list all registered experiments with their param counts.
+
         Verifies registry is functional infrastructure, not decorative.
         """
         import time

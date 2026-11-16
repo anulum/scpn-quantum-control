@@ -62,7 +62,10 @@ def _nonces() -> dict[str, Any]:
 
 
 class TestCommitmentDigest:
+    """The commitment digest of a job ID and nonce."""
+
     def test_matches_sha256_of_pair(self) -> None:
+        """The digest is the SHA-256 of the ID and nonce."""
         import hashlib
 
         expected = hashlib.sha256(f"{RAW_A}:{NONCE_A}".encode()).hexdigest()
@@ -70,12 +73,16 @@ class TestCommitmentDigest:
 
 
 class TestRawIdByLabel:
+    """Mapping public labels to raw job IDs."""
+
     def test_skips_non_job_id_kinds(self) -> None:
+        """Entries of other kinds are skipped."""
         out = script.raw_id_by_label(_mapping())
         assert out == {LABEL_A: RAW_A, LABEL_B: RAW_B}
         assert "ignore" not in out
 
     def test_skips_job_id_entry_with_missing_raw(self) -> None:
+        """A job-ID entry without its raw ID is skipped."""
         mapping = {
             "entries": [
                 {"kind": "raw_ibm_job_id", "public_label": LABEL_A, "raw_value": RAW_A},
@@ -86,7 +93,10 @@ class TestRawIdByLabel:
 
 
 class TestOpenCommitments:
+    """Opening and verifying the commitments."""
+
     def test_opens_and_verifies_all(self) -> None:
+        """Every commitment is opened and verified."""
         result = script.open_commitments(_commitments(), _mapping(), _nonces())
         assert result["opened_count"] == 2
         assert result["all_verified"] is True
@@ -94,6 +104,7 @@ class TestOpenCommitments:
         assert result["disclosures"][0]["nonce"] == NONCE_A
 
     def test_missing_raw_id_fails(self) -> None:
+        """A commitment without its raw ID cannot be opened."""
         mapping = {
             "entries": [{"kind": "raw_ibm_job_id", "public_label": LABEL_A, "raw_value": RAW_A}]
         }
@@ -101,17 +112,22 @@ class TestOpenCommitments:
             script.open_commitments(_commitments(), mapping, _nonces())
 
     def test_missing_nonce_fails(self) -> None:
+        """A commitment without its nonce cannot be opened."""
         with pytest.raises(ValueError, match="no nonce"):
             script.open_commitments(_commitments(), _mapping(), {"nonces": {RAW_A: NONCE_A}})
 
     def test_digest_mismatch_fails(self) -> None:
+        """A commitment whose digest does not match is refused."""
         bad = {"nonces": {RAW_A: NONCE_A, RAW_B: "ff" * 16}}
         with pytest.raises(ValueError, match="does not open"):
             script.open_commitments(_commitments(), _mapping(), bad)
 
 
 class TestCli:
+    """The disclosure command."""
+
     def test_writes_disclosure(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """The command writes the disclosure and reports the count."""
         (tmp_path / "commitments.json").write_text(json.dumps(_commitments()), encoding="utf-8")
         (tmp_path / "mapping.json").write_text(json.dumps(_mapping()), encoding="utf-8")
         (tmp_path / "nonces.json").write_text(json.dumps(_nonces()), encoding="utf-8")
@@ -143,6 +159,7 @@ class TestCommittedDisclosure:
     """
 
     def test_disclosure_opens_every_committed_commitment(self) -> None:
+        """The committed disclosure opens every one of the 24 commitments."""
         base = REPO_ROOT / "data" / "march_flagship_verifiability"
         disclosure = json.loads(
             (base / "march_job_id_disclosure_2026-07-18.json").read_text(encoding="utf-8")

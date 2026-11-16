@@ -139,6 +139,7 @@ def _write_ready_project(root: Path) -> None:
 
 
 def test_license_readiness_passes_for_consistent_agpl_commercial_project(tmp_path: Path) -> None:
+    """A consistent AGPL-plus-commercial project is ready."""
     _write_ready_project(tmp_path)
 
     payload = audit_license_readiness(tmp_path)
@@ -150,6 +151,7 @@ def test_license_readiness_passes_for_consistent_agpl_commercial_project(tmp_pat
 
 
 def test_license_readiness_blocks_permissive_metadata_drift(tmp_path: Path) -> None:
+    """Permissive licence metadata blocks readiness."""
     _write_ready_project(tmp_path)
     (tmp_path / "pyproject.toml").write_text(
         "\n".join(
@@ -172,6 +174,7 @@ def test_license_readiness_blocks_permissive_metadata_drift(tmp_path: Path) -> N
 
 
 def test_license_readiness_blocks_missing_boundary_documents(tmp_path: Path) -> None:
+    """A missing licensing boundary document blocks readiness."""
     _write_ready_project(tmp_path)
     (tmp_path / "docs" / "licensing_faq.md").unlink()
 
@@ -182,6 +185,7 @@ def test_license_readiness_blocks_missing_boundary_documents(tmp_path: Path) -> 
 
 
 def test_license_readiness_blocks_missing_spdx_header(tmp_path: Path) -> None:
+    """A missing SPDX header blocks readiness."""
     _write_ready_project(tmp_path)
     (tmp_path / "src" / "scpn_quantum_control" / "__init__.py").write_text(
         '"""Package without a header."""\n',
@@ -195,6 +199,7 @@ def test_license_readiness_blocks_missing_spdx_header(tmp_path: Path) -> None:
 
 
 def test_license_readiness_blocks_legacy_copyright_spelling(tmp_path: Path) -> None:
+    """A legacy copyright spelling blocks readiness."""
     _write_ready_project(tmp_path)
     package = tmp_path / "src" / "scpn_quantum_control" / "__init__.py"
     text = package.read_text(encoding="utf-8").replace(
@@ -210,6 +215,7 @@ def test_license_readiness_blocks_legacy_copyright_spelling(tmp_path: Path) -> N
 
 
 def test_license_readiness_accepts_shebang_and_cross_language_headers(tmp_path: Path) -> None:
+    """Shebang lines and other languages' comment headers are accepted."""
     _write_ready_project(tmp_path)
     package = tmp_path / "src" / "scpn_quantum_control" / "__init__.py"
     package.write_text(
@@ -239,6 +245,7 @@ def test_license_readiness_accepts_shebang_and_cross_language_headers(tmp_path: 
 
 
 def test_license_readiness_blocks_missing_header_description(tmp_path: Path) -> None:
+    """A malformed description header line blocks readiness."""
     _write_ready_project(tmp_path)
     package = tmp_path / "src" / "scpn_quantum_control" / "__init__.py"
     lines = package.read_text(encoding="utf-8").splitlines()
@@ -252,6 +259,7 @@ def test_license_readiness_blocks_missing_header_description(tmp_path: Path) -> 
 
 
 def test_license_readiness_excludes_generated_pnpm_lock(tmp_path: Path) -> None:
+    """The generated pnpm lock is not scanned."""
     _write_ready_project(tmp_path)
     studio = tmp_path / "studio-web"
     studio.mkdir()
@@ -263,6 +271,7 @@ def test_license_readiness_excludes_generated_pnpm_lock(tmp_path: Path) -> None:
 
 
 def test_metadata_and_required_text_report_structural_failures(tmp_path: Path) -> None:
+    """Missing or invalid metadata is reported structurally."""
     missing = check_project_metadata(tmp_path)
     assert missing.valid is False
     assert missing.blockers == ("pyproject.toml missing",)
@@ -290,6 +299,8 @@ def test_metadata_and_required_text_report_structural_failures(tmp_path: Path) -
 def test_git_tracked_files_handles_process_failure_and_sorted_success(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Tracked files come back sorted, or None when git fails."""
+
     def raise_oserror(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
         del args, kwargs
         raise OSError("git unavailable")
@@ -308,6 +319,7 @@ def test_git_tracked_files_handles_process_failure_and_sorted_success(
 def test_header_scan_filters_missing_unsupported_and_ignored_tracked_paths(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Missing, unsupported and ignored paths are not scanned."""
     ignored = tmp_path / "target" / "ignored.py"
     ignored.parent.mkdir()
     ignored.write_text("print('ignored')\n", encoding="utf-8")
@@ -332,6 +344,7 @@ def test_header_scan_filters_missing_unsupported_and_ignored_tracked_paths(
     ],
 )
 def test_header_parser_rejects_malformed_descriptions(description_line: str) -> None:
+    """A malformed description header is named."""
     lines = _canonical_header("#", "Test module")
     lines[6] = description_line
 
@@ -343,6 +356,7 @@ def test_header_parser_rejects_malformed_descriptions(description_line: str) -> 
 def test_license_readiness_cli_supports_json_and_failure_text(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command reports in JSON or text and fails when not ready."""
     _write_ready_project(tmp_path)
 
     assert main(["--root", str(tmp_path), "--json"]) == 0

@@ -106,19 +106,23 @@ def mock_jax(monkeypatch: pytest.MonkeyPatch) -> _FakeJnp:
 
 
 def test_is_jax_available_true(mock_jax: _FakeJnp) -> None:
+    """JAX reports itself available when installed."""
     assert jax_mod.is_jax_available() is True
 
 
 def test_is_jax_gpu_available_true(mock_jax: _FakeJnp) -> None:
+    """JAX reports a GPU when one is present."""
     assert jax_mod.is_jax_gpu_available() is True
 
 
 def test_jax_device_name_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX the device name is unavailable."""
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     assert jax_mod.jax_device_name() == "unavailable"
 
 
 def test_jax_device_name_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With JAX the device name is a string."""
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", True)
     mock_jax = MagicMock()
     mock_jax.devices.return_value = [MagicMock(__str__=lambda s: "cuda:0")]
@@ -128,6 +132,7 @@ def test_jax_device_name_available(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_build_xy_hamiltonian_jax(mock_jax: _FakeJnp) -> None:
+    """The JAX XY Hamiltonian is a symmetric matrix of the right size."""
     K = _FakeJnpArray(np.array([[0, 0.5], [0.5, 0]]))
     omega = _FakeJnpArray(np.array([1.0, 2.0]))
     H = jax_mod._build_xy_hamiltonian_jax(K, omega, 2)
@@ -137,6 +142,7 @@ def test_build_xy_hamiltonian_jax(mock_jax: _FakeJnp) -> None:
 
 
 def test_eigensolve_batch_jax(mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Batched eigensolves return couplings, eigenvalues and gaps."""
     K_topo = np.array([[0, 1.0], [1.0, 0]])
     omega = np.array([1.0, 2.0])
     k_range = np.array([0.1, 0.5, 1.0])
@@ -158,18 +164,21 @@ def test_eigensolve_batch_jax(mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatc
 
 
 def test_eigensolve_batch_jax_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX batched eigensolves are refused."""
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     with pytest.raises(RuntimeError, match="JAX not available"):
         jax_mod.eigensolve_batch_jax(np.eye(2), np.ones(2), np.array([1.0]))
 
 
 def test_entanglement_scan_jax_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX the entanglement scan is refused."""
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     with pytest.raises(RuntimeError, match="JAX not available"):
         jax_mod.entanglement_scan_jax(np.eye(2), np.ones(2), np.array([1.0]))
 
 
 def test_entanglement_scan_jax(mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The entanglement scan returns entropy, Schmidt gap and spectral gap."""
     K_topo = np.array([[0, 1.0], [1.0, 0]])
     omega = np.array([1.0, 2.0])
     k_range = np.array([0.5, 1.0])
@@ -199,6 +208,7 @@ def test_entanglement_scan_jax(mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPat
 def test_entanglement_scan_jax_rejects_dense_batch_budget(
     mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """A dense batch above the budget is refused."""
     K_topo = np.eye(4)
     omega = np.ones(4)
     k_range = np.array([0.5, 1.0])
@@ -244,7 +254,10 @@ def test_jax_unavailable_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 class TestJaxAccelFallback:
+    """JAX helpers on whatever is installed."""
+
     def test_jax_not_available(self) -> None:
+        """The availability checks return booleans."""
         from scpn_quantum_control.hardware.jax_accel import is_jax_available, is_jax_gpu_available
 
         # These should not crash regardless of JAX availability
@@ -252,6 +265,7 @@ class TestJaxAccelFallback:
         assert isinstance(is_jax_gpu_available(), bool)
 
     def test_jax_device_name(self) -> None:
+        """The device name is a string."""
         from scpn_quantum_control.hardware.jax_accel import jax_device_name
 
         name = jax_device_name()

@@ -43,6 +43,7 @@ def _init_repo(path: Path) -> None:
 
 
 def test_forbidden_test_names_are_reported_with_policy_reasons() -> None:
+    """Bucket-style test names are reported with the policy's reason."""
     tool = _load_tool_module()
 
     findings = tool.audit_test_paths(
@@ -65,6 +66,7 @@ def test_forbidden_test_names_are_reported_with_policy_reasons() -> None:
 def test_module_backed_tests_are_not_reported(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """Tests named after a module are not reported."""
     tool = _load_tool_module()
     _write(tmp_path / "src" / "domain_runner.py")
     _write(tmp_path / "src" / "scpn_quantum_control" / "studio" / "coverage_frontier.py")
@@ -83,6 +85,7 @@ def test_module_backed_tests_are_not_reported(
 
 
 def test_repository_tests_do_not_use_forbidden_coverage_bucket_names() -> None:
+    """No repository test uses a forbidden bucket name."""
     tool = _load_tool_module()
 
     findings = tool.audit_test_paths(tool.repository_test_paths(ROOT))
@@ -91,6 +94,7 @@ def test_repository_tests_do_not_use_forbidden_coverage_bucket_names() -> None:
 
 
 def test_repository_test_paths_reads_tracked_and_worktree_tests(tmp_path: Path) -> None:
+    """Tracked and working-tree tests are both read."""
     tool = _load_tool_module()
     _init_repo(tmp_path)
     tests_dir = tmp_path / "tests"
@@ -110,6 +114,7 @@ def test_repository_test_paths_reads_tracked_and_worktree_tests(tmp_path: Path) 
 def test_repository_test_paths_falls_back_without_git(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Without git the filesystem is scanned."""
     tool = _load_tool_module()
     _write(tmp_path / "tests" / "test_domain_contract.py")
 
@@ -121,6 +126,7 @@ def test_repository_test_paths_falls_back_without_git(
 def test_repository_test_paths_falls_back_when_git_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """When git fails the filesystem is scanned."""
     tool = _load_tool_module()
     _write(tmp_path / "tests" / "test_domain_contract.py")
     monkeypatch.setattr(tool, "_resolve_git_executable", lambda: sys.executable)
@@ -138,6 +144,7 @@ def test_repository_test_paths_falls_back_when_git_fails(
 def test_resolve_git_executable_returns_none_when_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A missing git executable resolves to None."""
     tool = _load_tool_module()
     monkeypatch.setattr(tool.shutil, "which", lambda _name: None)
 
@@ -147,6 +154,7 @@ def test_resolve_git_executable_returns_none_when_missing(
 def test_resolve_git_executable_rejects_stale_path(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """A stale git path resolves to None."""
     tool = _load_tool_module()
     missing = tmp_path / "missing-git"
     monkeypatch.setattr(tool.shutil, "which", lambda _name: str(missing))
@@ -157,6 +165,7 @@ def test_resolve_git_executable_rejects_stale_path(
 def test_resolve_git_executable_rejects_non_executable_file(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """A non-executable git file resolves to None."""
     tool = _load_tool_module()
     candidate = tmp_path / "git"
     candidate.write_text("#!/bin/sh\n", encoding="utf-8")
@@ -167,6 +176,7 @@ def test_resolve_git_executable_rejects_non_executable_file(
 
 
 def test_resolve_git_executable_and_run_git_admit_current_git() -> None:
+    """The installed git resolves and runs."""
     tool = _load_tool_module()
     git_executable = tool._resolve_git_executable()
 
@@ -176,6 +186,7 @@ def test_resolve_git_executable_and_run_git_admit_current_git() -> None:
 
 
 def test_format_findings_pass_and_fail_messages() -> None:
+    """The report states a pass, or a failure naming each file."""
     tool = _load_tool_module()
     finding = tool.TestQualityFinding(
         path=Path("tests/test_final_bucket.py"),
@@ -189,6 +200,7 @@ def test_format_findings_pass_and_fail_messages() -> None:
 
 
 def test_main_returns_zero_for_clean_repository(capsys: pytest.CaptureFixture[str]) -> None:
+    """The command passes on the clean repository."""
     tool = _load_tool_module()
 
     assert tool.main(["--root", str(ROOT)]) == 0
@@ -198,6 +210,7 @@ def test_main_returns_zero_for_clean_repository(capsys: pytest.CaptureFixture[st
 def test_main_returns_one_for_forbidden_worktree_test(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command fails on a forbidden working-tree test."""
     tool = _load_tool_module()
     _write(tmp_path / "tests" / "test_coverage_100_remaining.py")
 

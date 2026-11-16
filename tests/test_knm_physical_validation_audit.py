@@ -57,6 +57,7 @@ def _load_power_grid_builder() -> ModuleType:
 
 
 def test_compare_measured_couplings_marks_missing_dataset_open() -> None:
+    """Without a measured dataset the comparison stays open."""
     result = compare_measured_couplings(np.ones((2, 2)), None)
 
     assert result["available"] is False
@@ -64,6 +65,7 @@ def test_compare_measured_couplings_marks_missing_dataset_open() -> None:
 
 
 def test_compare_measured_couplings_validates_with_uncertainty() -> None:
+    """A measured dataset with uncertainty validates the matched edges."""
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test",
@@ -81,6 +83,7 @@ def test_compare_measured_couplings_validates_with_uncertainty() -> None:
 
 
 def test_measured_system_promotion_readiness_blocks_without_null_gate() -> None:
+    """Promotion is blocked without the null-model gate."""
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test",
@@ -101,6 +104,7 @@ def test_measured_system_promotion_readiness_blocks_without_null_gate() -> None:
 
 
 def test_measured_system_promotion_readiness_blocks_association_observable_units() -> None:
+    """Promotion is blocked for association measures such as phase locking."""
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test PLV observable",
@@ -126,6 +130,7 @@ def test_measured_system_promotion_readiness_blocks_association_observable_units
 
 
 def test_compare_measured_couplings_requires_locked_normalisation() -> None:
+    """An unlocked normalisation keeps the comparison open."""
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test",
@@ -142,6 +147,7 @@ def test_compare_measured_couplings_requires_locked_normalisation() -> None:
 
 
 def test_compare_measured_couplings_reports_null_model_diagnostics() -> None:
+    """The comparison reports its null-model diagnostics."""
     K = np.array(
         [
             [0.0, 0.3, 0.2],
@@ -172,6 +178,7 @@ def test_compare_measured_couplings_reports_null_model_diagnostics() -> None:
 
 
 def test_compare_measured_couplings_reports_spectral_diagnostics() -> None:
+    """The comparison reports its spectral diagnostics."""
     K = np.array(
         [
             [0.0, 0.3, 0.2],
@@ -205,6 +212,7 @@ def test_compare_measured_couplings_reports_spectral_diagnostics() -> None:
 
 
 def test_null_model_diagnostics_marks_empty_rows_unavailable() -> None:
+    """Without matched edges the null-model diagnostics are unavailable."""
     result = null_model_diagnostics([])
 
     assert result["available"] is False
@@ -212,6 +220,7 @@ def test_null_model_diagnostics_marks_empty_rows_unavailable() -> None:
 
 
 def test_spectral_diagnostics_marks_empty_rows_unavailable() -> None:
+    """Without matched edges the spectral diagnostics are unavailable."""
     result = spectral_diagnostics([])
 
     assert result["available"] is False
@@ -219,6 +228,7 @@ def test_spectral_diagnostics_marks_empty_rows_unavailable() -> None:
 
 
 def test_load_measured_couplings_requires_couplings_list(tmp_path: Path) -> None:
+    """A file without a couplings list is refused."""
     path = tmp_path / "bad.json"
     path.write_text("[]", encoding="utf-8")
 
@@ -243,6 +253,7 @@ def test_load_measured_couplings_requires_couplings_list(tmp_path: Path) -> None
 
 
 def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_path: Path) -> None:
+    """Curated topologies are scanned but do not close the gap."""
     candidate_dir = tmp_path / "candidates"
     candidate_dir.mkdir()
     candidate_path = candidate_dir / "unit_candidate.json"
@@ -282,6 +293,7 @@ def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_pa
 
 
 def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path: Path) -> None:
+    """The audit payload records the candidate scan without closing the gap."""
     candidate_dir = tmp_path / "empty-candidates"
     candidate_dir.mkdir()
     payload = build_audit_payload(
@@ -307,6 +319,7 @@ def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path
 
 
 def test_ieee14_power_grid_payload_is_non_promotional_physical_unit_candidate() -> None:
+    """The 14-bus power-grid payload is a physical-unit candidate that promotes nothing."""
     builder = _load_power_grid_builder()
     payload = builder.build_ieee14_payload(
         command=["python", "scripts/build_power_grid_measured_couplings.py", "--case", "ieee14"]

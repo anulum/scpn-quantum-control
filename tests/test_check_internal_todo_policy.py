@@ -62,6 +62,7 @@ def _make_clean_repo(tmp_path: Path) -> Path:
 
 
 def test_clean_repo_has_no_blocking_findings(tmp_path: Path) -> None:
+    """A clean repository has no blocking findings."""
     root = _make_clean_repo(tmp_path)
 
     findings = check_internal_todo_policy(root)
@@ -71,6 +72,7 @@ def test_clean_repo_has_no_blocking_findings(tmp_path: Path) -> None:
 
 
 def test_missing_canonical_todo_is_non_blocking(tmp_path: Path) -> None:
+    """A missing canonical queue is reported but does not block."""
     _init_repo(tmp_path)
 
     findings = check_internal_todo_policy(tmp_path)
@@ -81,6 +83,7 @@ def test_missing_canonical_todo_is_non_blocking(tmp_path: Path) -> None:
 
 
 def test_tracked_internal_path_is_blocking(tmp_path: Path) -> None:
+    """A tracked internal path blocks."""
     root = _make_clean_repo(tmp_path)
     _write(root / "docs" / "internal" / "plan.md", "leaked\n")
     subprocess.run(["git", "-C", str(root), "add", "-f", "docs/internal/plan.md"], check=True)
@@ -96,6 +99,7 @@ def test_tracked_internal_path_is_blocking(tmp_path: Path) -> None:
 
 
 def test_tracked_coordination_path_is_blocking(tmp_path: Path) -> None:
+    """A tracked coordination path blocks."""
     root = _make_clean_repo(tmp_path)
     _write(root / ".coordination" / "sessions" / "leak.md", "session\n")
     subprocess.run(
@@ -109,6 +113,7 @@ def test_tracked_coordination_path_is_blocking(tmp_path: Path) -> None:
 
 
 def test_competing_todo_queue_is_blocking(tmp_path: Path) -> None:
+    """A second TODO queue blocks."""
     root = _make_clean_repo(tmp_path)
     _write(root / "docs" / "notes" / "TODO.md", "# rogue queue\n")
 
@@ -122,6 +127,7 @@ def test_competing_todo_queue_is_blocking(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("name", ["TODO", "TODO.md", "TODO.txt", "todo.md", "Todo.rst"])
 def test_competing_detection_matches_todo_basenames(tmp_path: Path, name: str) -> None:
+    """Each TODO file name is recognised as a competing queue."""
     root = _make_clean_repo(tmp_path)
     _write(root / "elsewhere" / name)
 
@@ -132,6 +138,7 @@ def test_competing_detection_matches_todo_basenames(tmp_path: Path, name: str) -
 
 @pytest.mark.parametrize("name", ["release_todo.md", "TODO_archive.md", "todos.md", "NOTES.md"])
 def test_non_queue_filenames_are_not_competing(tmp_path: Path, name: str) -> None:
+    """Other file names are not competing queues."""
     root = _make_clean_repo(tmp_path)
     _write(root / "elsewhere" / name)
 
@@ -139,12 +146,14 @@ def test_non_queue_filenames_are_not_competing(tmp_path: Path, name: str) -> Non
 
 
 def test_canonical_todo_is_not_self_reported_as_competing(tmp_path: Path) -> None:
+    """The canonical queue is not reported as competing."""
     root = _make_clean_repo(tmp_path)
 
     assert competing_todo_files(root) == []
 
 
 def test_skipped_directories_are_not_scanned(tmp_path: Path) -> None:
+    """Skipped directories are not scanned."""
     root = _make_clean_repo(tmp_path)
     _write(root / ".venv-linux" / "lib" / "TODO.md")
     _write(root / "node_modules" / "pkg" / "TODO.md")
@@ -153,6 +162,7 @@ def test_skipped_directories_are_not_scanned(tmp_path: Path) -> None:
 
 
 def test_exported_source_tree_without_git_still_scans_filesystem(tmp_path: Path) -> None:
+    """An exported tree without git is still scanned."""
     _write(tmp_path / "docs" / "internal" / "TODO.md", "# canonical\n")
     _write(tmp_path / "docs" / "notes" / "TODO.md", "# rogue queue\n")
 
@@ -202,10 +212,12 @@ def test_git_resolver_rejects_non_executable_file(
 
 
 def test_format_findings_reports_clean_state() -> None:
+    """A clean state is reported as OK."""
     assert "OK" in format_findings([])
 
 
 def test_format_findings_tags_blocking_and_notice(tmp_path: Path) -> None:
+    """Blocking findings are tagged as failures."""
     root = _make_clean_repo(tmp_path)
     _write(root / "docs" / "notes" / "TODO.md")
 
@@ -216,4 +228,5 @@ def test_format_findings_tags_blocking_and_notice(tmp_path: Path) -> None:
 
 def test_guard_passes_on_the_real_repository() -> None:
     # The live repository must itself satisfy the policy this guard enforces.
+    """The guard passes on this repository."""
     assert main(["--root", str(_REPO_ROOT)]) == 0

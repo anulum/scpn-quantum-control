@@ -18,19 +18,25 @@ from scpn_quantum_control.analysis.p_h1_derivation import (
 
 
 class TestDeriveP_H1:
+    """The derivation of the first persistence probability."""
+
     def test_returns_derivation(self) -> None:
+        """The derivation returns its record."""
         result = derive_p_h1()
         assert isinstance(result, P_H1_Derivation)
 
     def test_prediction_near_072(self) -> None:
+        """The prediction lies within 0.01 of 0.72."""
         result = derive_p_h1()
         assert abs(result.p_h1_predicted - 0.72) < 0.01
 
     def test_square_lattice_relative_deviation_under_1_pct(self) -> None:
+        """On the square lattice the relative deviation is below one per cent."""
         result = derive_p_h1()
         assert result.relative_deviation_pct < 1.0
 
     def test_is_not_derivable_on_knm_graph(self) -> None:
+        """On the coupling graph the value is not derivable and stays open."""
         result = derive_p_h1()
         assert not result.is_derivable
         assert result.status == "OPEN_QUESTION"
@@ -38,14 +44,17 @@ class TestDeriveP_H1:
         assert result.graph_relative_deviation_pct > 30.0
 
     def test_derivation_chain_length(self) -> None:
+        """The derivation chain has at least five steps."""
         result = derive_p_h1()
         assert len(result.derivation_chain) >= 5
 
     def test_hasenbusch_pinn_value(self) -> None:
+        """The Hasenbusch-Pinn constant is used."""
         result = derive_p_h1()
         assert result.a_hp == pytest.approx(0.8983)
 
     def test_nk_sqrt_value(self) -> None:
+        """The square-root factor is sqrt(2/pi)."""
         result = derive_p_h1()
         import numpy as np
 
@@ -73,20 +82,26 @@ class TestDeriveP_H1:
 
 
 class TestDerivationInvariants:
+    """Invariants of the derivation record."""
+
     def test_absolute_deviation_nonnegative(self) -> None:
+        """The absolute deviation is non-negative."""
         result = derive_p_h1()
         assert result.absolute_deviation >= 0
 
     def test_target_is_072(self) -> None:
+        """The target is 0.72."""
         result = derive_p_h1()
         assert result.p_h1_target == pytest.approx(0.72)
 
     def test_derivation_chain_strings(self) -> None:
+        """Every derivation step is a non-empty string."""
         result = derive_p_h1()
         for step in result.derivation_chain:
             assert isinstance(step, str)
             assert len(step) > 0
 
     def test_predicted_positive(self) -> None:
+        """The prediction is positive."""
         result = derive_p_h1()
         assert result.p_h1_predicted > 0

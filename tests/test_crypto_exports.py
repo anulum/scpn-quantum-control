@@ -17,7 +17,10 @@ import scpn_quantum_control.crypto as crypto
 
 
 class TestCryptoExports:
+    """The crypto package's public exports."""
+
     def test_all_exists(self) -> None:
+        """The package declares a non-empty __all__."""
         assert hasattr(crypto, "__all__")
         assert len(crypto.__all__) > 0
 
@@ -36,26 +39,31 @@ class TestCryptoExports:
             assert callable(obj), f"{name} is not callable"
 
     def test_spectral_fingerprint_importable(self) -> None:
+        """The spectral fingerprint is importable and callable."""
         from scpn_quantum_control.crypto import spectral_fingerprint
 
         assert callable(spectral_fingerprint)
 
     def test_key_hierarchy_importable(self) -> None:
+        """The key hierarchy is importable and callable."""
         from scpn_quantum_control.crypto import key_hierarchy
 
         assert callable(key_hierarchy)
 
     def test_scpn_qkd_protocol_importable(self) -> None:
+        """The QKD protocol is importable and callable."""
         from scpn_quantum_control.crypto import scpn_qkd_protocol
 
         assert callable(scpn_qkd_protocol)
 
     def test_topology_commitment_importable(self) -> None:
+        """The topology commitment is importable and callable."""
         from scpn_quantum_control.crypto import topology_commitment
 
         assert callable(topology_commitment)
 
     def test_no_duplicate_exports(self) -> None:
+        """__all__ has no duplicates."""
         assert len(crypto.__all__) == len(set(crypto.__all__))
 
     def test_export_count_at_least_20(self) -> None:
@@ -76,9 +84,10 @@ class TestCryptoExports:
 
 
 class TestCryptoWiring:
+    """The crypto functions producing output."""
+
     def test_key_hierarchy_produces_keys(self) -> None:
         """key_hierarchy must produce actual 32-byte keys, not stubs."""
-
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
         from scpn_quantum_control.crypto import key_hierarchy
 
@@ -90,7 +99,6 @@ class TestCryptoWiring:
 
     def test_spectral_fingerprint_produces_data(self) -> None:
         """spectral_fingerprint must return dict with eigenvalues."""
-
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
         from scpn_quantum_control.crypto import spectral_fingerprint
 
@@ -101,7 +109,6 @@ class TestCryptoWiring:
 
     def test_topology_commitment_produces_hash(self) -> None:
         """topology_commitment must produce a hex string."""
-
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
         from scpn_quantum_control.crypto import topology_commitment
 
@@ -117,8 +124,11 @@ class TestCryptoWiring:
 
 
 class TestCryptoPipeline:
+    """The coupling-to-crypto pipeline."""
+
     def test_pipeline_crypto_full(self) -> None:
         """Full pipeline: Knm → key_hierarchy + spectral_fingerprint + commitment.
+
         Verifies crypto module is not decorative — all functions produce output.
         """
         import time

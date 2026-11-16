@@ -50,6 +50,7 @@ def _problem(
 
 
 def test_zero_control_cost_matches_the_production_plant() -> None:
+    """With zero control the cost matches the production plant."""
     n, horizon = 8, 12
     phases, omega, coupling = _problem(n, seed=0)
     control = np.zeros((horizon, n), dtype=np.float64)
@@ -63,6 +64,7 @@ def test_zero_control_cost_matches_the_production_plant() -> None:
 
 
 def test_control_gradient_matches_hand_adjoint_at_zero_target() -> None:
+    """The JAX control gradient matches the hand-written adjoint."""
     n, horizon = 8, 12
     phases, omega, coupling = _problem(n, seed=1)
     control = np.random.default_rng(2).normal(0.0, 0.2, size=(horizon, n))
@@ -79,6 +81,7 @@ def test_control_gradient_matches_hand_adjoint_at_zero_target() -> None:
 
 
 def test_control_gradient_matches_central_finite_difference() -> None:
+    """The control gradient agrees with central finite differences."""
     n, horizon = 4, 6
     phases, omega, coupling = _problem(n, seed=3)
     control = np.random.default_rng(4).normal(0.0, 0.2, size=(horizon, n))
@@ -111,6 +114,7 @@ def test_control_gradient_matches_central_finite_difference() -> None:
 
 
 def test_receding_horizon_synchronises_to_a_high_target() -> None:
+    """Receding-horizon control drives an incoherent start to a high target."""
     phases, omega, coupling = _problem(8, seed=5)
     result = mpc.receding_horizon_control(
         phases,
@@ -130,6 +134,7 @@ def test_receding_horizon_synchronises_to_a_high_target() -> None:
 
 
 def test_receding_horizon_desynchronises_to_a_low_target() -> None:
+    """Receding-horizon control drives a coherent start to a low target."""
     phases, omega, coupling = _problem(8, seed=6, clustered=True)
     result = mpc.receding_horizon_control(
         phases,
@@ -150,6 +155,7 @@ def test_receding_horizon_desynchronises_to_a_low_target() -> None:
 
 @pytest.mark.parametrize("seed", [10, 11, 12])
 def test_receding_horizon_beats_open_loop_under_mismatch(seed: int) -> None:
+    """Under model mismatch receding-horizon control beats open-loop control."""
     n, horizon, steps = 8, 15, 40
     phases, omega, coupling = _problem(n, seed=seed, clustered=True)
     plant_coupling = 1.15 * coupling  # the plant is stiffer than the model
@@ -192,6 +198,7 @@ def test_receding_horizon_beats_open_loop_under_mismatch(seed: int) -> None:
 
 
 def test_receding_horizon_is_deterministic() -> None:
+    """Two receding-horizon runs are identical."""
     phases, omega, coupling = _problem(6, seed=7)
     kwargs = dict(
         horizon=10,
@@ -208,6 +215,7 @@ def test_receding_horizon_is_deterministic() -> None:
 
 
 def test_horizon_solve_runs_on_the_jax_default_device() -> None:
+    """The horizon solve runs on JAX's default device."""
     import jax
 
     phases, omega, coupling = _problem(8, seed=8)
@@ -230,6 +238,7 @@ def test_horizon_solve_runs_on_the_jax_default_device() -> None:
 
 
 def test_result_shapes_and_terminal_coherence() -> None:
+    """The result has one phase row and coherence per step plus the start."""
     n, steps = 6, 9
     phases, omega, coupling = _problem(n, seed=9)
     result = mpc.receding_horizon_control(
@@ -254,6 +263,7 @@ def test_result_shapes_and_terminal_coherence() -> None:
 
 
 def test_adam_optimiser_also_reaches_the_target() -> None:
+    """The Adam optimiser also lowers the cost."""
     phases, omega, coupling = _problem(6, seed=13)
     control, history = mpc.jax_mpc_horizon_control(
         phases,
@@ -273,6 +283,7 @@ def test_adam_optimiser_also_reaches_the_target() -> None:
 
 
 def test_warm_start_and_cold_start_both_track() -> None:
+    """Warm and cold starts both reach the target."""
     phases, omega, coupling = _problem(6, seed=14)
     kwargs = dict(
         horizon=10,
@@ -289,6 +300,8 @@ def test_warm_start_and_cold_start_both_track() -> None:
 
 
 def test_missing_jax_raises_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX each entry point names the extra to install."""
+
     def _raise() -> object:
         raise ImportError("the JAX MPC tier requires JAX; install oscillatools[jax]")
 
@@ -332,6 +345,7 @@ def test_missing_jax_raises_import_error(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_validation_rejects_out_of_range_arguments() -> None:
+    """Out-of-range arguments are refused with their reasons."""
     phases, omega, coupling = _problem(6, seed=16)
     with pytest.raises(ValueError, match="target_coherence must be in"):
         mpc.jax_mpc_horizon_control(

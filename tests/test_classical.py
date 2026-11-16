@@ -36,6 +36,7 @@ SIZES = [2, 3, 4, 6]
 
 @pytest.mark.parametrize("n", SIZES)
 def test_kuramoto_returns_correct_shapes(n: int) -> None:
+    """The Kuramoto reference returns times, phases and order per step."""
     result = classical_kuramoto_reference(n, t_max=0.5, dt=0.1)
     n_steps = 6
     assert result["times"].shape == (n_steps,)
@@ -45,6 +46,7 @@ def test_kuramoto_returns_correct_shapes(n: int) -> None:
 
 @pytest.mark.parametrize("n", SIZES)
 def test_kuramoto_R_bounded(n: int) -> None:
+    """The order parameter lies in [0, 1]."""
     result = classical_kuramoto_reference(n, t_max=1.0, dt=0.05)
     for r in result["R"]:
         assert 0.0 <= r <= 1.0 + 1e-10
@@ -81,18 +83,21 @@ def test_kuramoto_default_params() -> None:
 
 @pytest.mark.parametrize("n", SIZES)
 def test_exact_diag_returns_real_eigenvalues(n: int) -> None:
+    """Exact diagonalisation gives real eigenvalues."""
     result = classical_exact_diag(n)
     assert np.all(np.isreal(result["eigenvalues"]))
 
 
 @pytest.mark.parametrize("n", SIZES)
 def test_exact_diag_ground_below_first_excited(n: int) -> None:
+    """The spectral gap is positive."""
     result = classical_exact_diag(n)
     assert result["spectral_gap"] > 0.0
 
 
 @pytest.mark.parametrize("n", SIZES)
 def test_exact_diag_eigenvalues_sorted(n: int) -> None:
+    """Eigenvalues are in ascending order."""
     result = classical_exact_diag(n)
     evals = result["eigenvalues"]
     np.testing.assert_array_less(evals[:-1], evals[1:] + 1e-12)
@@ -109,6 +114,7 @@ def test_exact_diag_sparse_path(n: int) -> None:
 
 @pytest.mark.parametrize("n", SIZES)
 def test_exact_diag_ground_state_normalised(n: int) -> None:
+    """The ground state is normalised."""
     result = classical_exact_diag(n)
     norm = np.linalg.norm(result["ground_state"])
     np.testing.assert_allclose(norm, 1.0, atol=1e-12)
@@ -119,6 +125,7 @@ def test_exact_diag_ground_state_normalised(n: int) -> None:
 
 @pytest.mark.parametrize("n", SIZES)
 def test_exact_evolution_shapes(n: int) -> None:
+    """Exact evolution returns one time and order value per step."""
     result = classical_exact_evolution(n, t_max=0.3, dt=0.1)
     assert result["times"].shape == (4,)
     assert result["R"].shape == (4,)
@@ -126,6 +133,7 @@ def test_exact_evolution_shapes(n: int) -> None:
 
 @pytest.mark.parametrize("n", SIZES)
 def test_exact_evolution_R_bounded(n: int) -> None:
+    """The evolved order parameter lies in [0, 1]."""
     result = classical_exact_evolution(n, t_max=0.5, dt=0.05)
     for r in result["R"]:
         assert 0.0 <= r <= 1.0 + 1e-10
@@ -146,6 +154,7 @@ def test_exact_evolution_default_params(n: int) -> None:
 
 
 def test_exact_evolution_dense_branch_propagates_dense_budget() -> None:
+    """The dense branch refuses a Hamiltonian above the budget."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n].copy()
@@ -159,6 +168,7 @@ def test_exact_evolution_dense_branch_propagates_dense_budget() -> None:
 
 @pytest.mark.parametrize("horizon", [2, 3, 4, 5])
 def test_brute_mpc_optimal_cost_minimal(horizon: int) -> None:
+    """The optimal cost is the smallest evaluated cost."""
     B = np.eye(2)
     target = np.array([0.8, 0.6])
     result = classical_brute_mpc(B, target, horizon=horizon)
@@ -167,6 +177,7 @@ def test_brute_mpc_optimal_cost_minimal(horizon: int) -> None:
 
 @pytest.mark.parametrize("horizon", [2, 3, 4, 5])
 def test_brute_mpc_binary_actions(horizon: int) -> None:
+    """Optimal actions are binary, one per horizon step."""
     B = np.array([[1.0]])
     target = np.array([1.0])
     result = classical_brute_mpc(B, target, horizon=horizon)
@@ -175,6 +186,7 @@ def test_brute_mpc_binary_actions(horizon: int) -> None:
 
 
 def test_brute_mpc_enumerates_all() -> None:
+    """Brute-force control evaluates every action sequence."""
     result = classical_brute_mpc(np.eye(2), np.array([1.0, 0.0]), horizon=3)
     assert result["n_evaluated"] == 8
     assert result["all_costs"].shape == (8,)
@@ -193,6 +205,7 @@ def test_brute_mpc_zero_target() -> None:
 
 
 def test_bloch_vectors_from_json_roundtrip() -> None:
+    """Bloch vectors read from JSON keep their components."""
     data = {
         "exp_x": [0.5, 0.3, 0.1],
         "exp_y": [0.4, 0.2, 0.0],

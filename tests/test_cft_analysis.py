@@ -19,31 +19,40 @@ from scpn_quantum_control.gauge.cft_analysis import (
 
 
 class TestFindCriticalCoupling:
+    """Locating the critical coupling from the entanglement peak."""
+
     def test_returns_positive_k(self) -> None:
+        """The critical coupling is positive."""
         omega = OMEGA_N_16[:4]
         k_c, k_vals, entropies = find_critical_coupling(omega, n_points=10)
         assert k_c > 0
 
     def test_entropies_length(self) -> None:
+        """There is one entropy per scanned coupling."""
         omega = OMEGA_N_16[:4]
         _k_c, k_vals, entropies = find_critical_coupling(omega, n_points=15)
         assert len(entropies) == 15
         assert len(k_vals) == 15
 
     def test_k_c_in_range(self) -> None:
+        """The critical coupling lies in the scanned range."""
         omega = OMEGA_N_16[:4]
         k_c, _k_vals, _entropies = find_critical_coupling(omega, k_range=(0.1, 3.0), n_points=10)
         assert 0.1 <= k_c <= 3.0
 
 
 class TestExtractCentralCharge:
+    """Extracting the central charge."""
+
     def test_returns_float_or_none(self) -> None:
+        """The central charge is a float or None."""
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         c = extract_central_charge(K, omega)
         assert c is None or isinstance(c, float)
 
     def test_small_system_may_return_none(self) -> None:
+        """A small system gives no central charge."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         c = extract_central_charge(K, omega)
@@ -51,6 +60,7 @@ class TestExtractCentralCharge:
         assert c is None
 
     def test_6_oscillators_returns_value(self) -> None:
+        """Six oscillators give a central charge."""
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         c = extract_central_charge(K, omega)
@@ -59,22 +69,28 @@ class TestExtractCentralCharge:
 
 
 class TestCFTAnalysis:
+    """The full conformal-field-theory analysis."""
+
     def test_returns_result(self) -> None:
+        """The analysis returns a result record."""
         omega = OMEGA_N_16[:4]
         result = cft_analysis(omega, n_points=8)
         assert isinstance(result, CFTResult)
 
     def test_k_critical_positive(self) -> None:
+        """The critical coupling is positive."""
         omega = OMEGA_N_16[:4]
         result = cft_analysis(omega, n_points=8)
         assert result.k_critical > 0
 
     def test_peak_entropy_positive(self) -> None:
+        """The peak entropy is non-negative."""
         omega = OMEGA_N_16[:4]
         result = cft_analysis(omega, n_points=8)
         assert result.peak_entropy >= 0
 
     def test_lengths_match(self) -> None:
+        """There is one entropy per scanned coupling."""
         omega = OMEGA_N_16[:4]
         result = cft_analysis(omega, n_points=10)
         assert len(result.entropy_vs_k) == 10
