@@ -58,7 +58,10 @@ def _grid_calibration(rows: int = 3, cols: int = 4, seed: int = 7) -> LatticeCal
 
 
 class TestPreregisteredConstants:
+    """The preregistered campaign constants."""
+
     def test_frozen_matrix_shape(self) -> None:
+        """The chain sizes, Trotter depth and shot count are frozen."""
         assert CHAIN_SIZES == (8, 12, 16)
         assert TROTTER_DEPTH == 5
         assert MAIN_SHOTS == 2048
@@ -68,31 +71,41 @@ class TestPreregisteredConstants:
 
     def test_preregistered_circuit_count_is_fifteen(self) -> None:
         # 3 sizes × 3 arms + 3 sizes × 2 readout states, per the campaign doc.
+        """The preregistered matrix has fifteen circuits."""
         assert len(CHAIN_SIZES) * (len(ARM_NAMES) + 2) == 15
 
 
 class TestInitialStateAndReference:
+    """Initial states and the exact reference."""
+
     def test_quarter_filling_bitstrings(self) -> None:
+        """Initial bitstrings are quarter-filled."""
         assert initial_bitstring(8) == "10001000"
         assert initial_bitstring(12) == "100010001000"
 
     @pytest.mark.parametrize("bad", [0, 3, 6, 10])
     def test_rejects_sizes_not_multiple_of_four(self, bad: int) -> None:
+        """Sizes that are not multiples of four are refused."""
         with pytest.raises(ValueError, match="multiple of four"):
             initial_bitstring(bad)
 
     def test_exact_reference_is_conserved_magnetisation(self) -> None:
         # Total excitation number is conserved, so the mean-Z proxy equals its
         # initial value 0.5 at every depth.
+        """The exact reference stays at 0.5, conserved by the evolution."""
         assert exact_order_parameter(8, depth=0) == pytest.approx(0.5)
         assert exact_order_parameter(8, depth=TROTTER_DEPTH) == pytest.approx(0.5)
 
     def test_exact_reference_with_explicit_bitstring(self) -> None:
+        """An explicit bitstring sets the exact reference."""
         assert exact_order_parameter(4, bitstring="0000", depth=2) == pytest.approx(1.0)
 
 
 class TestDepthModelAndOptimiser:
+    """The depth model and the layout optimiser."""
+
     def test_chain_provider_counts_missing_adjacencies(self) -> None:
+        """The depth provider counts missing adjacencies."""
         cal = _grid_calibration()
         provider = chain_swap_depth_provider(cal)
         k = np.zeros((4, 4))
@@ -103,6 +116,7 @@ class TestDepthModelAndOptimiser:
         assert provider((2, 3, 4, 5), k, omega, None, t=1.0, reps=5) == 35
 
     def test_optimised_layout_is_adjacent_permutation_of_best_region(self) -> None:
+        """The optimised layout is an adjacent permutation of the best region."""
         cal = _grid_calibration()
         layout = optimised_initial_layout(cal, 8)
         assert len(set(layout)) == 8
@@ -111,6 +125,7 @@ class TestDepthModelAndOptimiser:
             assert (min(a, b), max(a, b)) in edges
 
     def test_naive_chain_is_lexicographically_smallest(self) -> None:
+        """The naive chain is the lexicographically smallest connected chain."""
         cal = _grid_calibration()
         assert naive_chain_layout(cal, 4) == (0, 1, 2, 3)
         chain = naive_chain_layout(cal, 12)
@@ -120,6 +135,7 @@ class TestDepthModelAndOptimiser:
             assert (min(a, b), max(a, b)) in edges
 
     def test_naive_chain_fails_closed(self) -> None:
+        """Impossible naive chains fail closed."""
         cal = _grid_calibration()
         with pytest.raises(ValueError, match="at least two qubits"):
             naive_chain_layout(cal, 1)
@@ -127,6 +143,7 @@ class TestDepthModelAndOptimiser:
             naive_chain_layout(cal, 13)
 
     def test_coupling_map_is_symmetric(self) -> None:
+        """The coupling map lists each edge both ways."""
         cal = _grid_calibration()
         cmap = coupling_map_from_calibration(cal)
         pairs = {tuple(edge) for edge in cmap.get_edges()}
@@ -135,13 +152,17 @@ class TestDepthModelAndOptimiser:
 
 
 class TestCountObservables:
+    """Observables from counts."""
+
     def test_marginals_use_qiskit_bit_order(self) -> None:
         # Qiskit count keys put clbit 0 last.
+        """Marginals use Qiskit's bit order."""
         p1 = per_qubit_one_probabilities({"01": 100}, 2)
         assert p1[0] == pytest.approx(1.0)
         assert p1[1] == pytest.approx(0.0)
 
     def test_marginals_reject_bad_input(self) -> None:
+        """Bad count input is refused."""
         with pytest.raises(ValueError, match="does not have 2 bits"):
             per_qubit_one_probabilities({"011": 1}, 2)
         with pytest.raises(ValueError, match="non-negative"):
@@ -150,6 +171,7 @@ class TestCountObservables:
             per_qubit_one_probabilities({}, 2)
 
     def test_readout_errors_from_calibration_counts(self) -> None:
+        """Readout errors come from the calibration counts."""
         qubits = (3, 7)
         e01, e10 = per_qubit_readout_errors(
             {"00": 90, "01": 10},  # clbit 0 (qubit 3) flips to 1 in 10 % of shots
@@ -162,6 +184,7 @@ class TestCountObservables:
         assert e10[7] == pytest.approx(0.0)
 
     def test_corrected_order_parameter_identity_without_error(self) -> None:
+        """Without readout error the correction changes nothing."""
         counts = {"10 00": 60, "0000": 40}  # spaces must be tolerated
         zeros = {q: 0.0 for q in (0, 1, 2, 3)}
         value = corrected_order_parameter(counts, (0, 1, 2, 3), zeros, zeros)
@@ -170,23 +193,29 @@ class TestCountObservables:
 
     def test_corrected_order_parameter_undoes_known_flip(self) -> None:
         # True state all-zeros; qubit 5 reads 1 in 10 % of shots.
+        """The correction undoes a known readout flip."""
         counts = {"00": 900, "10": 100}
         value = corrected_order_parameter(counts, (4, 5), {4: 0.0, 5: 0.1}, {4: 0.0, 5: 0.0})
         assert value == pytest.approx(1.0)
 
     def test_corrected_order_parameter_clips_marginals(self) -> None:
         # Observed p1 below e01 would give a negative marginal without clipping.
+        """Corrected marginals are clipped to the valid range."""
         counts = {"0": 1000}
         value = corrected_order_parameter(counts, (2,), {2: 0.05}, {2: 0.0})
         assert value == pytest.approx(1.0)
 
     def test_corrected_order_parameter_fails_closed_on_bad_denominator(self) -> None:
+        """A non-positive correction denominator fails closed."""
         with pytest.raises(ValueError, match="denominator non-positive"):
             corrected_order_parameter({"0": 1}, (0,), {0: 0.6}, {0: 0.5})
 
 
 class TestDepthParityGate:
+    """The depth-parity gate."""
+
     def test_pass_and_fail(self) -> None:
+        """Arms within the ratio pass and arms beyond it fail."""
         ok = depth_parity_gate({"optimised": 40, "default": 42, "naive": 44})
         assert ok.passes and ok.max_over_min == pytest.approx(1.1)
         bad = depth_parity_gate({"optimised": 40, "default": 40, "naive": 64})
@@ -194,6 +223,7 @@ class TestDepthParityGate:
         assert bad.to_dict()["two_qubit_depths"]["naive"] == 64
 
     def test_rejects_empty_and_non_positive(self) -> None:
+        """No arms, or non-positive depths, are refused."""
         with pytest.raises(ValueError, match="at least one arm"):
             depth_parity_gate({})
         with pytest.raises(ValueError, match="must be positive"):
@@ -201,7 +231,10 @@ class TestDepthParityGate:
 
 
 class TestMeasuredQubits:
+    """Reading the measured physical qubits."""
+
     def test_extracts_clbit_ordered_mapping(self) -> None:
+        """Measured qubits are listed in classical-bit order."""
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(3, 2)
@@ -210,6 +243,7 @@ class TestMeasuredQubits:
         assert measured_physical_qubits(qc) == (2, 0)
 
     def test_rejects_unmeasured_and_double_measured_clbits(self) -> None:
+        """A classical bit measured never or twice is refused."""
         from qiskit import QuantumCircuit
 
         unmeasured = QuantumCircuit(2, 2)
@@ -224,11 +258,15 @@ class TestMeasuredQubits:
 
 
 class TestPlanAssembly:
+    """Assembling the campaign plan."""
+
     @pytest.fixture(scope="class")
     def plan(self) -> LayoutTransferPlan:
+        """Return a plan for sizes 4 and 8 on a grid calibration."""
         return build_layout_transfer_plan(_grid_calibration(), sizes=(4, 8))
 
     def test_matrix_shape_and_manifest(self, plan: LayoutTransferPlan) -> None:
+        """The plan has ten circuits with ordered labels."""
         assert plan.circuit_count == 10
         labels = [label for label, _ in plan.circuit_manifest()]
         assert labels[:5] == [
@@ -240,6 +278,7 @@ class TestPlanAssembly:
         ]
 
     def test_arms_carry_layouts_and_depths(self, plan: LayoutTransferPlan) -> None:
+        """Each arm carries its layout and depth."""
         block = plan.blocks[1]
         arms = {arm.arm: arm for arm in block.arms}
         # Amendment 1: naive = lexicographically smallest connected chain;
@@ -255,12 +294,14 @@ class TestPlanAssembly:
     ) -> None:
         # Amendment 1 keeps every arm a connected chain, so no arm carries
         # SWAP overhead and the validity gate holds at both sizes.
+        """With the amended naive arm every depth-parity gate passes."""
         assert all(block.depth_parity.passes for block in plan.blocks)
         assert plan.all_gates_pass
 
     def test_readout_circuits_cover_union_of_measured_qubits(
         self, plan: LayoutTransferPlan
     ) -> None:
+        """Readout circuits cover every measured qubit."""
         for block in plan.blocks:
             union = {q for arm in block.arms for q in arm.measured_qubits}
             assert set(block.readout_qubits) == union
@@ -268,9 +309,11 @@ class TestPlanAssembly:
                 assert measured_physical_qubits(circuit) == block.readout_qubits
 
     def test_exact_reference_present_per_block(self, plan: LayoutTransferPlan) -> None:
+        """Each block carries its exact reference."""
         assert [block.exact_reference for block in plan.blocks] == pytest.approx([0.5, 0.5])
 
     def test_plan_payload_is_json_serialisable(self, plan: LayoutTransferPlan) -> None:
+        """The plan serialises to JSON."""
         payload = json.loads(json.dumps(plan.to_dict()))
         assert payload["campaign"].startswith("iqm_layout_transfer")
         assert payload["circuit_count"] == 10
@@ -279,6 +322,7 @@ class TestPlanAssembly:
         assert payload["readout_shots"] == READOUT_SHOTS
 
     def test_readout_state_preparation(self, plan: LayoutTransferPlan) -> None:
+        """Readout circuits prepare states without two-qubit gates."""
         zeros, ones = plan.blocks[0].readout_circuits
         assert sum(1 for i in zeros.data if i.operation.num_qubits == 2) == 0
         prep_ops = [i.operation.name for i in ones.data if i.operation.name != "measure"]
@@ -290,7 +334,10 @@ class TestPlanAssembly:
     reason="iqm optional extra not installed",
 )
 class TestAgainstRealFakeGarnet:
+    """The full matrix on the SDK's fake Garnet."""
+
     def test_full_preregistered_matrix_on_fake_garnet(self) -> None:
+        """The full fifteen-circuit matrix builds on the fake Garnet."""
         from iqm.qiskit_iqm.fake_backends.fake_garnet import IQMFakeGarnet
 
         from scpn_quantum_control.hardware.iqm_lattice_calibration import (

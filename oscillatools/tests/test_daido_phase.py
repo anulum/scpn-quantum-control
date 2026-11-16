@@ -45,7 +45,10 @@ def _finite_difference_gradient(theta: np.ndarray, m: int, step: float = 1e-6) -
 
 
 class TestPythonModePhaseFloor:
+    """The Python floor of the Daido mode phase."""
+
     def test_matches_closed_form(self) -> None:
+        """The mode phase matches its closed form."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=9)
         m = 3
@@ -58,6 +61,7 @@ class TestPythonModePhaseFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_m1_reduces_to_mean_phase(self, n: int, seed: int) -> None:
+        """The first harmonic reduces to the mean phase."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         assert dmp._python_daido_mode_phase(theta, 1) == pytest.approx(
@@ -65,15 +69,20 @@ class TestPythonModePhaseFloor:
         )
 
     def test_rejects_non_positive_harmonic(self) -> None:
+        """A harmonic that is not a positive integer is refused."""
         with pytest.raises(ValueError, match="positive integer"):
             dmp._python_daido_mode_phase(np.zeros(4), 0)
 
     def test_empty(self) -> None:
+        """No oscillators give phase zero."""
         assert dmp._python_daido_mode_phase(np.array([]), 2) == 0.0
 
 
 class TestPythonModePhaseGradientFloor:
+    """The Python floor of the mode-phase gradient."""
+
     def test_matches_closed_form(self) -> None:
+        """The gradient matches its closed form."""
         rng = np.random.default_rng(12)
         theta = rng.uniform(-math.pi, math.pi, size=8)
         m = 2
@@ -94,6 +103,7 @@ class TestPythonModePhaseGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference(self, n: int, m: int, seed: int) -> None:
+        """The gradient agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         # keep away from the incoherent mode where the phase is ill-conditioned
@@ -113,6 +123,7 @@ class TestPythonModePhaseGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_sums_to_m(self, n: int, m: int, seed: int) -> None:
+        """The gradient sums to the harmonic m."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if abs(np.mean(np.exp(1j * m * theta))) < 1e-6:
@@ -126,6 +137,7 @@ class TestPythonModePhaseGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_m1_reduces_to_mean_phase_gradient(self, n: int, seed: int) -> None:
+        """The first harmonic reduces to the mean-phase gradient."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -136,18 +148,23 @@ class TestPythonModePhaseGradientFloor:
 
     def test_incoherent_mode_has_zero_subgradient(self) -> None:
         # m = 1 on two antipodal phases -> C_1 = S_1 = 0 exactly
+        """An incoherent mode has a zero subgradient."""
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(dmp._python_daido_mode_phase_gradient(theta, 1), np.zeros(4))
 
     def test_rejects_non_positive_harmonic(self) -> None:
+        """A harmonic that is not a positive integer is refused."""
         with pytest.raises(ValueError, match="positive integer"):
             dmp._python_daido_mode_phase_gradient(np.zeros(4), 0)
 
     def test_empty(self) -> None:
+        """No oscillators give an empty gradient."""
         assert dmp._python_daido_mode_phase_gradient(np.array([]), 2).shape == (0,)
 
 
 class TestRustModePhaseTier:
+    """The native mode-phase tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=40),
@@ -155,6 +172,7 @@ class TestRustModePhaseTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, m: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "daido_mode_phase", None)):
             pytest.skip("scpn_quantum_engine.daido_mode_phase unavailable")
@@ -170,16 +188,20 @@ class TestRustModePhaseTier:
         )
 
     def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native value raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             dmp._rust_daido_mode_phase(np.zeros(3), 2)
 
     def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native gradient raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             dmp._rust_daido_mode_phase_gradient(np.zeros(3), 2)
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -196,7 +218,10 @@ class TestRustModePhaseTier:
 
 
 class TestJuliaModePhaseTier:
+    """The Julia mode-phase tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import daido_mode_phase as julia_phase
         from oscillatools.accel.julia import (
@@ -217,6 +242,8 @@ class TestJuliaModePhaseTier:
 
 
 class TestModePhaseDispatch:
+    """Dispatch across the mode-phase tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=20),
@@ -224,6 +251,7 @@ class TestModePhaseDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, m: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         value_reference = dmp._python_daido_mode_phase(theta, m)
@@ -241,6 +269,7 @@ class TestModePhaseDispatch:
             np.testing.assert_allclose(out, gradient_reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected types and shapes."""
         from oscillatools.accel import (
             daido_mode_phase,
             daido_mode_phase_gradient,
@@ -258,6 +287,7 @@ class TestModePhaseDispatch:
         assert last_daido_mode_phase_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert dmp._DAIDO_MODE_PHASE_CHAIN[-1][0] == "python"
         assert dmp._DAIDO_MODE_PHASE_GRADIENT_CHAIN[-1][0] == "python"
 
@@ -278,7 +308,10 @@ def _finite_difference_hessian(theta: np.ndarray, m: int, step: float = 1e-6) ->
 
 
 class TestPythonModePhaseHessianFloor:
+    """The Python floor of the mode-phase Hessian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Hessian matches its closed form."""
         rng = np.random.default_rng(13)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         m = 2
@@ -301,6 +334,7 @@ class TestPythonModePhaseHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_m1_reduces_to_mean_phase_hessian(self, n: int, seed: int) -> None:
+        """The first harmonic reduces to the mean-phase Hessian."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -316,6 +350,7 @@ class TestPythonModePhaseHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference_of_gradient(self, n: int, m: int, seed: int) -> None:
+        """The Hessian agrees with finite differences of the gradient."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if abs(np.mean(np.exp(1j * m * theta))) < 1e-1:
@@ -333,6 +368,7 @@ class TestPythonModePhaseHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_symmetric_and_rows_sum_to_zero(self, n: int, m: int, seed: int) -> None:
+        """The Hessian is symmetric and each row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         hessian = dmp._python_daido_mode_phase_hessian(theta, m)
@@ -340,10 +376,12 @@ class TestPythonModePhaseHessianFloor:
         np.testing.assert_allclose(hessian.sum(axis=1), np.zeros(n), atol=1e-10)
 
     def test_rejects_non_positive_harmonic(self) -> None:
+        """A harmonic that is not a positive integer is refused."""
         with pytest.raises(ValueError, match="positive integer"):
             dmp._python_daido_mode_phase_hessian(np.zeros(4), 0)
 
     def test_empty_and_incoherent(self) -> None:
+        """No oscillators give an empty Hessian, and an incoherent mode a zero one."""
         assert dmp._python_daido_mode_phase_hessian(np.array([]), 2).shape == (0, 0)
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(
@@ -352,6 +390,8 @@ class TestPythonModePhaseHessianFloor:
 
 
 class TestModePhaseHessianTiersAndDispatch:
+    """Compute tiers and dispatch of the mode-phase Hessian."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -359,6 +399,7 @@ class TestModePhaseHessianTiersAndDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, m: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "daido_mode_phase_hessian", None)):
             pytest.skip("scpn_quantum_engine.daido_mode_phase_hessian unavailable")
@@ -371,6 +412,7 @@ class TestModePhaseHessianTiersAndDispatch:
         )
 
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             daido_mode_phase_hessian as julia_hessian,
@@ -386,11 +428,14 @@ class TestModePhaseHessianTiersAndDispatch:
             )
 
     def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Hessian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             dmp._rust_daido_mode_phase_hessian(np.zeros(3), 2)
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -409,6 +454,7 @@ class TestModePhaseHessianTiersAndDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, m: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         reference = dmp._python_daido_mode_phase_hessian(theta, m)
@@ -420,6 +466,7 @@ class TestModePhaseHessianTiersAndDispatch:
             np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public function return the Hessian and record the tier."""
         from oscillatools.accel import (
             daido_mode_phase_hessian,
             last_daido_mode_phase_hessian_tier_used,
@@ -432,4 +479,5 @@ class TestModePhaseHessianTiersAndDispatch:
         assert last_daido_mode_phase_hessian_tier_used() in {"rust", "julia", "python"}
 
     def test_chain_ends_with_python_floor(self) -> None:
+        """The Hessian chain ends with the Python floor."""
         assert dmp._DAIDO_MODE_PHASE_HESSIAN_CHAIN[-1][0] == "python"

@@ -56,7 +56,10 @@ def _finite_difference_gradient(
 
 
 class TestPythonEnergyFloor:
+    """The Python floor of the interaction energy."""
+
     def test_matches_closed_form(self) -> None:
+        """The energy matches its closed form."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         coupling = _random_coupling(7, 5, symmetric=False)
@@ -70,6 +73,7 @@ class TestPythonEnergyFloor:
         )
 
     def test_full_synchronisation_is_minimum(self) -> None:
+        """Full synchrony is a minimum of the energy."""
         coupling = _random_coupling(8, 2, symmetric=True)
         synced = np.full(8, 0.7)
         energy_synced = ke._python_kuramoto_interaction_energy(synced, coupling)
@@ -79,6 +83,7 @@ class TestPythonEnergyFloor:
             assert energy_synced <= ke._python_kuramoto_interaction_energy(perturbed, coupling)
 
     def test_depends_only_on_symmetric_part(self) -> None:
+        """The energy depends only on the symmetric part of the coupling."""
         rng = np.random.default_rng(3)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = _random_coupling(6, 4, symmetric=False)
@@ -88,15 +93,20 @@ class TestPythonEnergyFloor:
         )
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 4"):
             ke._python_kuramoto_interaction_energy(np.zeros(4), np.zeros((4, 3)))
 
     def test_empty(self) -> None:
+        """No oscillators give energy zero."""
         assert ke._python_kuramoto_interaction_energy(np.array([]), np.zeros((0, 0))) == 0.0
 
 
 class TestPythonEnergyGradientFloor:
+    """The Python floor of the energy gradient."""
+
     def test_matches_closed_form(self) -> None:
+        """The gradient matches its closed form."""
         rng = np.random.default_rng(12)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = _random_coupling(6, 8, symmetric=False)
@@ -113,6 +123,7 @@ class TestPythonEnergyGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference(self, n: int, symmetric: bool, seed: int) -> None:
+        """The gradient agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=symmetric)
@@ -129,6 +140,7 @@ class TestPythonEnergyGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_sums_to_zero(self, n: int, symmetric: bool, seed: int) -> None:
+        """The gradient sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 2, symmetric=symmetric)
@@ -141,6 +153,7 @@ class TestPythonEnergyGradientFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_equals_negated_force_for_symmetric_coupling(self, n: int, seed: int) -> None:
+        """For a symmetric coupling the gradient is minus the force."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 3, symmetric=True)
@@ -151,16 +164,20 @@ class TestPythonEnergyGradientFloor:
         )
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             ke._python_kuramoto_interaction_energy_gradient(np.zeros(3), np.zeros((2, 2)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty gradient."""
         assert ke._python_kuramoto_interaction_energy_gradient(
             np.array([]), np.zeros((0, 0))
         ).shape == (0,)
 
 
 class TestRustEnergyTier:
+    """The native energy tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -168,6 +185,7 @@ class TestRustEnergyTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, symmetric: bool, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "kuramoto_interaction_energy", None)):
             pytest.skip("scpn_quantum_engine.kuramoto_interaction_energy unavailable")
@@ -184,16 +202,20 @@ class TestRustEnergyTier:
         )
 
     def test_rust_energy_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native energy raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             ke._rust_kuramoto_interaction_energy(np.zeros(3), np.zeros((3, 3)))
 
     def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native gradient raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             ke._rust_kuramoto_interaction_energy_gradient(np.zeros(3), np.zeros((3, 3)))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernels falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -221,7 +243,10 @@ class TestRustEnergyTier:
 
 
 class TestJuliaEnergyTier:
+    """The Julia energy tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             kuramoto_interaction_energy as julia_energy,
@@ -245,12 +270,15 @@ class TestJuliaEnergyTier:
 
 
 class TestEnergyDispatch:
+    """Dispatch across the energy tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=16),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=False)
@@ -271,6 +299,7 @@ class TestEnergyDispatch:
             np.testing.assert_allclose(out, gradient_reference, atol=1e-9, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected types and shapes."""
         from oscillatools.accel import (
             kuramoto_interaction_energy,
             kuramoto_interaction_energy_gradient,
@@ -293,6 +322,7 @@ class TestEnergyDispatch:
         }
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert ke._KURAMOTO_INTERACTION_ENERGY_CHAIN[-1][0] == "python"
         assert ke._KURAMOTO_INTERACTION_ENERGY_GRADIENT_CHAIN[-1][0] == "python"
 
@@ -315,7 +345,10 @@ def _finite_difference_hessian(
 
 
 class TestPythonEnergyHessianFloor:
+    """The Python floor of the energy Hessian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Hessian matches its closed form."""
         rng = np.random.default_rng(13)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         coupling = _random_coupling(6, 9, symmetric=False)
@@ -337,6 +370,7 @@ class TestPythonEnergyHessianFloor:
     def test_matches_finite_difference_of_gradient(
         self, n: int, symmetric: bool, seed: int
     ) -> None:
+        """The Hessian agrees with finite differences of the gradient."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=symmetric)
@@ -353,6 +387,7 @@ class TestPythonEnergyHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_symmetric_and_rows_sum_to_zero(self, n: int, symmetric: bool, seed: int) -> None:
+        """The Hessian is symmetric and each row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 2, symmetric=symmetric)
@@ -366,6 +401,7 @@ class TestPythonEnergyHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_equals_negated_jacobian_for_symmetric_coupling(self, n: int, seed: int) -> None:
+        """For a symmetric coupling the Hessian is minus the force Jacobian."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 3, symmetric=True)
@@ -376,16 +412,20 @@ class TestPythonEnergyHessianFloor:
         )
 
     def test_rejects_non_square_coupling(self) -> None:
+        """A non-square coupling is refused."""
         with pytest.raises(ValueError, match="square matrix of order 3"):
             ke._python_kuramoto_interaction_energy_hessian(np.zeros(3), np.zeros((2, 2)))
 
     def test_empty(self) -> None:
+        """No oscillators give an empty Hessian."""
         assert ke._python_kuramoto_interaction_energy_hessian(
             np.array([]), np.zeros((0, 0))
         ).shape == (0, 0)
 
 
 class TestEnergyHessianTiersAndDispatch:
+    """Compute tiers and dispatch of the energy Hessian."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=30),
@@ -393,6 +433,7 @@ class TestEnergyHessianTiersAndDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, symmetric: bool, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "kuramoto_interaction_energy_hessian", None)):
             pytest.skip("scpn_quantum_engine.kuramoto_interaction_energy_hessian unavailable")
@@ -406,6 +447,7 @@ class TestEnergyHessianTiersAndDispatch:
         )
 
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             kuramoto_interaction_energy_hessian as julia_hessian,
@@ -422,11 +464,14 @@ class TestEnergyHessianTiersAndDispatch:
             )
 
     def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Hessian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             ke._rust_kuramoto_interaction_energy_hessian(np.zeros(3), np.zeros((3, 3)))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -446,6 +491,7 @@ class TestEnergyHessianTiersAndDispatch:
         assert disp.last_tier == "python"
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public function return the Hessian and record the tier."""
         from oscillatools.accel import (
             kuramoto_interaction_energy_hessian,
             last_kuramoto_interaction_energy_hessian_tier_used,
@@ -467,6 +513,7 @@ class TestEnergyHessianTiersAndDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         coupling = _random_coupling(n, seed + 1, symmetric=False)
@@ -479,4 +526,5 @@ class TestEnergyHessianTiersAndDispatch:
             np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_chain_ends_with_python_floor(self) -> None:
+        """The Hessian chain ends with the Python floor."""
         assert ke._KURAMOTO_INTERACTION_ENERGY_HESSIAN_CHAIN[-1][0] == "python"

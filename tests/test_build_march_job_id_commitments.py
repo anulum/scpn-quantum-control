@@ -35,6 +35,7 @@ SCOPE = ("results/ibm_hardware_2026-03-28/", "results/march_2026/")
 
 
 def entry(raw: str, label: str, path: str, pointer: str = "/job_id") -> dict[str, str]:
+    """Return one mapping entry for a raw job id."""
     return {
         "kind": "raw_ibm_job_id",
         "raw_value": raw,
@@ -46,6 +47,7 @@ def entry(raw: str, label: str, path: str, pointer: str = "/job_id") -> dict[str
 
 
 def make_manifest() -> dict[str, Any]:
+    """Return a valid private-mapping manifest."""
     return {
         "schema": script.MAPPING_SCHEMA,
         "created_utc": "2026-05-12T00:00:00Z",
@@ -63,30 +65,37 @@ def make_manifest() -> dict[str, Any]:
 
 
 def write_manifest(tmp_path: Path, manifest: dict[str, Any]) -> Path:
+    """Write a manifest to a temporary file and return its path."""
     path = tmp_path / "mapping.json"
     path.write_text(json.dumps(manifest), encoding="utf-8")
     return path
 
 
 class TestLoadPrivateMapping:
+    """Loading the private job-id mapping."""
+
     def test_happy_path(self, tmp_path: Path) -> None:
+        """A valid mapping loads with its label prefix."""
         path = write_manifest(tmp_path, make_manifest())
         manifest = script.load_private_mapping(path)
         assert manifest["label_prefix"] == "ibm-run"
 
     def test_rejects_non_object(self, tmp_path: Path) -> None:
+        """A mapping that is not an object is refused."""
         path = tmp_path / "mapping.json"
         path.write_text("[]", encoding="utf-8")
         with pytest.raises(ValueError, match="not a JSON object"):
             script.load_private_mapping(path)
 
     def test_rejects_wrong_schema(self, tmp_path: Path) -> None:
+        """A mapping with the wrong schema is refused."""
         manifest = make_manifest()
         manifest["schema"] = "other.v9"
         with pytest.raises(ValueError, match="has schema"):
             script.load_private_mapping(write_manifest(tmp_path, manifest))
 
     def test_rejects_missing_entries(self, tmp_path: Path) -> None:
+        """A mapping without entries is refused."""
         manifest = make_manifest()
         manifest["entries"] = None
         with pytest.raises(ValueError, match="no entries list"):
@@ -94,6 +103,7 @@ class TestLoadPrivateMapping:
 
     @pytest.mark.parametrize("key", ["salt_sha256", "label_prefix"])
     def test_rejects_missing_metadata(self, tmp_path: Path, key: str) -> None:
+        """A mapping missing metadata is refused."""
         manifest = make_manifest()
         manifest[key] = ""
         with pytest.raises(ValueError, match=f"missing {key}"):
@@ -101,40 +111,51 @@ class TestLoadPrivateMapping:
 
 
 class TestEntrySelection:
+    """Selecting raw job-id entries."""
+
     def test_raw_entries_skip_operational_metadata(self) -> None:
+        """Operational metadata is skipped."""
         entries = script.raw_job_id_entries(make_manifest())
         assert len(entries) == 4
         assert all(e["kind"].startswith("raw_ibm_job_id") for e in entries)
 
     def test_raw_entries_reject_missing_field(self) -> None:
+        """An entry missing its pointer is refused."""
         manifest = make_manifest()
         del manifest["entries"][0]["json_pointer"]
         with pytest.raises(ValueError, match="json_pointer"):
             script.raw_job_id_entries(manifest)
 
     def test_scope_filters_out_of_scope_paths(self) -> None:
+        """The scope drops out-of-scope paths."""
         entries = script.raw_job_id_entries(make_manifest())
         scoped = script.scoped_entries(entries, SCOPE)
         assert {e["raw_value"] for e in scoped} == {RAW_A, RAW_B}
 
     def test_scope_with_no_match_fails_closed(self) -> None:
+        """A scope that matches nothing fails closed."""
         entries = script.raw_job_id_entries(make_manifest())
         with pytest.raises(ValueError, match="no raw job-id entries matched"):
             script.scoped_entries(entries, ("results/none/",))
 
 
 class TestLabels:
+    """Public labels for raw job ids."""
+
     def test_label_by_raw_maps_all(self) -> None:
+        """Every raw id gets its label."""
         labels = script.label_by_raw(script.raw_job_id_entries(make_manifest()))
         assert labels == {RAW_A: LABEL_A, RAW_B: LABEL_B, RAW_OUT: LABEL_OUT}
 
     def test_label_conflict_is_rejected(self) -> None:
+        """Conflicting labels are refused."""
         manifest = make_manifest()
         manifest["entries"][1]["public_label"] = LABEL_B
         with pytest.raises(ValueError, match="conflicting public labels"):
             script.label_by_raw(script.raw_job_id_entries(manifest))
 
     def test_publicise_replaces_longest_first(self) -> None:
+        """Publicising replaces the longest raw id first."""
         long_raw = RAW_A + "x"
         labels = {RAW_A: LABEL_A, long_raw: LABEL_B}
         assert script.publicise(f"job_{long_raw}.json", labels) == f"job_{LABEL_B}.json"
@@ -142,7 +163,10 @@ class TestLabels:
 
 
 class TestNonceSidecar:
+    """The nonce sidecar."""
+
     def test_fresh_mint_and_roundtrip(self, tmp_path: Path) -> None:
+        """Nonces are minted once and round-trip."""
         path = tmp_path / "nonces.json"
         nonces, minted = script.load_or_extend_nonces(path, [RAW_A, RAW_B])
         assert minted == 2
@@ -153,6 +177,7 @@ class TestNonceSidecar:
         assert reloaded == nonces
 
     def test_extends_with_new_raw_id(self, tmp_path: Path) -> None:
+        """A new raw id extends the sidecar and keeps the old nonces."""
         path = tmp_path / "nonces.json"
         first, _ = script.load_or_extend_nonces(path, [RAW_A])
         script.write_nonce_sidecar(path, first)
@@ -161,6 +186,7 @@ class TestNonceSidecar:
         assert extended[RAW_A] == first[RAW_A]
 
     def test_malformed_sidecar_fails_closed(self, tmp_path: Path) -> None:
+        """A malformed sidecar fails closed."""
         path = tmp_path / "nonces.json"
         path.write_text(json.dumps({"schema": "wrong", "nonces": {}}), encoding="utf-8")
         with pytest.raises(ValueError, match="malformed"):
@@ -168,11 +194,15 @@ class TestNonceSidecar:
 
 
 class TestCommitments:
+    """Building the commitments."""
+
     def test_commitment_digest_matches_direct_arithmetic(self) -> None:
+        """The commitment digest matches a direct computation."""
         expected = hashlib.sha256(f"{RAW_A}:00ff".encode()).hexdigest()
         assert script.commitment_digest(RAW_A, "00ff") == expected
 
     def test_build_payload_shape(self) -> None:
+        """The payload has its schema, count and salt digest."""
         manifest = make_manifest()
         nonces = {RAW_A: "aa" * 16, RAW_B: "bb" * 16}
         payload = script.build_payload(manifest, SCOPE, nonces, "2026-07-17T00:00:00Z")
@@ -187,6 +217,7 @@ class TestCommitments:
         assert len(first["artefact_references"]) == 2
 
     def test_duplicate_references_are_deduplicated(self) -> None:
+        """Duplicate references are merged per label."""
         manifest = make_manifest()
         manifest["entries"].append(dict(manifest["entries"][0]))
         nonces = {RAW_A: "aa" * 16, RAW_B: "bb" * 16}
@@ -196,6 +227,7 @@ class TestCommitments:
         assert len(first["artefact_references"]) == 2
 
     def test_build_payload_publicises_paths_and_pointers(self) -> None:
+        """The payload replaces raw ids in paths and pointers with labels."""
         manifest = make_manifest()
         manifest["entries"][2]["json_pointer"] = f"/jobs/{RAW_B}/id"
         nonces = {RAW_A: "aa" * 16, RAW_B: "bb" * 16}
@@ -207,29 +239,40 @@ class TestCommitments:
 
 
 class TestLeakCheck:
+    """Checking the payload for leaks."""
+
     def test_clean_payload_passes(self) -> None:
+        """A clean payload passes."""
         nonces = {RAW_A: "aa" * 16}
         script.assert_no_private_leak("only labels here", make_manifest(), nonces)
 
     def test_raw_id_leak_is_fatal(self) -> None:
+        """A raw id in the payload is fatal."""
         with pytest.raises(RuntimeError, match=f"raw job id for {LABEL_A}"):
             script.assert_no_private_leak(f"text {RAW_A} text", make_manifest(), {})
 
     def test_nonce_leak_is_fatal(self) -> None:
+        """A nonce in the payload is fatal."""
         nonces = {RAW_A: "cd" * 16}
         with pytest.raises(RuntimeError, match="nonce for"):
             script.assert_no_private_leak(f"text {nonces[RAW_A]}", make_manifest(), nonces)
 
 
 class TestWriteJson:
+    """Writing the JSON output."""
+
     def test_returns_sha256_of_written_text(self, tmp_path: Path) -> None:
+        """Writing returns the SHA-256 of the written text."""
         path = tmp_path / "out" / "payload.json"
         digest = script._write_json(path, {"k": "v"})
         assert digest == hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class TestMain:
+    """The commitment command."""
+
     def run_main(self, tmp_path: Path) -> tuple[int, Path, Path]:
+        """Run the command on a fresh mapping in a temporary directory."""
         mapping = write_manifest(tmp_path, make_manifest())
         nonces = tmp_path / "nonces.json"
         output = tmp_path / "out" / "commitments.json"
@@ -252,6 +295,7 @@ class TestMain:
     def test_happy_path_writes_commitments_and_sidecar(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """A normal run writes the commitments and the nonce sidecar."""
         code, output, nonces = self.run_main(tmp_path)
         assert code == 0
         payload = json.loads(output.read_text(encoding="utf-8"))
@@ -264,6 +308,7 @@ class TestMain:
         assert RAW_A not in output.read_text(encoding="utf-8")
 
     def test_rerun_is_idempotent(self, tmp_path: Path) -> None:
+        """A rerun gives the same commitments."""
         _, output, _ = self.run_main(tmp_path)
         first = json.loads(output.read_text(encoding="utf-8"))
         code, output, _ = self.run_main(tmp_path)
@@ -272,6 +317,7 @@ class TestMain:
         assert first["commitments"] == second["commitments"]
 
     def test_default_scope_is_used_without_scope_args(self, tmp_path: Path) -> None:
+        """Without scope arguments the default scope is used."""
         mapping = write_manifest(tmp_path, make_manifest())
         code = script.main(
             [
