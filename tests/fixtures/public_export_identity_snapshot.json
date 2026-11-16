@@ -33055,6 +33055,16 @@
       ]
     },
     {
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/learning/__init__.py",
+      "module": "scpn_quantum_control.experimental.llm_qpu.learning",
+      "source_sha256": "9030814d1188e8e7177802a039ccbd88f8a528c3978ec15a2d63073939cee82b",
+      "has_declared_all": true,
+      "declared_all": [],
+      "all_container_type": "tuple",
+      "star_names": [],
+      "bindings": []
+    },
+    {
       "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/__init__.py",
       "module": "scpn_quantum_control.experimental.llm_qpu.runtime",
       "source_sha256": "ecf3a53e1dcd3730561fbfaca4dd8257b3978c542eba7914b611dcec83140572",

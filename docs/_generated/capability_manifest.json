@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1671,
-    "python_model_source_modules": 887,
+    "python_model_classes": 1676,
+    "python_model_source_modules": 890,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1658
+    "test_files": 1660
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 43
+        "python_modules": 46
       },
       {
         "package": "fep",
@@ -1228,6 +1228,10 @@
       {
         "name": "BaselineCatalogueRow",
         "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
+      },
+      {
+        "name": "BaselineResult",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py"
       },
       {
         "name": "BaselineSpec",
@@ -2076,6 +2080,10 @@
       {
         "name": "DesignReport",
         "path": "src/scpn_quantum_control/benchmarks/kyma_v3/task.py"
+      },
+      {
+        "name": "DevOutcome",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py"
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
@@ -3586,6 +3594,10 @@
         "path": "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py"
       },
       {
+        "name": "LabelledSplit",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py"
+      },
+      {
         "name": "LaneManifest",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/manifest.py"
       },
@@ -3724,6 +3736,10 @@
       {
         "name": "LogicalSyncWitness",
         "path": "src/scpn_quantum_control/analysis/logical_sync_witness.py"
+      },
+      {
+        "name": "LogisticReadout",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/learning/logistic_readout.py"
       },
       {
         "name": "LoopStepInput",
@@ -6698,6 +6714,10 @@
         "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
+        "name": "Standardiser",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/learning/feature_maps.py"
+      },
+      {
         "name": "StateEstimate",
         "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
@@ -7876,6 +7896,9 @@
       "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_splits.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_task.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_transfer.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/learning/feature_maps.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/learning/logistic_readout.py",
       "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
       "src/scpn_quantum_control/experimental/llm_qpu/ports.py",
       "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py",
@@ -9639,9 +9662,11 @@
       "tests/experimental/llm_qpu/test_exact_feature_set_contract.py",
       "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
       "tests/experimental/llm_qpu/test_feature_batch_contract.py",
+      "tests/experimental/llm_qpu/test_lane_classical_baselines.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/experimental/llm_qpu/test_lane_ports.py",
       "tests/experimental/llm_qpu/test_latent_batch_contract.py",
+      "tests/experimental/llm_qpu/test_learning_readouts.py",
       "tests/experimental/llm_qpu/test_measurement_compiler.py",
       "tests/experimental/llm_qpu/test_measurement_plan_contract.py",
       "tests/experimental/llm_qpu/test_model_descriptor_contract.py",

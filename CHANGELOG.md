@@ -497,6 +497,33 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains strong classical baselines
+  (`experimental/llm_qpu/learning/`).
+  - `feature_maps` provides:
+    - a train-only standardiser in which constant columns keep scale
+      one;
+    - sin/cos encoding;
+    - the trigonometric product basis, with 3**m products of
+      {1, sin, cos} per angle;
+    - seeded random Fourier features of a Gaussian kernel.
+  - The product basis spans every linear observable after a fixed
+    unitary applied to one RY encoding. A test fits exact XY-block
+    expectations on it with a residual below 1e-9; sin/cos alone does
+    not fit them.
+  - `logistic_readout` fits a multinomial logistic readout with an
+    unpenalised intercept and an L2 weight penalty. It uses SciPy's
+    L-BFGS with an analytic gradient and a stable log-softmax.
+  - `classical_baselines` tunes each family's L2 (and random-feature
+    bandwidth) by group-wise cross-validation on train only, within a
+    declared fit budget. It refits on all train rows and scores each dev
+    row once: log-loss and whether the most probable class was right.
+  - Each family reports its feature width, trainable parameters, fit
+    count and measured fit and predict times.
+  - `run_baseline_suite` runs the latent, compressed, sin/cos, product
+    basis and random Fourier families. The random features run at 21
+    columns (the n4 quantum feature count) and at 81 (the product basis
+    width).
+
 - The experimental LLM-QPU lane gains offline quotes of compiled bundles.
   - `quote_bundle` (`experimental/llm_qpu/data/bundle_quote.py`) quotes one
     compiled bundle against its target. Its known figures are the circuit

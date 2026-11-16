@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **887 modules** across **41 package families**
-- **4761 documented public module-level symbols**
+- **890 modules** across **41 package families**
+- **4776 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2774,6 +2774,36 @@ Generate paired histories whose answer crosses three ordered copies.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/temporal_transfer.py) · Public symbols: **2**
 
 **Functions:** `generate_transfer_records()`, `build_transfer_task()`
+
+### `scpn_quantum_control.experimental.llm_qpu.learning.classical_baselines`
+
+Strong classical baselines tuned by group cross-validation on train and scored once on dev.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/learning/classical_baselines.py) · Public symbols: **7**
+
+**Classes:** `LabelledSplit`, `DevOutcome`, `BaselineResult`
+
+**Functions:** `family_features()`, `group_folds()`, `run_baseline()`, `run_baseline_suite()`
+
+### `scpn_quantum_control.experimental.llm_qpu.learning.feature_maps`
+
+Classical feature maps of compressed angles and a train-only standardiser.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/learning/feature_maps.py) · Public symbols: **5**
+
+**Classes:** `Standardiser`
+
+**Functions:** `fit_standardiser()`, `sin_cos_basis()`, `trig_product_basis()`, `random_fourier_features()`
+
+### `scpn_quantum_control.experimental.llm_qpu.learning.logistic_readout`
+
+Multinomial logistic readout with an unpenalised intercept and an L2 weight penalty.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/learning/logistic_readout.py) · Public symbols: **3**
+
+**Classes:** `LogisticReadout`
+
+**Functions:** `fit_logistic()`, `mean_log_loss()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
