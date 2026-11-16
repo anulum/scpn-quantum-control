@@ -41,6 +41,7 @@ PROVIDER_BATCH_RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receip
 RAW_RESULT_SET_SCHEMA = "scpn.experimental.llm_qpu.raw_result_set.v1"
 FEATURE_BATCH_SCHEMA = "scpn.experimental.llm_qpu.feature_batch.v1"
 EVALUATION_REPORT_SCHEMA = "scpn.experimental.llm_qpu.evaluation_report.v1"
+STUDENT_ARTIFACT_SCHEMA = "scpn.experimental.llm_qpu.student_artifact.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -281,6 +282,7 @@ class ArtifactHeader:
             "raw_result_set",
             "feature_batch",
             "evaluation_report",
+            "student_artifact",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")

@@ -942,6 +942,7 @@
         "tests/experimental/llm_qpu/test_provider_batch_receipt_contract.py",
         "tests/experimental/llm_qpu/test_raw_result_set_contract.py",
         "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
+        "tests/experimental/llm_qpu/test_student_artifact_contract.py",
         "tests/experimental/llm_qpu/test_target_snapshot_contract.py",
         "tests/ml_convergence_qnn_absence.py",
         "tests/neural_operator_rng_custody.py",

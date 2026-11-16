@@ -80,6 +80,11 @@ if TYPE_CHECKING:
         build_static_circuit_plan,
         validate_static_circuit_plan,
     )
+    from .student import (
+        StudentArtifact,
+        decode_student_artifact,
+        validate_student_artifact,
+    )
     from .target import ReportedValue, TargetSnapshot, decode_target_snapshot
     from .task import SplitManifest, TaskSpec, validate_task_split
     from .wire import (
@@ -102,6 +107,7 @@ if TYPE_CHECKING:
         SCHEMA,
         SPLIT_SCHEMA,
         STATIC_PLAN_SCHEMA,
+        STUDENT_ARTIFACT_SCHEMA,
         TARGET_SNAPSHOT_SCHEMA,
         TASK_SCHEMA,
         ArrayDescriptor,
@@ -339,6 +345,18 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.experimental.llm_qpu.contracts.evaluation",
         "decode_evaluation_report",
     ),
+    "StudentArtifact": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.student",
+        "StudentArtifact",
+    ),
+    "validate_student_artifact": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.student",
+        "validate_student_artifact",
+    ),
+    "decode_student_artifact": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.student",
+        "decode_student_artifact",
+    ),
     "ReportedValue": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.target",
         "ReportedValue",
@@ -413,6 +431,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "EVALUATION_REPORT_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
         "EVALUATION_REPORT_SCHEMA",
+    ),
+    "STUDENT_ARTIFACT_SCHEMA": (
+        "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
+        "STUDENT_ARTIFACT_SCHEMA",
     ),
     "COMPILED_BUNDLE_SCHEMA": (
         "scpn_quantum_control.experimental.llm_qpu.contracts.wire",
@@ -647,4 +669,8 @@ __all__ = (
     "paired_statistics",
     "validate_evaluation_report",
     "decode_evaluation_report",
+    "STUDENT_ARTIFACT_SCHEMA",
+    "StudentArtifact",
+    "validate_student_artifact",
+    "decode_student_artifact",
 )

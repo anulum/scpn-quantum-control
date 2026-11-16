@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1658,
-    "python_model_source_modules": 874,
+    "python_model_classes": 1659,
+    "python_model_source_modules": 875,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1647
+    "test_files": 1648
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 30
+        "python_modules": 31
       },
       {
         "package": "fep",
@@ -6690,6 +6690,10 @@
         "path": "src/scpn_quantum_control/control/structured_ansatz.py"
       },
       {
+        "name": "StudentArtifact",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/student.py"
+      },
+      {
         "name": "StudioBundleValidation",
         "path": "src/scpn_quantum_control/studio/evidence_bundle.py"
       },
@@ -7800,6 +7804,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/receipt.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/results.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/student.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/target.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py",
@@ -9577,6 +9582,7 @@
       "tests/experimental/llm_qpu/test_provider_batch_receipt_contract.py",
       "tests/experimental/llm_qpu/test_raw_result_set_contract.py",
       "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
+      "tests/experimental/llm_qpu/test_student_artifact_contract.py",
       "tests/experimental/llm_qpu/test_target_snapshot_contract.py",
       "tests/ml_convergence_qnn_absence.py",
       "tests/neural_operator_rng_custody.py",

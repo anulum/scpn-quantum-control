@@ -497,6 +497,30 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The experimental LLM-QPU lane gains a design-only `StudentArtifact` contract
+  (`experimental/llm_qpu/contracts/student.py`, schema
+  `student_artifact.v1`) for an offline classical model distilled from
+  quantum feature batches. It records:
+  - the protocol, model and compressor digests;
+  - the teacher kind (hardware or simulated features) and the teacher
+    feature batch digest;
+  - the distilled target observables;
+  - architecture, weights and config digests;
+  - the sorted training groups;
+  - optimiser, learning rate, epochs and seed;
+  - device and runtime;
+  - the held-out split, the feature fidelity (MSE or MAE) and the task
+    utility.
+  The output class is always `classical_offline`; a student labelled
+  quantum or hardware is refused. The header origin is the teacher's.
+  `validate_student_artifact` refuses a student of another protocol,
+  model or compressor, of another teacher, or relabelling simulated
+  features as hardware (or the reverse). It also refuses targets that
+  are not teacher observables in teacher order, training groups outside
+  the split's train groups, and utility on a metric other than the
+  protocol's primary one. The standalone worker validates the same wire
+  independently.
+
 - The experimental LLM-QPU lane gains a design-only `EvaluationReport` contract
   (`experimental/llm_qpu/contracts/evaluation.py`, schema
   `evaluation_report.v1`) for a paired comparison of the frozen protocol's

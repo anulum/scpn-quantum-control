@@ -41,6 +41,11 @@ _RECEIPT_SCHEMA = "scpn.experimental.llm_qpu.provider_batch_receipt.v1"
 _RESULT_SET_SCHEMA = "scpn.experimental.llm_qpu.raw_result_set.v1"
 _FEATURE_SCHEMA = "scpn.experimental.llm_qpu.feature_batch.v1"
 _REPORT_SCHEMA = "scpn.experimental.llm_qpu.evaluation_report.v1"
+_STUDENT_SCHEMA = "scpn.experimental.llm_qpu.student_artifact.v1"
+_TEACHER_ORIGINS = {
+    "hardware_features": "provider_result",
+    "simulated_features": "synthetic_classical",
+}
 _COST_ITEMS = ["provider_resource_units", "price_minor_units", "classical_compute_seconds"]
 _MEASUREMENT_SCHEMA = "scpn.experimental.llm_qpu.measurement_plan.v1"
 _RESULT_ORIGINS = {
@@ -2439,6 +2444,142 @@ def _roundtrip_evaluation_report(request: dict[str, object]) -> dict[str, object
     }
 
 
+_STUDENT_TEXT = ("student_id", "architecture", "optimizer", "device", "runtime", "runtime_version")
+_STUDENT_DIGESTS = (
+    "protocol_digest",
+    "model_digest",
+    "compressor_digest",
+    "teacher_digest",
+    "weights_digest",
+    "config_digest",
+)
+_STUDENT_FIELDS = {
+    "schema",
+    "object_kind",
+    *_STUDENT_TEXT,
+    *_STUDENT_DIGESTS,
+    "teacher_kind",
+    "targets",
+    "training_groups",
+    "learning_rate",
+    "epochs",
+    "seed",
+    "heldout_split",
+    "fidelity_metric",
+    "fidelity",
+    "utility_metric",
+    "utility",
+    "output_class",
+    "header",
+}
+
+
+def _validate_student_fields(student: object) -> dict[str, object]:
+    if type(student) is not dict or set(student) != _STUDENT_FIELDS:
+        raise ValueError("StudentArtifact fields mismatch")
+    if student["schema"] != _STUDENT_SCHEMA or student["object_kind"] != "student_artifact":
+        raise ValueError("unknown StudentArtifact schema")
+    if student["output_class"] != "classical_offline":
+        raise ValueError("a student runs classically; its output is never quantum or hardware")
+    for name in _STUDENT_TEXT:
+        _target_text(student[name], name)
+    for name in _STUDENT_DIGESTS:
+        _worker_digest(student[name], name)
+    if student["teacher_kind"] not in _TEACHER_ORIGINS:
+        raise ValueError("a teacher is hardware or simulated quantum features")
+    for name in ("targets", "training_groups"):
+        values = student[name]
+        if type(values) is not list or not values or len(set(map(str, values))) != len(values):
+            raise ValueError(f"{name} must be a nonempty unique list")
+    groups = student["training_groups"]
+    if groups != sorted(map(str, groups if type(groups) is list else [])):
+        raise ValueError("training groups must be sorted")
+    epochs, seed = student["epochs"], student["seed"]
+    if _f64_token(student["learning_rate"]) <= 0.0:
+        raise ValueError("learning rate must be positive")
+    if type(epochs) is not int or not 0 < epochs <= 1_000_000:
+        raise ValueError("epochs must be a bounded positive integer")
+    if type(seed) is not int or not 0 <= seed < 2**63:
+        raise ValueError("seed must be a non-negative 63-bit integer")
+    if student["heldout_split"] not in ("dev", "test"):
+        raise ValueError("held-out scores come from the dev or the test split")
+    if student["fidelity_metric"] not in ("feature_mse", "feature_mae"):
+        raise ValueError("unknown fidelity metric")
+    if _f64_token(student["fidelity"]) < 0.0:
+        raise ValueError("a feature error cannot be negative")
+    metric, utility = student["utility_metric"], _f64_token(student["utility"])
+    if metric not in ("accuracy", "mean_log_loss", "mse", "mae"):
+        raise ValueError("unknown utility metric")
+    if utility < 0.0 or (metric == "accuracy" and utility > 1.0):
+        raise ValueError("utility must be non-negative, and at most 1 for accuracy")
+    return student
+
+
+def _cross_check_student(
+    student: dict[str, object],
+    protocol: dict[str, object],
+    split: dict[str, object],
+    teacher: dict[str, object],
+) -> None:
+    if student["protocol_digest"] != hashlib.sha256(_canonical_bytes(protocol)).hexdigest():
+        raise ValueError("the student names a different frozen protocol")
+    if protocol["split_digest"] != hashlib.sha256(_canonical_bytes(split)).hexdigest():
+        raise ValueError("the protocol binds a different split")
+    names = ("model_digest", "compressor_digest")
+    if [student[name] for name in names] != [protocol[name] for name in names]:
+        raise ValueError("the student names another model or compressor than the protocol")
+    if student["teacher_digest"] != hashlib.sha256(_canonical_bytes(teacher)).hexdigest():
+        raise ValueError("the student names a different teacher feature batch")
+    header = teacher["header"]
+    origin = header["data_origin"] if type(header) is dict else None
+    if _TEACHER_ORIGINS[str(student["teacher_kind"])] != origin:
+        raise ValueError("teacher kind does not match the teacher's origin; no relabelling")
+    targets, columns = student["targets"], teacher["observable_ids"]
+    if type(targets) is not list or type(columns) is not list:
+        raise ValueError("targets and observables must be lists")
+    if targets != [name for name in columns if name in targets]:
+        raise ValueError("student targets must be teacher observables, in teacher order")
+    train = split["train_groups"]
+    groups = student["training_groups"]
+    if type(train) is not list or type(groups) is not list or not set(groups) <= set(train):
+        raise ValueError("a student trains on train groups only")
+    if student["utility_metric"] != protocol["primary_metric"]:
+        raise ValueError("student utility must use the protocol's primary metric")
+
+
+def _roundtrip_student_artifact(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "task", "split", "protocol", "teacher", "student"}:
+        raise ValueError("student request fields mismatch")
+    _roundtrip_task_split(
+        {"op": "roundtrip_task_split", "task": request["task"], "split": request["split"]}
+    )
+    _roundtrip_experiment_protocol(
+        {"op": "roundtrip_experiment_protocol", "protocol": request["protocol"]}
+    )
+    protocol, split = request["protocol"], request["split"]
+    if type(protocol) is not dict or type(split) is not dict:
+        raise ValueError("protocol and split must be objects")
+    teacher = _validate_feature_fields(request["teacher"])
+    teacher_header = teacher["header"]
+    teacher_origin = str(teacher_header["data_origin"]) if type(teacher_header) is dict else ""
+    if teacher_origin not in ("provider_result", "synthetic_classical"):
+        raise ValueError("a feature batch derives from provider results or a fixture")
+    _validate_artifact_header(teacher, (str(teacher["raw_result_set_digest"]),), teacher_origin)
+    student = _validate_student_fields(request["student"])
+    origin = _TEACHER_ORIGINS[str(student["teacher_kind"])]
+    parents = (str(student["protocol_digest"]), str(student["teacher_digest"]))
+    _validate_artifact_header(student, parents, origin)
+    _cross_check_student(student, protocol, split, teacher)
+    wire = _canonical_bytes(student)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "student": json.loads(wire),
+        "student_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
     "roundtrip_contract": (_roundtrip_contract, (ValueError, TypeError, KeyError)),
     "roundtrip_task_split": (_roundtrip_task_split, (ValueError, TypeError, KeyError)),
@@ -2466,6 +2607,7 @@ _ROUNDTRIPS: dict[str, tuple[Any, tuple[type[Exception], ...]]] = {
         _roundtrip_evaluation_report,
         (ValueError, TypeError, KeyError),
     ),
+    "roundtrip_student_artifact": (_roundtrip_student_artifact, (ValueError, TypeError, KeyError)),
 }
 
 
