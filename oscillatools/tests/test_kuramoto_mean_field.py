@@ -30,7 +30,7 @@ _GLOBAL_SETTINGS = settings(max_examples=40, deadline=None)
 
 
 def _force_via_order_parameter(theta: np.ndarray, coupling: float) -> np.ndarray:
-    """Reference K r sin(ψ − θ_j) via the complex order parameter."""
+    """Return the reference K r sin(ψ − θ_j) via the complex order parameter."""
     z = np.mean(np.exp(1j * theta))
     r = float(abs(z))
     psi = float(np.angle(z))
@@ -55,7 +55,10 @@ def _finite_difference_jacobian(
 
 
 class TestPythonMeanFieldForceFloor:
+    """The Python floor of the mean-field force."""
+
     def test_matches_closed_form(self) -> None:
+        """The force matches the closed form K r sin(psi - theta)."""
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=9)
         coupling = 1.7
@@ -73,6 +76,7 @@ class TestPythonMeanFieldForceFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_equals_order_parameter_identity(self, n: int, coupling: float, seed: int) -> None:
+        """The force equals its order-parameter identity."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -82,6 +86,7 @@ class TestPythonMeanFieldForceFloor:
         )
 
     def test_zero_coupling_and_empty(self) -> None:
+        """Zero coupling gives zero force, and no oscillators give an empty one."""
         rng = np.random.default_rng(3)
         theta = rng.uniform(-math.pi, math.pi, size=6)
         np.testing.assert_array_equal(mf._python_mean_field_force(theta, 0.0), np.zeros(6))
@@ -89,7 +94,10 @@ class TestPythonMeanFieldForceFloor:
 
 
 class TestPythonMeanFieldJacobianFloor:
+    """The Python floor of the mean-field Jacobian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Jacobian matches its closed form."""
         rng = np.random.default_rng(12)
         theta = rng.uniform(-math.pi, math.pi, size=8)
         coupling = 1.3
@@ -108,6 +116,7 @@ class TestPythonMeanFieldJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference_of_force(self, n: int, coupling: float, seed: int) -> None:
+        """The Jacobian agrees with finite differences of the force."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -123,6 +132,7 @@ class TestPythonMeanFieldJacobianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_symmetric_and_rows_sum_to_zero(self, n: int, coupling: float, seed: int) -> None:
+        """The Jacobian is symmetric and each row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         jacobian = mf._python_mean_field_jacobian(theta, coupling)
@@ -132,6 +142,7 @@ class TestPythonMeanFieldJacobianFloor:
     def test_full_synchronisation_spectrum_is_marginally_stable(self) -> None:
         # All phases equal: stable directions have eigenvalue −K, with one zero Goldstone
         # mode (the global phase rotation). For K > 0 synchronisation is marginally stable.
+        """At full synchrony the spectrum is one zero eigenvalue and the rest at -1."""
         theta = np.full(8, 0.4)
         eigenvalues = np.linalg.eigvalsh(mf._python_mean_field_jacobian(theta, 1.0))
         assert eigenvalues.max() < 1e-12
@@ -139,6 +150,7 @@ class TestPythonMeanFieldJacobianFloor:
         np.testing.assert_allclose(np.sort(eigenvalues)[:-1], np.full(7, -1.0), atol=1e-12)
 
     def test_zero_coupling_and_empty(self) -> None:
+        """Zero coupling gives a zero Jacobian, and no oscillators give an empty one."""
         rng = np.random.default_rng(4)
         theta = rng.uniform(-math.pi, math.pi, size=5)
         np.testing.assert_array_equal(mf._python_mean_field_jacobian(theta, 0.0), np.zeros((5, 5)))
@@ -146,6 +158,8 @@ class TestPythonMeanFieldJacobianFloor:
 
 
 class TestRustMeanFieldTier:
+    """The native mean-field tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=40),
@@ -153,6 +167,7 @@ class TestRustMeanFieldTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, coupling: float, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "mean_field_force", None)):
             pytest.skip("scpn_quantum_engine.mean_field_force unavailable")
@@ -170,16 +185,20 @@ class TestRustMeanFieldTier:
         )
 
     def test_rust_force_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native force raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             mf._rust_mean_field_force(np.zeros(3), 1.0)
 
     def test_rust_jacobian_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Jacobian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             mf._rust_mean_field_jacobian(np.zeros(3), 1.0)
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -195,7 +214,10 @@ class TestRustMeanFieldTier:
 
 
 class TestJuliaMeanFieldTier:
+    """The Julia mean-field tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             mean_field_force as julia_force,
@@ -220,6 +242,8 @@ class TestJuliaMeanFieldTier:
 
 
 class TestMeanFieldDispatch:
+    """Dispatch across the mean-field tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=20),
@@ -227,6 +251,7 @@ class TestMeanFieldDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, coupling: float, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         for chain, floor in (
@@ -242,6 +267,7 @@ class TestMeanFieldDispatch:
                 np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected shapes."""
         from oscillatools.accel import (
             last_mean_field_force_tier_used,
             last_mean_field_jacobian_tier_used,
@@ -259,5 +285,6 @@ class TestMeanFieldDispatch:
         assert last_mean_field_jacobian_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert mf._MEAN_FIELD_FORCE_CHAIN[-1][0] == "python"
         assert mf._MEAN_FIELD_JACOBIAN_CHAIN[-1][0] == "python"

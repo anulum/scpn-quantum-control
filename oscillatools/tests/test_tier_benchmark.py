@@ -31,6 +31,7 @@ from oscillatools.accel import tier_benchmark as tb
 
 
 def test_compute_stats_orders_percentiles_and_throughput() -> None:
+    """Statistics order the percentiles and report the extremes."""
     stats = tb.compute_stats([5.0, 1.0, 3.0, 2.0, 4.0])
     assert stats.min_us == 1.0
     assert stats.max_us == 5.0
@@ -41,16 +42,19 @@ def test_compute_stats_orders_percentiles_and_throughput() -> None:
 
 
 def test_compute_stats_rejects_empty_samples() -> None:
+    """An empty sample list is refused."""
     with pytest.raises(ValueError, match="empty sample list"):
         tb.compute_stats([])
 
 
 def test_compute_stats_zero_mean_gives_zero_throughput() -> None:
+    """A zero mean gives zero throughput."""
     stats = tb.compute_stats([0.0, 0.0])
     assert stats.throughput_ops_s == 0.0
 
 
 def test_tier_stats_to_dict_round_trips_fields() -> None:
+    """Statistics convert to a dict with every field."""
     stats = tb.compute_stats([1.0, 2.0, 3.0])
     payload = stats.to_dict()
     assert payload["min_us"] == 1.0
@@ -73,6 +77,7 @@ def test_tier_stats_to_dict_round_trips_fields() -> None:
 
 
 def test_measure_discards_warmup_then_collects_repeats() -> None:
+    """Measuring runs the warm-up, then the repeats."""
     calls: list[int] = []
     tb.measure(lambda: calls.append(1), warmup=3, repeats=5, inner=2)
     # 3 warm-up calls + 5 repeats * 2 inner = 13 invocations.
@@ -84,11 +89,13 @@ def test_measure_discards_warmup_then_collects_repeats() -> None:
     [(-1, 5, 1), (0, 0, 1), (0, 5, 0)],
 )
 def test_measure_rejects_degenerate_parameters(warmup: int, repeats: int, inner: int) -> None:
+    """Degenerate measurement parameters are refused."""
     with pytest.raises(ValueError, match="warmup >= 0"):
         tb.measure(lambda: None, warmup=warmup, repeats=repeats, inner=inner)
 
 
 def test_measure_returns_positive_statistics() -> None:
+    """Measuring returns non-negative statistics over the repeats."""
     stats = tb.measure(lambda: sum(range(64)), warmup=1, repeats=4, inner=4)
     assert stats.mean_us >= 0.0
     assert stats.samples == 4
@@ -100,6 +107,7 @@ def test_measure_returns_positive_statistics() -> None:
 
 
 def test_measured_and_unavailable_rows_carry_expected_shape() -> None:
+    """Measured and unavailable rows convert to their documented shapes."""
     stats = tb.compute_stats([1.0, 2.0])
     measured = tb.measured_row("rust", stats)
     absent = tb.unavailable_row("julia", "juliacall not installed")
@@ -119,6 +127,7 @@ def test_measured_and_unavailable_rows_carry_expected_shape() -> None:
 
 
 def test_primitive_result_picks_lowest_p50_backend() -> None:
+    """The fastest backend is the one with the lowest median."""
     fast = tb.measured_row("rust", tb.compute_stats([1.0, 1.0]))
     slow = tb.measured_row("python", tb.compute_stats([9.0, 9.0]))
     result = tb.PrimitiveResult(
@@ -138,6 +147,7 @@ def test_primitive_result_picks_lowest_p50_backend() -> None:
 
 
 def test_primitive_result_without_measured_rows_has_no_fastest() -> None:
+    """Without measured rows there is no fastest backend."""
     result = tb.PrimitiveResult(
         operation="mean_phase",
         size=8,
@@ -159,6 +169,7 @@ def _write_executable(path: Path, body: str) -> None:
 
 def test_cpu_model_reads_proc_or_falls_back(monkeypatch: pytest.MonkeyPatch) -> None:
     # The live path returns a non-empty string on the test host.
+    """The CPU model comes from /proc/cpuinfo or a fallback."""
     assert isinstance(tb._cpu_model(), str)
 
     class _FakePath:
@@ -178,6 +189,7 @@ def test_cpu_model_reads_proc_or_falls_back(monkeypatch: pytest.MonkeyPatch) -> 
 def test_cpu_model_handles_cpuinfo_without_model_name(
     monkeypatch: pytest.MonkeyPatch, tmp_path: object
 ) -> None:
+    """A cpuinfo without a model name falls back."""
     fake = type(
         "P",
         (),
@@ -192,6 +204,7 @@ def test_cpu_model_handles_cpuinfo_without_model_name(
 
 
 def test_affinity_returns_sorted_or_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """CPU affinity is a sorted list or None."""
     affinity = tb._affinity()
     assert affinity is None or affinity == sorted(affinity)
 
@@ -200,6 +213,7 @@ def test_affinity_returns_sorted_or_none(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_loadavg_success_and_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The load average is read, or None on failure."""
     monkeypatch.setattr(os, "getloadavg", lambda: (1.234, 2.0, 3.0))
     assert tb._loadavg() == [1.23, 2.0, 3.0]
 
@@ -211,6 +225,7 @@ def test_loadavg_success_and_failure(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_git_commit_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The commit is read from git, or reported as unknown."""
     commit = tb._git_commit()
     assert isinstance(commit, str) and commit
 
@@ -230,6 +245,7 @@ def test_git_commit_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> No
 
 
 def test_rustc_version_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The rustc version is read, or reported as absent."""
     rustc = tmp_path / "rustc"
     _write_executable(rustc, 'test "$1" = "--version" && printf "rustc 1.96.0\\n"')
     monkeypatch.setenv("PATH", str(tmp_path))
@@ -243,6 +259,7 @@ def test_rustc_version_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
 
 
 def test_engine_label_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The engine label is its version, installed, or absent."""
     monkeypatch.setattr(tb, "optional_rust_engine", lambda: None)
     assert tb._engine_label() == "absent"
 
@@ -254,6 +271,7 @@ def test_engine_label_paths(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_distribution_version_found_and_absent(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A distribution's version is read, or reported as absent."""
     monkeypatch.setattr(metadata, "version", lambda name: "1.2.3")
     assert tb._distribution_version("numpy") == "1.2.3"
 
@@ -265,6 +283,7 @@ def test_distribution_version_found_and_absent(monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_capture_provenance_populates_every_field() -> None:
+    """Provenance fills every field."""
     provenance = tb.capture_provenance()
     payload = provenance.to_dict()
     assert set(payload) == {
@@ -290,6 +309,7 @@ def test_capture_provenance_populates_every_field() -> None:
 
 
 def test_payload_digest_excludes_existing_digest() -> None:
+    """The payload digest ignores a stored digest."""
     body = {"a": 1, "b": [2, 3]}
     digest = tb.payload_digest(body)
     stamped = dict(body, payload_sha256=digest)
@@ -309,6 +329,7 @@ def _example_results() -> list[tb.PrimitiveResult]:
 
 
 def test_build_primitive_artifact_has_schema_and_digest() -> None:
+    """A primitive artefact carries its schema, environment and digest."""
     provenance = tb.capture_provenance()
     artifact = tb.build_primitive_artifact(
         environment="local",
@@ -325,6 +346,7 @@ def test_build_primitive_artifact_has_schema_and_digest() -> None:
 
 
 def test_build_manifest_indexes_primitives() -> None:
+    """The manifest indexes every primitive."""
     provenance = tb.capture_provenance()
     manifest = tb.build_manifest(
         generated_utc="2026-06-25T00:00:00Z",

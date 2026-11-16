@@ -59,6 +59,7 @@ def _cadence(
 # CycleSample contract
 # --------------------------------------------------------------------------- #
 def test_cycle_sample_valid_properties() -> None:
+    """A cycle sample reports its duration and whether it missed the deadline."""
     s = CycleSample(cycle_id=2, start_ns=1_000, end_ns=4_000, deadline_ns=6_000)
     assert s.duration_ns == 3_000
     assert s.deadline_missed is False
@@ -75,12 +76,14 @@ def test_cycle_sample_valid_properties() -> None:
     ],
 )
 def test_cycle_sample_rejects_non_int(kwargs: dict[str, object]) -> None:
+    """A non-integer time is refused."""
     with pytest.raises(TypeError):
         # Each parametrised row is a non-integer field the guard must refuse.
         CycleSample(**kwargs)  # type: ignore[arg-type]
 
 
 def test_cycle_sample_rejects_inverted_intervals() -> None:
+    """Inverted end or deadline times are refused."""
     with pytest.raises(ValueError, match="end_ns"):
         CycleSample(cycle_id=0, start_ns=10, end_ns=5, deadline_ns=20)
     with pytest.raises(ValueError, match="deadline_ns"):
@@ -99,6 +102,7 @@ def test_cycle_sample_rejects_inverted_intervals() -> None:
     ],
 )
 def test_tracker_rejects_non_positive(kwargs: dict[str, int]) -> None:
+    """A non-positive rate is refused."""
     with pytest.raises(ValueError):
         SubMicrosecondTracker(**kwargs)
 
@@ -108,12 +112,14 @@ def test_tracker_rejects_non_positive(kwargs: dict[str, int]) -> None:
     [{"target_rate_hz": 1.0}, {"target_rate_hz": True}, {"ring_buffer_capacity": 4.0}],
 )
 def test_tracker_rejects_non_int(kwargs: dict[str, float]) -> None:
+    """A non-integer rate is refused."""
     with pytest.raises(TypeError):
         # Each parametrised row is a non-integer argument the guard must refuse.
         SubMicrosecondTracker(**kwargs)  # type: ignore[arg-type]
 
 
 def test_tracker_target_period() -> None:
+    """The target period follows from the rate."""
     assert SubMicrosecondTracker(target_rate_hz=_RATE).target_period_ns == _PERIOD
 
 
@@ -121,6 +127,7 @@ def test_tracker_target_period() -> None:
 # Recording and reporting
 # --------------------------------------------------------------------------- #
 def test_perfect_cadence_has_zero_jitter() -> None:
+    """A perfect cadence has zero jitter and no misses."""
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     for sample in _cadence([0, 0, 0, 0]):
         tracker.record(sample)
@@ -133,6 +140,7 @@ def test_perfect_cadence_has_zero_jitter() -> None:
 
 
 def test_known_jitter_matches_numpy_quantile() -> None:
+    """Jitter percentiles match NumPy's linear quantiles."""
     jitters = [200, 0, 1_500, 50, 900, 0, 3_000]
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     for sample in _cadence(jitters):
@@ -146,6 +154,7 @@ def test_known_jitter_matches_numpy_quantile() -> None:
 
 
 def test_deadline_miss_count() -> None:
+    """Deadline misses are counted."""
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     # durations: cycles 1 and 3 finish after their 5_000 ns deadline offset
     durations = [3_000, 6_000, 3_000, 7_000, 3_000]
@@ -155,17 +164,20 @@ def test_deadline_miss_count() -> None:
 
 
 def test_report_before_record_raises() -> None:
+    """A report before any cycle is refused."""
     with pytest.raises(ValueError, match="no cycles recorded"):
         SubMicrosecondTracker().report()
 
 
 def test_record_rejects_non_sample() -> None:
+    """Recording something other than a sample is refused."""
     with pytest.raises(TypeError):
         # A raw tuple where a CycleSample is required is the input under test.
         SubMicrosecondTracker().record((0, 1, 2, 3))  # type: ignore[arg-type]
 
 
 def test_reset_clears_state() -> None:
+    """A reset clears the tracker."""
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     for sample in _cadence([500, 500]):
         tracker.record(sample)
@@ -178,6 +190,7 @@ def test_reset_clears_state() -> None:
 
 
 def test_ring_buffer_overwrite_keeps_exact_counters() -> None:
+    """Overwriting the jitter window keeps exact totals."""
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE, ring_buffer_capacity=4)
     durations = [3_000] * 5 + [9_000] * 5  # last five all miss the 5_000 ns deadline
     for sample in _cadence([0] * 9, durations_ns=durations):
@@ -192,6 +205,7 @@ def test_ring_buffer_overwrite_keeps_exact_counters() -> None:
 # Batch summary path
 # --------------------------------------------------------------------------- #
 def test_summarise_matches_tracker() -> None:
+    """The summary function matches the tracker."""
     jitters = [120, 800, 0, 4_000, 60, 900]
     # _cadence prepends a zero-jitter first cycle, so durations spans len+1 cycles
     durations = [3_000, 6_000, 3_000, 3_000, 8_000, 3_000, 3_000]
@@ -213,6 +227,7 @@ def test_summarise_matches_tracker() -> None:
 
 
 def test_summarise_single_cycle() -> None:
+    """A single cycle has zero jitter and no misses."""
     report = summarise_cycle_samples([0], [3_000], [5_000], target_rate_hz=_RATE)
     assert report.cycles_observed == 1
     assert report.jitter_max_ns == 0.0
@@ -231,11 +246,13 @@ def test_summarise_single_cycle() -> None:
 def test_summarise_validation(
     start: list[int], end: list[int], deadline: list[int], err: str
 ) -> None:
+    """Invalid summary inputs are refused with their reasons."""
     with pytest.raises(ValueError, match=err):
         summarise_cycle_samples(start, end, deadline)
 
 
 def test_summarise_rejects_2d() -> None:
+    """Two-dimensional input is refused."""
     with pytest.raises(ValueError, match="one-dimensional"):
         summarise_cycle_samples(
             np.zeros((2, 2), dtype=np.int64),
@@ -245,6 +262,7 @@ def test_summarise_rejects_2d() -> None:
 
 
 def test_summarise_rejects_invalid_rate() -> None:
+    """An invalid rate is refused."""
     with pytest.raises((TypeError, ValueError)):
         summarise_cycle_samples([0], [1], [1], target_rate_hz=0)
 
@@ -257,6 +275,7 @@ def test_summarise_rejects_invalid_rate() -> None:
     intervals=st.lists(st.integers(min_value=1, max_value=40_000), min_size=1, max_size=64),
 )
 def test_summary_is_deterministic_and_matches_numpy(intervals: list[int]) -> None:
+    """The summary is deterministic and matches NumPy."""
     start = np.cumsum(np.asarray(intervals, dtype=np.int64))
     end = start + 2_000
     deadline = start + 5_000
@@ -275,6 +294,7 @@ def test_summary_is_deterministic_and_matches_numpy(intervals: list[int]) -> Non
 # --------------------------------------------------------------------------- #
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine sub-µs kernels not built")
 def test_rust_python_parity_percentiles() -> None:
+    """Native percentiles match NumPy bit for bit."""
     import scpn_quantum_engine as engine
 
     rng = np.random.default_rng(11)
@@ -288,6 +308,7 @@ def test_rust_python_parity_percentiles() -> None:
 
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine sub-µs kernels not built")
 def test_rust_python_parity_summary() -> None:
+    """The native summary matches NumPy bit for bit."""
     import scpn_quantum_engine as engine
 
     rng = np.random.default_rng(13)
@@ -310,6 +331,7 @@ def test_rust_python_parity_summary() -> None:
 
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine sub-µs kernels not built")
 def test_dispatch_prefers_rust() -> None:
+    """Dispatch routes to the native tier with the same result."""
     import scpn_quantum_engine as engine
 
     # _sub_us_summary routes through the Rust kernel when present

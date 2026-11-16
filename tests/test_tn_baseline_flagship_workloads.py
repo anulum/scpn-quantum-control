@@ -39,7 +39,10 @@ SMALL = script.FlagshipWorkload(
 
 
 class TestRegistry:
+    """The flagship workload registry."""
+
     def test_flagship_workloads_pin_march_parameters(self) -> None:
+        """The flagship workloads keep their March hardware parameters."""
         upde = script.WORKLOADS["upde16"]
         assert (upde.n_qubits, upde.evolution_time, upde.trotter_reps) == (16, 0.05, 1)
         kuramoto = script.WORKLOADS["kuramoto8"]
@@ -48,15 +51,20 @@ class TestRegistry:
             assert workload.parent_artifact.startswith("results/ibm_hardware_2026-03-28/")
 
     def test_body_width_matches_workload(self) -> None:
+        """A workload's circuit body has its qubit count."""
         assert SMALL.body().num_qubits == 3
 
 
 class TestOrderParameter:
+    """The order parameter from X and Y expectations."""
+
     def test_matches_hand_arithmetic(self) -> None:
+        """The order parameter matches hand arithmetic."""
         x, y = [0.6, 0.2], [0.0, 0.3]
         assert script.order_parameter(x, y) == pytest.approx(math.hypot(0.8, 0.3) / 2)
 
     def test_rejects_mismatched_or_empty_input(self) -> None:
+        """Mismatched or empty inputs are refused."""
         with pytest.raises(ValueError, match="equal-length"):
             script.order_parameter([0.1], [0.1, 0.2])
         with pytest.raises(ValueError, match="equal-length"):
@@ -64,7 +72,10 @@ class TestOrderParameter:
 
 
 class TestExactReference:
+    """The exact statevector reference."""
+
     def test_matches_independent_statevector_arithmetic(self) -> None:
+        """The reference matches an independent statevector calculation."""
         reference = script.exact_reference(SMALL)
         state = Statevector(SMALL.body().decompose())
         for qubit in range(3):
@@ -75,12 +86,16 @@ class TestExactReference:
         )
 
     def test_single_pauli_targets_little_endian_qubit(self) -> None:
+        """A single Pauli lands on the little-endian qubit."""
         assert script.single_pauli(3, 0, "X").paulis.to_labels() == ["IIX"]
         assert script.single_pauli(3, 2, "Y").paulis.to_labels() == ["YII"]
 
 
 class TestMpsAgainstExact:
+    """MPS results against the exact reference."""
+
     def test_saturating_bond_dimension_reproduces_exact(self) -> None:
+        """A saturating bond dimension reproduces the exact values."""
         reference = script.exact_reference(SMALL)
         x_values, y_values, wall_ms = script.mps_expectations(SMALL, 8)
         assert wall_ms > 0.0
@@ -88,6 +103,7 @@ class TestMpsAgainstExact:
         assert np.allclose(y_values, reference["y_expectations"], atol=1e-9)
 
     def test_chi_one_visibly_degrades_kuramoto8(self) -> None:
+        """Bond dimension one visibly degrades the 8-qubit Kuramoto result."""
         workload = script.WORKLOADS["kuramoto8"]
         reference = script.exact_reference(workload)
         rows = script.chi_sweep(workload, reference, [1, 8])
@@ -95,12 +111,16 @@ class TestMpsAgainstExact:
         assert rows[1]["r_abs_error"] < 1e-4
 
     def test_rejects_non_positive_bond_dimension(self) -> None:
+        """A non-positive bond dimension is refused."""
         with pytest.raises(ValueError, match="positive"):
             script.mps_expectations(SMALL, 0)
 
 
 class TestConvergenceAndReport:
+    """Convergence of the bond-dimension sweep and its report."""
+
     def rows(self) -> list[dict[str, Any]]:
+        """Return a synthetic bond-dimension sweep."""
         return [
             {"bond_dimension": 1, "r_abs_error": 0.2},
             {"bond_dimension": 4, "r_abs_error": 5e-4},
@@ -108,12 +128,15 @@ class TestConvergenceAndReport:
         ]
 
     def test_convergence_picks_smallest_within_tolerance(self) -> None:
+        """Convergence picks the smallest bond dimension within tolerance."""
         assert script.convergence_bond_dimension(self.rows(), 1e-3) == 4
 
     def test_convergence_none_when_nothing_qualifies(self) -> None:
+        """Nothing within tolerance gives no convergence."""
         assert script.convergence_bond_dimension(self.rows(), 1e-9) is None
 
     def test_report_shape(self) -> None:
+        """The report names its workload, parent and sweep."""
         reference = script.exact_reference(SMALL)
         rows = script.chi_sweep(SMALL, reference, [2, 8])
         report = script.build_report(SMALL, reference, rows, 1e-3)
@@ -124,9 +147,12 @@ class TestConvergenceAndReport:
 
 
 class TestMain:
+    """The baseline command."""
+
     def test_single_workload_writes_hash_bound_report(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """One workload writes a hash-bound report."""
         code = script.main(
             [
                 "--workload",
@@ -150,9 +176,11 @@ class TestMain:
         assert digest in out
 
     def test_rejects_non_positive_chi(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """A non-positive bond dimension exits with status 2."""
         assert script.main(["--bond-dimensions", "0"]) == 2
         assert "positive" in capsys.readouterr().err
 
     def test_unknown_workload_rejected_by_argparse(self) -> None:
+        """An unknown workload is refused by the parser."""
         with pytest.raises(SystemExit):
             script.main(["--workload", "unknown"])

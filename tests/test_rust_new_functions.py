@@ -5,8 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Rust New Functions
-"""Tests for new Rust engine functions: sparse Hamiltonian, magnetisation labels,
-order parameter from statevector."""
+"""Tests for the Rust sparse Hamiltonian, magnetisation labels and statevector order parameter."""
 
 from __future__ import annotations
 
@@ -27,13 +26,17 @@ def _system(n: int = 4) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 # build_sparse_xy_hamiltonian
 # =====================================================================
 class TestRustSparseHamiltonian:
+    """The native sparse XY Hamiltonian."""
+
     def test_returns_triplets(self) -> None:
+        """The builder returns non-empty COO triplets of equal length."""
         K, omega = _system(4)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 4)
         assert len(rows) == len(cols) == len(vals)
         assert len(vals) > 0
 
     def test_matches_dense_rust(self) -> None:
+        """The sparse matrix matches the native dense one."""
         K, omega = _system(4)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 4)
         from scipy import sparse
@@ -47,6 +50,7 @@ class TestRustSparseHamiltonian:
         np.testing.assert_allclose(H_sparse, H_dense, atol=1e-12)
 
     def test_matches_python_sparse(self) -> None:
+        """The native sparse matrix matches the Python one."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K, omega = _system(6)
@@ -61,6 +65,7 @@ class TestRustSparseHamiltonian:
         np.testing.assert_allclose(H_rust, H_python, atol=1e-12)
 
     def test_hermitian(self) -> None:
+        """The matrix is Hermitian."""
         K, omega = _system(4)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 4)
         from scipy import sparse
@@ -72,6 +77,7 @@ class TestRustSparseHamiltonian:
         np.testing.assert_allclose(H, H.T, atol=1e-12)
 
     def test_n8_nnz(self) -> None:
+        """At eight qubits the matrix is sparse but more than diagonal."""
         K, omega = _system(8)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 8)
         dim = 256
@@ -79,6 +85,7 @@ class TestRustSparseHamiltonian:
         assert len(vals) > dim  # more than diagonal
 
     def test_eigenvalues_match(self) -> None:
+        """Sparse and dense eigenvalues agree."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K, omega = _system(6)
@@ -100,7 +107,10 @@ class TestRustSparseHamiltonian:
 # magnetisation_labels
 # =====================================================================
 class TestRustMagnetisationLabels:
+    """Native magnetisation labels."""
+
     def test_n2_values(self) -> None:
+        """Two qubits give 2 for the all-up state and 0 for a single flip."""
         labels = eng.magnetisation_labels(2)
         # |00⟩=M+2, |01⟩=M0, |10⟩=M0, |11⟩=M-2
         assert labels[0] == 2  # |00⟩
@@ -109,17 +119,20 @@ class TestRustMagnetisationLabels:
         assert labels[3] == -2  # |11⟩
 
     def test_n4_range(self) -> None:
+        """Four qubits give 16 labels from -4 to 4."""
         labels = eng.magnetisation_labels(4)
         assert len(labels) == 16
         assert min(labels) == -4
         assert max(labels) == 4
 
     def test_all_up_all_down(self) -> None:
+        """All up is +n and all down is -n."""
         labels = eng.magnetisation_labels(8)
         assert labels[0] == 8  # |00000000⟩ = all up
         assert labels[255] == -8  # |11111111⟩ = all down
 
     def test_matches_python(self) -> None:
+        """The native labels match the Python ones."""
         from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
 
         n = 6
@@ -129,11 +142,13 @@ class TestRustMagnetisationLabels:
 
     def test_sum_is_zero_for_even_n(self) -> None:
         # Equal number of positive and negative M states
+        """For even n the labels sum to zero."""
         labels = eng.magnetisation_labels(4)
         # Sum of all M labels weighted by degeneracy = 0
         assert sum(labels) == 0
 
     def test_popcount_consistency(self) -> None:
+        """Each label follows the bit count of its index."""
         labels = eng.magnetisation_labels(8)
         for k in range(256):
             expected = 8 - 2 * bin(k).count("1")
@@ -144,7 +159,10 @@ class TestRustMagnetisationLabels:
 # order_param_from_statevector
 # =====================================================================
 class TestRustOrderParam:
+    """The native order parameter from a statevector."""
+
     def test_all_up_state(self) -> None:
+        """The all-up state has an order parameter near zero."""
         n = 4
         psi = np.zeros(16, dtype=np.complex128)
         psi[0] = 1.0  # |0000⟩
@@ -153,6 +171,7 @@ class TestRustOrderParam:
         assert abs(R) < 0.01
 
     def test_normalised_state(self) -> None:
+        """A normalised state gives an order parameter in [0, 1]."""
         n = 4
         rng = np.random.default_rng(42)
         psi = rng.standard_normal(16) + 1j * rng.standard_normal(16)
@@ -161,6 +180,7 @@ class TestRustOrderParam:
         assert 0 <= R <= 1.01
 
     def test_matches_python(self) -> None:
+        """The native order parameter matches the Python one."""
         n = 4
         rng = np.random.default_rng(123)
         psi = rng.standard_normal(16) + 1j * rng.standard_normal(16)
@@ -185,6 +205,7 @@ class TestRustOrderParam:
         np.testing.assert_allclose(R_rust, R_python, atol=1e-10)
 
     def test_n8_performance(self) -> None:
+        """At eight qubits the call takes under a millisecond."""
         import time
 
         n = 8
@@ -197,6 +218,7 @@ class TestRustOrderParam:
         assert elapsed < 0.001  # should be <1ms at n=8
 
     def test_deterministic(self) -> None:
+        """Repeated calls give the same value."""
         n = 4
         psi = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], dtype=np.complex128)
         psi /= np.linalg.norm(psi)

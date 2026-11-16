@@ -15,7 +15,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestConfinement:
+    """Confinement analysis: edge cases and scans."""
+
     def test_no_loops_returns_zero(self) -> None:
+        """Without loops the average is zero."""
         from scpn_quantum_control.gauge.confinement import _average_wilson_by_length
 
         K = build_knm_paper27(L=2)
@@ -24,17 +27,20 @@ class TestConfinement:
         assert result == 0.0
 
     def test_string_tension_none_for_zero_wilson(self) -> None:
+        """A zero Wilson loop gives no tension."""
         from scpn_quantum_control.gauge.confinement import extract_string_tension
 
         assert extract_string_tension(0.0, 0.5) is None
         assert extract_string_tension(0.5, 0.0) is None
 
     def test_string_tension_equal_areas_none(self) -> None:
+        """Equal areas give no tension."""
         from scpn_quantum_control.gauge.confinement import extract_string_tension
 
         assert extract_string_tension(0.5, 0.5, area_small=1.0, area_large=1.0) is None
 
     def test_string_tension_valid_case(self) -> None:
+        """A valid case gives a finite tension."""
         from scpn_quantum_control.gauge.confinement import extract_string_tension
 
         sigma = extract_string_tension(0.8, 0.5, area_small=1.0, area_large=4.0)
@@ -42,6 +48,7 @@ class TestConfinement:
             assert np.isfinite(sigma)
 
     def test_confinement_scan_default_k_values(self) -> None:
+        """The default scan has 15 couplings."""
         from scpn_quantum_control.gauge.confinement import confinement_vs_coupling
 
         omega = OMEGA_N_16[:2]
@@ -49,6 +56,7 @@ class TestConfinement:
         assert len(result["k_base"]) == 15
 
     def test_confinement_scan_custom_k_values(self) -> None:
+        """A custom scan uses its own couplings."""
         from scpn_quantum_control.gauge.confinement import confinement_vs_coupling
 
         omega = OMEGA_N_16[:2]
@@ -56,6 +64,7 @@ class TestConfinement:
         assert len(result["k_base"]) == 3
 
     def test_confinement_analysis_returns_result(self) -> None:
+        """The analysis reports a boolean confinement flag and a ratio."""
         from scpn_quantum_control.gauge.confinement import confinement_analysis
 
         K = build_knm_paper27(L=3)
@@ -67,7 +76,10 @@ class TestConfinement:
 
 
 class TestUniversality:
+    """Universality analysis."""
+
     def test_zero_tbkt_ratio(self) -> None:
+        """A zero BKT temperature still gives a float ratio and deviation."""
         from scpn_quantum_control.gauge.universality import check_nelson_kosterlitz
 
         K = build_knm_paper27(L=2) * 0.0001
@@ -77,6 +89,7 @@ class TestUniversality:
         assert isinstance(deviation, float)
 
     def test_nelson_kosterlitz_finite(self) -> None:
+        """The Nelson-Kosterlitz ratio and deviation are finite."""
         from scpn_quantum_control.gauge.universality import check_nelson_kosterlitz
 
         K = build_knm_paper27(L=3)
@@ -86,6 +99,7 @@ class TestUniversality:
         assert np.isfinite(deviation)
 
     def test_universality_analysis_returns_result(self) -> None:
+        """The analysis reports its exponent and BKT consistency."""
         from scpn_quantum_control.gauge.universality import universality_analysis
 
         K = build_knm_paper27(L=3)
@@ -98,7 +112,10 @@ class TestUniversality:
 
 
 class TestVortexDetector:
+    """Vortex density scans."""
+
     def test_density_scan_default(self) -> None:
+        """The default scan has 20 couplings."""
         from scpn_quantum_control.gauge.vortex_detector import vortex_density_vs_coupling
 
         omega = OMEGA_N_16[:2]
@@ -106,6 +123,7 @@ class TestVortexDetector:
         assert len(result["k_base"]) == 20
 
     def test_density_scan_custom(self) -> None:
+        """A custom scan uses its own couplings."""
         from scpn_quantum_control.gauge.vortex_detector import vortex_density_vs_coupling
 
         omega = OMEGA_N_16[:2]
@@ -113,6 +131,7 @@ class TestVortexDetector:
         assert len(result["k_base"]) == 2
 
     def test_vortex_density_result(self) -> None:
+        """The vortex density is finite and non-negative."""
         from scpn_quantum_control.gauge.vortex_detector import measure_vortex_density
 
         K = build_knm_paper27(L=3)
@@ -124,7 +143,10 @@ class TestVortexDetector:
 
 
 class TestWilsonLoop:
+    """Wilson loop computation."""
+
     def test_compute_returns_list(self) -> None:
+        """The computation returns a list."""
         from scpn_quantum_control.gauge.wilson_loop import compute_wilson_loops
 
         K = build_knm_paper27(L=3)
@@ -133,6 +155,7 @@ class TestWilsonLoop:
         assert isinstance(results, list)
 
     def test_wilson_loops_all_finite(self) -> None:
+        """Every expectation and magnitude is finite."""
         from scpn_quantum_control.gauge.wilson_loop import compute_wilson_loops
 
         K = build_knm_paper27(L=3)
@@ -143,6 +166,7 @@ class TestWilsonLoop:
             assert np.isfinite(r.magnitude)
 
     def test_wilson_loop_result_fields(self) -> None:
+        """Each result has its loop, length and expectation."""
         from scpn_quantum_control.gauge.wilson_loop import compute_wilson_loops
 
         K = build_knm_paper27(L=3)
@@ -158,7 +182,10 @@ class TestWilsonLoop:
 
 
 class TestQSVTLargeN:
+    """QSVT inputs for a large system."""
+
     def test_hamiltonian_spectral_norm(self) -> None:
+        """The Hamiltonian's spectral norm is positive."""
         from scpn_quantum_control.phase.qsvt_evolution import hamiltonian_spectral_norm
 
         K = build_knm_paper27(L=2)

@@ -35,6 +35,8 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestConcurrenceMapExact:
+    """The exact concurrence map."""
+
     def test_product_state_zero_concurrence(self) -> None:
         """Product state |00⟩ has zero concurrence."""
         psi = np.array([1.0, 0.0, 0.0, 0.0])
@@ -48,6 +50,7 @@ class TestConcurrenceMapExact:
         assert cmap[0, 1] > 0.9
 
     def test_symmetric(self) -> None:
+        """The map is symmetric."""
         psi = np.array([1.0, 0.0, 0.0, 1.0]) / np.sqrt(2)
         cmap = concurrence_map_exact(psi, 2)
         assert abs(cmap[0, 1] - cmap[1, 0]) < 1e-10
@@ -69,21 +72,29 @@ class TestConcurrenceMapExact:
 
 
 class TestFiedlerEigenvalue:
+    """The Fiedler eigenvalue of a graph."""
+
     def test_disconnected_graph(self) -> None:
+        """A disconnected graph has a zero Fiedler value."""
         adj = np.zeros((3, 3))
         assert fiedler_eigenvalue(adj) < 1e-10
 
     def test_connected_graph(self) -> None:
+        """A connected graph has a positive Fiedler value."""
         adj = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=float)
         assert fiedler_eigenvalue(adj) > 0
 
     def test_complete_graph(self) -> None:
+        """A complete graph has a Fiedler value above 2.5."""
         adj = np.ones((3, 3)) - np.eye(3)
         assert fiedler_eigenvalue(adj) > 2.5
 
 
 class TestPercolationScan:
+    """Scanning entanglement percolation across couplings."""
+
     def test_returns_result(self) -> None:
+        """The scan returns one entry per coupling."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -127,6 +138,7 @@ class TestPercolationScan:
             assert 0.0 <= r <= 1.0 + 1e-10
 
     def test_4qubit_scan(self) -> None:
+        """A four-qubit scan counts entangled pairs per coupling."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -136,6 +148,7 @@ class TestPercolationScan:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense computation above the budget is refused before the Hamiltonian is built."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -158,6 +171,7 @@ class TestPercolationScan:
             )
 
     def test_scan_propagates_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The dense budget reaches the bridge for each coupling."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -188,7 +202,10 @@ class TestPercolationScan:
 
 
 class TestConcurrence2Qubit:
+    """Two-qubit concurrence."""
+
     def test_product_state(self) -> None:
+        """A product state has zero concurrence."""
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _concurrence_2qubit,
         )
@@ -197,6 +214,7 @@ class TestConcurrence2Qubit:
         assert _concurrence_2qubit(rho) < 1e-6
 
     def test_bell_state(self) -> None:
+        """A Bell state has concurrence one."""
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _concurrence_2qubit,
         )
@@ -207,6 +225,7 @@ class TestConcurrence2Qubit:
         np.testing.assert_allclose(c, 1.0, atol=0.01)
 
     def test_maximally_mixed(self) -> None:
+        """The maximally mixed state has zero concurrence."""
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _concurrence_2qubit,
         )
@@ -216,7 +235,10 @@ class TestConcurrence2Qubit:
 
 
 class TestOrderParameterFromState:
+    """The order parameter of a state."""
+
     def test_all_up_r_one(self) -> None:
+        """The all-up state gives an order parameter in [0, 1]."""
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _order_parameter_from_state,
         )
@@ -227,6 +249,7 @@ class TestOrderParameterFromState:
         assert 0 <= r <= 1.0
 
     def test_superposition(self) -> None:
+        """A superposition gives an order parameter in [0, 1]."""
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _order_parameter_from_state,
         )
@@ -237,6 +260,8 @@ class TestOrderParameterFromState:
 
 
 class TestPercolationScanDefaults:
+    """Default arguments of the scan."""
+
     def test_default_k_range(self) -> None:
         """percolation_scan with k_range=None uses default linspace(0.1, 5.0, 20)."""
         n = 2
@@ -249,10 +274,14 @@ class TestPercolationScanDefaults:
 
 
 class TestFiedlerEdgeCases:
+    """Edge cases of the Fiedler eigenvalue."""
+
     def test_single_node(self) -> None:
+        """A single node has a zero Fiedler value."""
         adj = np.zeros((1, 1))
         assert fiedler_eigenvalue(adj) == 0.0
 
     def test_two_connected(self) -> None:
+        """Two connected nodes have a positive Fiedler value."""
         adj = np.array([[0, 1], [1, 0]], dtype=float)
         assert fiedler_eigenvalue(adj) > 0

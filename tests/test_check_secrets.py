@@ -41,6 +41,7 @@ def _vault_with_candidate(tmp_path: Path, candidate: str = "CredentialCandidate1
 def test_extract_vault_tokens_keeps_credential_shaped_values_and_ignores_docs(
     tmp_path: Path,
 ) -> None:
+    """Vault extraction keeps credential-shaped values and ignores documentation text."""
     vault = tmp_path / "CREDENTIALS.md"
     candidate = "CredentialCandidate123!"
     vault.write_text(
@@ -62,10 +63,12 @@ def test_extract_vault_tokens_keeps_credential_shaped_values_and_ignores_docs(
 
 
 def test_extract_vault_tokens_returns_empty_for_missing_vault(tmp_path: Path) -> None:
+    """A missing vault gives no tokens."""
     assert _check_secrets.extract_vault_tokens(tmp_path / "missing.md") == set()
 
 
 def test_ignorable_token_boundaries() -> None:
+    """Short, URL-like and low-entropy tokens are ignorable."""
     assert _check_secrets._shannon_entropy("") == 0.0
     assert _check_secrets._is_ignorable("short")
     assert _check_secrets._is_ignorable("https://example.test/abc123XYZ")
@@ -76,6 +79,7 @@ def test_ignorable_token_boundaries() -> None:
 
 
 def test_scan_for_tokens_checks_only_added_diff_lines() -> None:
+    """Token scanning checks only added diff lines."""
     candidate_value = "CredentialCandidate123!"
     diff = "\n".join(
         [
@@ -93,6 +97,7 @@ def test_scan_for_tokens_checks_only_added_diff_lines() -> None:
 
 
 def test_scan_for_tokens_returns_empty_for_missing_inputs() -> None:
+    """Missing input gives no matches."""
     assert _check_secrets.scan_for_tokens("", {"CredentialCandidate123!"}) == []
     assert _check_secrets.scan_for_tokens("+x", set()) == []
 
@@ -147,6 +152,7 @@ def test_get_staged_diff_falls_back_without_admitted_git(
 
 
 def test_get_staged_diff_returns_git_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The staged diff is git's zero-context cached diff."""
     monkeypatch.setattr(_check_secrets, "_resolve_git_executable", lambda: "/usr/bin/git")
 
     def fake_run_git(
@@ -164,6 +170,7 @@ def test_get_staged_diff_returns_git_stdout(monkeypatch: pytest.MonkeyPatch) -> 
 def test_get_staged_diff_returns_empty_when_git_disappears(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Without git the staged diff is empty."""
     monkeypatch.setattr(_check_secrets, "_resolve_git_executable", lambda: "/usr/bin/git")
 
     def fake_run_git(_git_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -186,6 +193,7 @@ def test_get_working_tree_content_falls_back_without_admitted_git(
 def test_get_working_tree_content_reads_tracked_text_files(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """The working-tree content is the tracked text files."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(_check_secrets, "_resolve_git_executable", lambda: "/usr/bin/git")
     (tmp_path / "tracked.txt").write_text("plain text\n", encoding="utf-8")
@@ -223,6 +231,7 @@ def test_get_working_tree_content_reads_tracked_text_files(
 def test_get_working_tree_content_returns_empty_when_git_disappears(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Without git the working-tree content is empty."""
     monkeypatch.setattr(_check_secrets, "_resolve_git_executable", lambda: "/usr/bin/git")
 
     def fake_run_git(_git_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -234,6 +243,7 @@ def test_get_working_tree_content_returns_empty_when_git_disappears(
 
 
 def test_scan_keyword_passwords_flags_literals_and_skips_placeholders() -> None:
+    """Keyword passwords with literals are flagged and placeholders skipped."""
     key_password = "pass" + "word"
     key_api = "api" + "_key"
     key_token = "tok" + "en"
@@ -253,6 +263,7 @@ def test_scan_keyword_passwords_flags_literals_and_skips_placeholders() -> None:
 
 
 def test_scan_keyword_passwords_handles_empty_and_diff_metadata() -> None:
+    """Empty input and diff metadata are handled."""
     key_secret = "se" + "cret"
     content = "\n".join(
         [
@@ -268,6 +279,7 @@ def test_scan_keyword_passwords_handles_empty_and_diff_metadata() -> None:
 
 
 def test_scan_keyword_passwords_skips_variable_references_and_identifiers() -> None:
+    """Variable references and identifiers are skipped."""
     content = "\n".join(
         [
             "+token = args.token",
@@ -281,6 +293,7 @@ def test_scan_keyword_passwords_skips_variable_references_and_identifiers() -> N
 
 
 def test_scan_keyword_passwords_skips_calls_and_exact_markdown_states() -> None:
+    """Calls and exact Markdown states are skipped."""
     key_secret = "se" + "cret"
     content = "\n".join(
         [
@@ -294,6 +307,7 @@ def test_scan_keyword_passwords_skips_calls_and_exact_markdown_states() -> None:
 
 
 def test_scan_keyword_passwords_keeps_non_identifier_dotted_literals() -> None:
+    """Dotted literals that are not identifiers are kept."""
     key_secret = "se" + "cret"
 
     assert _check_secrets.scan_keyword_passwords(f"+{key_secret} = 123.abc") == [
@@ -302,6 +316,7 @@ def test_scan_keyword_passwords_keeps_non_identifier_dotted_literals() -> None:
 
 
 def test_redact_preserves_prefix_and_length_only() -> None:
+    """Redaction keeps only a prefix and the length."""
     assert _check_secrets.redact("abcdef123456") == "abc***<12ch>"
     assert _check_secrets.redact("abc") == "<3ch>"
 
@@ -309,6 +324,7 @@ def test_redact_preserves_prefix_and_length_only() -> None:
 def test_main_skips_missing_vault(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Without a vault the command passes and says why."""
     monkeypatch.setattr(sys, "argv", ["check_secrets.py", "--vault", str(tmp_path / "missing.md")])
 
     assert _check_secrets.main() == 0
@@ -318,6 +334,7 @@ def test_main_skips_missing_vault(
 def test_main_show_count(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The command reports the candidate count."""
     vault = _vault_with_candidate(tmp_path)
     monkeypatch.setattr(sys, "argv", ["check_secrets.py", "--vault", str(vault), "--show-count"])
 
@@ -328,6 +345,7 @@ def test_main_show_count(
 def test_main_returns_zero_when_selected_scope_is_empty(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """An empty scope passes."""
     vault = _vault_with_candidate(tmp_path)
     monkeypatch.setattr(sys, "argv", ["check_secrets.py", "--vault", str(vault), "--all"])
     monkeypatch.setattr(_check_secrets, "get_working_tree_content", lambda: "")
@@ -336,6 +354,7 @@ def test_main_returns_zero_when_selected_scope_is_empty(
 
 
 def test_main_returns_zero_when_no_hits(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """No matches pass."""
     vault = _vault_with_candidate(tmp_path)
     monkeypatch.setattr(sys, "argv", ["check_secrets.py", "--vault", str(vault)])
     monkeypatch.setattr(_check_secrets, "get_staged_diff", lambda: "+safe = 'placeholder'\n")
@@ -346,6 +365,7 @@ def test_main_returns_zero_when_no_hits(monkeypatch: pytest.MonkeyPatch, tmp_pat
 def test_main_reports_vault_and_keyword_hits(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Vault and keyword matches fail with their counts."""
     candidate = "CredentialCandidate123!"
     vault = _vault_with_candidate(tmp_path, candidate)
     key_secret = "se" + "cret"
@@ -373,6 +393,7 @@ def test_main_reports_vault_and_keyword_hits(
 def test_main_reports_vault_hits_without_keyword_hits(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Vault matches alone fail with their count."""
     candidate = "CredentialCandidate123!"
     vault = _vault_with_candidate(tmp_path, candidate)
     monkeypatch.setattr(sys, "argv", ["check_secrets.py", "--vault", str(vault)])
@@ -387,6 +408,7 @@ def test_main_reports_vault_hits_without_keyword_hits(
 def test_main_reports_keyword_hits_without_vault_hits(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Keyword matches alone fail with their count."""
     vault = _vault_with_candidate(tmp_path)
     key_secret = "se" + "cret"
     monkeypatch.setattr(sys, "argv", ["check_secrets.py", "--vault", str(vault)])
