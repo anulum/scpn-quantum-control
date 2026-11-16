@@ -54,6 +54,7 @@ class _FakeOQCClient:
 
 
 def test_oqc_adapter_executes_injected_client_with_approval() -> None:
+    """The OQC adapter submits through an injected client only with approval."""
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     client = _FakeOQCClient()
     hal.register_backend(OQCHALAdapter(hal.profile("oqc_cloud"), client=client, target="Lucy"))
@@ -89,6 +90,7 @@ def test_oqc_adapter_executes_injected_client_with_approval() -> None:
 
 
 def test_oqc_adapter_rejects_wrong_profile_ir_and_program_shape() -> None:
+    """The wrong profile, workload format or program shape is refused."""
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     with pytest.raises(ValueError, match="oqc_cloud"):
         OQCHALAdapter(hal.profile("ibm_quantum"), client=_FakeOQCClient())
@@ -116,6 +118,7 @@ def test_oqc_adapter_rejects_wrong_profile_ir_and_program_shape() -> None:
 
 
 def test_oqc_adapter_supports_client_factory_and_validates_counts() -> None:
+    """A client factory is supported and invalid counts are refused."""
     captured: dict[str, object] = {}
 
     def client_factory() -> _FakeOQCClient:
@@ -154,6 +157,7 @@ def test_oqc_adapter_supports_client_factory_and_validates_counts() -> None:
 
 
 def test_oqc_default_builder_is_sdk_gated(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The default client builder needs the SDK and calibration."""
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     adapter = OQCHALAdapter(hal.profile("oqc_cloud"))
     workload = oqc_openqasm3_workload(_OPENQASM3, workload_id="needs_sdk", n_qubits=2, shots=1)
@@ -173,7 +177,6 @@ def test_oqc_default_builder_is_sdk_gated(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_oqc_status_normalisation_maps_completion_aliases() -> None:
     """OQC status normaliser should map provider completion aliases canonically."""
-
     from scpn_quantum_control.hardware import hal_oqc as oqc_mod
 
     assert oqc_mod._normalise_status("SUCCEEDED") == "completed"
@@ -189,7 +192,6 @@ def test_oqc_status_normalisation_maps_completion_aliases() -> None:
 
 def test_oqc_provider_job_id_extraction_requires_identifier() -> None:
     """OQC provider job id extraction should fail closed when id is unavailable."""
-
     from scpn_quantum_control.hardware import hal_oqc as oqc_mod
 
     assert (
@@ -201,7 +203,6 @@ def test_oqc_provider_job_id_extraction_requires_identifier() -> None:
 
 def test_oqc_provider_job_id_rejects_control_characters() -> None:
     """OQC provider identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_oqc as oqc_mod
 
     class BadJob:
@@ -213,7 +214,6 @@ def test_oqc_provider_job_id_rejects_control_characters() -> None:
 
 def test_oqc_provider_job_id_trims_padding() -> None:
     """OQC provider identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_oqc as oqc_mod
 
     class PaddedJob:
@@ -224,7 +224,6 @@ def test_oqc_provider_job_id_trims_padding() -> None:
 
 def test_oqc_target_rejects_control_characters() -> None:
     """OQC targets must reject control-character payloads."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("oqc_cloud")
     with pytest.raises(ValueError, match="OQC target"):
         OQCHALAdapter(profile, client=_FakeOQCClient(), target="Luc\ny")
@@ -232,7 +231,6 @@ def test_oqc_target_rejects_control_characters() -> None:
 
 def test_oqc_target_trims_padding() -> None:
     """OQC targets should be canonicalised by trimming padding."""
-
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("oqc_cloud")
     adapter = OQCHALAdapter(profile, client=_FakeOQCClient(), target="  Lucy  ")
     assert adapter._target == "Lucy"
@@ -240,7 +238,6 @@ def test_oqc_target_trims_padding() -> None:
 
 def test_oqc_adapter_rejects_shot_mismatch() -> None:
     """OQC adapter must fail closed when decoded counts diverge from requested shots."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     client = _FakeOQCClient()
     hal.register_backend(OQCHALAdapter(hal.profile("oqc_cloud"), client=client, target="Lucy"))

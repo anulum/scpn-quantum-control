@@ -128,6 +128,7 @@ _GAUSSIAN_COUPLINGS = (0.5, 0.8, 1.3, 2.0)
 
 @pytest.fixture(scope="module")
 def lorentzian_sweep() -> dict[float, float]:
+    """Return the order parameter across couplings for Lorentzian frequencies."""
     rng = np.random.default_rng(_SEED)
     theta0 = rng.uniform(-math.pi, math.pi, _N)
     omega = _lorentzian_quantile_frequencies(_N, _LORENTZIAN_GAMMA)
@@ -136,6 +137,7 @@ def lorentzian_sweep() -> dict[float, float]:
 
 @pytest.fixture(scope="module")
 def gaussian_sweep() -> dict[float, float]:
+    """Return the order parameter across couplings for Gaussian frequencies."""
     rng = np.random.default_rng(_SEED + 1)
     theta0 = rng.uniform(-math.pi, math.pi, _N)
     omega = _gaussian_quantile_frequencies(_N, _GAUSSIAN_STD)
@@ -143,8 +145,11 @@ def gaussian_sweep() -> dict[float, float]:
 
 
 class TestLorentzianMicroscopicOnset:
+    """The synchronisation onset of a finite network with Lorentzian frequencies."""
+
     def test_critical_coupling_is_the_general_and_closed_form_value(self) -> None:
         # The onset the microscopic sweep is anchored against is the production K_c, taken two ways.
+        """The general critical coupling equals the closed form, twice the Lorentzian width."""
         general = critical_coupling(lorentzian_density(_LORENTZIAN_GAMMA))
         closed = lorentzian_critical_coupling(_LORENTZIAN_GAMMA)
         assert general == pytest.approx(closed)
@@ -155,6 +160,7 @@ class TestLorentzianMicroscopicOnset:
     ) -> None:
         # Below K_c = 1.0 the ensemble does not synchronise: the order parameter stays near the
         # ~1/√N finite-size floor, an order of magnitude under the synchronised branch.
+        """Below the critical coupling the network stays incoherent."""
         assert lorentzian_sweep[0.5] < 2.0 * _FINITE_SIZE_FLOOR
         assert lorentzian_sweep[0.8] < 2.0 * _FINITE_SIZE_FLOOR
 
@@ -163,6 +169,7 @@ class TestLorentzianMicroscopicOnset:
     ) -> None:
         # Above K_c the tail-averaged order parameter tracks the exact Lorentzian branch
         # r = √(1 − K_c/K) produced by the analysis layer, to a few parts in a hundred at N = 128.
+        """Above the critical coupling the order parameter follows the closed form."""
         for coupling in (1.3, 1.6, 2.0, 3.0):
             predicted = lorentzian_order_parameter(coupling, _LORENTZIAN_GAMMA)
             assert lorentzian_sweep[coupling] == pytest.approx(predicted, abs=0.05)
@@ -170,6 +177,7 @@ class TestLorentzianMicroscopicOnset:
     def test_onset_brackets_the_critical_coupling_and_rises_monotonically(
         self, lorentzian_sweep: dict[float, float]
     ) -> None:
+        """The onset brackets the critical coupling and the order parameter rises through it."""
         k_c = lorentzian_critical_coupling(_LORENTZIAN_GAMMA)
         # The empirical transition brackets the analytical K_c = 1.0: incoherent at 0.8·K_c, an
         # unmistakable synchronised cluster (r > ½ the asymptotic branch) by 1.3·K_c.
@@ -181,7 +189,10 @@ class TestLorentzianMicroscopicOnset:
 
 
 class TestGaussianMicroscopicOnset:
+    """The synchronisation onset of a finite network with Gaussian frequencies."""
+
     def test_critical_coupling_is_the_general_and_closed_form_value(self) -> None:
+        """The general critical coupling equals the Gaussian closed form."""
         general = critical_coupling(gaussian_density(_GAUSSIAN_STD))
         closed = gaussian_critical_coupling(_GAUSSIAN_STD)
         assert general == pytest.approx(closed)
@@ -190,6 +201,7 @@ class TestGaussianMicroscopicOnset:
     def test_onset_brackets_the_critical_coupling(
         self, gaussian_sweep: dict[float, float]
     ) -> None:
+        """The onset lies near the critical coupling with incoherence below it."""
         k_c = gaussian_critical_coupling(_GAUSSIAN_STD)  # ≈ 0.958
         # A second, non-Lorentzian density: the analytical onset is bracketed by the sweep's 0.8 and
         # 1.3 points — incoherent below K_c, strongly synchronised above it — so the anchor holds for
@@ -203,5 +215,6 @@ class TestGaussianMicroscopicOnset:
     def test_order_parameter_rises_monotonically_through_the_onset(
         self, gaussian_sweep: dict[float, float]
     ) -> None:
+        """The order parameter rises monotonically through the onset."""
         ordered = [gaussian_sweep[k] for k in _GAUSSIAN_COUPLINGS]
         assert all(earlier < later for earlier, later in zip(ordered, ordered[1:], strict=False))

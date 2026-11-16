@@ -16,32 +16,40 @@ from scpn_quantum_control.applications.cross_domain import (
 
 
 class TestCrossDomainValidation:
+    """Cross-domain validation against five reference systems."""
+
     def test_returns_result(self) -> None:
+        """Validation returns a result record."""
         result = run_cross_domain_validation()
         assert isinstance(result, CrossDomainResult)
 
     def test_five_systems(self) -> None:
+        """Validation covers five systems."""
         result = run_cross_domain_validation()
         assert len(result.system_names) == 5
         assert len(result.topology_correlations) == 5
         assert len(result.frequency_correlations) == 5
 
     def test_correlations_bounded(self) -> None:
+        """Topology correlations lie in [-1, 1] and equal their proxies."""
         result = run_cross_domain_validation()
         for r in result.topology_correlations:
             assert -1 <= r <= 1
         assert result.topology_similarity_proxies == result.topology_correlations
 
     def test_best_system_in_list(self) -> None:
+        """The best system is one of the validated systems."""
         result = run_cross_domain_validation()
         assert result.best_system in result.system_names
 
     def test_mean_correlation_positive(self) -> None:
+        """The mean correlation is non-negative and equals its proxy."""
         result = run_cross_domain_validation()
         assert result.mean_correlation >= 0
         assert result.mean_similarity_proxy == result.mean_correlation
 
     def test_n_above_threshold_bounded(self) -> None:
+        """The count above threshold lies between zero and five."""
         result = run_cross_domain_validation()
         assert 0 <= result.n_above_threshold <= 5
 
@@ -63,6 +71,7 @@ class TestCrossDomainValidation:
 
 
 def test_cross_domain_system_names_nonempty() -> None:
+    """Every reference system has a name."""
     result = run_cross_domain_validation()
     assert len(result.system_names) > 0
     for name in result.system_names:
@@ -70,18 +79,21 @@ def test_cross_domain_system_names_nonempty() -> None:
 
 
 def test_cross_domain_frequency_correlations_bounded() -> None:
+    """Frequency correlations lie in [-1, 1]."""
     result = run_cross_domain_validation()
     for r in result.frequency_correlations:
         assert -1 <= r <= 1
 
 
 def test_cross_domain_best_correlation_positive() -> None:
+    """The best correlation is positive and equals its proxy."""
     result = run_cross_domain_validation()
     assert result.best_correlation > 0
     assert result.best_similarity_proxy == result.best_correlation
 
 
 def test_cross_domain_correlations_count() -> None:
+    """There is one correlation of each kind per system."""
     result = run_cross_domain_validation()
     assert len(result.topology_correlations) == len(result.system_names)
     assert len(result.frequency_correlations) == len(result.system_names)

@@ -37,7 +37,7 @@ from oscillatools.accel import (
 
 @pytest.fixture(autouse=True)
 def preserve_callers_global_rng() -> Iterator[None]:
-    """The test's own legacy seed probes must not perturb subsequent callers."""
+    """Restore the global random state so the test's legacy seed probes do not leak."""
     original = np.random.get_state()
     try:
         yield
@@ -62,6 +62,7 @@ def _historical_state(n_qubits: int, seed: int) -> NDArray[np.complex128]:
     -------
     numpy.ndarray
         The vector the old implementation returned for these arguments.
+
     """
     saved = np.random.get_state()
     try:
@@ -126,6 +127,7 @@ class TestByteCompatibility:
             Qubit count.
         seed
             Seed under test.
+
         """
         np.testing.assert_array_equal(
             rust_random_state(n_qubits, seed=seed), _historical_state(n_qubits, seed)
@@ -159,6 +161,7 @@ class TestOutputContract:
         ----------
         n_qubits
             Qubit count under test.
+
         """
         state = rust_random_state(n_qubits, seed=17)
 
@@ -190,6 +193,7 @@ class TestArgumentDomain:
         ----------
         n_qubits
             Inadmissible qubit count.
+
         """
         with pytest.raises(ValueError, match="n_qubits must be a non-negative integer"):
             rust_random_state(n_qubits)
@@ -202,6 +206,7 @@ class TestArgumentDomain:
         ----------
         seed
             Inadmissible seed.
+
         """
         with pytest.raises(ValueError, match="seed must be a non-negative integer"):
             rust_random_state(2, seed=seed)
@@ -214,6 +219,7 @@ class TestArgumentDomain:
         ----------
         max_gib
             Inadmissible budget.
+
         """
         with pytest.raises(ValueError, match="max_gib must be positive and finite"):
             rust_random_state(2, max_gib=max_gib)
@@ -261,6 +267,7 @@ class TestMemoryAdmission:
         ----------
         monkeypatch
             Used to install a generator that fails if it is constructed.
+
         """
         calls = []
 
@@ -310,6 +317,7 @@ class TestDegenerateDraw:
         ----------
         monkeypatch
             Used to install a generator that draws only zeros.
+
         """
 
         class _ZeroGenerator:
@@ -320,6 +328,7 @@ class TestDegenerateDraw:
                 ----------
                 seed
                     Ignored.
+
                 """
                 self.seed = seed
 
@@ -335,6 +344,7 @@ class TestDegenerateDraw:
                 -------
                 numpy.ndarray
                     An all-zero draw.
+
                 """
                 return np.zeros(size)
 

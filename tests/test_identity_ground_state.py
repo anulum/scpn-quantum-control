@@ -15,6 +15,7 @@ from scpn_quantum_control.identity.ground_state import IdentityAttractor
 
 
 def test_solve_returns_robustness_gap() -> None:
+    """Solving returns a finite, non-negative robustness gap."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -25,6 +26,7 @@ def test_solve_returns_robustness_gap() -> None:
 
 
 def test_robustness_gap_accessor() -> None:
+    """The robustness gap can be read after solving."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -34,6 +36,7 @@ def test_robustness_gap_accessor() -> None:
 
 
 def test_robustness_gap_before_solve_raises() -> None:
+    """Reading the gap before solving is refused."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     attractor = IdentityAttractor(K, omega)
@@ -42,6 +45,7 @@ def test_robustness_gap_before_solve_raises() -> None:
 
 
 def test_ground_state_is_normalized() -> None:
+    """The ground state is normalised."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -52,6 +56,7 @@ def test_ground_state_is_normalized() -> None:
 
 
 def test_result_contains_eigenvalues() -> None:
+    """The result lists sorted eigenvalues."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -63,6 +68,7 @@ def test_result_contains_eigenvalues() -> None:
 
 
 def test_n_dispositions_matches_input() -> None:
+    """The result counts the input dispositions."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -71,6 +77,7 @@ def test_n_dispositions_matches_input() -> None:
 
 
 def test_from_binding_spec() -> None:
+    """A binding specification can be solved."""
     spec = {
         "layers": [
             {"oscillator_ids": ["a", "b"], "natural_frequency": 1.0},
@@ -85,6 +92,7 @@ def test_from_binding_spec() -> None:
 
 
 def test_non_square_k_raises() -> None:
+    """A non-square coupling matrix is refused."""
     K = np.ones((3, 4))
     omega = np.ones(3)
     with pytest.raises(ValueError, match="square"):
@@ -92,6 +100,7 @@ def test_non_square_k_raises() -> None:
 
 
 def test_mismatched_k_omega_raises() -> None:
+    """Frequencies of the wrong length are refused."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:4]
     with pytest.raises(ValueError, match="omega length"):
@@ -130,6 +139,7 @@ def test_ground_energy_below_exact() -> None:
 
 
 def test_eigenvalues_sorted() -> None:
+    """Eigenvalues are in ascending order."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -145,6 +155,7 @@ def test_eigenvalues_sorted() -> None:
 
 def test_pipeline_knm_to_identity() -> None:
     """Full pipeline: build_knm → IdentityAttractor → solve → robustness gap.
+
     Verifies identity ground state module is wired end-to-end.
     """
     import time

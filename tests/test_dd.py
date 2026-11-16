@@ -14,6 +14,7 @@ from scpn_quantum_control.mitigation.dd import DDSequence, insert_dd_sequence
 
 
 def test_xy4_adds_gates() -> None:
+    """XY4 decoupling adds X and Y pulses."""
     qc = QuantumCircuit(3)
     qc.h(0)
     qc.cx(0, 1)
@@ -25,6 +26,7 @@ def test_xy4_adds_gates() -> None:
 
 
 def test_x2_adds_gates() -> None:
+    """X2 decoupling adds X pulses."""
     qc = QuantumCircuit(2)
     qc.h(0)
 
@@ -34,6 +36,7 @@ def test_x2_adds_gates() -> None:
 
 
 def test_qubit_count_preserved() -> None:
+    """Decoupling keeps the qubit count."""
     qc = QuantumCircuit(4)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[1, 2, 3])
@@ -41,18 +44,21 @@ def test_qubit_count_preserved() -> None:
 
 
 def test_invalid_qubit_raises() -> None:
+    """An idle qubit beyond the circuit is refused."""
     qc = QuantumCircuit(2)
     with pytest.raises(ValueError, match="out of range"):
         insert_dd_sequence(qc, idle_qubits=[5])
 
 
 def test_negative_qubit_raises() -> None:
+    """A negative idle qubit is refused."""
     qc = QuantumCircuit(2)
     with pytest.raises(ValueError, match="out of range"):
         insert_dd_sequence(qc, idle_qubits=[-1])
 
 
 def test_empty_idle_qubits() -> None:
+    """Without idle qubits the circuit is unchanged."""
     qc = QuantumCircuit(2)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[])
@@ -62,6 +68,7 @@ def test_empty_idle_qubits() -> None:
 
 
 def test_multiple_idle_qubits() -> None:
+    """Every idle qubit receives pulses."""
     qc = QuantumCircuit(4)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[1, 2, 3], sequence=DDSequence.XY4)
@@ -82,6 +89,7 @@ def test_cpmg_adds_gates() -> None:
 
 
 def test_xy4_adds_expected_gates() -> None:
+    """XY4 adds at least two X and two Y pulses."""
     qc = QuantumCircuit(2)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[1], sequence=DDSequence.XY4)
@@ -101,6 +109,7 @@ def test_dd_preserves_active_qubit() -> None:
 
 
 def test_dd_single_qubit_circuit() -> None:
+    """Decoupling works on a one-qubit circuit."""
     qc = QuantumCircuit(1)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[])
@@ -108,6 +117,7 @@ def test_dd_single_qubit_circuit() -> None:
 
 
 def test_dd_3_idle_3_active() -> None:
+    """Decoupling keeps six qubits with three idle."""
     qc = QuantumCircuit(6)
     for i in range(3):
         qc.h(i)
@@ -116,6 +126,7 @@ def test_dd_3_idle_3_active() -> None:
 
 
 def test_dd_appends_exact_sequence_without_mutating_input() -> None:
+    """Decoupling appends the exact pulse sequence and leaves the input unchanged."""
     qc = QuantumCircuit(2)
     qc.h(0)
 

@@ -36,18 +36,21 @@ def test_classical_benchmark_returns_timing() -> None:
 
 
 def test_quantum_benchmark_returns_timing() -> None:
+    """The quantum benchmark reports a positive total time."""
     result = quantum_benchmark(4, t_max=0.5, dt=0.25, trotter_reps=2)
     assert "t_total_ms" in result
     assert result["t_total_ms"] > 0
 
 
 def test_advantage_result_fields() -> None:
+    """An advantage result records its size and no crossover."""
     r = AdvantageResult(n_qubits=4, t_classical_ms=10.0, t_quantum_ms=5.0)
     assert r.n_qubits == 4
     assert r.crossover_predicted is None
 
 
 def test_run_scaling_small() -> None:
+    """A small scaling run returns one result per size."""
     results = run_scaling_benchmark(sizes=[4, 6], t_max=0.2, dt=0.1)
     assert len(results) == 2
     assert results[0].n_qubits == 4
@@ -55,16 +58,19 @@ def test_run_scaling_small() -> None:
 
 
 def test_run_scaling_classical_grows() -> None:
+    """Classical time does not shrink sharply with size."""
     results = run_scaling_benchmark(sizes=[4, 8], t_max=0.2, dt=0.1)
     assert results[1].t_classical_ms >= results[0].t_classical_ms * 0.1
 
 
 def test_estimate_crossover_needs_data() -> None:
+    """With fewer than two points there is no crossover estimate."""
     assert estimate_crossover([]) is None
     assert estimate_crossover([AdvantageResult(4, 1.0, 1.0)]) is None
 
 
 def test_estimate_crossover_returns_int_or_none() -> None:
+    """A crossover estimate is an integer or None."""
     results = [
         AdvantageResult(4, 1.0, 2.0),
         AdvantageResult(8, 10.0, 4.0),
@@ -75,6 +81,7 @@ def test_estimate_crossover_returns_int_or_none() -> None:
 
 
 def test_quantum_timing_positive() -> None:
+    """The quantum benchmark reports positive time and steps."""
     result = quantum_benchmark(4, t_max=0.1, dt=0.1, trotter_reps=1)
     assert result["t_total_ms"] > 0
     assert result["n_trotter_steps"] > 0
@@ -93,18 +100,20 @@ def test_classical_time_increases_with_n() -> None:
 
 
 def test_classical_beyond_limit_returns_inf() -> None:
-    """n > MAX_CLASSICAL_QUBITS → inf time."""
+    """Sizes above MAX_CLASSICAL_QUBITS report an infinite time."""
     result = classical_benchmark(20, t_max=0.1, dt=0.1)
     assert result["t_total_ms"] == float("inf")
 
 
 def test_quantum_ground_energy_finite() -> None:
+    """The quantum benchmark's ground energy is finite."""
     result = quantum_benchmark(3, t_max=0.2, dt=0.1, trotter_reps=2)
     if "ground_energy" in result:
         assert np.isfinite(result["ground_energy"])
 
 
 def test_advantage_result_timing_positive() -> None:
+    """An advantage result records positive classical and quantum times."""
     r = AdvantageResult(n_qubits=4, t_classical_ms=10.0, t_quantum_ms=5.0)
     assert r.t_classical_ms > 0
     assert r.t_quantum_ms > 0
@@ -117,6 +126,7 @@ def test_advantage_result_timing_positive() -> None:
 
 def test_pipeline_benchmark_to_crossover() -> None:
     """Full pipeline: run_scaling_benchmark → estimate_crossover.
+
     Verifies benchmarking module is wired end-to-end, not decorative.
     """
     import time

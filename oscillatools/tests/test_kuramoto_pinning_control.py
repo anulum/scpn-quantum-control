@@ -46,7 +46,10 @@ def _final_radius(theta0, omega, coupling, gains, target, dt=0.05, n_steps=30):
 
 
 class TestPinningGradient:
+    """The pinning-control cost and its gain gradient."""
+
     def test_pacemaker_stays_at_target_and_pins_apply_force(self) -> None:
+        """The pacemaker stays on its target while the pins act on the network."""
         theta0, omega, coupling, gains = _random_problem(6, 1)
         target = 0.7
         theta_aug, omega_aug, coupling_aug = pin._augment(theta0, omega, coupling, gains, target)
@@ -58,6 +61,7 @@ class TestPinningGradient:
 
     @pytest.mark.parametrize("integrator", ["rk4", "euler"])
     def test_gain_gradient_matches_finite_difference(self, integrator: str) -> None:
+        """The gain gradient agrees with finite differences."""
         theta0, omega, coupling, gains = _random_problem(7, 5)
         target, dt, n_steps = 0.4, 0.05, 15
         _, grad_gains = pin.pinning_coherence_value_and_grad(
@@ -81,6 +85,7 @@ class TestPinningGradient:
         np.testing.assert_allclose(grad_gains, fd, atol=1e-5)
 
     def test_value_matches_value_and_grad(self) -> None:
+        """The cost alone equals the cost returned with the gradient."""
         theta0, omega, coupling, gains = _random_problem(6, 9)
         cost, _ = pin.pinning_coherence_value_and_grad(
             theta0, omega, coupling, gains, 0.3, 0.05, 12
@@ -89,6 +94,7 @@ class TestPinningGradient:
         assert abs(cost - value) < 1e-12
 
     def test_validation(self) -> None:
+        """Inputs of the wrong shape are refused."""
         theta0, omega, coupling, gains = _random_problem(4, 1)
         with pytest.raises(ValueError, match="gains must have shape"):
             pin.pinning_coherence_value_and_grad(
@@ -111,7 +117,10 @@ class TestPinningGradient:
 
 
 class TestDesignPinning:
+    """Designing a sparse set of pinned nodes."""
+
     def test_monotone_cost_and_raises_order_parameter(self) -> None:
+        """Design lowers the cost monotonically, keeps gains non-negative and raises synchrony."""
         theta0, omega, _, _ = _random_problem(10, 21)
         # With no inter-node coupling, pinning is the sole synchronisation mechanism, so its
         # effect on the order parameter is unambiguous.
@@ -133,6 +142,7 @@ class TestDesignPinning:
         assert np.all(result.gains >= 0.0)
 
     def test_sparsity_weight_shrinks_pin_set(self) -> None:
+        """A sparsity weight shrinks the pin set below the full network."""
         theta0, omega, coupling, _ = _random_problem(12, 4)
         dense = pin.design_pinning(
             theta0,
@@ -161,6 +171,7 @@ class TestDesignPinning:
         assert sparse.pin_set.size < theta0.size
 
     def test_converged_flag_when_already_synchronised(self) -> None:
+        """An already synchronised network converges at once with no pins."""
         n = 5
         theta0 = np.zeros(n)
         omega = np.zeros(n)
@@ -173,6 +184,7 @@ class TestDesignPinning:
         assert result.pin_set.size == 0
 
     def test_iteration_budget_and_rejects_non_positive(self) -> None:
+        """The iteration budget is respected and a non-positive budget is refused."""
         theta0, omega, coupling, _ = _random_problem(8, 11)
         result = pin.design_pinning(theta0, omega, coupling, 0.0, 0.05, 30, max_iterations=3)
         assert result.iterations <= 3
@@ -180,6 +192,7 @@ class TestDesignPinning:
             pin.design_pinning(theta0, omega, coupling, 0.0, 0.05, 5, max_iterations=0)
 
     def test_reproducible(self) -> None:
+        """Two designs give identical gains and pin sets."""
         theta0, omega, coupling, _ = _random_problem(6, 5)
         first = pin.design_pinning(theta0, omega, coupling, 0.0, 0.05, 25, max_iterations=20)
         second = pin.design_pinning(theta0, omega, coupling, 0.0, 0.05, 25, max_iterations=20)

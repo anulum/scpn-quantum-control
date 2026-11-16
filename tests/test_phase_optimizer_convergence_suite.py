@@ -45,6 +45,7 @@ def suite() -> GroundStateOptimizerConvergenceSuiteResult:
 def test_default_ground_state_optimizer_suite_passes(
     suite: GroundStateOptimizerConvergenceSuiteResult,
 ) -> None:
+    """The default optimiser suite passes with its case and record counts."""
     assert suite.passed
     assert suite.case_count == 2
     assert suite.record_count == 10
@@ -66,6 +67,7 @@ def test_default_ground_state_optimizer_suite_passes(
 def test_default_ground_state_optimizer_suite_serializes_boundary(
     suite: GroundStateOptimizerConvergenceSuiteResult,
 ) -> None:
+    """The serialised suite keeps its counts and boundary."""
     payload = suite.to_dict()
 
     assert payload["passed"] is True
@@ -86,6 +88,7 @@ def test_default_ground_state_optimizer_suite_serializes_boundary(
 def test_records_for_case_and_best_record_are_public_contracts(
     suite: GroundStateOptimizerConvergenceSuiteResult,
 ) -> None:
+    """Each case has its records and the best record has the lowest value."""
     case_id = suite.objectives[0].case_id
     records = suite.records_for_case(case_id)
     best = suite.best_record_for_case(case_id)
@@ -98,6 +101,7 @@ def test_records_for_case_and_best_record_are_public_contracts(
 
 
 def test_custom_optimizer_subset_deduplicates_and_omits_boundary() -> None:
+    """A custom optimiser subset is deduplicated and has no boundary row."""
     suite = run_ground_state_optimizer_convergence_suite(
         objectives=default_ground_state_optimizer_objectives()[:1],
         optimizers=("adam", "adam", "lbfgs"),
@@ -151,6 +155,7 @@ def test_spsa_preserves_an_initial_exact_ground_state() -> None:
 
 
 def test_ground_state_objective_validates_and_reports_distances() -> None:
+    """The objective reports its width, target value and metric."""
     objective = KnownGroundStateObjective(
         case_id="unit-ground",
         ground_state_label="unit ground",
@@ -200,6 +205,7 @@ def _objective(
 
 
 def test_ground_state_objective_rejects_invalid_metadata() -> None:
+    """Blank case or state labels are refused."""
     with pytest.raises(ValueError, match="case_id must be non-empty"):
         _objective(case_id="")
     with pytest.raises(ValueError, match="ground_state_label must be non-empty"):
@@ -221,6 +227,7 @@ def test_ground_state_objective_rejects_invalid_metadata() -> None:
 
 
 def test_ground_state_objective_rejects_wrong_evaluation_shape() -> None:
+    """Parameters of the wrong shape are refused."""
     objective = default_ground_state_optimizer_objectives()[0]
     wrong_shape = np.array([0.0, 1.0], dtype=float)
 
@@ -233,6 +240,7 @@ def test_ground_state_objective_rejects_wrong_evaluation_shape() -> None:
 
 
 def test_ground_state_optimizer_suite_rejects_invalid_controls() -> None:
+    """A suite without objectives or optimisers is refused."""
     with pytest.raises(ValueError, match="at least one ground-state objective is required"):
         run_ground_state_optimizer_convergence_suite(objectives=())
     with pytest.raises(ValueError, match="at least one optimizer is required"):
@@ -254,6 +262,8 @@ def test_ground_state_optimizer_suite_rejects_invalid_controls() -> None:
 def test_ground_state_optimizer_suite_rejects_bad_provider_gradient_shape(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A provider gradient of the wrong shape is refused."""
+
     def bad_gradient(
         objective: object,
         params: NDArray[np.float64],
@@ -275,6 +285,8 @@ def test_ground_state_optimizer_suite_rejects_bad_provider_gradient_shape(
 def test_ground_state_optimizer_suite_rejects_non_finite_provider_gradient(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A non-finite provider gradient is refused."""
+
     def bad_gradient(
         objective: object,
         params: NDArray[np.float64],
@@ -316,6 +328,7 @@ def _boundary_row(
 
 
 def test_ground_state_optimizer_boundary_row_validates_metadata() -> None:
+    """The boundary row is a hard gap and refuses blank metadata."""
     assert _boundary_row().to_dict()["status"] == "hard_gap"
     with pytest.raises(ValueError, match="case_id must be non-empty"):
         _boundary_row(case_id="")

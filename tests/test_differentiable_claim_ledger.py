@@ -115,6 +115,7 @@ def test_claim_ledger_iterates_rows() -> None:
 
 
 def test_claim_ledger_rejects_promoted_row_without_artefact_id() -> None:
+    """A promoted claim without an artefact ID is refused."""
     row = ClaimLedgerRow(
         claim_id="bad_claim",
         claim_text="Unsupported promoted claim",
@@ -163,6 +164,7 @@ def test_claim_ledger_validation_reports_duplicates_and_candidate_without_eviden
 
 
 def test_claim_ledger_rejects_promoted_row_without_passing_artefacts() -> None:
+    """A promoted claim whose artefacts did not pass is refused."""
     row = ClaimLedgerRow(
         claim_id="bad_claim",
         claim_text="Unsupported promoted claim",
@@ -196,6 +198,7 @@ def test_public_language_allows_promoted_ledger() -> None:
 
 
 def test_claim_ledger_markdown_summary_maps_rows_to_status(tmp_path: Path) -> None:
+    """The ledger summary lists each claim with its status."""
     ledger = load_differentiable_claim_ledger()
     markdown = render_claim_ledger_markdown(ledger)
     output = tmp_path / "summary.md"
@@ -232,6 +235,7 @@ def test_support_surface_alignment_from_dict_edges() -> None:
 
 
 def test_claim_ledger_rejects_unknown_status() -> None:
+    """An unknown promotion status is refused."""
     with pytest.raises(ValueError, match="promotion_status"):
         ClaimLedgerRow(
             claim_id="unknown",
@@ -248,6 +252,7 @@ def test_claim_ledger_rejects_unknown_status() -> None:
 
 
 def test_public_language_cannot_exceed_unpromoted_ledger() -> None:
+    """Public language may not claim more than the ledger promotes."""
     ledger = load_differentiable_claim_ledger()
 
     validation = validate_public_language_against_ledger(
@@ -260,6 +265,7 @@ def test_public_language_cannot_exceed_unpromoted_ledger() -> None:
 
 
 def test_public_claim_table_is_generated_from_committed_ledger() -> None:
+    """The public claim table is generated from the committed ledger."""
     ledger = load_differentiable_claim_ledger()
     markdown = render_public_claim_table(ledger)
     validation = validate_public_claim_table(ledger, markdown)
@@ -280,6 +286,7 @@ def test_public_claim_table_is_generated_from_committed_ledger() -> None:
 
 
 def test_public_claim_table_validator_rejects_missing_rows() -> None:
+    """A claim table missing a row is refused."""
     ledger = load_differentiable_claim_ledger()
 
     validation = validate_public_claim_table(ledger, "# Differentiable Public Claim Table\n")
@@ -320,6 +327,7 @@ def test_public_claim_table_handles_promoted_and_hard_gap_rows() -> None:
 
 
 def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger() -> None:
+    """The support surfaces agree with the manifest and the ledger."""
     alignment = validate_differentiable_support_surface_alignment()
 
     assert alignment.passed
@@ -339,6 +347,7 @@ def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger()
 
 
 def test_committed_support_surface_alignment_artifact_matches_rerun() -> None:
+    """The committed alignment artefact matches a rerun."""
     committed = load_differentiable_support_surface_alignment()
     rerun = validate_differentiable_support_surface_alignment()
 
@@ -351,6 +360,7 @@ def test_committed_support_surface_alignment_artifact_matches_rerun() -> None:
 
 
 def test_support_surface_alignment_markdown_lists_claim_boundary() -> None:
+    """The alignment page states its result and claim boundary."""
     alignment = load_differentiable_support_surface_alignment()
     markdown = render_differentiable_support_surface_alignment_markdown(alignment)
 
@@ -362,6 +372,7 @@ def test_support_surface_alignment_markdown_lists_claim_boundary() -> None:
 
 
 def test_support_surface_alignment_audit_rejects_missing_manifest_path() -> None:
+    """A support page missing from the manifest fails the audit."""
     row = ClaimLedgerRow(
         claim_id="missing_manifest",
         claim_text="A bounded differentiable surface that is not in the manifest.",

@@ -27,53 +27,65 @@ def _test_system() -> tuple[NDArray[np.float64], NDArray[np.float64], int]:
 
 
 class TestComputeQuantumCosts:
+    """Quantum cost terms of a small system."""
+
     def test_returns_costs(self) -> None:
+        """The computation returns a cost record."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert isinstance(costs, QuantumCosts)
 
     def test_c_micro_bounded(self) -> None:
+        """The microscopic cost lies in [0, 1]."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.c_micro <= 1.0
 
     def test_c4_tcbo_bounded(self) -> None:
+        """The topological cost lies in [0, 1]."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.c4_tcbo <= 1.0
 
     def test_c_pgbo_bounded(self) -> None:
+        """The geometric cost lies in [0, 1]."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.c_pgbo <= 1.0
 
     def test_r_global_bounded(self) -> None:
+        """The global order parameter lies in [0, 1]."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.r_global <= 1.0
 
     def test_c_micro_plus_r_equals_one(self) -> None:
+        """The microscopic cost and the order parameter sum to one."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert costs.c_micro + costs.r_global == pytest.approx(1.0, abs=1e-10)
 
     def test_entropy_non_negative(self) -> None:
+        """The half-chain entropy is non-negative."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert costs.half_chain_entropy >= -1e-10
 
     def test_variance_non_negative(self) -> None:
+        """The correlator variance is non-negative."""
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert costs.correlator_variance >= -1e-10
 
     def test_with_omega(self) -> None:
+        """Frequencies can be given."""
         W, theta, _n = _test_system()
         omega = np.array([1.0, 1.5, 0.8])
         costs = compute_quantum_costs(W, theta, omega=omega)
         assert isinstance(costs.c_micro, float)
 
     def test_2_oscillators(self) -> None:
+        """The computation runs on two oscillators."""
         W = np.array([[0, 0.5], [0.5, 0]])
         theta = np.array([0.0, 0.5])
         costs = compute_quantum_costs(W, theta)

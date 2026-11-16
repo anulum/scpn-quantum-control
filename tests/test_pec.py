@@ -15,6 +15,7 @@ from scpn_quantum_control.mitigation.pec import PECResult, pauli_twirl_decompose
 
 
 def test_decompose_zero_error() -> None:
+    """Without gate error the decomposition is the identity alone."""
     coeffs = pauli_twirl_decompose(0.0)
     assert coeffs[0] == pytest.approx(1.0)
     assert coeffs[1] == pytest.approx(0.0)
@@ -23,6 +24,7 @@ def test_decompose_zero_error() -> None:
 
 
 def test_decompose_small_error() -> None:
+    """A small error gives a quasi-probability with negative Pauli terms."""
     coeffs = pauli_twirl_decompose(0.01)
     assert coeffs[0] > 1.0
     assert coeffs[1] < 0.0
@@ -31,6 +33,7 @@ def test_decompose_small_error() -> None:
 
 
 def test_decompose_normalization() -> None:
+    """The quasi-probabilities sum to one."""
     coeffs = pauli_twirl_decompose(0.1)
     assert np.sum(coeffs) == pytest.approx(1.0)
 
@@ -48,6 +51,7 @@ def test_decompose_matches_closed_form_coefficients() -> None:
 
 
 def test_decompose_rejects_invalid_rate() -> None:
+    """An invalid gate error rate is refused."""
     with pytest.raises(ValueError, match="gate_error_rate"):
         pauli_twirl_decompose(1.0)
     with pytest.raises(ValueError, match="gate_error_rate"):
@@ -55,6 +59,7 @@ def test_decompose_rejects_invalid_rate() -> None:
 
 
 def test_decompose_two_qubit_tensor_product_coefficients() -> None:
+    """Two-qubit coefficients are the tensor product and sum to one."""
     one_qubit = pauli_twirl_decompose(0.01, n_qubits=1)
     two_qubit = pauli_twirl_decompose(0.01, n_qubits=2)
 
@@ -65,11 +70,13 @@ def test_decompose_two_qubit_tensor_product_coefficients() -> None:
 
 
 def test_decompose_rejects_invalid_qubit_count() -> None:
+    """An invalid qubit count is refused."""
     with pytest.raises(ValueError, match="n_qubits"):
         pauli_twirl_decompose(0.01, n_qubits=0)
 
 
 def test_pec_sample_returns_result() -> None:
+    """Sampling returns a result with one sign per sample."""
     qc = QuantumCircuit(1)
     qc.x(0)
     result = pec_sample(qc, 0.01, n_samples=50, rng=np.random.default_rng(42))
@@ -80,6 +87,7 @@ def test_pec_sample_returns_result() -> None:
 
 
 def test_pec_zero_noise_recovers_ideal() -> None:
+    """Without noise sampling recovers the ideal value with no overhead."""
     qc = QuantumCircuit(1)
     qc.x(0)  # |0> -> |1>, <Z> = -1
     result = pec_sample(qc, 0.0, n_samples=100, rng=np.random.default_rng(42))
@@ -88,6 +96,7 @@ def test_pec_zero_noise_recovers_ideal() -> None:
 
 
 def test_pec_overhead_increases_with_error() -> None:
+    """The sampling overhead grows with the error rate."""
     qc = QuantumCircuit(1)
     qc.h(0)
     r1 = pec_sample(qc, 0.01, n_samples=10, rng=np.random.default_rng(0))
@@ -112,6 +121,7 @@ def test_pec_overhead_uses_circuit_gate_count_exponent() -> None:
 
 
 def test_pec_sample_deterministic_with_seed() -> None:
+    """Sampling with the same seed gives the same estimate."""
     qc = QuantumCircuit(1)
     qc.ry(1.0, 0)
     r1 = pec_sample(qc, 0.05, 20, rng=np.random.default_rng(42))
@@ -163,6 +173,7 @@ def test_rust_pec_coefficients_parity() -> None:
 
 def test_pipeline_circuit_to_mitigated_value() -> None:
     """Full pipeline: build circuit → PEC sample → mitigated <Z>.
+
     Verifies PEC is not decorative — produces corrected expectation values.
     """
     import time

@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 
 
 def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
-    """Standard heterogeneous Kuramoto-XY system."""
+    """Build a standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -42,6 +42,7 @@ class TestBackendSelector:
         ],
     )
     def test_small_systems_select_ed(self, n: int, expected: str) -> None:
+        """Small systems select exact diagonalisation with a memory estimate."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(n)
@@ -50,6 +51,7 @@ class TestBackendSelector:
         assert rec["memory_mb"] > 0
 
     def test_medium_system_selects_sector(self) -> None:
+        """A medium system selects a sector or statevector method."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(16, ram_gb=32.0)
@@ -57,30 +59,35 @@ class TestBackendSelector:
         assert rec["feasible"]
 
     def test_large_system_selects_mps(self) -> None:
+        """A large system selects MPS."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(32, has_quimb=True)
         assert rec["backend"] == "mps_dmrg"
 
     def test_huge_system_selects_hardware(self) -> None:
+        """A system too large to simulate selects hardware."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(100, ram_gb=32.0, has_quimb=False)
         assert rec["backend"] == "hardware"
 
     def test_open_system_selects_lindblad(self) -> None:
+        """An open system selects the Lindblad solver."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(4, want_open_system=True)
         assert rec["backend"] == "lindblad_scipy"
 
     def test_open_system_large_selects_mcwf(self) -> None:
+        """A large open system selects quantum jumps or the Lindblad solver."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(14, want_open_system=True)
         assert rec["backend"] in ("mcwf", "lindblad_scipy")
 
     def test_recommendation_output_keys(self) -> None:
+        """A recommendation names its backend, reason, memory and feasibility."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(4)
@@ -91,6 +98,7 @@ class TestBackendSelector:
         assert isinstance(rec["feasible"], bool)
 
     def test_memory_increases_with_n(self) -> None:
+        """The memory estimate grows with system size."""
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         mem_4 = recommend_backend(4)["memory_mb"]
@@ -100,6 +108,7 @@ class TestBackendSelector:
 
     @pytest.mark.parametrize("n", [4, 6, 8])
     def test_auto_solve_produces_ground_energy(self, n: int) -> None:
+        """Automatic solving returns a negative ground energy and its backend."""
         from scpn_quantum_control.phase.backend_selector import auto_solve
 
         _, K, omega = _system(n)
@@ -120,6 +129,7 @@ class TestBackendSelector:
         np.testing.assert_allclose(E, E_expected, atol=1e-8)
 
     def test_auto_solve_matches_recommend(self) -> None:
+        """Automatic solving uses the recommended backend."""
         from scpn_quantum_control.phase.backend_selector import (
             auto_solve,
             recommend_backend,

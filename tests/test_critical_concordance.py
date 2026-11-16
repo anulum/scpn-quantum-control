@@ -35,7 +35,10 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestCriticalConcordance:
+    """Agreement of critical-coupling estimates from several observables."""
+
     def test_returns_result(self) -> None:
+        """The concordance returns a result with the requested couplings."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -44,6 +47,7 @@ class TestCriticalConcordance:
         assert len(result.k_values) == 3
 
     def test_all_arrays_correct_length(self) -> None:
+        """Every series has one value per coupling."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -56,6 +60,7 @@ class TestCriticalConcordance:
         assert len(result.n_entangled_pairs) == 5
 
     def test_gap_always_positive(self) -> None:
+        """The spectral gap is positive at every coupling."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -71,6 +76,7 @@ class TestCriticalConcordance:
         assert result.k_c_from_gap is not None
 
     def test_R_derivative_k_c(self) -> None:
+        """The order-parameter derivative gives a critical coupling in range."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -89,6 +95,7 @@ class TestCriticalConcordance:
             assert np.isfinite(result.concordance_spread)
 
     def test_4qubit_concordance(self) -> None:
+        """The four-qubit concordance gives a gap-based estimate."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -108,6 +115,7 @@ class TestCriticalConcordance:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A system above the dense budget is refused before allocation."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -132,6 +140,7 @@ class TestCriticalConcordance:
     def test_reuses_concordance_eigendecomposition_for_qfi(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """The QFI reuses the concordance eigendecompositions."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -164,6 +173,7 @@ class TestCriticalConcordance:
 
 
 def test_concordance_k_range_length() -> None:
+    """The concordance covers the requested couplings."""
     n = 3
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -173,6 +183,7 @@ def test_concordance_k_range_length() -> None:
 
 
 def test_concordance_gap_positive() -> None:
+    """The spectral gap stays positive."""
     n = 3
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -181,6 +192,7 @@ def test_concordance_gap_positive() -> None:
 
 
 def test_concordance_2q() -> None:
+    """The concordance runs on two qubits."""
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]

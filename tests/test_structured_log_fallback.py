@@ -29,32 +29,41 @@ from scpn_quantum_control.structured_log_fallback import (
 
 @pytest.fixture()
 def adapter() -> KwargTolerantLoggerAdapter:
+    """Return the fallback logger adapter on a test logger."""
     return KwargTolerantLoggerAdapter(logging.getLogger("scpn.fallback.test"), {})
 
 
 class TestProcess:
+    """Folding event keyword arguments into the message."""
+
     def test_event_kwargs_folded_sorted(self, adapter: KwargTolerantLoggerAdapter) -> None:
+        """Event keywords are folded into the message in sorted order."""
         msg, kwargs = adapter.process("event", {"zeta": 1, "alpha": "x"})
         assert msg == "event alpha='x' zeta=1"
         assert kwargs == {}
 
     def test_no_kwargs_message_unchanged(self, adapter: KwargTolerantLoggerAdapter) -> None:
+        """Without keywords the message is unchanged."""
         msg, kwargs = adapter.process("event", {})
         assert msg == "event"
         assert kwargs == {}
 
     def test_stdlib_kwargs_pass_through(self, adapter: KwargTolerantLoggerAdapter) -> None:
+        """Standard logging keywords pass through."""
         extra = {"context": "kept"}
         msg, kwargs = adapter.process("event", {"extra": extra, "reason": "boom"})
         assert msg == "event reason='boom'"
         assert kwargs == {"extra": extra}
 
     def test_exc_info_and_stacklevel_survive(self, adapter: KwargTolerantLoggerAdapter) -> None:
+        """exc_info and stacklevel survive folding."""
         _, kwargs = adapter.process("event", {"exc_info": True, "stacklevel": 3})
         assert kwargs == {"exc_info": True, "stacklevel": 3}
 
 
 class TestLoggingEndToEnd:
+    """The fallback adapter used through the logging module."""
+
     def test_runner_crash_shape_logs_instead_of_raising(
         self, adapter: KwargTolerantLoggerAdapter, caplog: pytest.LogCaptureFixture
     ) -> None:
@@ -78,13 +87,17 @@ class TestLoggingEndToEnd:
         caplog: pytest.LogCaptureFixture,
         level: str,
     ) -> None:
+        """Every level accepts event keywords."""
         with caplog.at_level(logging.DEBUG, logger="scpn.fallback.test"):
             getattr(adapter, level)("event_name", key="value")
         assert "event_name key='value'" in caplog.records[0].getMessage()
 
 
 class TestGetStructuredLogger:
+    """Choosing between structlog and the fallback."""
+
     def test_structlog_path_selected_when_available(self) -> None:
+        """The structlog logger is used when structlog is available."""
         pytest.importorskip("structlog")
         logger = get_structured_logger("scpn.fallback.test")
         assert hasattr(logger, "bind")
@@ -92,6 +105,7 @@ class TestGetStructuredLogger:
     def test_fallback_selected_without_logging_extra(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """The fallback adapter is used without the logging extra."""
         monkeypatch.setitem(sys.modules, "scpn_quantum_control.logging_setup", None)
         logger = get_structured_logger("scpn.fallback.test")
         assert isinstance(logger, KwargTolerantLoggerAdapter)

@@ -13,11 +13,13 @@ from scpn_quantum_control.qec.fault_tolerant import FaultTolerantUPDE, LogicalQu
 
 
 def test_logical_qubit_data_count() -> None:
+    """A distance-3 logical qubit has three data qubits."""
     lq = LogicalQubit(code_distance=3, phase_angle=1.0)
     assert lq.data_qubits == 3
 
 
 def test_init_basic() -> None:
+    """The register counts oscillators, distance and qubits."""
     ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
     assert ft.n_osc == 2
     assert ft.d == 3
@@ -25,21 +27,25 @@ def test_init_basic() -> None:
 
 
 def test_init_rejects_even_distance() -> None:
+    """An even code distance is refused."""
     with pytest.raises(ValueError, match="odd positive"):
         FaultTolerantUPDE(n_osc=2, code_distance=4)
 
 
 def test_init_rejects_single_osc() -> None:
+    """A single oscillator is refused."""
     with pytest.raises(ValueError, match="2"):
         FaultTolerantUPDE(n_osc=1)
 
 
 def test_physical_qubit_count() -> None:
+    """The physical qubit count follows the code layout."""
     ft = FaultTolerantUPDE(n_osc=3, code_distance=5)
     assert ft.physical_qubit_count() == 3 * (5 + 4)
 
 
 def test_build_step_circuit() -> None:
+    """A step circuit uses every qubit and has gates."""
     ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
     qc = ft.build_step_circuit(dt=0.1)
     assert qc.num_qubits == ft.total_qubits
@@ -47,6 +53,7 @@ def test_build_step_circuit() -> None:
 
 
 def test_step_with_qec() -> None:
+    """A step with error correction reports one syndrome per oscillator."""
     ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
     result = ft.step_with_qec(dt=0.1)
     assert "syndromes" in result
@@ -55,6 +62,7 @@ def test_step_with_qec() -> None:
 
 
 def test_step_no_errors_clean_syndromes() -> None:
+    """Without errors no error is detected."""
     ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
     result = ft.step_with_qec(dt=0.1)
     assert result["errors_detected"] == 0
@@ -80,6 +88,7 @@ def test_total_qubits_scales_linearly() -> None:
 
 
 def test_data_ancilla_ranges_non_overlapping() -> None:
+    """Data and ancilla qubits do not overlap."""
     ft = FaultTolerantUPDE(n_osc=3, code_distance=3)
     for osc in range(3):
         data = set(ft._osc_data_range(osc))
@@ -93,6 +102,7 @@ def test_data_ancilla_ranges_non_overlapping() -> None:
 
 
 def test_circuit_depth_positive() -> None:
+    """The step circuit has positive depth."""
     ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
     qc = ft.build_step_circuit(dt=0.1)
     assert qc.depth() > 0
@@ -120,6 +130,7 @@ def test_circuit_contains_cx() -> None:
 
 
 def test_custom_K_omega() -> None:
+    """Custom couplings and frequencies are accepted."""
     import numpy as np
 
     K = np.array([[0, 0.5], [0.5, 0]])

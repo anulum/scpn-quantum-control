@@ -46,6 +46,7 @@ main = _audit_documentation_surface.main
 
 
 def test_python_audit_flags_public_missing_docstrings() -> None:
+    """Public classes, methods and functions without docstrings are flagged."""
     findings = audit_python_text(
         Path("src/example.py"),
         '"""Module docs."""\n\nclass PublicClass:\n    def method(self):\n        return 1\n\ndef public_function():\n    return 2\n',
@@ -59,6 +60,7 @@ def test_python_audit_flags_public_missing_docstrings() -> None:
 
 
 def test_python_audit_allows_private_missing_docstrings() -> None:
+    """Private names without docstrings are allowed."""
     findings = audit_python_text(
         Path("src/example.py"),
         '"""Module docs."""\n\nclass _PrivateClass:\n    def _method(self):\n        return 1\n\ndef _private_function():\n    return 2\n',
@@ -68,6 +70,7 @@ def test_python_audit_allows_private_missing_docstrings() -> None:
 
 
 def test_python_audit_allows_undocumented_typing_overloads() -> None:
+    """Undocumented typing overloads are allowed."""
     findings = audit_python_text(
         Path("src/example.py"),
         '''"""Module docs."""
@@ -89,6 +92,7 @@ def convert(value: int | str) -> int | str:
 
 
 def test_markdown_audit_flags_missing_title_and_stale_status() -> None:
+    """Pages without a title or with a stale status snapshot are flagged."""
     findings = audit_markdown_text(
         Path("docs/page.md"),
         "Status Snapshot - 2026-04-29\n",
@@ -102,6 +106,7 @@ def test_markdown_audit_flags_missing_title_and_stale_status() -> None:
 
 
 def test_candidate_files_exclude_cache_and_site(tmp_path: Path) -> None:
+    """Caches and generated site files are not audited."""
     (tmp_path / "src").mkdir()
     (tmp_path / "site").mkdir()
     (tmp_path / "docs" / "internal").mkdir(parents=True)
@@ -117,6 +122,7 @@ def test_candidate_files_exclude_cache_and_site(tmp_path: Path) -> None:
 
 
 def test_json_and_text_reports_are_deterministic(tmp_path: Path) -> None:
+    """The JSON and text reports are ordered and complete."""
     (tmp_path / "src").mkdir()
     (tmp_path / "docs").mkdir()
     (tmp_path / "src" / "module.py").write_text("def missing():\n    return 1\n", encoding="utf-8")
@@ -137,6 +143,7 @@ def test_json_and_text_reports_are_deterministic(tmp_path: Path) -> None:
 
 
 def test_cli_can_report_without_failing(tmp_path: Path, capsys: Any) -> None:
+    """The command can report findings without failing."""
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "module.py").write_text("def missing():\n    return 1\n", encoding="utf-8")
 
@@ -145,6 +152,7 @@ def test_cli_can_report_without_failing(tmp_path: Path, capsys: Any) -> None:
 
 
 def test_cli_can_fail_on_findings(tmp_path: Path) -> None:
+    """The command fails on findings when asked to."""
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "module.py").write_text("def missing():\n    return 1\n", encoding="utf-8")
 
@@ -154,6 +162,7 @@ def test_cli_can_fail_on_findings(tmp_path: Path) -> None:
 
 
 def test_allowlist_filters_generated_script_main_findings(tmp_path: Path) -> None:
+    """The allowlist removes generated-script findings."""
     (tmp_path / "scripts").mkdir()
     (tmp_path / "docs" / "internal").mkdir(parents=True)
     script = tmp_path / "scripts" / "build_paper0_generated_specs.py"
@@ -185,6 +194,7 @@ def test_allowlist_filters_generated_script_main_findings(tmp_path: Path) -> Non
 
 
 def test_allowlist_requires_non_empty_reason(tmp_path: Path) -> None:
+    """An allowlist entry needs a reason."""
     allowlist = tmp_path / "allowlist.json"
     allowlist.write_text(
         json.dumps(
@@ -209,6 +219,7 @@ def test_allowlist_requires_non_empty_reason(tmp_path: Path) -> None:
 
 
 def test_cli_applies_allowlist_before_fail_on_findings(tmp_path: Path) -> None:
+    """The command applies the allowlist before failing on findings."""
     (tmp_path / "scripts").mkdir()
     script = tmp_path / "scripts" / "build_paper0_generated_specs.py"
     script.write_text(
