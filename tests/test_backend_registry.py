@@ -51,10 +51,15 @@ def _fake_factory() -> _FakeBackend:
 
 
 class TestBackendProtocol:
+    """The backend protocol."""
+
     def test_fake_backend_satisfies_protocol(self) -> None:
+        """A fake backend satisfies the protocol."""
         assert isinstance(_FakeBackend(), be.BackendProtocol)
 
     def test_object_without_name_does_not_satisfy(self) -> None:
+        """An object without a name does not satisfy it."""
+
         class Headless:
             def is_available(self) -> bool:
                 return True
@@ -62,6 +67,8 @@ class TestBackendProtocol:
         assert not isinstance(Headless(), be.BackendProtocol)
 
     def test_object_without_is_available_does_not_satisfy(self) -> None:
+        """An object without is_available does not satisfy it."""
+
         class Silent:
             name = "silent"
 
@@ -74,17 +81,22 @@ class TestBackendProtocol:
 
 
 class TestRegistration:
+    """Registering backends."""
+
     def test_register_and_get_roundtrip(self, registry: be.BackendRegistry) -> None:
+        """A registered backend is returned by get."""
         registry.register("fake", _fake_factory)
         b = registry.get("fake")
         assert b.name == "fake"
         assert b.is_available() is True
 
     def test_register_rejects_empty_name(self, registry: be.BackendRegistry) -> None:
+        """An empty name is refused."""
         with pytest.raises(be.BackendRegistrationError):
             registry.register("", _fake_factory)
 
     def test_register_rejects_non_callable(self, registry: be.BackendRegistry) -> None:
+        """A factory that is not callable is refused."""
         with pytest.raises(be.BackendRegistrationError):
             registry.register("bad", "not a callable")  # type: ignore[arg-type]
 
@@ -92,6 +104,7 @@ class TestRegistration:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """Registering the same factory twice is harmless."""
         registry.register("fake", _fake_factory)
         registry.register("fake", _fake_factory)  # must not raise
         assert registry.names() == ["fake"]
@@ -100,11 +113,13 @@ class TestRegistration:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """Registering another factory under a taken name is refused."""
         registry.register("fake", _fake_factory)
         with pytest.raises(be.BackendRegistrationError, match="already registered"):
             registry.register("fake", lambda: _FakeBackend(name="other"))
 
     def test_get_unknown_raises(self, registry: be.BackendRegistry) -> None:
+        """An unknown backend raises and lists the known ones."""
         registry.register("z_backend", _fake_factory)
         registry.register("a_backend", _fake_factory)
 
@@ -119,6 +134,8 @@ class TestRegistration:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """A factory that breaks the protocol is refused."""
+
         class NotABackend:
             pass
 
@@ -127,17 +144,20 @@ class TestRegistration:
             registry.get("broken")
 
     def test_unregister_removes(self, registry: be.BackendRegistry) -> None:
+        """Unregistering removes the backend."""
         registry.register("fake", _fake_factory)
         assert "fake" in registry.names()
         registry.unregister("fake")
         assert "fake" not in registry.names()
 
     def test_unregister_missing_is_silent(self, registry: be.BackendRegistry) -> None:
+        """Unregistering an unknown name is harmless."""
         before = registry.names()
         registry.unregister("never-there")  # must not raise
         assert registry.names() == before
 
     def test_clear_empties(self, registry: be.BackendRegistry) -> None:
+        """Clearing empties the registry."""
         registry.register("a", _fake_factory)
         registry.register("b", _fake_factory)
         with patch.object(importlib.metadata, "entry_points", return_value=[]):
@@ -151,6 +171,7 @@ class TestRegistration:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """Names keep their insertion order."""
         registry.register("b", _fake_factory)
         registry.register("a", _fake_factory)
         assert registry.names() == ["b", "a"]
@@ -176,7 +197,10 @@ def _make_ep(name: str, target: object) -> object:
 
 
 class TestDiscovery:
+    """Discovering backends through entry points."""
+
     def test_discover_loads_entry_points(self, registry: be.BackendRegistry) -> None:
+        """Discovery loads entry-point plugins."""
         eps = [_make_ep("plugin_a", _fake_factory)]
         with patch.object(importlib.metadata, "entry_points", return_value=eps):
             loaded = registry.discover()
@@ -187,6 +211,7 @@ class TestDiscovery:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """Discovery runs once unless forced."""
         eps = [_make_ep("plugin_a", _fake_factory)]
         with patch.object(importlib.metadata, "entry_points", return_value=eps):
             first = registry.discover()
@@ -195,6 +220,7 @@ class TestDiscovery:
             assert second == []
 
     def test_discover_force_reloads(self, registry: be.BackendRegistry) -> None:
+        """Forced discovery reloads the plugins."""
         eps = [_make_ep("plugin_a", _fake_factory)]
         with patch.object(importlib.metadata, "entry_points", return_value=eps):
             registry.discover()
@@ -206,6 +232,8 @@ class TestDiscovery:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """A broken plugin does not block the good ones."""
+
         def _boom() -> None:
             raise RuntimeError("third-party plugin crashed at import")
 
@@ -226,6 +254,8 @@ class TestDiscovery:
         self,
         registry: be.BackendRegistry,
     ) -> None:
+        """A failed discovery still counts as done."""
+
         class _BrokenEP:
             name = "broken"
             value = "<test:broken>"
@@ -241,9 +271,10 @@ class TestDiscovery:
         self,
         registry: be.BackendRegistry,
     ) -> None:
-        """A plugin whose factory is not callable must be logged-and-skipped,
-        not registered; other plugins in the same discovery pass must
-        still land in the registry."""
+        """A plugin whose factory is not callable is logged and skipped, not registered.
+
+        Other plugins in the same discovery pass still land in the registry.
+        """
 
         class _NonCallableEP:
             name = "nocall"
@@ -279,7 +310,10 @@ class TestDiscovery:
 
 
 class TestModuleSingleton:
+    """The module's global registry."""
+
     def test_built_in_backends_are_present(self) -> None:
+        """The built-in backends are registered."""
         reg = be.get_registry()
         assert "qiskit_ibm" in reg.names()
         assert "qiskit_aer" in reg.names()
@@ -289,11 +323,13 @@ class TestModuleSingleton:
         assert "iqm" in reg.names()
 
     def test_qiskit_ibm_backend_satisfies_protocol(self) -> None:
+        """The IBM backend satisfies the protocol."""
         b = be.get_backend("qiskit_ibm")
         assert b.name == "qiskit_ibm"
         assert isinstance(b.is_available(), bool)
 
     def test_pennylane_backend_satisfies_protocol(self) -> None:
+        """The PennyLane backend satisfies the protocol."""
         b = be.get_backend("pennylane")
         assert b.name == "pennylane"
         assert isinstance(b.is_available(), bool)
@@ -315,6 +351,7 @@ class TestModuleSingleton:
         provider: str,
         requires_approval: bool,
     ) -> None:
+        """Built-in backends carry their documented descriptors."""
         descriptor = be.describe_backend(name)
         assert descriptor.name == name
         assert descriptor.provider == provider
@@ -324,6 +361,7 @@ class TestModuleSingleton:
         assert "kuramoto_xy" in descriptor.workloads
 
     def test_cloud_descriptors_never_mark_auto_submit_safe(self) -> None:
+        """Cloud backends always require approval to submit."""
         cloud = [
             be.describe_backend("qiskit_ibm"),
             be.describe_backend("braket"),
@@ -333,18 +371,21 @@ class TestModuleSingleton:
         assert all(d.submit_requires_approval for d in cloud)
 
     def test_local_simulator_descriptors_are_non_submit_paths(self) -> None:
+        """Local simulators simulate and never submit."""
         local = [be.describe_backend("qiskit_aer"), be.describe_backend("cirq")]
         assert all(d.can_simulate for d in local)
         assert all(not d.can_submit for d in local)
         assert all(not d.submit_requires_approval for d in local)
 
     def test_list_quantum_backends_returns_sorted_descriptors(self) -> None:
+        """Backend descriptors are listed in name order."""
         descriptors = be.list_quantum_backends(auto_discover=False)
         names = [d.name for d in descriptors]
         assert names == sorted(names)
         assert {"qiskit_ibm", "qiskit_aer", "cirq", "braket", "pennylane", "iqm"} <= set(names)
 
     def test_legacy_plugin_gets_conservative_descriptor(self) -> None:
+        """A legacy plugin gets a conservative descriptor."""
         name = "legacy_descriptor_test"
         be.register_backend(name, _fake_factory)
         try:
@@ -359,12 +400,14 @@ class TestModuleSingleton:
             be.unregister_backend(name)
 
     def test_list_backends_auto_discover_false(self) -> None:
+        """Listing without discovery still shows the built-ins."""
         names = be.list_backends(auto_discover=False)
         assert "qiskit_ibm" in names
 
     def test_list_backends_auto_discovers_by_default(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Listing discovers plugins by default."""
         calls: list[bool] = []
 
         def mark_discovered(*, force: bool = False) -> list[str]:
@@ -377,6 +420,7 @@ class TestModuleSingleton:
         assert "qiskit_ibm" in names
 
     def test_register_backend_wrapper(self) -> None:
+        """The module-level register wrapper registers a backend."""
         unique = "xvendor_backend_for_test"
         be.register_backend(unique, _fake_factory)
         try:
@@ -387,6 +431,7 @@ class TestModuleSingleton:
     def test_qiskit_ibm_backend_unavailable_when_sdk_missing(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Without the IBM SDK the IBM backend is unavailable."""
         original_import = builtins.__import__
 
         def blocked_import(
@@ -412,13 +457,17 @@ class TestModuleSingleton:
 
 
 class TestPipelineBackendDiscovery:
+    """Backend discovery in a pipeline."""
+
     def test_entry_point_group_exact(self) -> None:
+        """The entry-point group name is fixed."""
         assert be.ENTRY_POINT_GROUP == "scpn_quantum_control.backends"
 
     def test_pipeline_register_then_run(self) -> None:
-        """Simulate a third-party plugin round-trip: register, fetch,
-        check availability, unregister. This is the exact contract a
-        downstream integrator depends on."""
+        """Run a third-party plugin round trip: register, fetch, check availability, unregister.
+
+        This is the exact contract a downstream integrator depends on.
+        """
         name = "xplugin_roundtrip"
         be.register_backend(name, _fake_factory)
         try:

@@ -31,7 +31,7 @@ _GLOBAL_SETTINGS = settings(
 
 
 def _order_parameter_value(theta: np.ndarray) -> float:
-    """Reference scalar order parameter ``R = |<exp(i theta)>|``."""
+    """Return the reference scalar order parameter ``R = |<exp(i theta)>|``."""
     return float(abs(np.mean(np.exp(1j * np.asarray(theta, dtype=np.float64)))))
 
 
@@ -50,19 +50,25 @@ def _finite_difference_mean_phase_gradient(theta: np.ndarray, step: float = 1e-6
 
 
 class TestPythonMeanPhaseFloor:
+    """The Python floor of the mean phase and its gradient."""
+
     def test_value_matches_atan2(self) -> None:
+        """The mean phase matches atan2 of the mean sine and cosine."""
         rng = np.random.default_rng(31)
         theta = rng.uniform(-math.pi, math.pi, size=13)
         expected = math.atan2(float(np.mean(np.sin(theta))), float(np.mean(np.cos(theta))))
         assert mp_obs._python_mean_phase(theta) == pytest.approx(expected, abs=1e-12)
 
     def test_single_oscillator_is_identity(self) -> None:
+        """One oscillator's mean phase is its own phase."""
         assert mp_obs._python_mean_phase(np.array([2.7])) == pytest.approx(2.7, abs=1e-12)
 
     def test_empty_input_is_zero(self) -> None:
+        """No oscillators give mean phase zero."""
         assert mp_obs._python_mean_phase(np.array([])) == 0.0
 
     def test_gradient_matches_closed_form(self) -> None:
+        """The gradient matches its closed form."""
         rng = np.random.default_rng(17)
         theta = rng.uniform(-math.pi, math.pi, size=15)
         cos_mean = float(np.mean(np.cos(theta)))
@@ -80,6 +86,7 @@ class TestPythonMeanPhaseFloor:
     )
     def test_gradient_sums_to_one(self, n: int, seed: int) -> None:
         # A global phase shift advances ψ identically, so the gradient sums to one.
+        """The gradient sums to one."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         assert float(np.sum(mp_obs._python_mean_phase_gradient(theta))) == pytest.approx(
@@ -92,6 +99,7 @@ class TestPythonMeanPhaseFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_gradient_matches_finite_difference(self, n: int, seed: int) -> None:
+        """The gradient agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-2:
@@ -103,30 +111,37 @@ class TestPythonMeanPhaseFloor:
         )
 
     def test_single_oscillator_gradient_is_one(self) -> None:
+        """One oscillator's gradient is one."""
         np.testing.assert_allclose(
             mp_obs._python_mean_phase_gradient(np.array([2.7])), [1.0], atol=1e-15
         )
 
     def test_aligned_gradient_is_uniform(self) -> None:
         # All oscillators aligned: ψ = θ and ∂ψ/∂θ_j = 1/N for every j.
+        """Aligned phases give a uniform gradient of 1/N."""
         grad = mp_obs._python_mean_phase_gradient(np.full(8, 0.7))
         np.testing.assert_allclose(grad, np.full(8, 1.0 / 8), atol=1e-15)
 
     def test_empty_gradient_is_empty(self) -> None:
+        """No oscillators give an empty gradient."""
         assert mp_obs._python_mean_phase_gradient(np.array([])).shape == (0,)
 
     def test_exact_incoherent_gradient_is_zero(self) -> None:
+        """An exactly incoherent state has zero gradient."""
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(mp_obs._python_mean_phase_gradient(theta), np.zeros(4))
 
 
 class TestRustMeanPhaseTier:
+    """The native mean-phase tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=48),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "mean_phase_gradient", None)):
             pytest.skip("scpn_quantum_engine.mean_phase_gradient unavailable")
@@ -142,18 +157,23 @@ class TestRustMeanPhaseTier:
         )
 
     def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native value raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             mp_obs._rust_mean_phase(np.zeros(3))
 
     def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native gradient raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             mp_obs._rust_mean_phase_gradient(np.zeros(3))
 
 
 class TestJuliaMeanPhaseTier:
+    """The Julia mean-phase tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import mean_phase as julia_value
         from oscillatools.accel.julia import mean_phase_gradient as julia_grad
@@ -167,12 +187,15 @@ class TestJuliaMeanPhaseTier:
 
 
 class TestMeanPhaseDispatch:
+    """Dispatch across the mean-phase tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=32),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         value_reference = mp_obs._python_mean_phase(theta)
@@ -190,6 +213,7 @@ class TestMeanPhaseDispatch:
             np.testing.assert_allclose(out, grad_reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected types and shapes."""
         from oscillatools.accel import (
             last_mean_phase_gradient_tier_used,
             last_mean_phase_tier_used,
@@ -207,15 +231,20 @@ class TestMeanPhaseDispatch:
         assert last_mean_phase_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert mp_obs._MEAN_PHASE_CHAIN[-1][0] == "python"
         assert mp_obs._MEAN_PHASE_GRADIENT_CHAIN[-1][0] == "python"
 
 
 class TestMeanPhasePartialEngine:
+    """An engine with only some mean-phase kernels."""
+
     def test_partial_engine_value_falls_through_to_python(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """A missing value kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -230,6 +259,8 @@ class TestMeanPhasePartialEngine:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """A missing gradient kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -267,7 +298,10 @@ def _finite_difference_mean_phase_hessian(theta: np.ndarray, step: float = 1e-6)
 
 
 class TestPythonMeanPhaseHessianFloor:
+    """The Python floor of the mean-phase Hessian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Hessian matches its closed form."""
         rng = np.random.default_rng(41)
         theta = rng.uniform(-math.pi, math.pi, size=11)
         cos_mean = float(np.mean(np.cos(theta)))
@@ -286,6 +320,7 @@ class TestPythonMeanPhaseHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_is_symmetric(self, n: int, seed: int) -> None:
+        """The Hessian is symmetric."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         hessian = mp_obs._python_mean_phase_hessian(theta)
@@ -297,6 +332,7 @@ class TestPythonMeanPhaseHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rows_sum_to_zero(self, n: int, seed: int) -> None:
+        """Each Hessian row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         hessian = mp_obs._python_mean_phase_hessian(theta)
@@ -308,6 +344,7 @@ class TestPythonMeanPhaseHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference_of_gradient(self, n: int, seed: int) -> None:
+        """The Hessian agrees with finite differences of the gradient."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-2:
@@ -318,25 +355,31 @@ class TestPythonMeanPhaseHessianFloor:
         )
 
     def test_single_oscillator_is_zero(self) -> None:
+        """One oscillator has a zero 1-by-1 Hessian."""
         hessian = mp_obs._python_mean_phase_hessian(np.array([2.7]))
         assert hessian.shape == (1, 1)
         assert abs(float(hessian[0, 0])) < 1e-15
 
     def test_empty_input_returns_empty_matrix(self) -> None:
+        """No oscillators give an empty Hessian."""
         assert mp_obs._python_mean_phase_hessian(np.array([])).shape == (0, 0)
 
     def test_exact_incoherent_returns_zero_matrix(self) -> None:
+        """An exactly incoherent state has a zero Hessian."""
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(mp_obs._python_mean_phase_hessian(theta), np.zeros((4, 4)))
 
 
 class TestRustMeanPhaseHessianTier:
+    """The native mean-phase Hessian tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=40),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "mean_phase_hessian", None)):
             pytest.skip("scpn_quantum_engine.mean_phase_hessian unavailable")
@@ -349,11 +392,14 @@ class TestRustMeanPhaseHessianTier:
         )
 
     def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Hessian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             mp_obs._rust_mean_phase_hessian(np.zeros(3))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -371,7 +417,10 @@ class TestRustMeanPhaseHessianTier:
 
 
 class TestJuliaMeanPhaseHessianTier:
+    """The Julia mean-phase Hessian tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import mean_phase_hessian as julia_hessian
 
@@ -383,12 +432,15 @@ class TestJuliaMeanPhaseHessianTier:
 
 
 class TestMeanPhaseHessianDispatch:
+    """Dispatch across the mean-phase Hessian tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=24),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         reference = mp_obs._python_mean_phase_hessian(theta)
@@ -400,6 +452,7 @@ class TestMeanPhaseHessianDispatch:
             np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public function return the Hessian and record the tier."""
         from oscillatools.accel import (
             last_mean_phase_hessian_tier_used,
             mean_phase_hessian,
@@ -412,4 +465,5 @@ class TestMeanPhaseHessianDispatch:
         assert last_mean_phase_hessian_tier_used() in {"rust", "julia", "python"}
 
     def test_chain_ends_with_python_floor(self) -> None:
+        """The Hessian chain ends with the Python floor."""
         assert mp_obs._MEAN_PHASE_HESSIAN_CHAIN[-1][0] == "python"

@@ -99,7 +99,6 @@ from scpn_quantum_control.program_ad_trapezoid_primitives import (
 
 def _flat(*arrays: object) -> NDArray[np.float64]:
     """Return the flat concatenation used by multi-operand primitive packing."""
-
     return np.concatenate([np.asarray(array, dtype=np.float64).reshape(-1) for array in arrays])
 
 
@@ -107,7 +106,6 @@ def _analytic_jvp_jacobian(
     rule: CustomDerivativeRule, values: NDArray[np.float64], out_size: int
 ) -> NDArray[np.float64]:
     """Assemble the forward-rule Jacobian one column per unit input tangent."""
-
     assert rule.jvp_rule is not None
     jacobian = np.zeros((out_size, values.size), dtype=np.float64)
     for column in range(values.size):
@@ -123,7 +121,6 @@ def _analytic_vjp_jacobian(
     rule: CustomDerivativeRule, values: NDArray[np.float64], out_size: int
 ) -> NDArray[np.float64]:
     """Assemble the reverse-rule Jacobian one row per unit output cotangent."""
-
     assert rule.vjp_rule is not None
     jacobian = np.zeros((out_size, values.size), dtype=np.float64)
     for row in range(out_size):
@@ -144,7 +141,6 @@ def _assert_rule_matches_finite_difference(
     step: float = 1e-6,
 ) -> None:
     """Assert forward and reverse rules match the unconstrained FD Jacobian."""
-
     values = np.asarray(values, dtype=np.float64).reshape(-1)
     out = np.asarray(rule.value_fn(values), dtype=np.float64).reshape(-1)
     finite_difference = finite_difference_jacobian(rule.value_fn, values, step=step)
@@ -158,7 +154,6 @@ def _assert_rule_matches_finite_difference(
 
 def _symmetric_directions(size: int) -> list[NDArray[np.float64]]:
     """Return flattened basis directions spanning symmetric ``size×size`` matrices."""
-
     directions: list[NDArray[np.float64]] = []
     for row in range(size):
         for column in range(row, size):
@@ -185,7 +180,6 @@ def _assert_symmetric_eigenvalue_rule(
     spectrum. Restricting the check to symmetric directions keeps every
     perturbation inside the differentiable domain while still spanning it.
     """
-
     values = np.asarray(matrix, dtype=np.float64).reshape(-1)
     assert rule.jvp_rule is not None
     assert rule.vjp_rule is not None
@@ -228,6 +222,7 @@ _UNARY_INPUTS: dict[str, NDArray[np.float64]] = {
 
 @pytest.mark.parametrize("name", sorted(_UNARY_INPUTS))
 def test_elementwise_unary_rule_matches_finite_difference(name: str) -> None:
+    """Each element-wise unary rule agrees with finite differences."""
     rule = _program_ad_elementwise_derivative_rule(name)
     _assert_rule_matches_finite_difference(rule, _UNARY_INPUTS[name])
 
@@ -248,6 +243,7 @@ _BINARY_INPUTS: dict[str, tuple[NDArray[np.float64], NDArray[np.float64]]] = {
 
 @pytest.mark.parametrize("name", sorted(_BINARY_INPUTS))
 def test_elementwise_binary_rule_matches_finite_difference(name: str) -> None:
+    """Each element-wise binary rule agrees with finite differences."""
     left, right = _BINARY_INPUTS[name]
     rule = program_ad_elementwise_binary_derivative_rule(name, left.shape, right.shape)
     _assert_rule_matches_finite_difference(rule, _flat(left, right))
@@ -257,21 +253,25 @@ def test_elementwise_binary_rule_matches_finite_difference(name: str) -> None:
 # Cumulative
 # --------------------------------------------------------------------------- #
 def test_cumsum_rule_matches_finite_difference() -> None:
+    """The cumsum rule agrees with finite differences."""
     rule = program_ad_cumulative_cumsum_derivative_rule((5,))
     _assert_rule_matches_finite_difference(rule, _RNG.normal(size=5))
 
 
 def test_cumprod_rule_matches_finite_difference() -> None:
+    """The cumprod rule agrees with finite differences."""
     rule = program_ad_cumulative_cumprod_derivative_rule((5,))
     _assert_rule_matches_finite_difference(rule, _RNG.uniform(0.5, 1.5, size=5))
 
 
 def test_cumprod_axis_rule_matches_finite_difference() -> None:
+    """The cumprod rule along an axis agrees with finite differences."""
     rule = program_ad_cumulative_cumprod_derivative_rule((3, 4), 1)
     _assert_rule_matches_finite_difference(rule, _RNG.uniform(0.5, 1.5, size=(3, 4)))
 
 
 def test_diff_rule_matches_finite_difference() -> None:
+    """The diff rule agrees with finite differences."""
     rule = program_ad_cumulative_diff_derivative_rule((6,))
     _assert_rule_matches_finite_difference(rule, _RNG.normal(size=6))
 
@@ -280,30 +280,35 @@ def test_diff_rule_matches_finite_difference() -> None:
 # Reduction
 # --------------------------------------------------------------------------- #
 def test_sum_rule_matches_finite_difference() -> None:
+    """The sum rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_sum_derivative_rule((6,)), _RNG.normal(size=6)
     )
 
 
 def test_mean_rule_matches_finite_difference() -> None:
+    """The mean rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_mean_derivative_rule((6,)), _RNG.normal(size=6)
     )
 
 
 def test_var_rule_matches_finite_difference() -> None:
+    """The variance rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_var_derivative_rule((6,)), _RNG.normal(size=6)
     )
 
 
 def test_std_rule_matches_finite_difference() -> None:
+    """The standard-deviation rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_std_derivative_rule((6,)), _RNG.normal(size=6) + 3.0
     )
 
 
 def test_max_rule_matches_finite_difference() -> None:
+    """The max rule, away from ties, agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_max_derivative_rule((6,)),
         np.array([0.1, 0.9, 0.3, 0.7, 0.2, 0.5]),
@@ -311,6 +316,7 @@ def test_max_rule_matches_finite_difference() -> None:
 
 
 def test_min_rule_matches_finite_difference() -> None:
+    """The min rule, away from ties, agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_min_derivative_rule((6,)),
         np.array([0.4, 0.9, 0.1, 0.7, 0.6, 0.5]),
@@ -318,6 +324,7 @@ def test_min_rule_matches_finite_difference() -> None:
 
 
 def test_median_rule_matches_finite_difference() -> None:
+    """The median rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_median_derivative_rule((7,)),
         np.array([0.4, 0.9, 0.1, 0.7, 0.6, 0.2, 0.8]),
@@ -325,22 +332,26 @@ def test_median_rule_matches_finite_difference() -> None:
 
 
 def test_prod_rule_matches_finite_difference() -> None:
+    """The product rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_prod_derivative_rule((6,)), _RNG.uniform(0.5, 1.5, size=6)
     )
 
 
 def test_quantile_rule_matches_finite_difference() -> None:
+    """The quantile rule agrees with finite differences."""
     rule = program_ad_reduction_quantile_derivative_rule((7,), q=0.4)
     _assert_rule_matches_finite_difference(rule, np.array([0.4, 0.9, 0.1, 0.7, 0.6, 0.2, 0.8]))
 
 
 def test_percentile_rule_matches_finite_difference() -> None:
+    """The percentile rule agrees with finite differences."""
     rule = program_ad_reduction_percentile_derivative_rule((7,), q=40.0)
     _assert_rule_matches_finite_difference(rule, np.array([0.4, 0.9, 0.1, 0.7, 0.6, 0.2, 0.8]))
 
 
 def test_trapezoid_rule_matches_finite_difference() -> None:
+    """The trapezoid rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_reduction_trapezoid_derivative_rule((6,)), _RNG.normal(size=6)
     )
@@ -350,6 +361,7 @@ def test_trapezoid_rule_matches_finite_difference() -> None:
 # Product / contraction
 # --------------------------------------------------------------------------- #
 def test_matmul_rule_matches_finite_difference() -> None:
+    """The matmul rule agrees with finite differences."""
     rule = program_ad_product_matmul_derivative_rule((2, 3), (3, 2))
     _assert_rule_matches_finite_difference(
         rule, _flat(_RNG.normal(size=(2, 3)), _RNG.normal(size=(3, 2)))
@@ -357,16 +369,19 @@ def test_matmul_rule_matches_finite_difference() -> None:
 
 
 def test_outer_rule_matches_finite_difference() -> None:
+    """The outer-product rule agrees with finite differences."""
     rule = program_ad_product_outer_derivative_rule((3,), (4,))
     _assert_rule_matches_finite_difference(rule, _flat(_RNG.normal(size=3), _RNG.normal(size=4)))
 
 
 def test_inner_rule_matches_finite_difference() -> None:
+    """The inner-product rule agrees with finite differences."""
     rule = program_ad_product_inner_derivative_rule((4,), (4,))
     _assert_rule_matches_finite_difference(rule, _flat(_RNG.normal(size=4), _RNG.normal(size=4)))
 
 
 def test_tensordot_rule_matches_finite_difference() -> None:
+    """The tensordot rule agrees with finite differences."""
     rule = program_ad_product_tensordot_derivative_rule((2, 3), (3, 2), axes=1)
     _assert_rule_matches_finite_difference(
         rule, _flat(_RNG.normal(size=(2, 3)), _RNG.normal(size=(3, 2)))
@@ -374,6 +389,7 @@ def test_tensordot_rule_matches_finite_difference() -> None:
 
 
 def test_einsum_rule_matches_finite_difference() -> None:
+    """The einsum rule agrees with finite differences."""
     rule = program_ad_product_einsum_derivative_rule("ij,jk->ik", ((2, 3), (3, 2)))
     _assert_rule_matches_finite_difference(
         rule, _flat(_RNG.normal(size=(2, 3)), _RNG.normal(size=(3, 2)))
@@ -388,34 +404,40 @@ def _well_conditioned(size: int) -> NDArray[np.float64]:
 
 
 def test_solve_rule_matches_finite_difference() -> None:
+    """The linear-solve rule agrees with finite differences."""
     rule = program_ad_linalg_solve_derivative_rule((3, 3), (3,))
     _assert_rule_matches_finite_difference(rule, _flat(_well_conditioned(3), _RNG.normal(size=3)))
 
 
 def test_trace_rule_matches_finite_difference() -> None:
+    """The trace rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_linalg_trace_derivative_rule((3, 3)), _RNG.normal(size=(3, 3))
     )
 
 
 def test_diag_rule_matches_finite_difference() -> None:
+    """The diag rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_linalg_diag_derivative_rule((4, 4)), _RNG.normal(size=(4, 4))
     )
 
 
 def test_diagflat_rule_matches_finite_difference() -> None:
+    """The diagflat rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_linalg_diagflat_derivative_rule((4,)), _RNG.normal(size=4)
     )
 
 
 def test_matrix_power_rule_matches_finite_difference() -> None:
+    """The matrix-power rule agrees with finite differences."""
     rule = program_ad_linalg_matrix_power_derivative_rule(2)
     _assert_rule_matches_finite_difference(rule, _well_conditioned(3), rtol=1e-4, atol=1e-5)
 
 
 def test_multi_dot_rule_matches_finite_difference() -> None:
+    """The multi-dot rule agrees with finite differences."""
     rule = program_ad_linalg_multi_dot_derivative_rule(((2, 3), (3, 2), (2, 4)))
     _assert_rule_matches_finite_difference(
         rule,
@@ -424,6 +446,7 @@ def test_multi_dot_rule_matches_finite_difference() -> None:
 
 
 def test_svdvals_rule_matches_finite_difference() -> None:
+    """The singular-value rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_linalg_svdvals_derivative_rule((3, 3)),
         _RNG.normal(size=(3, 3)),
@@ -433,6 +456,7 @@ def test_svdvals_rule_matches_finite_difference() -> None:
 
 
 def test_pinv_rule_matches_finite_difference() -> None:
+    """The pseudo-inverse rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_linalg_pinv_derivative_rule((3, 3)),
         _well_conditioned(3),
@@ -442,6 +466,7 @@ def test_pinv_rule_matches_finite_difference() -> None:
 
 
 def test_eigvalsh_rule_matches_symmetric_finite_difference() -> None:
+    """The eigvalsh rule agrees with finite differences on symmetric inputs."""
     base = _RNG.normal(size=(3, 3))
     symmetric = base + base.T + np.diag([3.0, 6.0, 9.0])
     _assert_symmetric_eigenvalue_rule(
@@ -450,6 +475,7 @@ def test_eigvalsh_rule_matches_symmetric_finite_difference() -> None:
 
 
 def test_eigvals_rule_matches_symmetric_finite_difference() -> None:
+    """The eigvals rule agrees with finite differences on symmetric inputs."""
     base = _RNG.normal(size=(3, 3))
     symmetric = base + base.T + np.diag([3.0, 6.0, 9.0])
     _assert_symmetric_eigenvalue_rule(
@@ -461,11 +487,13 @@ def test_eigvals_rule_matches_symmetric_finite_difference() -> None:
 # Signal
 # --------------------------------------------------------------------------- #
 def test_convolve_rule_matches_finite_difference() -> None:
+    """The convolve rule agrees with finite differences."""
     rule = program_ad_signal_convolve_derivative_rule((4,), (3,))
     _assert_rule_matches_finite_difference(rule, _flat(_RNG.normal(size=4), _RNG.normal(size=3)))
 
 
 def test_correlate_rule_matches_finite_difference() -> None:
+    """The correlate rule agrees with finite differences."""
     rule = program_ad_signal_correlate_derivative_rule((4,), (3,))
     _assert_rule_matches_finite_difference(rule, _flat(_RNG.normal(size=4), _RNG.normal(size=3)))
 
@@ -474,6 +502,7 @@ def test_correlate_rule_matches_finite_difference() -> None:
 # Interpolation
 # --------------------------------------------------------------------------- #
 def test_interp_rule_matches_finite_difference() -> None:
+    """The interpolation rule agrees with finite differences."""
     grid = np.array([0.0, 1.0, 2.0, 3.0])
     query = np.array([0.3, 0.9, 1.4, 2.1, 2.7])
     fp = _RNG.normal(size=4)
@@ -485,6 +514,7 @@ def test_interp_rule_matches_finite_difference() -> None:
 # Stencil
 # --------------------------------------------------------------------------- #
 def test_gradient_rule_matches_finite_difference() -> None:
+    """The gradient-stencil rule agrees with finite differences."""
     _assert_rule_matches_finite_difference(
         program_ad_stencil_gradient_derivative_rule((6,)), _RNG.normal(size=6)
     )
@@ -494,12 +524,14 @@ def test_gradient_rule_matches_finite_difference() -> None:
 # Selection
 # --------------------------------------------------------------------------- #
 def test_where_rule_matches_finite_difference() -> None:
+    """The where rule agrees with finite differences."""
     condition = np.array([True, False, True, False, True])
     rule = program_ad_selection_where_derivative_rule(condition, (5,), (5,))
     _assert_rule_matches_finite_difference(rule, _flat(_RNG.normal(size=5), _RNG.normal(size=5)))
 
 
 def test_clip_interior_rule_matches_finite_difference() -> None:
+    """The clip rule agrees with finite differences away from the bounds."""
     rule = program_ad_selection_clip_derivative_rule((6,), lower_shape=(1,), upper_shape=(1,))
     # Mix of interior, below-lower, and above-upper entries; none at a boundary.
     source = np.array([-1.2, -0.2, 0.1, 0.3, 0.9, 1.5])

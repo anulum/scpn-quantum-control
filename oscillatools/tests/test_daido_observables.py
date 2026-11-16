@@ -28,7 +28,7 @@ _GLOBAL_SETTINGS = settings(
 
 
 def _order_parameter_value(theta: np.ndarray) -> float:
-    """Reference scalar order parameter ``R = |<exp(i theta)>|``."""
+    """Return the reference scalar order parameter ``R = |<exp(i theta)>|``."""
     return float(abs(np.mean(np.exp(1j * np.asarray(theta, dtype=np.float64)))))
 
 
@@ -53,14 +53,18 @@ def _finite_difference_daido_gradient(theta: np.ndarray, m: int, step: float = 1
 
 
 class TestPythonDaidoFloor:
+    """The Python floor of the Daido order parameter and its gradient."""
+
     def test_two_cluster_state_is_detected(self) -> None:
         # Two antipodal clusters: r_1 = 0 (first harmonic cancels), r_2 = 1.
+        """A two-cluster state reads zero at m = 1 and one at m = 2."""
         theta = np.array([0.0, 0.0, math.pi, math.pi])
         assert da_obs._python_daido_order_parameter(theta, 1) == pytest.approx(0.0, abs=1e-10)
         assert da_obs._python_daido_order_parameter(theta, 2) == pytest.approx(1.0, abs=1e-10)
 
     def test_three_cluster_state_is_detected(self) -> None:
         # Three evenly spaced clusters: r_1 = r_2 = 0 but r_3 = 1.
+        """A three-cluster state reads one only at m = 3."""
         theta = np.repeat([0.0, 2.0 * math.pi / 3.0, 4.0 * math.pi / 3.0], 3)
         assert da_obs._python_daido_order_parameter(theta, 1) == pytest.approx(0.0, abs=1e-10)
         assert da_obs._python_daido_order_parameter(theta, 2) == pytest.approx(0.0, abs=1e-10)
@@ -72,6 +76,7 @@ class TestPythonDaidoFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_m1_reduces_to_order_parameter(self, n: int, seed: int) -> None:
+        """The first harmonic reduces to the Kuramoto order parameter."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         assert da_obs._python_daido_order_parameter(theta, 1) == pytest.approx(
@@ -90,6 +95,7 @@ class TestPythonDaidoFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_gradient_matches_finite_difference(self, n: int, m: int, seed: int) -> None:
+        """The gradient agrees with finite differences."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _daido_value(theta, m) < 1e-2:
@@ -107,17 +113,20 @@ class TestPythonDaidoFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_gradient_sums_to_zero(self, n: int, m: int, seed: int) -> None:
+        """The gradient sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         assert abs(float(np.sum(da_obs._python_daido_order_parameter_gradient(theta, m)))) < 1e-12
 
     def test_value_in_unit_interval(self) -> None:
+        """The value lies in [0, 1]."""
         rng = np.random.default_rng(3)
         theta = rng.uniform(-math.pi, math.pi, size=40)
         for m in (1, 2, 3, 4):
             assert 0.0 - 1e-12 <= da_obs._python_daido_order_parameter(theta, m) <= 1.0 + 1e-12
 
     def test_rejects_non_positive_harmonic(self) -> None:
+        """A harmonic that is not a positive integer is refused."""
         theta = np.zeros(4)
         for bad in (0, -1, -3):
             with pytest.raises(ValueError, match="positive integer"):
@@ -126,10 +135,12 @@ class TestPythonDaidoFloor:
                 da_obs._python_daido_order_parameter_gradient(theta, bad)
 
     def test_empty_input(self) -> None:
+        """No oscillators give value zero and an empty gradient."""
         assert da_obs._python_daido_order_parameter(np.array([]), 2) == 0.0
         assert da_obs._python_daido_order_parameter_gradient(np.array([]), 2).shape == (0,)
 
     def test_exact_incoherent_gradient_is_zero(self) -> None:
+        """An exactly incoherent state has zero gradient."""
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(
             da_obs._python_daido_order_parameter_gradient(theta, 1), np.zeros(4)
@@ -137,6 +148,8 @@ class TestPythonDaidoFloor:
 
 
 class TestRustDaidoTier:
+    """The native Daido tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=48),
@@ -144,6 +157,7 @@ class TestRustDaidoTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, m: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "daido_order_parameter_gradient", None)):
             pytest.skip("scpn_quantum_engine.daido_order_parameter_gradient unavailable")
@@ -159,22 +173,28 @@ class TestRustDaidoTier:
         )
 
     def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native value raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             da_obs._rust_daido_order_parameter(np.zeros(3), 2)
 
     def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native gradient raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             da_obs._rust_daido_order_parameter_gradient(np.zeros(3), 2)
 
     def test_rust_rejects_non_positive_harmonic(self) -> None:
+        """The native tier refuses a non-positive harmonic."""
         with pytest.raises(ValueError, match="positive integer"):
             da_obs._rust_daido_order_parameter(np.zeros(3), 0)
 
 
 class TestJuliaDaidoTier:
+    """The Julia Daido tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import daido_order_parameter as julia_value
         from oscillatools.accel.julia import daido_order_parameter_gradient as julia_grad
@@ -193,6 +213,8 @@ class TestJuliaDaidoTier:
 
 
 class TestDaidoDispatch:
+    """Dispatch across the Daido tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=24),
@@ -200,6 +222,7 @@ class TestDaidoDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, m: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         value_ref = da_obs._python_daido_order_parameter(theta, m)
@@ -217,6 +240,7 @@ class TestDaidoDispatch:
             np.testing.assert_allclose(out, grad_ref, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public functions return the expected types and shapes."""
         from oscillatools.accel import (
             daido_order_parameter,
             daido_order_parameter_gradient,
@@ -234,12 +258,17 @@ class TestDaidoDispatch:
         assert last_daido_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
+        """Both tier chains end with the Python floor."""
         assert da_obs._DAIDO_ORDER_PARAMETER_CHAIN[-1][0] == "python"
         assert da_obs._DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
 
 
 class TestDaidoPartialEngine:
+    """An engine with only some Daido kernels."""
+
     def test_partial_engine_value_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A missing value kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -254,6 +283,8 @@ class TestDaidoPartialEngine:
         assert disp.last_tier == "python"
 
     def test_partial_engine_gradient_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A missing gradient kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -292,7 +323,10 @@ def _finite_difference_daido_hessian(theta: np.ndarray, m: int, step: float = 1e
 
 
 class TestPythonDaidoHessianFloor:
+    """The Python floor of the Daido Hessian."""
+
     def test_matches_closed_form(self) -> None:
+        """The Hessian matches its closed form."""
         rng = np.random.default_rng(43)
         theta = rng.uniform(-math.pi, math.pi, size=11)
         m = 2
@@ -315,6 +349,7 @@ class TestPythonDaidoHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_m1_reduces_to_order_parameter_hessian(self, n: int, seed: int) -> None:
+        """The first harmonic reduces to the order-parameter Hessian."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         np.testing.assert_allclose(
@@ -330,6 +365,7 @@ class TestPythonDaidoHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_symmetric_and_rows_sum_to_zero(self, n: int, m: int, seed: int) -> None:
+        """The Hessian is symmetric and each row sums to zero."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         hessian = da_obs._python_daido_order_parameter_hessian(theta, m)
@@ -343,6 +379,7 @@ class TestPythonDaidoHessianFloor:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_matches_finite_difference_of_gradient(self, n: int, m: int, seed: int) -> None:
+        """The Hessian agrees with finite differences of the gradient."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _daido_value(theta, m) < 1e-2:
@@ -354,10 +391,12 @@ class TestPythonDaidoHessianFloor:
         )
 
     def test_rejects_non_positive_harmonic(self) -> None:
+        """A harmonic that is not a positive integer is refused."""
         with pytest.raises(ValueError, match="positive integer"):
             da_obs._python_daido_order_parameter_hessian(np.zeros(4), 0)
 
     def test_empty_and_incoherent(self) -> None:
+        """No oscillators give an empty Hessian, and an incoherent state a zero one."""
         assert da_obs._python_daido_order_parameter_hessian(np.array([]), 2).shape == (0, 0)
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(
@@ -366,6 +405,8 @@ class TestPythonDaidoHessianFloor:
 
 
 class TestRustDaidoHessianTier:
+    """The native Daido Hessian tier."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=1, max_value=40),
@@ -373,6 +414,7 @@ class TestRustDaidoHessianTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, m: int, seed: int) -> None:
+        """The native tier matches the Python floor."""
         engine = pytest.importorskip("scpn_quantum_engine")
         if not callable(getattr(engine, "daido_order_parameter_hessian", None)):
             pytest.skip("scpn_quantum_engine.daido_order_parameter_hessian unavailable")
@@ -385,11 +427,14 @@ class TestRustDaidoHessianTier:
         )
 
     def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the engine the native Hessian raises."""
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             da_obs._rust_daido_order_parameter_hessian(np.zeros(3), 2)
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """An engine without the kernel falls through to the Python floor."""
+
         class PartialEngine:
             pass
 
@@ -408,7 +453,10 @@ class TestRustDaidoHessianTier:
 
 
 class TestJuliaDaidoHessianTier:
+    """The Julia Daido Hessian tier."""
+
     def test_julia_matches_python_floor(self) -> None:
+        """The Julia tier matches the Python floor."""
         pytest.importorskip("juliacall")
         from oscillatools.accel.julia import (
             daido_order_parameter_hessian as julia_hessian,
@@ -425,6 +473,8 @@ class TestJuliaDaidoHessianTier:
 
 
 class TestDaidoHessianDispatch:
+    """Dispatch across the Daido Hessian tiers."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=20),
@@ -432,6 +482,7 @@ class TestDaidoHessianDispatch:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_all_available_tiers_agree(self, n: int, m: int, seed: int) -> None:
+        """Every available tier agrees with the reference."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
         reference = da_obs._python_daido_order_parameter_hessian(theta, m)
@@ -443,6 +494,7 @@ class TestDaidoHessianDispatch:
             np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
 
     def test_registry_and_public_api(self) -> None:
+        """The registry and the public function return the Hessian and record the tier."""
         from oscillatools.accel import (
             daido_order_parameter_hessian,
             last_daido_hessian_tier_used,
@@ -455,4 +507,5 @@ class TestDaidoHessianDispatch:
         assert last_daido_hessian_tier_used() in {"rust", "julia", "python"}
 
     def test_chain_ends_with_python_floor(self) -> None:
+        """The Hessian chain ends with the Python floor."""
         assert da_obs._DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"

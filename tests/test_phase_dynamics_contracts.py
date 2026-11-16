@@ -341,7 +341,10 @@ def test_adapt_vqe_ansatz_action_is_unitary() -> None:
 
 
 class TestQRCEdge:
+    """Edge cases of the QRC phase detector."""
+
     def test_boundary_detection(self) -> None:
+        """Boundary detection reports a non-negative accuracy."""
         from scpn_quantum_control.analysis.qrc_phase_detector import qrc_phase_detection
 
         T = _ring(3)
@@ -353,6 +356,7 @@ class TestQRCEdge:
         assert result.accuracy >= 0
 
     def test_generate_data_weight1(self) -> None:
+        """A single coupling gives one training row."""
         from scpn_quantum_control.analysis.qrc_phase_detector import generate_training_data
 
         X, y = generate_training_data(OMEGA_N_16[:2], _ring(2), np.array([1.0]), 0.5, max_weight=1)
@@ -360,7 +364,10 @@ class TestQRCEdge:
 
 
 class TestFloquetDefaults:
+    """Default arguments of the Floquet scan."""
+
     def test_default_amplitudes(self) -> None:
+        """The default scan has ten amplitudes."""
         from scpn_quantum_control.phase.floquet_kuramoto import scan_drive_amplitude
 
         result = scan_drive_amplitude(
@@ -374,6 +381,7 @@ class TestFloquetDefaults:
         assert len(result["amplitude"]) == 10
 
     def test_subharmonic_ratio_short_signal(self) -> None:
+        """A short signal still gives a finite subharmonic ratio."""
         from scpn_quantum_control.phase.floquet_kuramoto import floquet_evolve
 
         result = floquet_evolve(
@@ -389,7 +397,10 @@ class TestFloquetDefaults:
 
 
 class TestConcordanceDefaults:
+    """Default arguments of the concordance scan."""
+
     def test_default_k_range(self) -> None:
+        """The default scan has 15 couplings."""
         from scpn_quantum_control.analysis.critical_concordance import critical_concordance
 
         result = critical_concordance(OMEGA_N_16[:2], _ring(2))
@@ -397,13 +408,17 @@ class TestConcordanceDefaults:
 
 
 class TestBerryDefaults:
+    """Default arguments of the Berry-phase scan."""
+
     def test_default_k_range(self) -> None:
+        """The default scan has 29 midpoints."""
         from scpn_quantum_control.analysis.berry_phase import berry_phase_scan
 
         result = berry_phase_scan(OMEGA_N_16[:2], _ring(2))
         assert len(result.k_values) == 29
 
     def test_single_step(self) -> None:
+        """One interval gives one connection."""
         from scpn_quantum_control.analysis.berry_phase import berry_phase_scan
 
         result = berry_phase_scan(OMEGA_N_16[:2], _ring(2), k_range=np.array([1.0, 2.0]))
@@ -411,7 +426,10 @@ class TestBerryDefaults:
 
 
 class TestMpembaEdge:
+    """Edge cases of the Mpemba scan."""
+
     def test_high_gamma(self) -> None:
+        """A high damping rate still returns six times."""
         from scpn_quantum_control.analysis.quantum_mpemba import mpemba_experiment
 
         result = mpemba_experiment(
@@ -421,7 +439,10 @@ class TestMpembaEdge:
 
 
 class TestNESSDefaults:
+    """Default arguments of the steady-state scan."""
+
     def test_default_k_range(self) -> None:
+        """The default scan has 15 couplings."""
         from scpn_quantum_control.analysis.lindblad_ness import ness_vs_coupling
 
         result = ness_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -429,13 +450,17 @@ class TestNESSDefaults:
 
 
 class TestAdiabaticDefaults:
+    """Default arguments of the adiabatic ramp."""
+
     def test_default_T_values(self) -> None:
+        """The default time scan has five totals."""
         from scpn_quantum_control.phase.adiabatic_preparation import adiabatic_time_scaling
 
         result = adiabatic_time_scaling(OMEGA_N_16[:2], _ring(2), K_target=2.0, n_steps_per_T=5)
         assert len(result["T_total"]) == 5
 
     def test_default_k_range_ramp(self) -> None:
+        """The default ramp has 51 time points."""
         from scpn_quantum_control.phase.adiabatic_preparation import adiabatic_ramp
 
         result = adiabatic_ramp(OMEGA_N_16[:2], _ring(2), K_target=1.0)
@@ -443,13 +468,17 @@ class TestAdiabaticDefaults:
 
 
 class TestXXZDefaults:
+    """Default arguments of the XXZ scans."""
+
     def test_default_ranges(self) -> None:
+        """The default diagram has six anisotropies."""
         from scpn_quantum_control.analysis.xxz_phase_diagram import anisotropy_phase_diagram
 
         result = anisotropy_phase_diagram(OMEGA_N_16[:2], _ring(2))
         assert len(result.delta_values) == 6
 
     def test_default_scan(self) -> None:
+        """The default scan has 15 couplings."""
         from scpn_quantum_control.analysis.xxz_phase_diagram import scan_coupling_at_delta
 
         result = scan_coupling_at_delta(OMEGA_N_16[:2], _ring(2), delta=0.5)
@@ -457,7 +486,10 @@ class TestXXZDefaults:
 
 
 class TestPairingDefaults:
+    """Default arguments of the pairing scan."""
+
     def test_default_delta_range(self) -> None:
+        """The default scan has six anisotropies."""
         from scpn_quantum_control.analysis.pairing_correlator import pairing_vs_anisotropy
 
         result = pairing_vs_anisotropy(OMEGA_N_16[:2], _ring(2), K_base=2.0)
@@ -472,7 +504,10 @@ class TestPairingDefaults:
 
 
 class TestEntropyDefaults:
+    """Default arguments of the entropy scan."""
+
     def test_default_k_range(self) -> None:
+        """The default scan has 20 couplings."""
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
 
         result = entanglement_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -487,7 +522,10 @@ class TestEntropyDefaults:
 
 
 class TestKrylovDefaults:
+    """Default arguments of the Krylov scan."""
+
     def test_default_k_range(self) -> None:
+        """The default scan has ten couplings."""
         from scpn_quantum_control.analysis.krylov_complexity import krylov_vs_coupling
 
         result = krylov_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -504,7 +542,10 @@ class TestKrylovDefaults:
 
 
 class TestMagicDefaults:
+    """Default arguments of the magic scan."""
+
     def test_default_k_range(self) -> None:
+        """The default scan has 15 couplings."""
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_vs_coupling
 
         result = magic_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -512,13 +553,17 @@ class TestMagicDefaults:
 
 
 class TestXXZEdge:
+    """Edge cases of the XXZ Hamiltonian."""
+
     def test_large_delta(self) -> None:
+        """A large anisotropy gives a 4-by-4 matrix."""
         K = 2.0 * _ring(2)
         omega = OMEGA_N_16[:2]
         H = knm_to_xxz_hamiltonian(K, omega, delta=2.0)
         assert H.to_matrix().shape == (4, 4)
 
     def test_zero_coupling_xxz(self) -> None:
+        """Zero coupling gives a diagonal matrix."""
         K = np.zeros((2, 2))
         omega = OMEGA_N_16[:2]
         H = knm_to_xxz_hamiltonian(K, omega, delta=1.0)
@@ -528,13 +573,17 @@ class TestXXZEdge:
 
 
 class TestSyncWitnessEdge:
+    """Edge cases of the synchronisation witness."""
+
     def test_2qubit_separable_bound(self) -> None:
+        """The two-qubit separable bound lies in (0, 1]."""
         from scpn_quantum_control.analysis.sync_entanglement_witness import R_separable_bound
 
         bound = R_separable_bound(2)
         assert 0 < bound <= 1.0
 
     def test_3qubit_separable_bound(self) -> None:
+        """The three-qubit separable bound lies in (0, 1]."""
         from scpn_quantum_control.analysis.sync_entanglement_witness import R_separable_bound
 
         bound = R_separable_bound(3)
@@ -542,7 +591,10 @@ class TestSyncWitnessEdge:
 
 
 class TestQSLDefaults:
+    """Default arguments of the speed-limit scan."""
+
     def test_default_k_base_range(self) -> None:
+        """The default scan has couplings."""
         from scpn_quantum_control.analysis.quantum_speed_limit import qsl_vs_coupling
 
         K = build_knm_paper27(L=2)
@@ -552,7 +604,10 @@ class TestQSLDefaults:
 
 
 class TestCrossDomainTransferDefaults:
+    """Cross-domain transfer with custom systems."""
+
     def test_with_custom_systems(self) -> None:
+        """A custom system pair names its source."""
         from scpn_quantum_control.phase.cross_domain_transfer import (
             PhysicalSystem,
             transfer_experiment,
@@ -566,7 +621,10 @@ class TestCrossDomainTransferDefaults:
 
 
 class TestAdaptVQE:
+    """ADAPT-VQE optimisation."""
+
     def test_adapt_vqe_runs_optimisation(self) -> None:
+        """ADAPT-VQE returns a float energy and its selected operators."""
         from scpn_quantum_control.phase.adapt_vqe import adapt_vqe
 
         K = build_knm_paper27(L=2)
