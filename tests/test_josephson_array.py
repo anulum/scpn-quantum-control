@@ -22,11 +22,15 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestJJACouplingMatrix:
+    """The Josephson-array coupling matrix."""
+
     def test_refuses_nominal_parameters_by_default(self) -> None:
+        """Nominal parameters are refused by default."""
         with pytest.raises(ValueError, match="JosephsonArrayParameters"):
             jja_coupling_matrix(5, topology="linear", allow_illustrative_topology=True)
 
     def test_linear_shape(self) -> None:
+        """A linear array of five gives a 5-by-5 coupling and five frequencies."""
         K, omega = jja_coupling_matrix(
             5,
             topology="linear",
@@ -37,6 +41,7 @@ class TestJJACouplingMatrix:
         assert omega.shape == (5,)
 
     def test_linear_tridiagonal(self) -> None:
+        """A linear array couples only neighbours."""
         K, _ = jja_coupling_matrix(
             5,
             topology="linear",
@@ -49,6 +54,7 @@ class TestJJACouplingMatrix:
                     assert K[i, j] == 0.0
 
     def test_symmetric(self) -> None:
+        """The coupling matrix is symmetric."""
         for topo in ["linear", "heavy_hex", "all_to_all"]:
             K, _ = jja_coupling_matrix(
                 6,
@@ -59,6 +65,7 @@ class TestJJACouplingMatrix:
             np.testing.assert_allclose(K, K.T, atol=1e-12)
 
     def test_non_negative(self) -> None:
+        """The coupling matrix is non-negative."""
         for topo in ["linear", "heavy_hex", "all_to_all"]:
             K, _ = jja_coupling_matrix(
                 6,
@@ -69,6 +76,7 @@ class TestJJACouplingMatrix:
             assert np.all(K >= 0)
 
     def test_all_to_all_fully_connected(self) -> None:
+        """An all-to-all array couples every pair."""
         K, _ = jja_coupling_matrix(
             4,
             topology="all_to_all",
@@ -82,13 +90,17 @@ class TestJJACouplingMatrix:
 
 
 class TestJosephsonBenchmark:
+    """The Josephson-array benchmark."""
+
     def test_benchmark_refuses_illustrative_defaults(self) -> None:
+        """Illustrative defaults are refused without measured parameters."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         with pytest.raises(ValueError, match="measured parameters"):
             josephson_benchmark(K, omega)
 
     def test_returns_result(self) -> None:
+        """The benchmark returns a result record."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = josephson_benchmark(
@@ -100,6 +112,7 @@ class TestJosephsonBenchmark:
         assert isinstance(result, JosephsonBenchmarkResult)
 
     def test_n_junctions(self) -> None:
+        """The result records the junction count."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = josephson_benchmark(
@@ -111,6 +124,7 @@ class TestJosephsonBenchmark:
         assert result.n_junctions == 4
 
     def test_transmon_regime(self) -> None:
+        """An E_J/E_C ratio of 60 is in the transmon regime."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = josephson_benchmark(
@@ -122,6 +136,7 @@ class TestJosephsonBenchmark:
         assert result.is_transmon_regime  # E_J/E_C = 60 > 20
 
     def test_topology_correlation_bounded(self) -> None:
+        """The topology correlation lies in [-1, 1]."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = josephson_benchmark(
@@ -133,6 +148,7 @@ class TestJosephsonBenchmark:
         assert -1 <= result.topology_correlation <= 1
 
     def test_summary_string(self) -> None:
+        """The summary names the comparison."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = josephson_benchmark(
@@ -144,6 +160,7 @@ class TestJosephsonBenchmark:
         assert "SCPN vs JJA" in result.summary
 
     def test_different_topologies(self) -> None:
+        """Each topology gives a float correlation."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         for topo in ["linear", "heavy_hex", "all_to_all"]:

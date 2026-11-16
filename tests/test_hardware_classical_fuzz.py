@@ -76,12 +76,15 @@ def _coupling_matrix(rng: np.random.Generator, n: int, scale: float = 0.5) -> np
 
 
 class TestKuramotoValidatorFuzz:
+    """Fuzzing the Kuramoto input validator."""
+
     @_GLOBAL_SETTINGS
     @given(
         dt=st.floats(max_value=0.0, allow_nan=False, allow_infinity=False),
         t_max=st.floats(min_value=0.0, max_value=10.0, allow_nan=False),
     )
     def test_rejects_non_positive_dt(self, dt: float, t_max: float) -> None:
+        """A non-positive time step is refused."""
         with pytest.raises(ValueError, match="dt must be positive"):
             classical_kuramoto_reference(n_osc=3, t_max=t_max, dt=dt)
 
@@ -90,15 +93,18 @@ class TestKuramotoValidatorFuzz:
         t_max=st.floats(max_value=-1e-6, allow_nan=False, allow_infinity=False),
     )
     def test_rejects_negative_t_max(self, t_max: float) -> None:
+        """A negative end time is refused."""
         with pytest.raises(ValueError, match="t_max must be non-negative"):
             classical_kuramoto_reference(n_osc=3, t_max=t_max, dt=0.01)
 
     def test_boundary_dt_equals_zero_rejected(self) -> None:
+        """A zero time step is refused."""
         with pytest.raises(ValueError, match="dt must be positive"):
             classical_kuramoto_reference(n_osc=3, t_max=1.0, dt=0.0)
 
     def test_boundary_t_max_equals_zero_accepted(self) -> None:
         # t_max = 0 is explicitly allowed ("non-negative"), not strict.
+        """A zero end time is accepted."""
         out = classical_kuramoto_reference(n_osc=3, t_max=0.0, dt=0.01)
         assert len(out["times"]) >= 1
         assert len(out["R"]) >= 1
@@ -110,6 +116,8 @@ class TestKuramotoValidatorFuzz:
 
 
 class TestKuramotoIntegrationFuzz:
+    """Fuzzing the Kuramoto integration."""
+
     @_GLOBAL_SETTINGS
     @given(
         n_osc=small_n_osc,
@@ -122,6 +130,7 @@ class TestKuramotoIntegrationFuzz:
         t_max: float,
         dt: float,
     ) -> None:
+        """Integration returns times, phases and R of equal length."""
         out = classical_kuramoto_reference(n_osc=n_osc, t_max=t_max, dt=dt)
         assert set(out) == {"times", "theta", "R"}
         n = len(out["times"])
@@ -159,8 +168,10 @@ class TestKuramotoIntegrationFuzz:
         seed: int,
         n_osc: int,
     ) -> None:
-        """Random symmetric K with any omega must produce finite theta(t)
-        and R(t) — no NaN / inf regressions under perturbation."""
+        """Random symmetric K with any omega must keep theta(t) and R(t) finite.
+
+        No NaN or inf regressions under perturbation.
+        """
         rng = np.random.default_rng(seed)
         K = _coupling_matrix(rng, n_osc)
         omega = rng.normal(1.0, 0.2, size=n_osc)
@@ -183,12 +194,15 @@ class TestKuramotoIntegrationFuzz:
 
 
 class TestOrderParameterFuzz:
+    """Fuzzing the order parameter."""
+
     @_GLOBAL_SETTINGS
     @given(
         n=st.integers(min_value=2, max_value=32),
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_order_param_in_unit_interval(self, n: int, seed: int) -> None:
+        """The order parameter lies in [0, 1]."""
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
         r = _order_param(theta)
@@ -225,9 +239,12 @@ class TestOrderParameterFuzz:
 
 
 class TestExactDiagFuzz:
+    """Fuzzing exact diagonalisation."""
+
     @_GLOBAL_SETTINGS
     @given(n_osc=st.integers(min_value=2, max_value=4))
     def test_exact_diag_returns_finite_spectrum(self, n_osc: int) -> None:
+        """The spectrum is finite and sorted."""
         out = classical_exact_diag(n_osc=n_osc)
         assert np.all(np.isfinite(out["eigenvalues"]))
         assert np.isfinite(out["ground_energy"])
@@ -237,6 +254,7 @@ class TestExactDiagFuzz:
     @_GLOBAL_SETTINGS
     @given(n_osc=st.integers(min_value=2, max_value=4))
     def test_ground_state_is_normalised(self, n_osc: int) -> None:
+        """The ground state is normalised."""
         out = classical_exact_diag(n_osc=n_osc)
         gs = out["ground_state"]
         norm = float(np.linalg.norm(gs))
@@ -245,5 +263,6 @@ class TestExactDiagFuzz:
     @_GLOBAL_SETTINGS
     @given(n_osc=st.integers(min_value=2, max_value=4))
     def test_spectral_gap_non_negative(self, n_osc: int) -> None:
+        """The spectral gap is non-negative."""
         out = classical_exact_diag(n_osc=n_osc)
         assert out["spectral_gap"] >= -1e-10

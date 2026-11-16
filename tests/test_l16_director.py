@@ -23,13 +23,17 @@ from scpn_quantum_control.l16.quantum_director import (
 
 
 class TestLoschmidtEcho:
+    """The Loschmidt echo."""
+
     def test_at_t0_is_one(self) -> None:
+        """The echo is one at time zero."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         le = loschmidt_echo(K, omega, t=0.0)
         assert le == pytest.approx(1.0, abs=1e-10)
 
     def test_bounded(self) -> None:
+        """The echo lies in [0, 1]."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         le = loschmidt_echo(K, omega, t=1.0)
@@ -43,6 +47,7 @@ class TestLoschmidtEcho:
         assert le > 0.99
 
     def test_propagates_dense_budget(self) -> None:
+        """A Hamiltonian above the dense budget is refused."""
         n = 4
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -52,6 +57,8 @@ class TestLoschmidtEcho:
 
 
 class TestEnergyVariance:
+    """The energy variance."""
+
     def test_ground_state_near_zero(self) -> None:
         """Exact ground state has ΔE² ≈ 0."""
         K = build_knm_paper27(L=3)
@@ -60,12 +67,14 @@ class TestEnergyVariance:
         assert var < 1e-10
 
     def test_non_negative(self) -> None:
+        """The variance is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         var = energy_variance(K, omega)
         assert var >= -1e-10
 
     def test_propagates_dense_budget(self) -> None:
+        """A Hamiltonian above the dense budget is refused."""
         n = 4
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -75,13 +84,17 @@ class TestEnergyVariance:
 
 
 class TestFidelitySusceptibility:
+    """The fidelity susceptibility."""
+
     def test_non_negative(self) -> None:
+        """The susceptibility is non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fs = fidelity_susceptibility(K, omega)
         assert fs >= 0
 
     def test_finite(self) -> None:
+        """The susceptibility is finite."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fs = fidelity_susceptibility(K, omega)
@@ -89,25 +102,31 @@ class TestFidelitySusceptibility:
 
 
 class TestComputeL16Lyapunov:
+    """The layer-16 Lyapunov director."""
+
     def test_returns_result(self) -> None:
+        """The director returns a result record."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert isinstance(result, L16Result)
 
     def test_stability_score_bounded(self) -> None:
+        """The stability score lies in [0, 1]."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert 0 <= result.stability_score <= 1.0
 
     def test_action_valid(self) -> None:
+        """The action is continue, adjust or halt."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert result.action in ("continue", "adjust", "halt")
 
     def test_r_global_bounded(self) -> None:
+        """The order parameter lies in [0, 1]."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)

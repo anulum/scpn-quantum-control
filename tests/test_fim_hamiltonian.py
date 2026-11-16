@@ -28,15 +28,18 @@ from scpn_quantum_control.analysis.fim_hamiltonian import (
 
 
 def test_computational_magnetisations_follow_z_convention() -> None:
+    """Magnetisations follow the Z convention, from +n down to -n."""
     assert computational_magnetisations(2).tolist() == [2, 0, 0, -2]
 
 
 def test_computational_magnetisations_rejects_non_positive_qubit_count() -> None:
+    """A non-positive qubit count is refused."""
     with pytest.raises(ValueError, match="positive"):
         computational_magnetisations(0)
 
 
 def test_fim_diagonal_matches_minus_lambda_m_squared_over_n() -> None:
+    """The feedback diagonal is minus lambda M squared over n."""
     diagonal = fim_diagonal(2, 0.5)
     np.testing.assert_allclose(diagonal, [-1.0, 0.0, 0.0, -1.0])
 
@@ -44,6 +47,7 @@ def test_fim_diagonal_matches_minus_lambda_m_squared_over_n() -> None:
 def test_fim_feedback_rejects_invalid_hamiltonian_dimensions() -> None:
     # Both matrices carry the dtype the function requires, so the rejection
     # under test is the shape and nothing else.
+    """A Hamiltonian that is not square with a power-of-two size is refused."""
     with pytest.raises(ValueError, match="square"):
         add_fim_feedback(np.ones((2, 3), dtype=np.complex128), 1.0)
     with pytest.raises(ValueError, match="power of two"):
@@ -51,12 +55,14 @@ def test_fim_feedback_rejects_invalid_hamiltonian_dimensions() -> None:
 
 
 def test_add_fim_feedback_adds_only_diagonal_term() -> None:
+    """Adding feedback changes only the diagonal."""
     base = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
     shifted = add_fim_feedback(base, 2.0)
     np.testing.assert_allclose(shifted, [[-2.0, 1.0], [1.0, -2.0]])
 
 
 def test_magnetisation_sector_indices_group_basis_states() -> None:
+    """Basis states are grouped by magnetisation."""
     sectors = magnetisation_sector_indices(2)
     assert sectors[2].tolist() == [0]
     assert sectors[0].tolist() == [1, 2]
@@ -64,6 +70,7 @@ def test_magnetisation_sector_indices_group_basis_states() -> None:
 
 
 def test_adjacent_gap_ratio_uses_nonzero_spacings() -> None:
+    """The adjacent gap ratio uses only non-zero spacings."""
     stats = adjacent_gap_ratio(np.array([0.0, 1.0, 3.0, 6.0]))
     assert stats["n_spacings"] == 3
     mean_r = stats["mean_r"]
@@ -72,6 +79,7 @@ def test_adjacent_gap_ratio_uses_nonzero_spacings() -> None:
 
 
 def test_adjacent_gap_ratio_reports_insufficient_nonzero_spacings() -> None:
+    """Too few non-zero spacings give no ratio."""
     stats = adjacent_gap_ratio(np.array([0.0, 0.0, 1e-12, 2.0]))
 
     assert stats["n_spacings"] == 1
@@ -82,6 +90,7 @@ def test_adjacent_gap_ratio_reports_insufficient_nonzero_spacings() -> None:
 
 
 def test_spectrum_summary_records_singleton_gap_as_unavailable() -> None:
+    """A one-level spectrum has no gap and zero width."""
     summary = summarise_spectrum(np.array([1.25]), n_qubits=1, lambda_fim=0.5)
 
     assert summary.dimension == 1
@@ -91,6 +100,7 @@ def test_spectrum_summary_records_singleton_gap_as_unavailable() -> None:
 
 
 def test_bipartite_entropy_product_and_bell_states() -> None:
+    """The entropy is zero for a product state and maximal for a Bell state."""
     product = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.complex128)
     bell = np.array([1.0, 0.0, 0.0, 1.0], dtype=np.complex128) / np.sqrt(2.0)
     assert bipartite_entropy_from_statevector(product, 2, keep=[0]) == 0.0
@@ -99,6 +109,7 @@ def test_bipartite_entropy_product_and_bell_states() -> None:
 
 
 def test_bipartite_entropy_rejects_bad_state_shape_and_keep_indices() -> None:
+    """A state of the wrong length or invalid kept qubits is refused."""
     state = np.array([1.0, 0.0], dtype=np.complex128)
 
     with pytest.raises(ValueError, match="length"):
@@ -109,12 +120,14 @@ def test_bipartite_entropy_rejects_bad_state_shape_and_keep_indices() -> None:
 
 
 def test_commutator_norm_vanishes_for_diagonal_operator_commuting_with_diagonal_h() -> None:
+    """A diagonal operator commutes with a diagonal Hamiltonian."""
     hamiltonian = np.diag([0.0, 1.0, 2.0, 3.0]).astype(np.complex128)
     magnetisation = magnetisation_operator_diagonal(2)
     assert commutator_frobenius_norm_with_diagonal(hamiltonian, magnetisation) == 0.0
 
 
 def test_commutator_norm_detects_off_diagonal_sector_mixing_and_rejects_mismatch() -> None:
+    """Sector mixing gives a non-zero commutator; mismatched sizes are refused."""
     hamiltonian = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
     magnetisation = magnetisation_operator_diagonal(1)
 
@@ -126,6 +139,7 @@ def test_commutator_norm_detects_off_diagonal_sector_mixing_and_rejects_mismatch
 
 
 def test_sector_coupling_rows_detect_no_off_sector_coupling_for_diagonal_h() -> None:
+    """A diagonal Hamiltonian couples no sectors."""
     hamiltonian = np.diag([0.0, 1.0, 2.0, 3.0]).astype(np.complex128)
     rows = sector_coupling_rows(hamiltonian, lambda_fim=0.0)
     assert all(row["off_sector_frobenius_norm"] == 0.0 for row in rows)
@@ -133,6 +147,7 @@ def test_sector_coupling_rows_detect_no_off_sector_coupling_for_diagonal_h() -> 
 
 
 def test_sector_diagnostics_preserve_fim_energy_shifts_and_detect_coupling() -> None:
+    """Sector diagnostics keep the feedback energy shifts and detect coupling."""
     hamiltonian = np.zeros((4, 4), dtype=np.complex128)
     hamiltonian[0, 1] = hamiltonian[1, 0] = 0.25
 

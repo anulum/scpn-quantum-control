@@ -34,7 +34,10 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestEntanglementAtCoupling:
+    """Entanglement at a single coupling."""
+
     def test_returns_result(self) -> None:
+        """The computation returns a result record."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_at_coupling(omega, T, K_base=2.0)
@@ -55,6 +58,7 @@ class TestEntanglementAtCoupling:
         assert result.entropy > 0
 
     def test_schmidt_gap_bounded(self) -> None:
+        """The Schmidt gap lies in [0, 1]."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_at_coupling(omega, T, K_base=2.0)
@@ -62,12 +66,14 @@ class TestEntanglementAtCoupling:
         assert result.schmidt_gap <= 1.0
 
     def test_entropy_nonnegative(self) -> None:
+        """The entropy is non-negative."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_at_coupling(omega, T, K_base=2.0)
         assert result.entropy >= -1e-10
 
     def test_3qubit(self) -> None:
+        """Three qubits give a result with a positive spectral gap."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = entanglement_at_coupling(omega, T, K_base=2.0)
@@ -75,6 +81,7 @@ class TestEntanglementAtCoupling:
         assert result.spectral_gap > 0
 
     def test_rejects_dense_budget_before_allocation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A dense eigensolve above the budget is refused before allocation."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
 
@@ -91,7 +98,10 @@ class TestEntanglementAtCoupling:
 
 
 class TestEntanglementVsCoupling:
+    """Scanning entanglement across couplings."""
+
     def test_returns_scan(self) -> None:
+        """The scan returns one entropy per coupling."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_vs_coupling(omega, T, k_range=np.array([1.0, 2.0, 3.0]))
@@ -99,18 +109,21 @@ class TestEntanglementVsCoupling:
         assert len(result.entropy) == 3
 
     def test_entropy_varies(self) -> None:
+        """The entropy changes across the scan."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_vs_coupling(omega, T, k_range=np.linspace(0.1, 5.0, 8))
         assert result.entropy[0] != result.entropy[-1]
 
     def test_schmidt_gap_varies(self) -> None:
+        """The Schmidt gap changes across the scan."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_vs_coupling(omega, T, k_range=np.linspace(0.1, 5.0, 8))
         assert result.schmidt_gap[0] != result.schmidt_gap[-1]
 
     def test_peak_and_min_exist(self) -> None:
+        """The scan locates the Schmidt-gap minimum."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = entanglement_vs_coupling(omega, T, k_range=np.linspace(0.3, 5.0, 8))
@@ -123,6 +136,8 @@ class TestEntanglementVsCoupling:
 
 
 class TestEntanglementPhysics:
+    """Physical bounds on the entanglement."""
+
     def test_entropy_bounded_by_log_d(self) -> None:
         """S ≤ log₂(d) where d = 2^(n/2) for half-system bipartition."""
         T = _ring(4)
@@ -145,8 +160,11 @@ class TestEntanglementPhysics:
 
 
 class TestEntanglementPipeline:
+    """The coupling-to-entanglement pipeline."""
+
     def test_pipeline_knm_to_entanglement(self) -> None:
         """Full pipeline: build_knm → entanglement_at_coupling → S, gap.
+
         Verifies entanglement module is wired end-to-end.
         """
         import time
@@ -173,6 +191,8 @@ class TestEntanglementPipeline:
 
 
 class TestScanEntanglementCoverage:
+    """Scan defaults and the JAX fast path."""
+
     def test_default_k_range(self) -> None:
         """Cover line 137: k_range=None defaults to linspace(0.5, 5.0, 20)."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27

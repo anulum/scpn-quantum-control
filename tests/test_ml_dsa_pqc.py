@@ -41,6 +41,7 @@ _KAT = json.loads((Path(__file__).parent / "data" / "ml_dsa_65_kat.json").read_t
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("case", _KAT["keyGen"], ids=lambda c: f"keyGen-{c['tcId']}")
 def test_keygen_kat(case: dict[str, Any]) -> None:
+    """Key generation matches the known-answer vectors."""
     pair = ml_dsa.key_gen(bytes.fromhex(case["seed"]))
     assert pair.public_key.hex().upper() == case["pk"].upper()
     assert pair.secret_key.hex().upper() == case["sk"].upper()
@@ -48,6 +49,7 @@ def test_keygen_kat(case: dict[str, Any]) -> None:
 
 @pytest.mark.parametrize("case", _KAT["sigGen"], ids=lambda c: f"sigGen-{c['tcId']}")
 def test_siggen_kat(case: dict[str, Any]) -> None:
+    """Signing matches the known-answer vectors."""
     sig = ml_dsa.sign(
         bytes.fromhex(case["sk"]),
         bytes.fromhex(case["message"]),
@@ -58,6 +60,7 @@ def test_siggen_kat(case: dict[str, Any]) -> None:
 
 @pytest.mark.parametrize("case", _KAT["sigVer"], ids=lambda c: f"sigVer-{c['tcId']}")
 def test_sigver_kat(case: dict[str, Any]) -> None:
+    """Verification matches the known-answer verdicts."""
     result = ml_dsa.verify(
         bytes.fromhex(case["pk"]),
         bytes.fromhex(case["message"]),
@@ -71,6 +74,7 @@ def test_sigver_kat(case: dict[str, Any]) -> None:
 # NTT correctness and Rust parity
 # --------------------------------------------------------------------------- #
 def test_ntt_roundtrip() -> None:
+    """The inverse NTT undoes the NTT."""
     rng = random.Random(1)
     poly = [rng.randrange(ml_dsa.Q) for _ in range(256)]
     assert ml_dsa._intt_python(ml_dsa._ntt_python(poly)) == poly
@@ -80,12 +84,14 @@ def test_ntt_roundtrip() -> None:
 @settings(max_examples=40, deadline=None)
 @given(coeffs=st.lists(st.integers(-ml_dsa.Q, ml_dsa.Q), min_size=256, max_size=256))
 def test_ntt_rust_parity(coeffs: list[int]) -> None:
+    """The native NTT and its inverse match the Python ones."""
     assert list(_engine.ml_dsa_ntt(coeffs)) == ml_dsa._ntt_python(coeffs)
     assert list(_engine.ml_dsa_intt(coeffs)) == ml_dsa._intt_python(coeffs)
 
 
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine ml_dsa kernel not built")
 def test_ntt_rust_rejects_wrong_length() -> None:
+    """The native NTT refuses a vector of the wrong length."""
     with pytest.raises(ValueError):
         _engine.ml_dsa_ntt([0] * 255)
 
@@ -129,6 +135,7 @@ def test_native_signer_rejects_invalid_boundaries() -> None:
 # ML-DSA round-trip and error paths
 # --------------------------------------------------------------------------- #
 def test_sign_verify_roundtrip() -> None:
+    """A signature verifies, and a tampered message does not."""
     pair = ml_dsa.key_gen(bytes(range(32)))
     sig = ml_dsa.sign(pair.secret_key, b"capacitor-bank discharge", context=b"ctx")
     assert ml_dsa.verify(pair.public_key, b"capacitor-bank discharge", sig, context=b"ctx")
@@ -137,11 +144,13 @@ def test_sign_verify_roundtrip() -> None:
 
 
 def test_keygen_rejects_bad_seed() -> None:
+    """A bad seed is refused."""
     with pytest.raises(ValueError):
         ml_dsa.key_gen(bytes(31))
 
 
 def test_verify_rejects_wrong_sizes() -> None:
+    """Keys or signatures of the wrong size do not verify."""
     pair = ml_dsa.key_gen(bytes(32))
     assert not ml_dsa.verify(b"short", b"m", bytes(ml_dsa.SIGNATURE_BYTES))
     assert not ml_dsa.verify(pair.public_key, b"m", b"short")
@@ -150,6 +159,7 @@ def test_verify_rejects_wrong_sizes() -> None:
 @settings(max_examples=15, deadline=None)
 @given(message=st.binary(min_size=0, max_size=128), context=st.binary(min_size=0, max_size=64))
 def test_roundtrip_property(message: bytes, context: bytes) -> None:
+    """Any message and context sign and verify."""
     pair = ml_dsa.key_gen(bytes([7] * 32))
     sig = ml_dsa.sign(pair.secret_key, message, context=context)
     assert ml_dsa.verify(pair.public_key, message, sig, context=context)
@@ -159,6 +169,7 @@ def test_roundtrip_property(message: bytes, context: bytes) -> None:
 # PQC trigger signer
 # --------------------------------------------------------------------------- #
 def test_trigger_signer_roundtrip() -> None:
+    """A trigger signature verifies only for its payload."""
     signer = PqcTriggerSigner(deterministic=True)
     pk, sk = signer.keygen(seed=bytes(32))
     payload = b"arm-trigger"
@@ -168,6 +179,7 @@ def test_trigger_signer_roundtrip() -> None:
 
 
 def test_trigger_deterministic_keygen() -> None:
+    """The same seed gives the same trigger keys."""
     a = PqcTriggerSigner(deterministic=True).keygen(seed=bytes([3] * 32))
     b = PqcTriggerSigner(deterministic=True).keygen(seed=bytes([3] * 32))
     assert a[0].key_bytes == b[0].key_bytes
@@ -175,6 +187,7 @@ def test_trigger_deterministic_keygen() -> None:
 
 
 def test_capacitor_bank_trigger_and_tamper() -> None:
+    """A capacitor-bank trigger verifies, and tampered payloads do not."""
     signer = PqcTriggerSigner(deterministic=True)
     pk, sk = signer.keygen(seed=bytes(32))
     sig = signer.sign_capacitor_bank_trigger("pulse-001", 24_500.0, 1_700_000_000, sk)
@@ -190,6 +203,7 @@ def test_capacitor_bank_trigger_and_tamper() -> None:
 
 
 def test_trigger_freshness_window() -> None:
+    """A signature verifies only inside its freshness window."""
     signer = PqcTriggerSigner(deterministic=True)
     pk, sk = signer.keygen(seed=bytes(32))
     payload = b"arm"
@@ -203,6 +217,7 @@ def test_trigger_freshness_window() -> None:
 
 
 def test_canonical_payload_is_sorted_and_stable() -> None:
+    """The canonical payload has sorted keys and is stable."""
     p1 = _canonical_trigger_payload("p", 1.5, 42)
     p2 = _canonical_trigger_payload("p", 1.5, 42)
     assert p1 == p2

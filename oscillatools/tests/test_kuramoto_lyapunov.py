@@ -37,9 +37,12 @@ def _random_symmetric_coupling(n: int, seed: int) -> np.ndarray:
 
 
 class TestSumRuleAndGoldstone:
+    """The exponent sum rule and the zero Goldstone exponent."""
+
     def test_sum_equals_jacobian_trace_at_fixed_point(self) -> None:
         # Identical frequencies and equal phases form a fixed point, so the Jacobian (hence its
         # trace) is constant and the exponents must sum to it.
+        """At a fixed point the exponents sum to the Jacobian trace."""
         coupling = _random_symmetric_coupling(5, 7)
         theta0 = np.zeros(5)
         omega = np.zeros(5)
@@ -50,6 +53,7 @@ class TestSumRuleAndGoldstone:
     def test_goldstone_exponent_is_zero(self) -> None:
         # The synchronised fixed point is marginally stable: the largest exponent is the zero
         # Goldstone mode and every exponent is non-positive.
+        """The leading exponent is the zero Goldstone mode and none is positive."""
         coupling = _random_symmetric_coupling(5, 3)
         theta0 = np.zeros(5)
         omega = np.zeros(5)
@@ -58,15 +62,19 @@ class TestSumRuleAndGoldstone:
         assert np.all(spectrum <= 0.05)
 
     def test_descending_order(self) -> None:
+        """Exponents are in descending order."""
         coupling = _random_symmetric_coupling(4, 11)
         spectrum = lyapunov_spectrum(np.zeros(4), np.zeros(4), coupling, 0.01, 1500)
         assert np.all(np.diff(spectrum) <= 1e-9)
 
 
 class TestKnownUnstableExponent:
+    """A configuration with a known unstable exponent."""
+
     def test_anti_phase_pair_has_known_positive_exponent(self) -> None:
         # Two positively coupled oscillators in anti-phase form an unstable fixed point whose
         # transverse mode grows at 2k; the maximal Lyapunov exponent recovers it.
+        """An antiphase pair has the exponent 2K."""
         k = 0.5
         coupling = np.array([[0.0, k], [k, 0.0]])
         theta0 = np.array([0.0, math.pi])
@@ -78,7 +86,10 @@ class TestKnownUnstableExponent:
 
 
 class TestMaximalExponent:
+    """The maximal exponent and leading subsets."""
+
     def test_maximal_matches_spectrum_head(self) -> None:
+        """The maximal exponent is the spectrum's first entry."""
         coupling = _random_symmetric_coupling(4, 5)
         theta0 = np.zeros(4)
         omega = np.zeros(4)
@@ -87,6 +98,7 @@ class TestMaximalExponent:
         assert maximal == pytest.approx(spectrum[0], abs=1e-9)
 
     def test_leading_subset_matches_full_spectrum(self) -> None:
+        """A leading subset matches the head of the full spectrum."""
         coupling = _random_symmetric_coupling(4, 9)
         theta0 = np.zeros(4)
         omega = np.zeros(4)
@@ -97,9 +109,12 @@ class TestMaximalExponent:
 
 
 class TestIntegrationControls:
+    """Reorthonormalisation interval and transient controls."""
+
     def test_reorth_interval_and_transient(self) -> None:
         # A wider reorthonormalisation interval and a discarded transient still recover the sum
         # rule at the fixed point.
+        """A reorthonormalisation interval and a transient keep the sum rule."""
         coupling = _random_symmetric_coupling(4, 2)
         theta0 = np.zeros(4)
         omega = np.zeros(4)
@@ -111,7 +126,10 @@ class TestIntegrationControls:
 
 
 class TestValidation:
+    """Input validation."""
+
     def test_shape_and_count_validation(self) -> None:
+        """Invalid shapes and counts are refused with their reasons."""
         coupling = _random_symmetric_coupling(3, 1)
         with pytest.raises(ValueError, match="at least one oscillator"):
             lyapunov_spectrum(np.zeros(0), np.zeros(0), np.zeros((0, 0)), 0.01, 10)
@@ -121,6 +139,7 @@ class TestValidation:
             lyapunov_spectrum(np.zeros(3), np.zeros(3), np.zeros((3, 2)), 0.01, 10)
 
     def test_numeric_parameter_validation(self) -> None:
+        """Invalid numeric parameters are refused with their reasons."""
         coupling = _random_symmetric_coupling(3, 4)
         with pytest.raises(ValueError, match="dt must be positive"):
             lyapunov_spectrum(np.zeros(3), np.zeros(3), coupling, 0.0, 10)
@@ -134,6 +153,7 @@ class TestValidation:
             lyapunov_spectrum(np.zeros(3), np.zeros(3), coupling, 0.01, 10, transient_steps=-1)
 
     def test_transient_leaves_no_reorthonormalisation(self) -> None:
+        """A transient that leaves no reorthonormalisation is refused."""
         coupling = _random_symmetric_coupling(3, 6)
         with pytest.raises(ValueError, match="no post-transient reorthonormalisation"):
             lyapunov_spectrum(np.zeros(3), np.zeros(3), coupling, 0.01, 10, transient_steps=10)

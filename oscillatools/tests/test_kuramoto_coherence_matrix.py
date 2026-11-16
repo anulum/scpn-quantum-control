@@ -44,6 +44,7 @@ def _clustered_trajectory(steps: int) -> np.ndarray:
 
 
 def test_coherence_matrix_matches_cosine_difference() -> None:
+    """The coherence matrix is the cosine of pairwise phase differences."""
     theta = np.random.default_rng(0).uniform(0.0, _TWO_PI, 7)
     matrix = coherence_matrix(theta)
     assert matrix.shape == (7, 7)
@@ -54,6 +55,7 @@ def test_coherence_matrix_matches_cosine_difference() -> None:
 
 
 def test_coherence_matrix_blocks_on_antiphase_clusters() -> None:
+    """Antiphase clusters show as blocks of the coherence matrix."""
     theta = np.array([0.0, 0.0, 0.0, np.pi, np.pi, np.pi])
     matrix = coherence_matrix(theta)
     assert np.allclose(matrix[:3, :3], 1.0)
@@ -65,12 +67,14 @@ def test_coherence_matrix_blocks_on_antiphase_clusters() -> None:
 
 
 def test_mean_coherence_is_unity_for_full_synchrony() -> None:
+    """Full synchrony gives a mean coherence of one everywhere."""
     grid = np.arange(300) * 0.02
     trajectory = np.repeat((grid + 0.3)[:, None], 5, axis=1)
     assert np.allclose(mean_coherence_matrix(trajectory), 1.0)
 
 
 def test_mean_coherence_keeps_signed_block_structure() -> None:
+    """The mean coherence keeps the signed block structure."""
     matrix = mean_coherence_matrix(_clustered_trajectory(400))
     assert np.allclose(matrix, matrix.T)
     assert np.allclose(np.diag(matrix), 1.0)
@@ -84,10 +88,12 @@ def test_mean_coherence_keeps_signed_block_structure() -> None:
 
 def test_phase_locking_is_unity_for_a_rigidly_locked_ensemble() -> None:
     # Antiphase but rigidly locked: every relative phase is constant, so rho = 1 everywhere.
+    """A rigidly locked ensemble has unit phase locking."""
     assert np.allclose(phase_locking_matrix(_clustered_trajectory(400)), 1.0)
 
 
 def test_phase_locking_in_unit_interval_with_unit_diagonal() -> None:
+    """Phase locking lies in [0, 1] with a unit diagonal."""
     rng = np.random.default_rng(1)
     grid = np.arange(500) * 0.02
     trajectory = np.stack(
@@ -109,6 +115,7 @@ def test_phase_locking_in_unit_interval_with_unit_diagonal() -> None:
 
 
 def test_spectrum_reproduces_the_matrix_and_sorts_eigenvalues() -> None:
+    """The spectrum rebuilds the matrix, with eigenvalues in descending order."""
     matrix = mean_coherence_matrix(_clustered_trajectory(400))
     values, vectors = coherence_spectrum(matrix)
     assert np.all(np.diff(values) <= 1e-9)  # descending
@@ -117,6 +124,7 @@ def test_spectrum_reproduces_the_matrix_and_sorts_eigenvalues() -> None:
 
 
 def test_leading_eigenvector_splits_two_clusters_by_sign() -> None:
+    """The leading eigenvector is a unit vector whose signs split the two clusters."""
     matrix = mean_coherence_matrix(_clustered_trajectory(400))
     leading = leading_coherence_eigenvector(matrix)
     assert leading.shape == (6,)
@@ -128,6 +136,7 @@ def test_leading_eigenvector_splits_two_clusters_by_sign() -> None:
 
 
 def test_full_synchrony_yields_a_single_dominant_mode() -> None:
+    """Full synchrony gives one mode with eigenvalue N and the rest zero."""
     grid = np.arange(300) * 0.02
     trajectory = np.repeat((grid + 0.2)[:, None], 5, axis=1)
     values, _ = coherence_spectrum(mean_coherence_matrix(trajectory))
@@ -139,30 +148,36 @@ def test_full_synchrony_yields_a_single_dominant_mode() -> None:
 
 
 def test_coherence_matrix_rejects_non_one_dimensional() -> None:
+    """Phases that are not one-dimensional are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         coherence_matrix(np.zeros((3, 3)))
 
 
 def test_coherence_matrix_rejects_empty() -> None:
+    """Empty phases are refused."""
     with pytest.raises(ValueError, match="non-empty one-dimensional"):
         coherence_matrix(np.empty(0))
 
 
 def test_mean_coherence_rejects_non_two_dimensional() -> None:
+    """A trajectory that is not two-dimensional is refused."""
     with pytest.raises(ValueError, match="two-dimensional"):
         mean_coherence_matrix(np.zeros(5))
 
 
 def test_phase_locking_rejects_empty_axes() -> None:
+    """A trajectory without time samples is refused."""
     with pytest.raises(ValueError, match="at least one time sample"):
         phase_locking_matrix(np.zeros((0, 3)))
 
 
 def test_spectrum_rejects_non_square_matrix() -> None:
+    """A non-square matrix is refused."""
     with pytest.raises(ValueError, match="non-empty square"):
         coherence_spectrum(np.zeros((3, 4)))
 
 
 def test_leading_eigenvector_rejects_empty_matrix() -> None:
+    """An empty matrix is refused."""
     with pytest.raises(ValueError, match="non-empty square"):
         leading_coherence_eigenvector(np.zeros((0, 0)))

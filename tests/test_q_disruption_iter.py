@@ -21,6 +21,7 @@ from scpn_quantum_control.control.q_disruption_iter import (
 
 
 def test_iter_feature_spec_defaults() -> None:
+    """The default feature spec has 11 names, minima and maxima."""
     spec = ITERFeatureSpec()
     assert len(spec.names) == 11
     assert len(spec.mins) == 11
@@ -29,6 +30,7 @@ def test_iter_feature_spec_defaults() -> None:
 
 
 def test_normalize_clamps_to_unit() -> None:
+    """Normalisation clamps to [0, 1]."""
     spec = ITERFeatureSpec()
     raw = spec.maxs + 100
     normed = normalize_iter_features(raw, spec)
@@ -37,6 +39,7 @@ def test_normalize_clamps_to_unit() -> None:
 
 
 def test_normalize_preserves_center() -> None:
+    """The centre of each range normalises to 0.5."""
     spec = ITERFeatureSpec()
     mid = (spec.mins + spec.maxs) / 2
     normed = normalize_iter_features(mid, spec)
@@ -44,6 +47,7 @@ def test_normalize_preserves_center() -> None:
 
 
 def test_scpn_control_bridge_dependency_contract_advertises_required_surface() -> None:
+    """The bridge contract names the control facade's owner and required surface."""
     contract = scpn_control_bridge_dependency_contract()
 
     assert contract["control_facade_owner"] == "scpn-control"
@@ -71,6 +75,7 @@ def test_scpn_control_bridge_dependency_contract_advertises_required_surface() -
 
 
 def test_scpn_control_bridge_dependency_contract_rejects_feature_order_drift() -> None:
+    """A drift in feature order is refused."""
     contract = scpn_control_bridge_dependency_contract()
     drifted = {
         **contract,
@@ -88,6 +93,7 @@ def test_scpn_control_bridge_dependency_contract_rejects_feature_order_drift() -
 
 
 def test_generate_synthetic_shapes() -> None:
+    """Synthetic data has 11 features and binary labels."""
     X, y = generate_synthetic_iter_data(
         200, disruption_fraction=0.3, rng=np.random.default_rng(0), allow_synthetic=True
     )
@@ -97,6 +103,7 @@ def test_generate_synthetic_shapes() -> None:
 
 
 def test_generate_disruption_fraction() -> None:
+    """The disruption fraction sets the number of positive labels."""
     X, y = generate_synthetic_iter_data(
         100, disruption_fraction=0.4, rng=np.random.default_rng(0), allow_synthetic=True
     )
@@ -104,12 +111,14 @@ def test_generate_disruption_fraction() -> None:
 
 
 def test_generate_normalized_range() -> None:
+    """Synthetic features lie in [0, 1]."""
     X, y = generate_synthetic_iter_data(500, rng=np.random.default_rng(0), allow_synthetic=True)
     assert np.all(X >= 0.0)
     assert np.all(X <= 1.0)
 
 
 def test_generate_deterministic() -> None:
+    """The same seed gives the same data."""
     X1, y1 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42), allow_synthetic=True)
     X2, y2 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42), allow_synthetic=True)
     np.testing.assert_array_equal(X1, X2)
@@ -117,22 +126,26 @@ def test_generate_deterministic() -> None:
 
 
 def test_generate_synthetic_requires_explicit_opt_in() -> None:
+    """Synthetic data needs an explicit opt-in."""
     with pytest.raises(RuntimeError, match="allow_synthetic"):
         generate_synthetic_iter_data(50, rng=np.random.default_rng(42))
 
 
 def test_benchmark_init() -> None:
+    """The benchmark splits training and test data."""
     bench = DisruptionBenchmark(n_train=20, n_test=10, seed=0, allow_synthetic=True)
     assert bench.X_train.shape == (20, 11)
     assert bench.X_test.shape == (10, 11)
 
 
 def test_benchmark_requires_explicit_synthetic_opt_in() -> None:
+    """The benchmark needs an explicit synthetic opt-in."""
     with pytest.raises(RuntimeError, match="allow_synthetic"):
         DisruptionBenchmark(n_train=20, n_test=10, seed=0)
 
 
 def test_benchmark_run_returns_accuracy() -> None:
+    """A run returns an accuracy in [0, 1] and one prediction per sample."""
     bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0, allow_synthetic=True)
     result = bench.run(epochs=1, lr=0.01)
     assert "accuracy" in result
@@ -143,6 +156,7 @@ def test_benchmark_run_returns_accuracy() -> None:
 
 
 def test_benchmark_classifier_predicts() -> None:
+    """Each prediction lies in [0, 1]."""
     bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0, allow_synthetic=True)
     pred = bench.classifier.predict(bench.X_test[0])
     assert 0.0 <= pred <= 1.0
@@ -179,6 +193,7 @@ def test_benchmark_training_reduces_loss() -> None:
 
 def test_pipeline_iter_to_disruption() -> None:
     """Full pipeline: synthetic ITER data → normalise → quantum classify → risk.
+
     Verifies ITER disruption module is wired end-to-end.
     """
     import time

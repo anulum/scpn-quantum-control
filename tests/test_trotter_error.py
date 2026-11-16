@@ -40,6 +40,7 @@ def small_system() -> CouplingAndFrequencies:
 
 
 def test_error_at_t_zero(small_system: CouplingAndFrequencies) -> None:
+    """The error vanishes at time zero."""
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.0, reps=1)
     assert err < 1e-10
@@ -48,6 +49,7 @@ def test_error_at_t_zero(small_system: CouplingAndFrequencies) -> None:
 def test_error_norm_rejects_dense_budget_before_hamiltonian_allocation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """An error norm above the dense budget is refused before allocation."""
     K = build_knm_paper27(L=10)
     omega = OMEGA_N_16[:10]
 
@@ -63,6 +65,7 @@ def test_error_norm_rejects_dense_budget_before_hamiltonian_allocation(
 
 
 def test_error_norm_passes_dense_budget_to_bridge(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The dense budget reaches the bridge."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     seen_budgets: list[float | None] = []
@@ -85,6 +88,7 @@ def test_error_norm_passes_dense_budget_to_bridge(monkeypatch: pytest.MonkeyPatc
 
 
 def test_error_decreases_with_reps(small_system: CouplingAndFrequencies) -> None:
+    """More repetitions give a smaller error."""
     K, omega = small_system
     err_1 = trotter_error_norm(K, omega, t=1.0, reps=1)
     err_4 = trotter_error_norm(K, omega, t=1.0, reps=4)
@@ -92,6 +96,7 @@ def test_error_decreases_with_reps(small_system: CouplingAndFrequencies) -> None
 
 
 def test_error_increases_with_time(small_system: CouplingAndFrequencies) -> None:
+    """A longer time gives a larger error."""
     K, omega = small_system
     err_short = trotter_error_norm(K, omega, t=0.05, reps=2)
     err_long = trotter_error_norm(K, omega, t=0.5, reps=2)
@@ -99,6 +104,7 @@ def test_error_increases_with_time(small_system: CouplingAndFrequencies) -> None
 
 
 def test_raises_for_large_n() -> None:
+    """A system that is too large is refused."""
     K = build_knm_paper27(L=11)
     omega = OMEGA_N_16[:11]
     with pytest.raises(ValueError, match="too large"):
@@ -118,6 +124,7 @@ def test_trotter_convergence_rate(small_system: CouplingAndFrequencies) -> None:
 
 
 def test_sweep_returns_2d(small_system: CouplingAndFrequencies) -> None:
+    """The sweep returns a non-negative grid."""
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.05, 0.1], reps_values=[1, 2])
     errors = _sweep_errors(result)
@@ -129,6 +136,7 @@ def test_sweep_returns_2d(small_system: CouplingAndFrequencies) -> None:
 def test_sweep_propagates_dense_budget(
     monkeypatch: pytest.MonkeyPatch, small_system: CouplingAndFrequencies
 ) -> None:
+    """The sweep passes the dense budget on."""
     K, omega = small_system
     seen: list[float | None] = []
 
@@ -152,12 +160,14 @@ def test_sweep_propagates_dense_budget(
 
 
 def test_error_positive_at_nonzero_time(small_system: CouplingAndFrequencies) -> None:
+    """The error is positive at non-zero time."""
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.5, reps=1)
     assert err > 0
 
 
 def test_sweep_t_values_in_result(small_system: CouplingAndFrequencies) -> None:
+    """The grid has one row per time."""
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.1, 0.2, 0.3], reps_values=[1, 2])
     errors = _sweep_errors(result)
@@ -167,6 +177,7 @@ def test_sweep_t_values_in_result(small_system: CouplingAndFrequencies) -> None:
 
 @pytest.mark.parametrize("n", [2, 3, 4])
 def test_error_norm_various_sizes(n: int) -> None:
+    """The error is finite and non-negative for several sizes."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     err = trotter_error_norm(K, omega, t=0.1, reps=2)
@@ -203,6 +214,7 @@ def test_error_scales_quadratically_with_t(small_system: CouplingAndFrequencies)
 
 def test_pipeline_knm_to_trotter_sweep(small_system: CouplingAndFrequencies) -> None:
     """Full pipeline: Knm → error sweep → 2D error map.
+
     Verifies Trotter error module is wired and produces actionable data.
     """
     import time
@@ -268,18 +280,21 @@ def test_second_order_cubic_time_scaling(small_system: CouplingAndFrequencies) -
 
 
 def test_invalid_order_rejected(small_system: CouplingAndFrequencies) -> None:
+    """An order other than 1 or 2 is refused."""
     K, omega = small_system
     with pytest.raises(ValueError, match="order must be 1 or 2"):
         trotter_error_norm(K, omega, t=0.1, reps=1, order=3)
 
 
 def test_nonpositive_reps_rejected(small_system: CouplingAndFrequencies) -> None:
+    """A non-positive repetition count is refused."""
     K, omega = small_system
     with pytest.raises(ValueError, match="reps must be"):
         trotter_error_norm(K, omega, t=0.1, reps=0)
 
 
 def test_sweep_carries_order_through_result(small_system: CouplingAndFrequencies) -> None:
+    """The sweep records its order."""
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.1], reps_values=[1, 2], order=2)
     assert result["order"] == 2

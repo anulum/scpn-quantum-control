@@ -28,7 +28,10 @@ from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
 
 class TestKnmToVQEPipeline:
+    """From the coupling matrix to a VQE ansatz."""
+
     def test_4q_ground_state_negative(self) -> None:
+        """The four-qubit ground energy is negative."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega)
@@ -39,12 +42,14 @@ class TestKnmToVQEPipeline:
         assert eigvals[0] < 0
 
     def test_4q_ansatz_dimensions(self) -> None:
+        """The four-qubit ansatz has four qubits and 16 parameters."""
         K = build_knm_paper27(L=4)
         ansatz = knm_to_ansatz(K, reps=2)
         assert ansatz.num_qubits == 4
         assert ansatz.num_parameters == 16
 
     def test_hamiltonian_is_hermitian(self) -> None:
+        """The Hamiltonian is Hermitian."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega)
@@ -55,6 +60,7 @@ class TestKnmToVQEPipeline:
 
     @pytest.mark.parametrize("L", [2, 3, 4])
     def test_various_sizes(self, L: int) -> None:
+        """Hamiltonian and ansatz sizes follow the layer count."""
         K = build_knm_paper27(L=L)
         omega = OMEGA_N_16[:L]
         H = knm_to_hamiltonian(K, omega)
@@ -69,7 +75,10 @@ class TestKnmToVQEPipeline:
 
 
 class TestKnmToTrotterPipeline:
+    """From the coupling matrix to Trotter evolution."""
+
     def test_4q_trotter_energy_finite(self) -> None:
+        """Four-qubit Trotter evolution gives a finite energy."""
         from qiskit import transpile
 
         K = build_knm_paper27(L=4)
@@ -87,6 +96,7 @@ class TestKnmToTrotterPipeline:
         assert qc.num_qubits == 4
 
     def test_2q_trotter(self) -> None:
+        """Two-qubit Trotter evolution gives a finite energy."""
         from qiskit import transpile
 
         K = build_knm_paper27(L=2)
@@ -109,7 +119,10 @@ class TestKnmToTrotterPipeline:
 
 
 class TestHamiltonianSpectrum:
+    """Spectra of the coupling Hamiltonian."""
+
     def test_8q_spectrum_sorted(self) -> None:
+        """The eight-qubit spectrum is in ascending order."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         H = knm_to_hamiltonian(K, omega)
@@ -120,6 +133,7 @@ class TestHamiltonianSpectrum:
         assert np.all(np.diff(eigvals) >= -1e-12)
 
     def test_8q_bandwidth(self) -> None:
+        """The eight-qubit bandwidth exceeds one."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         H = knm_to_hamiltonian(K, omega)
@@ -131,6 +145,7 @@ class TestHamiltonianSpectrum:
         assert bandwidth > 1.0
 
     def test_4q_spectrum_all_real(self) -> None:
+        """The four-qubit spectrum is real and finite."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega)
@@ -148,13 +163,17 @@ class TestHamiltonianSpectrum:
 
 
 class TestFull16Layer:
+    """The full 16-layer Hamiltonian."""
+
     def test_hamiltonian_construction(self) -> None:
+        """The full Hamiltonian has 16 qubits."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         H = knm_to_hamiltonian(K, omega)
         assert H.num_qubits == 16
 
     def test_pauli_term_counts(self) -> None:
+        """There are 16 Z terms and one XX term per pair."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         H = knm_to_hamiltonian(K, omega)

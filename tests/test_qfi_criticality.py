@@ -35,6 +35,8 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestQFISingleCoupling:
+    """Quantum Fisher information at a single coupling."""
+
     def test_strong_coupling_has_nonzero_qfi(self) -> None:
         """Strong coupling makes ground state entangled → QFI > 0."""
         n = 3
@@ -67,6 +69,7 @@ class TestQFISingleCoupling:
         assert gap_weak != gap_strong
 
     def test_zero_coupling_matrix(self) -> None:
+        """Zero coupling gives zero information."""
         K = np.zeros((2, 2))
         omega = OMEGA_N_16[:2]
         mq, gap, tq = qfi_single_coupling(K, omega)
@@ -74,6 +77,7 @@ class TestQFISingleCoupling:
         assert tq == 0.0
 
     def test_4qubit(self) -> None:
+        """Four qubits give positive information and a positive gap."""
         n = 4
         T = _ring_topology(n)
         K = 2.0 * T
@@ -85,6 +89,7 @@ class TestQFISingleCoupling:
     def test_rejects_dense_qfi_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A dense eigensolve above the budget is refused before the Hamiltonian is built."""
         n = 4
         T = _ring_topology(n)
         K = 2.0 * T
@@ -101,6 +106,8 @@ class TestQFISingleCoupling:
             qfi_single_coupling(K, omega, max_dense_gib=1e-6)
 
     def test_degenerate_excited_level_is_skipped(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A degenerate excited level is skipped and the results stay finite."""
+
         def fake_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
             del K, omega
             return None
@@ -123,7 +130,10 @@ class TestQFISingleCoupling:
 
 
 class TestQFIVsCoupling:
+    """Scanning the information across couplings."""
+
     def test_returns_result(self) -> None:
+        """The scan returns one value per coupling."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -133,6 +143,7 @@ class TestQFIVsCoupling:
         assert len(result.max_qfi) == 3
 
     def test_qfi_has_nonzero_values(self) -> None:
+        """The peak information is positive."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -141,6 +152,7 @@ class TestQFIVsCoupling:
         assert result.peak_qfi > 0
 
     def test_peak_k_is_in_range(self) -> None:
+        """The peak coupling is one of the scanned couplings."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -158,6 +170,7 @@ class TestQFIVsCoupling:
         assert result.spectral_gap[0] != result.spectral_gap[-1]
 
     def test_4qubit_scan(self) -> None:
+        """A four-qubit scan gives a positive peak."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -166,6 +179,7 @@ class TestQFIVsCoupling:
         assert len(result.total_qfi) == 2
 
     def test_default_k_range_has_documented_size(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The default coupling range has its documented 20 points."""
         calls: list[float] = []
 
         def fake_single_coupling(
@@ -184,6 +198,7 @@ class TestQFIVsCoupling:
         assert calls == result.k_values.tolist()
 
     def test_scan_propagates_dense_budget(self) -> None:
+        """The scan refuses a dense eigensolve above the budget."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -198,6 +213,8 @@ class TestQFIVsCoupling:
 
 
 class TestQFIPhysics:
+    """Physical bounds on the information."""
+
     def test_qfi_nonnegative(self) -> None:
         """QFI ≥ 0 always (it's a Fisher information)."""
         n = 3
@@ -222,8 +239,11 @@ class TestQFIPhysics:
 
 
 class TestQFIPipeline:
+    """The coupling-to-information pipeline."""
+
     def test_pipeline_knm_to_qfi(self) -> None:
         """Full pipeline: build_knm → QFI scan → peak detection.
+
         Verifies QFI module is wired end-to-end, not decorative.
         """
         import time

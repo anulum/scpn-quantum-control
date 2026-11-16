@@ -34,30 +34,36 @@ class TestCirqAvailability:
     """Tests that work regardless of cirq installation status."""
 
     def test_is_cirq_available_returns_bool(self) -> None:
+        """The availability check returns a boolean."""
         assert isinstance(is_cirq_available(), bool)
 
     def test_import_does_not_crash(self) -> None:
+        """Importing the adapter does not raise."""
         from scpn_quantum_control.hardware import cirq_adapter  # noqa: F401
 
         assert True
 
     def test_cirq_result_dataclass(self) -> None:
+        """A result record keeps its fields."""
         r = CirqResult(energy=-1.5, n_qubits=4, device_name="simulator")
         assert r.energy == -1.5
         assert r.n_qubits == 4
         assert r.device_name == "simulator"
 
     def test_cirq_result_equality(self) -> None:
+        """Equal fields give equal results."""
         r1 = CirqResult(energy=0.0, n_qubits=2, device_name="sim")
         r2 = CirqResult(energy=0.0, n_qubits=2, device_name="sim")
         assert r1 == r2
 
     def test_cirq_result_different_energy(self) -> None:
+        """Different energies give different results."""
         r1 = CirqResult(energy=0.0, n_qubits=2, device_name="sim")
         r2 = CirqResult(energy=1.0, n_qubits=2, device_name="sim")
         assert r1 != r2
 
     def test_import_guard_when_cirq_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without Cirq the module reports it unavailable and the runner raises."""
         real_import = builtins.__import__
 
         def guarded_import(
@@ -93,6 +99,7 @@ class TestCirqRunnerWithoutCirq:
     """Verify correct ImportError when cirq is absent."""
 
     def test_runner_raises_import_error(self) -> None:
+        """Without Cirq the runner raises ImportError."""
         with patch("scpn_quantum_control.hardware.cirq_adapter._CIRQ_AVAILABLE", False):
             K = np.eye(2)
             omega = np.ones(2)
@@ -112,6 +119,7 @@ class TestCirqRunnerInit:
     """Construction and attribute checks."""
 
     def test_init_stores_params(self) -> None:
+        """The runner stores its size, device and coupling."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, -1.0])
         runner = CirqRunner(K, omega)
@@ -121,10 +129,12 @@ class TestCirqRunnerInit:
         np.testing.assert_array_equal(runner.omega, omega)
 
     def test_custom_device_name(self) -> None:
+        """A custom device name is kept."""
         runner = CirqRunner(np.eye(2), np.ones(2), device="sycamore")
         assert runner.device_name == "sycamore"
 
     def test_qubit_count_matches_K(self) -> None:
+        """There is one qubit per oscillator."""
         for n in (2, 3, 4):
             K = np.eye(n) * 0.3
             omega = np.ones(n)
@@ -137,6 +147,7 @@ class TestCirqTrotterCircuit:
     """Trotter step circuit construction."""
 
     def test_trotter_step_returns_circuit(self) -> None:
+        """A Trotter step is a non-empty circuit."""
         import cirq
 
         K = np.array([[0, 0.5], [0.5, 0]])
@@ -173,6 +184,7 @@ class TestCirqRunTrotter:
     """Full Trotter evolution and energy."""
 
     def test_run_trotter_returns_cirq_result(self) -> None:
+        """A Trotter run returns a result for its size and device."""
         K = np.array([[0, 0.3], [0.3, 0]])
         omega = np.array([1.0, -1.0])
         runner = CirqRunner(K, omega)
@@ -183,6 +195,7 @@ class TestCirqRunTrotter:
         assert isinstance(result.energy, float)
 
     def test_energy_is_real_finite(self) -> None:
+        """The energy is finite."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([0.5, -0.5])
         runner = CirqRunner(K, omega)
@@ -191,6 +204,7 @@ class TestCirqRunTrotter:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_run_trotter_various_sizes(self, n: int) -> None:
+        """Trotter runs of several sizes give finite energies."""
         rng = np.random.default_rng(42)
         K = rng.uniform(0, 0.5, (n, n))
         K = (K + K.T) / 2
@@ -210,6 +224,7 @@ class TestCirqRunTrotter:
         assert np.isfinite(result.energy)
 
     def test_single_rep(self) -> None:
+        """A single repetition gives a float energy."""
         K = np.array([[0, 0.2], [0.2, 0]])
         omega = np.array([0.5, -0.5])
         runner = CirqRunner(K, omega)
