@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Enzyme plugin discovery test no longer depends on the host. Prefix
+  discovery of the newest regular `LLVMEnzyme-*.so` was covered only where
+  Enzyme is installed under `~/.local/opt`, so hosted CI missed one line of
+  `compiler/mlir_enzyme_execution_runner.py`. A test now supplies two plugin
+  files through the same discovery path, and the module reaches 100 % on a
+  host without Enzyme.
+
 - The reproduction image now carries the topology and cross-validation locks
   and their inputs. The supply-chain and workflow-environment contracts read
   those files, and they failed inside the image because the Dockerfile never

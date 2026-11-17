@@ -524,6 +524,31 @@ def test_plugin_discovery_skips_non_file_candidates(
     assert resolve_enzyme_toolchain() is None
 
 
+def test_plugin_discovery_admits_the_newest_regular_prefix_plugin(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Prefix discovery admits the last sorted regular plugin, independent of the host install."""
+    clang = tmp_path / "clang"
+    opt = tmp_path / "opt"
+    _write_executable(clang)
+    _write_executable(opt)
+    older = tmp_path / "enzyme-v0.0.1" / "lib" / "LLVMEnzyme-18.so"
+    newer = tmp_path / "enzyme-v0.0.2" / "lib" / "LLVMEnzyme-19.so"
+    for plugin in (older, newer):
+        plugin.parent.mkdir(parents=True)
+        plugin.write_text("plugin", encoding="utf-8")
+    monkeypatch.delenv("SCPN_ENZYME_PLUGIN", raising=False)
+    monkeypatch.setattr(runner, "glob", lambda pattern: [str(older), str(newer)])
+    _patch_which(monkeypatch, {"clang": str(clang), "opt": str(opt)})
+
+    toolchain = resolve_enzyme_toolchain()
+
+    assert toolchain is not None
+    assert toolchain.plugin == str(newer.resolve(strict=True))
+    assert toolchain.metadata["enzyme_plugin"] == "LLVMEnzyme-19.so"
+
+
 def test_toolchain_resolver_fails_closed_without_path_commands(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
