@@ -698,7 +698,7 @@ The separate 100% recovery register is
 `data/coverage/coverage_debt_register.json`. It is generated and audited by
 `tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does
 not replace the separate aggregate line gate. Its retained debt baseline derives
-from exact-head Python 3.15 CI run `43648887791`, honours the justified
+from exact-head Python 3.15 CI run `43969388600`, honours the justified
 exclusions ledger, and records absent optional-dependency paths as unmeasured.
 Debt is ordered first by public claim-ledger ownership, then explicit runtime
 hot paths, unmeasured paths, large known line debt, and remaining measured
