@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import ast
 import inspect
-from dataclasses import is_dataclass
-from typing import Any, cast
+import json
+from dataclasses import MISSING, fields, is_dataclass
+from typing import Any, cast, get_type_hints
 
 import numpy as np
 import pytest
@@ -206,3 +207,67 @@ def test_jax_results_serialise_list_pytrees_and_native_gradients(
     native_payload = native.to_dict()
     assert native_payload["gradient"] == native.gradient.tolist()
     assert native_payload["method"] == "jax_native_bounded_phase_qnn_value_and_grad"
+
+
+def _probe_value(hint: object) -> object:
+    """Return a small deterministic value for one evidence field annotation."""
+    text = str(hint)
+    if hint is bool:
+        return True
+    if hint is int:
+        return 2
+    if hint is float:
+        return 0.25
+    if hint is str:
+        return "probe"
+    if "complex" in text:
+        return np.array([0.6 + 0.8j, 0.0 - 0.5j])
+    if "ndarray" in text.lower():
+        return np.array([0.5, -0.25])
+    if text == "tuple[str, ...]":
+        return ("jit", "grad")
+    if text == "tuple[tuple[int, ...], ...]":
+        return ((2,),)
+    if hint is object:
+        return {"weights": np.array([0.5, -0.25])}
+    raise AssertionError(f"no probe value for {text}")
+
+
+@pytest.mark.parametrize(
+    "result_type",
+    [
+        contracts.PhaseJAXPhaseQNodeStatevectorResult,
+        contracts.PhaseJAXPhaseQNodeNativeTransformResult,
+        contracts.PhaseJAXPhaseQNodePyTreeTransformResult,
+        contracts.PhaseJAXPhaseQNodeShardingTransformResult,
+    ],
+)
+def test_registered_phase_qnode_results_serialise_without_jax(result_type: type[Any]) -> None:
+    """Registered Phase-QNode JAX evidence serialises to plain JSON without importing JAX.
+
+    Real JAX lowering produces these results in the integration tests; their
+    JSON contract is checked here directly, so it holds on hosts without JAX.
+    """
+    hints = get_type_hints(result_type)
+    values = {
+        field.name: _probe_value(hints[field.name])
+        for field in fields(result_type)
+        if field.default is MISSING
+    }
+    result = result_type(**values)
+
+    payload = result.to_dict()
+
+    assert json.loads(json.dumps(payload)) == payload
+    defaults = {
+        field.name: field.default for field in fields(result_type) if field.default is not MISSING
+    }
+    assert payload["method"] == defaults["method"]
+    assert payload["claim_boundary"] == defaults["claim_boundary"]
+    for name, value in values.items():
+        if isinstance(value, np.ndarray) and np.isrealobj(value) and name in payload:
+            assert payload[name] == value.tolist()
+    if "state" in values:
+        state = cast(np.ndarray, values["state"])
+        assert payload["state_real"] == state.real.tolist()
+        assert payload["state_imag"] == state.imag.tolist()

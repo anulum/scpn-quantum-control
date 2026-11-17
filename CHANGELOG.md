@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The JSON contract of the four registered Phase-QNode JAX evidence results
+  (state vector, native transform, PyTree transform, sharding) is now tested
+  without JAX. Their `to_dict` methods had run only in the integration tests
+  that need a real JAX install, so hosted coverage of
+  `phase/jax_bridge_contracts.py` stopped four lines short of 100 %.
+
 - The Enzyme plugin discovery test no longer depends on the host. Prefix
   discovery of the newest regular `LLVMEnzyme-*.so` was covered only where
   Enzyme is installed under `~/.local/opt`, so hosted CI missed one line of
