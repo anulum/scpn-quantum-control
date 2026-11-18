@@ -228,7 +228,6 @@ def build_differentiable_dependency_environment_evidence(
             "locked_versions",
             (
                 "anyhow==1.0.104",
-                "chrono==0.4.45",
                 "clap==4.6.7",
                 "criterion==0.5.1",
                 "scpn-quantum-engine==0.3.0",

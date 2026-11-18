@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The engine no longer depends on `chrono`. The crate was declared in
+  `scpn_quantum_engine/Cargo.toml` but no source used it, and RustSec now
+  marks it unmaintained (RUSTSEC-2026-0543), which the Rust audit denies.
+  The engine and fuzz locks lose chrono and its platform time-zone crates;
+  no other version changes. The differentiable dependency map and its
+  artefact bundle follow the new lock digest.
+
 - The JSON contract of the four registered Phase-QNode JAX evidence results
   (state vector, native transform, PyTree transform, sharding) is now tested
   without JAX. Their `to_dict` methods had run only in the integration tests

@@ -140,7 +140,6 @@
       "classification": "locked_versions",
       "version_pins": [
         "anyhow==1.0.104",
-        "chrono==0.4.45",
         "clap==4.6.7",
         "criterion==0.5.1",
         "scpn-quantum-engine==0.3.0",
@@ -160,7 +159,7 @@
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "090cfec6ea424acb4f51302d67338f2e101ca05673ecc95c943ce32bdd44ff5f"
+        "172d2772bf7bf878ec89367a546e3dce1f3201b1345cef125cb830f3a7a03b36"
       ],
       "evidence_status": "locked",
       "blockers": [],
