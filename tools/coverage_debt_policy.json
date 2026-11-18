@@ -9,11 +9,11 @@
   "high_line_debt_minimum": 50,
   "baseline": {
     "artifact_name": "coverage-gap-audit-3.15",
-    "artifact_sha256": "0c1ff9cc1f430e632ed7a0bd9e4cc195cb87847b0d7cff923329274fe351bb46",
-    "origin_commit": "4df7213a5f958a4a424dc02686734511cd016599",
+    "artifact_sha256": "9c44e9a312e19bf11421255b4fa5e747823700c64047ae2d81921e2d9445c532",
+    "origin_commit": "2d4ef318b320cfe038a23707608a694d921a27a5",
     "python_version": "3.15",
-    "remote_ci_run": 43969388600,
-    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/43969388600"
+    "remote_ci_run": 44308863941,
+    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/44308863941"
   },
   "baseline_invalidated_paths": [],
   "runtime_hot_paths": [

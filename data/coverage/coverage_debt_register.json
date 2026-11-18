@@ -1,11 +1,11 @@
 {
   "baseline": {
     "artifact_name": "coverage-gap-audit-3.15",
-    "artifact_sha256": "0c1ff9cc1f430e632ed7a0bd9e4cc195cb87847b0d7cff923329274fe351bb46",
-    "origin_commit": "4df7213a5f958a4a424dc02686734511cd016599",
+    "artifact_sha256": "9c44e9a312e19bf11421255b4fa5e747823700c64047ae2d81921e2d9445c532",
+    "origin_commit": "2d4ef318b320cfe038a23707608a694d921a27a5",
     "python_version": "3.15",
-    "remote_ci_run": 43969388600,
-    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/43969388600"
+    "remote_ci_run": 44308863941,
+    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/44308863941"
   },
   "debt": [
     {
@@ -29,17 +29,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 82
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 405,
-      "line_percent": 99.02,
-      "missing_lines": 4,
-      "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 409
     },
     {
       "claim_ids": [],
@@ -109,17 +98,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 194,
-      "line_percent": 99.49,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/compiler/mlir_enzyme_execution_runner.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 195
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 160,
       "line_percent": 99.38,
       "missing_lines": 1,
@@ -147,7 +125,7 @@
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
     "justified_exclusions_sha256": "c1ddb562ffd6c393a645a34752103066c0c1458e6f54ccd5809981dd5d48d235"
   },
-  "policy_sha256": "5482c7cb5e17c301b6f4c0d93217c14c220251eb2c53628e90b8bb8595df1504",
+  "policy_sha256": "9addbc49726e2a315e2be18023dece48fcc282ab48d7dacf383ed3d497813e18",
   "schema_version": 1,
   "source_inventory": {
     "baseline_report_file_count": 943,
@@ -157,20 +135,20 @@
     "sha256": "e5626f76735a8f731136621eb6f8f4a66782faef85c76da906883214d77ee253"
   },
   "summary": {
-    "debt_file_count": 12,
-    "fully_covered_file_count": 880,
+    "debt_file_count": 10,
+    "fully_covered_file_count": 882,
     "justified_exclusion_file_count": 51,
-    "known_missing_line_count": 32,
+    "known_missing_line_count": 27,
     "measured_non_excluded_file_count": 892,
     "priority_counts": {
       "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
       "P2_unmeasured": 0,
       "P3_high_line_debt": 0,
-      "P4_standard": 12
+      "P4_standard": 10
     },
     "status_counts": {
-      "below_target": 12
+      "below_target": 10
     },
     "unmeasured_debt_file_count": 0
   },

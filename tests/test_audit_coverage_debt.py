@@ -811,12 +811,12 @@ def test_live_policy_records_latest_remote_debt_baseline() -> None:
 
     assert policy.baseline.artifact_name == "coverage-gap-audit-3.15"
     assert policy.baseline.python_version == "3.15"
-    assert policy.baseline.origin_commit == "4df7213a5f958a4a424dc02686734511cd016599"
-    assert policy.baseline.remote_ci_run == 43969388600
+    assert policy.baseline.origin_commit == "2d4ef318b320cfe038a23707608a694d921a27a5"
+    assert policy.baseline.remote_ci_run == 44308863941
     assert policy.baseline.artifact_sha256 == (
-        "0c1ff9cc1f430e632ed7a0bd9e4cc195cb87847b0d7cff923329274fe351bb46"
+        "9c44e9a312e19bf11421255b4fa5e747823700c64047ae2d81921e2d9445c532"
     )
     assert policy.baseline_invalidated_paths == ()
-    assert register["summary"]["debt_file_count"] == 12
-    assert register["summary"]["known_missing_line_count"] == 32
+    assert register["summary"]["debt_file_count"] == 10
+    assert register["summary"]["known_missing_line_count"] == 27
     assert register["summary"]["unmeasured_debt_file_count"] == 0
