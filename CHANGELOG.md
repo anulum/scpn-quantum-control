@@ -226,10 +226,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 - The three narrowly scoped provider advisory exceptions (D-Wave `diskcache`
   CVE-2025-69872; Strangeworks `python-jose` CVE-2026-85394 and `ecdsa`
-  CVE-2024-23342) were reviewed again on 10 and 15 November 2026, with the
-  same cohort scope: still no fixed upstream release, and the codec tree
-  imports none of them. They are valid through 28 November 2026, and the
-  audit refuses them from 29 November. This is a renewal, not a repair;
+  CVE-2024-23342) were reviewed again on 10, 15 and 18 November 2026, the last
+  time independently, with the same cohort scope: still no fixed upstream release, and the codec tree
+  imports none of them. They are valid through 7 December 2026, and the
+  audit refuses them from 8 December. This is a renewal, not a repair;
   every other finding still blocks.
 
 - The CPU framework overlay installer pins every package the base environment
