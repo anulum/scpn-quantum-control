@@ -6,8 +6,8 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio Platform CI Hashed Dependency Lock
 #
-# Python >=3.11 CI jobs that exercise Studio recompute surfaces install this
+# Python >=3.12 CI jobs that exercise Studio recompute surfaces install this
 # after their base CI lock with --no-deps; the base locks already pin cryptography.
-scpn-studio-platform==0.11.2 \
-    --hash=sha256:566676c1457bc31de14d6e449430eecc9f69b387063302f66ac67c514ee0c863 \
-    --hash=sha256:ec438e71a16ce0b8689bef7de1284fcd8750871b3e2beb981c1aefeb44713cc6
+scpn-studio-platform==0.11.3 \
+    --hash=sha256:59bd4f88029c34a717189975617e5e9890e403820ebcd52645bda6487b7e8fc6 \
+    --hash=sha256:b9f0a1fb336b15e57fd7415dda74411935ba714fc86978ac0717834921d52603

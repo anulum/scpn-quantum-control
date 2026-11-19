@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Studio CI lock moves `scpn-studio-platform` from 0.11.2 to 0.11.3, the
+  newest release. The quantum studio's declared range (`>=0.9,<0.12`) already
+  covered it; with the lock on 0.11.3 the quantum studio can share one
+  environment with other studios that require at least 0.11.3. Version 0.11.3
+  requires `cryptography>=50.0.2`, so the Python 3.12 and 3.13 CI locks move
+  `cryptography` from 50.0.0 to 50.0.2 (recompiled with that package upgraded
+  only). The external-validation environment manifest, the dependency map and
+  their bundle follow the new lock digests.
+
 - The engine no longer depends on `chrono`. The crate was declared in
   `scpn_quantum_engine/Cargo.toml` but no source used it, and RustSec now
   marks it unmaintained (RUSTSEC-2026-0543), which the Rust audit denies.
