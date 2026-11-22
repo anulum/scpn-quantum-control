@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The commit-message checker (`tools/check_commit_trailers.py`) now refuses
+  internal coordination identifiers outside the `Seat:` and authorship lines:
+  an agent seat identifier, a coordination record name, the internal reviewer
+  and a hub event citation. A record name is matched by its shape, so a new
+  record prefix needs no list update. This is the commit body policy, version 2,
+  that the coordination tooling already applies.
+  - The `commit-msg` hook checks every new message.
+  - The strict range audit checks a commit only when that commit's own copy of
+    the checker carries the `commit-body-policy-v2` marker, so published history
+    keeps the rule it was written under.
+  - The historical audit is unchanged.
+
 - The Studio CI lock moves `scpn-studio-platform` from 0.11.2 to 0.11.3, the
   newest release. The quantum studio's declared range (`>=0.9,<0.12`) already
   covered it; with the lock on 0.11.3 the quantum studio can share one

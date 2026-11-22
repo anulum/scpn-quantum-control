@@ -483,6 +483,24 @@ Several assistant tools append such trailers automatically; strip them before
 committing. The check runs at the `commit-msg` stage, so it refuses the message
 rather than leaving the commit to be corrected afterwards.
 
+Internal coordination identifiers stay in the private coordination records. Outside
+the `Seat:` and authorship lines, a message may not name any of these:
+
+- an agent seat identifier (a vendor name, a hyphen and a hexadecimal suffix);
+- a coordination record. A record name is matched by its shape: a capitalised prefix
+  of one or more segments joined by `_`, then `_` and a dashed date or a compact UTC
+  stamp. A new record prefix therefore needs no list update;
+- the internal reviewer;
+- a hub event citation (`hub`, `event` or `seq` followed by five or more digits).
+
+The hook applies this rule to every new message, including lines that start with
+`#`, because `git commit -F` keeps them. The strict range audit applies it to a
+commit only when that commit's own copy of the checker carries the
+`commit-body-policy-v2` marker. History published before the rule therefore stays
+valid, and a backdated commit cannot avoid the rule. Planning codes are not
+matched: their set changes with every programme, so reread every message before
+committing.
+
 New commits permit exactly one authorship line and no `Co-Authored-By:` trailer,
 including the former project coauthor trailer. CI checks introduced revisions
 with `python tools/check_commit_trailers.py --strict --range BASE..HEAD` using

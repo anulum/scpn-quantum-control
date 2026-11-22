@@ -27,6 +27,24 @@ and does not honour historical exemptions. The default historical audit does
 not certify these newer checks. An explicit nonempty range is required for
 strict mode so a mistyped invocation cannot silently audit a different scope.
 
+Internal coordination identifiers stay in the private coordination records.
+Outside its ``Seat:`` and authorship lines, a new message may not name an agent
+seat identifier, a coordination record, the internal reviewer or a hub event
+citation. A record name is matched by its shape, so a new record prefix needs
+no list update: a capitalised prefix of one or more segments joined by ``_``,
+then ``_`` and a dashed date (``2026-11-18``) or a compact UTC stamp
+(``20261118T181923Z``). This is the shared commit body policy, version 2
+(``commit-body-policy-v2``).
+
+- The hook applies it to every new message, including lines that start with
+  ``#``: ``git commit -F`` keeps such lines in the commit.
+- The strict audit applies it to a commit only when that commit's own copy of
+  this tool carries the marker. History published before the rule therefore
+  stays valid, and later history cannot drop the rule by backdating.
+- The historical audit does not apply it.
+- Planning codes are not matched. Their set changes with every programme, so
+  keeping them out of public messages is left to the review before each commit.
+
 The rules mirror `feedback_branding_headers`,
 `feedback_no_internal_quality_labels`, and
 `feedback_anti_slop_policy`. When those rules change, update the
@@ -97,6 +115,32 @@ FORBIDDEN_SEAT_IDS = frozenset(
 # attribution, but strict sole-authorship checking independently rejects it.
 VENDOR_ATTRIBUTION_TOKENS = tuple(sorted(FORBIDDEN_SEAT_IDS | {"chatgpt", "copilot"}))
 TRAILER_SHAPED_LINE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*:\s")
+
+# Internal identifiers a message may not carry, each with the label it is reported
+# under. These are the shapes of the shared commit body policy, version 2.
+SEAT_IDENTIFIER_VENDORS = ("claude", "codex", "grok", "gemini", "kimi", "qwen", "llama")
+INTERNAL_REVIEWER_NAME = "RIGOR"
+IDENTIFIER_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    (
+        "agent seat identifier",
+        re.compile(
+            r"\b(?:" + "|".join(SEAT_IDENTIFIER_VENDORS) + r")-[0-9a-f]{4,}\b", re.IGNORECASE
+        ),
+    ),
+    (
+        "coordination record name",
+        re.compile(
+            r"(?<![A-Za-z0-9])[A-Z][A-Z0-9]*(?:_[A-Z][A-Z0-9]*)*"
+            r"_(?:\d{4}-\d{2}-\d{2}(?:T\d{4,6}Z?)?|\d{8}T\d{4,6}Z?)"
+        ),
+    ),
+    ("internal reviewer name", re.compile(r"\b" + INTERNAL_REVIEWER_NAME + r"\b")),
+    ("hub event citation", re.compile(r"\b(?:hub|event|seq)\s+#?\d{5,}\b", re.IGNORECASE)),
+)
+# The strict audit applies IDENTIFIER_RULES to a commit only when that commit's own
+# copy of this tool, at TOOL_REPOSITORY_PATH, contains this exact marker text.
+IDENTIFIER_POLICY_MARKER = "commit-body-policy-v2"
+TOOL_REPOSITORY_PATH = "tools/check_commit_trailers.py"
 
 # Banned tokens per `feedback_no_internal_quality_labels` and
 # `feedback_anti_slop_policy`. Case-insensitive whole-word match.
@@ -295,12 +339,42 @@ def _seat_trailer_violations(msg: str) -> list[str]:
     return violations
 
 
+def _identifier_violations(msg: str) -> list[str]:
+    """Return one violation per kind of internal identifier the message names.
+
+    Parameters
+    ----------
+    msg : str
+        The full commit message. The ``Seat:`` trailer and the authorship line
+        are left out, because their own rules check them.
+
+    Returns
+    -------
+    list[str]
+        ``"<label> in the message: <names>"`` for each rule that matches, each
+        name listed once in the order it first appears.
+
+    """
+    text = "\n".join(
+        line
+        for line in msg.splitlines()
+        if not SEAT_TRAILER_PREFIX_RE.match(line) and line.strip() != REQUIRED_AUTHORSHIP_LINE
+    )
+    violations: list[str] = []
+    for label, pattern in IDENTIFIER_RULES:
+        found = list(dict.fromkeys(match.group(0) for match in pattern.finditer(text)))
+        if found:
+            violations.append(f"{label} in the message: {', '.join(found)}")
+    return violations
+
+
 def _message_violations(
     msg: str,
     check_body_banned: bool = False,
     allow_legacy_trailer: bool = False,
     require_seat_trailer: bool = False,
     check_vendor_attribution: bool = False,
+    check_identifiers: bool = False,
 ) -> list[str]:
     """Return a list of violations for this commit message.
 
@@ -313,6 +387,11 @@ def _message_violations(
     `check_vendor_attribution` also enforces sole authorship. The hook and
     strict CI mode enable it; historical compatibility mode does not certify
     these forward checks or waive previously recorded attribution debt.
+
+    `check_identifiers` refuses internal coordination identifiers anywhere
+    outside the seat and authorship lines (commit body policy, version 2). The
+    hook enables it for every new message; the strict audit enables it per
+    commit when that commit's own copy of this tool carries the policy marker.
     """
     violations: list[str] = []
     has_current_line = _has_required_authorship_line(msg)
@@ -327,6 +406,8 @@ def _message_violations(
         if re.search(r"^\s*Co-Authored-By:", msg, re.MULTILINE | re.IGNORECASE):
             violations.append("additional Co-Authored-By trailers are forbidden")
         violations.extend(_vendor_attribution_violations(msg))
+    if check_identifiers:
+        violations.extend(_identifier_violations(msg))
     # Extract subject line (Keep a Changelog / Conventional Commits)
     subject = next((line for line in msg.splitlines() if line.strip()), "")
     scope = msg if check_body_banned else subject
@@ -347,7 +428,12 @@ def _message_violations(
 def _commit_msg_hook(path: Path) -> int:
     """Run the forward-only commit-message hook against one message file."""
     msg = path.read_text(encoding="utf-8")
-    violations = _message_violations(msg, require_seat_trailer=True, check_vendor_attribution=True)
+    violations = _message_violations(
+        msg,
+        require_seat_trailer=True,
+        check_vendor_attribution=True,
+        check_identifiers=True,
+    )
     if violations:
         print("Commit message rejected:", file=sys.stderr)
         for v in violations:
@@ -397,6 +483,31 @@ def _run_git(git_executable: str, *args: str) -> subprocess.CompletedProcess[str
     )
 
 
+def _tool_copy_carries_identifier_policy(git_executable: str, sha: str) -> bool:
+    """Return whether ``sha``'s own copy of this tool carries the identifier policy.
+
+    Parameters
+    ----------
+    git_executable : str
+        Admitted absolute path of the git executable.
+    sha : str
+        The audited commit.
+
+    Returns
+    -------
+    bool
+        True when the commit's tree holds this tool and its text contains
+        ``IDENTIFIER_POLICY_MARKER``; False when the tool is absent from that
+        tree or predates the marker.
+
+    """
+    try:
+        copy = _run_git(git_executable, "show", f"{sha}:{TOOL_REPOSITORY_PATH}")
+    except subprocess.CalledProcessError:
+        return False
+    return IDENTIFIER_POLICY_MARKER in copy.stdout
+
+
 def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE, *, strict: bool = False) -> int:
     """Audit an explicit revision set under strict or historical message policy."""
     # Pipe the SHAs through a second git call that fetches each
@@ -417,6 +528,7 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE, *, strict: bool = False) ->
         return 2
     fails: list[str] = []
     exempt_hits: list[str] = []
+    identifier_checked = 0
     for sha in shas:
         short = sha[:7]
         if not strict and short in HISTORICAL_EXEMPT_SHAS:
@@ -425,11 +537,14 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE, *, strict: bool = False) ->
         msg_result = _run_git(git_executable, "log", "-1", "--format=%B", sha)
         date_result = _run_git(git_executable, "log", "-1", "--format=%cI", sha)
         committed_at = datetime.fromisoformat(date_result.stdout.strip())
+        check_identifiers = strict and _tool_copy_carries_identifier_policy(git_executable, sha)
+        identifier_checked += check_identifiers
         violations = _message_violations(
             msg_result.stdout,
             allow_legacy_trailer=not strict and committed_at < AUTHORSHIP_POLICY_EFFECTIVE_UTC,
             require_seat_trailer=strict,
             check_vendor_attribution=strict,
+            check_identifiers=check_identifiers,
         )
         if violations:
             fails.append(f"{short}: {'; '.join(violations)}")
@@ -437,6 +552,11 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE, *, strict: bool = False) ->
     print(
         "  Policy: strict" if strict else "  Policy: historical (seat/vendor checks not certified)"
     )
+    if strict:
+        print(
+            f"  Identifier rule ({IDENTIFIER_POLICY_MARKER}): {identifier_checked} commits "
+            "whose own tool copy carries it"
+        )
     print(f"  Exempt (historical debt): {len(exempt_hits)}")
     print(f"  Violations: {len(fails)}")
     for f in fails:

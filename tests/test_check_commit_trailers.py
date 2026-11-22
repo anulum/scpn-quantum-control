@@ -701,3 +701,318 @@ def test_workflow_selects_and_executes_strict_range(
     assert (
         'python tools/check_commit_trailers.py --strict --range "$STRICT_RANGE"' in runner["run"]
     )
+
+
+def _seat_identifier(suffix: str = "f636", vendor_index: int = 0) -> str:
+    """Return a seat identifier built from the tool's own vendor list.
+
+    Parameters
+    ----------
+    suffix : str
+        Hexadecimal seat suffix.
+    vendor_index : int
+        Position in ``SEAT_IDENTIFIER_VENDORS``.
+
+    Returns
+    -------
+    str
+        ``<vendor>-<suffix>``, so no vendor literal lives in this public file.
+
+    """
+    vendor: str = _check_commit_trailers.SEAT_IDENTIFIER_VENDORS[vendor_index]
+    return f"{vendor}-{suffix}"
+
+
+def _record_name(prefix: tuple[str, ...], stamp: str) -> str:
+    """Return a coordination record name joined from its parts.
+
+    Parameters
+    ----------
+    prefix : tuple[str, ...]
+        Capitalised prefix segments.
+    stamp : str
+        Dashed date or compact UTC stamp.
+
+    Returns
+    -------
+    str
+        The segments and the stamp joined by underscores. The public test file
+        therefore names no record literally.
+
+    """
+    return "_".join((*prefix, stamp))
+
+
+def _reviewer() -> str:
+    """Return the internal reviewer name from the tool, so none lives here.
+
+    Returns
+    -------
+    str
+        The tool's ``INTERNAL_REVIEWER_NAME``.
+
+    """
+    name: str = _check_commit_trailers.INTERNAL_REVIEWER_NAME
+    return name
+
+
+def _identifier_message(text: str = "", subject: str = "fix: validate input") -> str:
+    """Return a message that is valid apart from the given body text.
+
+    Parameters
+    ----------
+    text : str
+        Body text placed between the subject and the trailers.
+    subject : str
+        The subject line.
+
+    Returns
+    -------
+    str
+        Subject, body, seat trailer and authorship line.
+
+    """
+    return f"{subject}\n\n{text}\n\n{VALID_SEAT_TRAILER}\n{REQUIRED_AUTHORSHIP_LINE}\n"
+
+
+def _hook_violations(message: str) -> list[str]:
+    """Return what the commit-msg hook policy reports for one message.
+
+    Parameters
+    ----------
+    message : str
+        The full commit message.
+
+    Returns
+    -------
+    list[str]
+        Violations under the hook's flags.
+
+    """
+    violations: list[str] = _check_commit_trailers._message_violations(
+        message,
+        require_seat_trailer=True,
+        check_vendor_attribution=True,
+        check_identifiers=True,
+    )
+    return violations
+
+
+@pytest.mark.parametrize(
+    ("text", "label", "name"),
+    [
+        (
+            f"Found while gating for {_seat_identifier()}.",
+            "agent seat identifier",
+            _seat_identifier(),
+        ),
+        (
+            f"Routed by {_seat_identifier('157251', 2).upper()}.",
+            "agent seat identifier",
+            _seat_identifier("157251", 2).upper(),
+        ),
+        (
+            f"See {_record_name(('HANDOVER',), '20261118T181923Z')}.",
+            "coordination record name",
+            _record_name(("HANDOVER",), "20261118T181923Z"),
+        ),
+        (
+            f"See {_record_name(('REVIEW',), '2026-11-20')} for the verdict.",
+            "coordination record name",
+            _record_name(("REVIEW",), "2026-11-20"),
+        ),
+        (
+            f"Per {_record_name(('LANDING',), '2026-11-21T1342Z')}.",
+            "coordination record name",
+            _record_name(("LANDING",), "2026-11-21T1342Z"),
+        ),
+        (
+            f"As {_record_name(('NOTE', 'FROM', 'PEER'), '20261120T212421Z')} says.",
+            "coordination record name",
+            _record_name(("NOTE", "FROM", "PEER"), "20261120T212421Z"),
+        ),
+        (f"Approved by {_reviewer()}.", "internal reviewer name", _reviewer()),
+        ("Asked on hub 399765.", "hub event citation", "hub 399765"),
+        ("Answered in seq #401897.", "hub event citation", "seq #401897"),
+        ("Recorded as event 12345.", "hub event citation", "event 12345"),
+    ],
+    ids=[
+        "seat",
+        "upper-case-seat",
+        "compact-stamp-record",
+        "dashed-date-record",
+        "dated-stamp-record",
+        "multi-segment-record",
+        "reviewer",
+        "hub",
+        "seq",
+        "event",
+    ],
+)
+def test_an_internal_identifier_in_the_body_is_rejected(text: str, label: str, name: str) -> None:
+    """Each identifier form is refused once, under its own label."""
+    assert _hook_violations(_identifier_message(text)) == [f"{label} in the message: {name}"]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Runs on Python 3.12 and keeps PEP_8 names.",
+        "Reads the snapshot_2026-11-20 fixture and the UTF_8 codec.",
+        "Retries seq 4321 and event 999, below the citation width.",
+        f"A {_reviewer().lower()}ous check, and the {_seat_identifier('code')} integration.",
+        "Pins the wheel digest 9e4e4d08 of HANDOVER and REVIEW forms.",
+    ],
+    ids=["version-and-pep", "lower-case-fixture", "short-numbers", "near-names", "bare-prefixes"],
+)
+def test_text_that_only_resembles_an_identifier_is_allowed(text: str) -> None:
+    """Version numbers, lower-case names, short numbers and bare prefixes pass."""
+    assert _hook_violations(_identifier_message(text)) == []
+
+
+def test_an_identifier_in_the_subject_is_rejected() -> None:
+    """The subject line is part of the checked message."""
+    record = _record_name(("REVIEW",), "20261121T133713Z")
+
+    assert _hook_violations(_identifier_message(subject=f"fix: land {record}")) == [
+        f"coordination record name in the message: {record}"
+    ]
+
+
+def test_each_identifier_is_reported_once_in_first_order() -> None:
+    """Repeated names are listed once, in the order they first appear."""
+    seat = _seat_identifier("b0f9")
+    message = _identifier_message(f"hub 400312, then {seat}, hub 400312 again and {seat}.")
+
+    assert _hook_violations(message) == [
+        f"agent seat identifier in the message: {seat}",
+        "hub event citation in the message: hub 400312",
+    ]
+
+
+def test_an_identifier_in_a_hash_line_is_rejected() -> None:
+    """A line starting with ``#`` is checked, because ``git commit -F`` keeps it."""
+    record = _record_name(("HANDOVER",), "20261118T181923Z")
+    message = _identifier_message() + f"# Drafted from {record}\n"
+
+    assert _hook_violations(message) == [f"coordination record name in the message: {record}"]
+
+
+def test_the_seat_trailer_is_judged_by_its_own_rule_only() -> None:
+    """A vendor-shaped seat is refused once, by the seat rule, not again as an identifier."""
+    message = _identifier_message().replace(VALID_SEAT_TRAILER, f"Seat: {_seat_identifier()}")
+
+    assert _hook_violations(message) == ["vendor-prefixed `Seat:` trailer is forbidden"]
+
+
+def test_identifier_rule_is_off_unless_requested() -> None:
+    """The historical policy and the default flags do not judge identifiers."""
+    message = _identifier_message(f"Approved by {_reviewer()} on hub 399765.")
+
+    assert _check_commit_trailers._message_violations(message) == []
+    assert (
+        _check_commit_trailers._message_violations(
+            message, require_seat_trailer=True, check_vendor_attribution=True
+        )
+        == []
+    )
+
+
+def test_commit_msg_hook_rejects_an_internal_identifier(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The real hook entry point refuses the message and names the identifier."""
+    path = _message_file(tmp_path, _identifier_message(f"Requested by {_seat_identifier()}."))
+
+    assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
+    error = capsys.readouterr().err
+    assert "Commit message rejected" in error
+    assert f"agent seat identifier in the message: {_seat_identifier()}" in error
+
+
+def test_this_tool_carries_the_identifier_policy_marker() -> None:
+    """Commits made from this tool's version on are checked by the strict audit."""
+    assert _check_commit_trailers.IDENTIFIER_POLICY_MARKER == "commit-body-policy-v2"
+    assert _check_commit_trailers.IDENTIFIER_POLICY_MARKER in TOOL_PATH.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("tool_text", "expected_returncode", "checked"),
+    [
+        (None, 0, 0),
+        ("# an earlier copy without the marker\n", 0, 0),
+        ("# carries commit-body-policy-v2\n", 1, 1),
+    ],
+    ids=["no-tool-copy", "copy-without-marker", "copy-with-marker"],
+)
+def test_strict_audit_applies_the_identifier_rule_by_the_commit_tool_copy(
+    tmp_path: Path,
+    tool_text: str | None,
+    expected_returncode: int,
+    checked: int,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Only a commit whose own tool copy carries the marker is judged by the rule."""
+    repository = tmp_path / "objects.git"
+    subprocess.run(
+        ["git", "init", "--bare", str(repository)], check=True, capture_output=True, timeout=10
+    )
+    git = ["git", f"--git-dir={repository}"]
+    entries = ""
+    if tool_text is not None:
+        blob = subprocess.run(
+            [*git, "hash-object", "-w", "--stdin"],
+            input=tool_text,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=10,
+        ).stdout.strip()
+        tools_tree = subprocess.run(
+            [*git, "mktree"],
+            input=f"100644 blob {blob}\tcheck_commit_trailers.py\n",
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=10,
+        ).stdout.strip()
+        entries = f"040000 tree {tools_tree}\ttools\n"
+    tree = subprocess.run(
+        [*git, "mktree"], input=entries, text=True, capture_output=True, check=True, timeout=10
+    ).stdout.strip()
+    environment = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "Contract Test",
+        "GIT_COMMITTER_NAME": "Contract Test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }
+    record = _record_name(("HANDOVER",), "20261118T181923Z")
+    commit = subprocess.run(
+        [*git, "commit-tree", tree],
+        input=_identifier_message(f"Continues {record}."),
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=10,
+    ).stdout.strip()
+    result = subprocess.run(
+        [sys.executable, str(TOOL_PATH), "--strict", "--range", f"{commit}^!"],
+        cwd=repository,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+
+    assert result.returncode == expected_returncode, result.stdout + result.stderr
+    assert f"Identifier rule (commit-body-policy-v2): {checked} commits" in result.stdout
+    assert (f"coordination record name in the message: {record}" in result.stdout) is bool(checked)
+    monkeypatch.chdir(repository)
+    assert (
+        _check_commit_trailers.main([str(TOOL_PATH), "--strict", "--range", f"{commit}^!"])
+        == expected_returncode
+    )
+    assert f"Identifier rule (commit-body-policy-v2): {checked} commits" in capsys.readouterr().out
