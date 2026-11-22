@@ -60,6 +60,7 @@ def test_required_contract_cohorts() -> None:
     assert {row["id"]: {c["id"] for c in row["consumers"]} for row in load_contract_cohorts()} == {
         "workspace": {"python", "typescript"},
         "program-source": {"python", "rust", "wasm"},
+        "atlas": {"python", "typescript"},
     }
     validate_contract_workflow()
 

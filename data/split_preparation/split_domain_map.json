@@ -363,6 +363,7 @@
   "studio": {
    "target": "SCPN-QC-STUDIO",
    "units": [
+    "atlas",
     "scientific_problem_parameters",
     "studio",
     "studio_executive_product",
@@ -549,6 +550,11 @@
    "unit": "studio_workspace",
    "reason": "New unit after the planning snapshot (Quantum Studio work); mapped to STUDIO, confirm with the Studio owner.",
    "decision": "Owner 2026-09-30 accepted: STUDIO (Studio owner informed)."
+  },
+  {
+   "unit": "atlas",
+   "reason": "New unit after the planning snapshot: the Atlas snapshot contract of the Studio/Atlas programme (node and edge vocabulary, identity, legality, access projection).",
+   "decision": "Group manager 2026-11-22: STUDIO, where the Studio/Atlas programme design places Atlas; the owner decided the edge vocabulary the same day."
   },
   {
    "unit": "scientific_design",

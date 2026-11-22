@@ -1721,6 +1721,116 @@ and codecs. Workspace persistence UI and worker lifecycle integration are
 separate from these library contracts.
 
 
+## Atlas snapshot contract
+
+An Atlas snapshot (`quantum_atlas_snapshot.v1`) describes what the repository
+holds and how its parts connect, as one deterministic graph of a single
+commit. `scpn_quantum_control.atlas` validates such a document. The browser
+counterpart in `studio-web/src/shared/contracts/atlas.ts` applies the same
+rules and computes the same digest.
+
+The contract does not extract a snapshot from the source tree, and it answers
+no query. It only decides whether a given document is a valid snapshot and
+returns it in canonical form.
+
+### Nodes and identity
+
+A node is one of twelve kinds. Each kind belongs to one identity class:
+
+| Identity class | Kinds | Identity |
+|---|---|---|
+| Definition | `definition`, `parameter`, `program`, `backend`, `claim`, `test`, `documentation`, `capability` | `kind:owner/qualified_name` |
+| Revision | `revision`, `artefact` | `kind:sha256:<digest>`, equal to the node's content digest |
+| Instance | `instance`, `run` | `kind:<project UUID>/<UUID>` |
+
+Every node also carries:
+- its label and source reference;
+- its content digest, validity domain and observation time. Each of these may
+  be null, but only with a stated reason in `null_reasons`;
+- its access class (`public` or `private`) and its freshness (`current`,
+  `stale` or `incomplete`);
+- the digests of its evidence.
+
+When an object is deleted, it leaves a tombstone. The tombstone keeps the exact
+former ID and kind; no live node may take that ID again, and no edge may point
+to it.
+
+### Edges
+
+There are sixteen canonical edge kinds, all of relation version
+`atlas_relation.v1`:
+- `implements`, `consumes`, `produces` and `derives_from`;
+- `constrained_by`, `lowers_to`, `supports` and `requires`;
+- `verified_by`, `benchmarked_against`, `calibrated_by` and `supersedes`;
+- `contradicts_under_assumptions`, `maps_to`, `contains` and `documents`.
+
+Four earlier spellings are accepted as version-1 aliases and normalised. A bare
+`contradicts` is refused.
+
+| Accepted spelling | Stored as |
+|---|---|
+| `produced` | `produces` |
+| `derived_from` | `derives_from` |
+| `depends_on` | `requires` |
+| `verifies` | `verified_by`, with source and target swapped |
+
+An edge is admitted only when all of the following hold:
+- Both endpoints are live nodes, and their kinds are allowed for the relation.
+- `supports`, `verified_by` and `contradicts_under_assumptions` name their
+  evidence. `supports` and `contradicts_under_assumptions` also state their
+  assumptions.
+- A `supports` edge is not derived from import adjacency. A shared import is
+  never evidence that one object supports another.
+- A contradiction joins two claims with the same estimand and units. Claims
+  that differ in either are non-comparable, not contradictory.
+- `maps_to` states its units and semantics. A mapping is not an equivalence.
+- An edge that touches a private node is itself private.
+
+### Access and digest
+
+A public snapshot contains no private node and no private edge. The public
+projection of a private snapshot removes private nodes and every edge that is
+private or touches one. It leaves no count or placeholder behind that would
+reveal what was removed.
+
+The snapshot digest is the SHA-256 of the canonical document under the
+`quantum_atlas_snapshot.v1` domain. Two conditions make the order of the input
+irrelevant to the digest:
+- nodes are sorted by ID, and edges by source, kind, target and evidence;
+- aliases are normalised before hashing.
+
+Python and TypeScript produce identical digests.
+
+```python
+from scpn_quantum_control.atlas import (
+    AtlasContractError,
+    atlas_snapshot_digest,
+    parse_atlas_snapshot,
+    project_public,
+)
+
+try:
+    snapshot = parse_atlas_snapshot(document)
+except AtlasContractError as refusal:
+    print(refusal.code, refusal.path)  # for example: dangling_endpoint $.edges[0].target
+else:
+    print(atlas_snapshot_digest(project_public(snapshot)))
+```
+
+```ts
+import { atlasSnapshotDigest, parseAtlasSnapshot, projectAtlasPublic } from "./shared/contracts";
+
+const parsed = parseAtlasSnapshot(document);
+if (parsed.ok) console.log(await atlasSnapshotDigest(projectAtlasPublic(parsed.value)));
+else console.log(parsed.code, parsed.path);
+```
+
+A refusal leaves the caller's document unchanged. Its code is stable, and both
+languages report the same code and JSON path for the same document. The shared
+cases live in `tests/data/atlas/contracts.json`:
+- `tests/test_atlas_contracts.py` runs them in Python;
+- `studio-web/src/shared/contracts/atlas.test.ts` runs them in TypeScript.
+
 ## Evidence inspector
 
 The program-AD replay card uses the shared evidence inspector. It displays the

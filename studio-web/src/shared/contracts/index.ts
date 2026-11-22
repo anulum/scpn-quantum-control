@@ -8,10 +8,50 @@
 
 export { canonicalBytes, canonicalDigest } from "./canonical";
 export { readJson, writeJson } from "./jsonTransport";
-export { documentDigest, documentToWire, parseDocument, parseDocumentJson,
-  parseExperimentRevision, parseLocalRunRecord, parseParameterSpec, parseResolvedSettings,
-  parseWorkspaceManifest, validateParameterBinding, workspaceSchemas } from "./workspace";
-export type { ExperimentRevision, LocalRunRecord, ParameterSpec, ParseResult,
-  ResolvedSettings, WorkspaceDocument, WorkspaceManifest, WorkspaceSchema } from "./workspace";
+export {
+  documentDigest,
+  documentToWire,
+  parseDocument,
+  parseDocumentJson,
+  parseExperimentRevision,
+  parseLocalRunRecord,
+  parseParameterSpec,
+  parseResolvedSettings,
+  parseWorkspaceManifest,
+  validateParameterBinding,
+  workspaceSchemas,
+} from "./workspace";
+export type {
+  ExperimentRevision,
+  LocalRunRecord,
+  ParameterSpec,
+  ParseResult,
+  ResolvedSettings,
+  WorkspaceDocument,
+  WorkspaceManifest,
+  WorkspaceSchema,
+} from "./workspace";
 export { admitWorkspace } from "./graph";
 export type { RawArtifact, RawCodec, RawIdentity, WorkspaceAdmission } from "./graph";
+export {
+  atlasEdgeAliasesV1,
+  atlasEdgeKinds,
+  atlasNodeKinds,
+  atlasRelationVersion,
+  atlasSnapshotDigest,
+  atlasSnapshotSchema,
+  atlasSnapshotToWire,
+  parseAtlasSnapshot,
+  projectAtlasPublic,
+} from "./atlas";
+export type {
+  AtlasEdge,
+  AtlasEdgeKind,
+  AtlasExclusion,
+  AtlasIdentityClass,
+  AtlasNode,
+  AtlasNodeKind,
+  AtlasParseResult,
+  AtlasSnapshot,
+  AtlasTombstone,
+} from "./atlas";

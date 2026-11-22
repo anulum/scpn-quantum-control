@@ -1004,6 +1004,7 @@
         "tests/test_application_honesty_quality_gate.py",
         "tests/test_appqsim_protocol.py",
         "tests/test_async_runner.py",
+        "tests/test_atlas_contracts.py",
         "tests/test_audit_ci_build_environment.py",
         "tests/test_audit_coverage_gaps.py",
         "tests/test_audit_descriptive_production_naming.py",

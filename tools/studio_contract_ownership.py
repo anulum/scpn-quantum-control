@@ -21,7 +21,11 @@ from scpn_quantum_control.ci_workflow_ownership import (
     resolve_ci_workflow_owner,
 )
 
-_REQUIRED = {"workspace": {"python", "typescript"}, "program-source": {"python", "rust", "wasm"}}
+_REQUIRED = {
+    "workspace": {"python", "typescript"},
+    "program-source": {"python", "rust", "wasm"},
+    "atlas": {"python", "typescript"},
+}
 _OWNER_JOB = "studio-web"
 _STEP_ID = "shared-contract-conformance"
 _COMMAND = ["python", "-m", "tools.studio_contract_quality_gates", "--run"]

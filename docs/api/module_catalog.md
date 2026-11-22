@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **893 modules** across **41 package families**
-- **4789 documented public module-level symbols**
+- **894 modules** across **42 package families**
+- **4799 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -924,6 +924,18 @@ Held-out synthetic QRC certificates and exact reservoir objectives.
 **Classes:** `ReservoirTaskKind`, `SyntheticReservoirDataset`, `ReservoirTrainingCertificate`, `ReservoirLinearObjective`
 
 **Functions:** `generate_synthetic_reservoir_task()`, `certify_reservoir_training()`
+
+## `atlas`
+
+### `scpn_quantum_control.atlas.contracts`
+
+Validate Atlas snapshots: node and edge vocabulary, identity and legality.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/atlas/contracts.py) · Public symbols: **10**
+
+**Classes:** `AtlasContractError`, `AtlasNode`, `AtlasEdge`, `AtlasTombstone`, `AtlasExclusion`, `AtlasSnapshot`
+
+**Functions:** `parse_atlas_snapshot()`, `snapshot_to_wire()`, `atlas_snapshot_digest()`, `project_public()`
 
 ## `benchmark_harness`
 

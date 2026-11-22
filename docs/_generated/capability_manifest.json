@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 40,
+    "domain_package_families": 41,
     "example_files": 43,
     "github_workflows": 45,
     "model_documentation_pages": 14,
@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1677,
-    "python_model_source_modules": 893,
+    "python_model_classes": 1683,
+    "python_model_source_modules": 894,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1670
+    "test_files": 1671
   },
   "documentation": {
     "examples": [
@@ -615,6 +615,11 @@
         "python_modules": 17
       },
       {
+        "package": "atlas",
+        "path": "src/scpn_quantum_control/atlas",
+        "python_modules": 1
+      },
+      {
         "package": "benchmark_harness",
         "path": "src/scpn_quantum_control/benchmark_harness",
         "python_modules": 4
@@ -1132,6 +1137,30 @@
       {
         "name": "AsyncJobHandle",
         "path": "src/scpn_quantum_control/hardware/async_runner.py"
+      },
+      {
+        "name": "AtlasContractError",
+        "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasEdge",
+        "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasExclusion",
+        "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasNode",
+        "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasSnapshot",
+        "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasTombstone",
+        "path": "src/scpn_quantum_control/atlas/contracts.py"
       },
       {
         "name": "Attempt",
@@ -7613,6 +7642,7 @@
       "src/scpn_quantum_control/applications/quantum_kernel.py",
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
       "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
+      "src/scpn_quantum_control/atlas/contracts.py",
       "src/scpn_quantum_control/attested_result_pack.py",
       "src/scpn_quantum_control/backend_dispatch.py",
       "src/scpn_quantum_control/bench_cli.py",
@@ -9754,6 +9784,7 @@
       "tests/test_appqsim.py",
       "tests/test_appqsim_protocol.py",
       "tests/test_async_runner.py",
+      "tests/test_atlas_contracts.py",
       "tests/test_attested_result_pack.py",
       "tests/test_attested_result_pack_quality_gate.py",
       "tests/test_audit_advisory_workflow_steps.py",

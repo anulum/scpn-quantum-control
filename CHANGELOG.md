@@ -4,6 +4,27 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Atlas snapshot contract: `scpn_quantum_control.atlas` validates
+  `quantum_atlas_snapshot.v1` documents, and `studio-web/src/shared/contracts/atlas.ts`
+  applies the same rules. A shared corpus proves equal digests and equal refusal
+  codes and paths in both languages.
+  - Vocabulary: twelve node kinds in three identity classes (definition, content-bound
+    revision, project-bound instance) and sixteen edge kinds of relation version
+    `atlas_relation.v1`. The earlier spellings `produced`, `derived_from`,
+    `depends_on` and `verifies` are version-1 aliases; `verifies` is stored as
+    `verified_by` with its direction reversed. A bare `contradicts` is refused.
+  - Edge rules:
+    - endpoint kinds are checked for every relation;
+    - support, verification and contradiction name their evidence, and support and
+      contradiction state their assumptions;
+    - import adjacency never establishes support;
+    - claims with a different estimand or units are non-comparable, not
+      contradictory.
+  - Access and history: public snapshots hold no private material, and the public
+    projection does not reveal what it removed. Tombstones keep a deleted object's
+    exact identity, and that ID is never reused.
+  - The contract does not extract snapshots or answer queries.
+
 - The commit-message checker (`tools/check_commit_trailers.py`) now refuses
   internal coordination identifiers outside the `Seat:` and authorship lines:
   an agent seat identifier, a coordination record name, the internal reviewer
