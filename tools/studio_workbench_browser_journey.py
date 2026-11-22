@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from playwright.sync_api import Browser, CDPSession, Locator, Page, Request, Route
 
 _CASES = ("standalone", "embedded", "chunk-error", "source")
-_LAZY_VIEWS = ("BuildView", "ResultsView", "UnavailableView")
+_LAZY_VIEWS = ("BuildView", "ResultsView", "AtlasView")
 _INVALID_ROUTES = ("#/build?project=a&project=b", "#/future", "#/atlas?revision=%FF")
 
 
@@ -187,13 +187,13 @@ def _check_deep_link(
 
     context_nav = page.get_by_role("navigation", name="Workbench context destinations")
     context_nav.get_by_role("link", name="Atlas", exact=True).click()
-    expect(page.get_by_role("heading", name="Atlas unavailable")).to_be_visible()
+    expect(page.get_by_role("heading", name="Atlas", exact=True)).to_be_visible()
     if before_reload is not None:
         before_reload()
     deep = "#/atlas?project=" + kept.project + "&revision=r%2F%CE%B1&snapshot=s%2B2"
     page.goto(page.url.split("#")[0] + deep, wait_until="networkidle")
     inspector = page.get_by_role("complementary", name="Workbench inspector")
-    expect(page.get_by_role("heading", name="Atlas unavailable")).to_be_visible()
+    expect(page.get_by_role("heading", name="Atlas", exact=True)).to_be_visible()
     for shown in ("r/α", "s+2", kept.archive):
         expect(inspector.get_by_text(shown, exact=True)).to_be_visible()
     page.reload(wait_until="networkidle")
@@ -203,7 +203,7 @@ def _check_deep_link(
     expect(page.get_by_role("button", name="Open Kuramoto sample", exact=True)).to_be_enabled()
     expect(page.get_by_label("Current experiment result", exact=True)).to_have_count(0)
     page.go_back()
-    expect(page.get_by_role("heading", name="Atlas unavailable")).to_be_visible()
+    expect(page.get_by_role("heading", name="Atlas", exact=True)).to_be_visible()
     page.go_forward()
     expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
     nav.get_by_role("link", name="Workspace", exact=True).click()
@@ -422,7 +422,7 @@ def _dispose_workers(page: Page, entry: dict[str, object]) -> None:
     page.get_by_role("navigation", name="Workbench context destinations").get_by_role(
         "link", name="Atlas", exact=True
     ).click()
-    expect(page.get_by_role("heading", name="Atlas unavailable")).to_be_visible()
+    expect(page.get_by_role("heading", name="Atlas", exact=True)).to_be_visible()
     wait_for_worker_disposal(page, observe_termination=False)
     entry["final_route"] = urlsplit(page.url).fragment
     entry["worker_urls"] = [worker.url for worker in page.workers]

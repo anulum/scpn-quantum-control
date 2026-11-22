@@ -146,7 +146,7 @@ export async function readBrowserCohorts(root: string): Promise<BrowserSourceCoh
     "/src/modules/compare/MethodComparison.tsx",
     "/src/modules/compare/useMethodComparison.ts",
     "/src/modules/compare/methodComparisonArtifact.ts",
-    "/src/modules/atlas/UnavailableView.tsx",
+    "/src/modules/atlas/AtlasView.tsx",
   ]);
   return {
     compiled,

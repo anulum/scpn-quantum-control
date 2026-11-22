@@ -165,17 +165,20 @@
     {
       "id": "atlas",
       "fixtures": [
-        "tests/data/atlas/contracts.json"
+        "tests/data/atlas/contracts.json",
+        "tests/data/atlas/queries.json"
       ],
       "consumers": [
         {
           "id": "python",
           "source": [
             "src/scpn_quantum_control/atlas/__init__.py",
-            "src/scpn_quantum_control/atlas/contracts.py"
+            "src/scpn_quantum_control/atlas/contracts.py",
+            "src/scpn_quantum_control/atlas/query.py"
           ],
           "tests": [
-            "tests/test_atlas_contracts.py"
+            "tests/test_atlas_contracts.py",
+            "tests/test_atlas_bounded_queries.py"
           ],
           "command": [
             "{python}",
@@ -184,31 +187,37 @@
             "--noconftest",
             "--no-cov",
             "-q",
-            "tests/test_atlas_contracts.py"
+            "tests/test_atlas_contracts.py",
+            "tests/test_atlas_bounded_queries.py"
           ],
           "cwd": ".",
           "native_docs": [
             "src/scpn_quantum_control/atlas/__init__.py",
-            "src/scpn_quantum_control/atlas/contracts.py"
+            "src/scpn_quantum_control/atlas/contracts.py",
+            "src/scpn_quantum_control/atlas/query.py"
           ]
         },
         {
           "id": "typescript",
           "source": [
-            "studio-web/src/shared/contracts/atlas.ts"
+            "studio-web/src/shared/contracts/atlas.ts",
+            "studio-web/src/shared/contracts/atlasQuery.ts"
           ],
           "tests": [
-            "studio-web/src/shared/contracts/atlas.test.ts"
+            "studio-web/src/shared/contracts/atlas.test.ts",
+            "studio-web/src/shared/contracts/atlasQuery.test.ts"
           ],
           "command": [
             "node",
             "node_modules/vitest/vitest.mjs",
             "run",
-            "src/shared/contracts/atlas.test.ts"
+            "src/shared/contracts/atlas.test.ts",
+            "src/shared/contracts/atlasQuery.test.ts"
           ],
           "cwd": "studio-web",
           "native_docs": [
-            "studio-web/src/shared/contracts/atlas.ts"
+            "studio-web/src/shared/contracts/atlas.ts",
+            "studio-web/src/shared/contracts/atlasQuery.ts"
           ]
         }
       ]

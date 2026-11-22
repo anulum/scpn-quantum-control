@@ -198,7 +198,7 @@ describe("original native counter conversion", () => {
       "/src/app/useWorkbenchRoute.ts",
       "/src/modules/build/BuildView.tsx",
       "/src/modules/results/ResultsView.tsx",
-      "/src/modules/atlas/UnavailableView.tsx",
+      "/src/modules/atlas/AtlasView.tsx",
     ])
       expect(actual.has(resolve(process.cwd(), `.${owner}`))).toBe(true);
     expect(actual).toEqual(

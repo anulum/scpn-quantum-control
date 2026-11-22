@@ -41,7 +41,7 @@ it("keeps a stage visible and names what the installation does not declare", asy
   );
   // A stage of a module that requires nothing is served under the same declarations.
   visit("#/atlas");
-  expect(await screen.findByRole("heading", { name: "Atlas unavailable" })).toBeTruthy();
+  expect(await screen.findByRole("heading", { name: "Atlas" })).toBeTruthy();
   expect(screen.queryByText("This installation does not declare what the view needs:")).toBeNull();
 });
 

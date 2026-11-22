@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any, cast
 
@@ -508,3 +509,49 @@ def test_queries_run_on_the_extracted_committed_snapshot() -> None:
 
     assert capabilities.total >= 1 and capabilities.next_cursor is None
     assert around.nodes[0].id == first and around.total >= 2
+
+
+_QUERY_CORPUS: dict[str, Any] = json.loads(
+    (Path(__file__).parent / "data/atlas/queries.json").read_text(encoding="utf-8")
+)
+
+
+@pytest.mark.parametrize("case", _QUERY_CORPUS["cases"], ids=lambda case: str(case["id"]))
+def test_every_shared_query_case_matches_its_recorded_answer(case: dict[str, Any]) -> None:
+    """Each shared case answers every page exactly as recorded, or refuses at its field."""
+    snapshot = parse_atlas_snapshot(_QUERY_CORPUS["snapshots"][case["snapshot"]])
+    raw = case["query"]
+    query = AtlasQuery(
+        text=raw.get("text"),
+        kinds=tuple(raw.get("kinds", ())),
+        statuses=tuple(raw.get("statuses", ())),
+        edge_kinds=tuple(raw.get("edge_kinds", ())),
+        start=raw.get("start"),
+        target=raw.get("target"),
+        direction=raw.get("direction", "out"),
+        depth=raw.get("depth", 1),
+        page_size=raw.get("page_size", 500),
+    )
+    expect = case["expect"]
+    if expect["outcome"] == "refusal":
+        refusal = _refused(snapshot, query, case["access"])
+        assert (refusal.code, refusal.field) == (expect["code"], expect["field"])
+        return
+    cursor: str | None = None
+    for recorded in expect["pages"]:
+        page = run_atlas_query(
+            snapshot, AtlasQuery(**{**query.__dict__, "cursor": cursor}), access=case["access"]
+        )
+        assert {
+            "snapshot_digest": page.snapshot_digest,
+            "shape": page.shape,
+            "nodes": [node.id for node in page.nodes],
+            "edges": [[edge.source, edge.kind, edge.target] for edge in page.edges],
+            "paths": [list(path) for path in page.paths],
+            "total": page.total,
+            "omitted": page.omitted,
+            "omitted_edges": page.omitted_edges,
+            "next_cursor": page.next_cursor,
+            "explanation": list(page.explanation),
+        } == recorded
+        cursor = page.next_cursor

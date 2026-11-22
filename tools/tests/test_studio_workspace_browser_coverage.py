@@ -213,7 +213,7 @@ _WORKBENCH_VIEWS = (
     ("Model", "Model"),
     ("Analyse", "Analyse"),
     ("Compare", "Method comparison and uncertainty"),
-    ("Atlas", "Atlas unavailable"),
+    ("Atlas", "Atlas"),
 )
 _FACADE_OWNERS = {
     "/src/shared/storage/workspaceStore.ts",
@@ -231,7 +231,7 @@ _NAVIGATION_OWNERS = {
     "/src/app/useWorkbenchRoute.ts",
     "/src/modules/build/BuildView.tsx",
     "/src/modules/results/ResultsView.tsx",
-    "/src/modules/atlas/UnavailableView.tsx",
+    "/src/modules/atlas/AtlasView.tsx",
 }
 
 

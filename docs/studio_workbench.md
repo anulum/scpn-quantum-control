@@ -63,11 +63,13 @@ Hash addresses work on static hosting without server rewrite rules:
 | Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger`, `#/results/qec-resources`, `#/results/mitigation` or `#/results/pulses` |
 | Compare | `#/compare` |
 | Evidence | `#/evidence` |
-| Atlas | `#/atlas` |
+| Atlas | `#/atlas`, `#/atlas/architecture`, `#/atlas/claims` or `#/atlas/evidence` |
 | Devices & Operations | `#/operations` |
 
 Optional `project`, `revision` and `snapshot` query fields retain exact opaque
-identity through links, reload and browser history. For example,
+identity through links, reload and browser history. An optional `filter` field
+carries a view's own filter in the same way; the stage that reads it admits or
+refuses it, and links to other stages leave it behind. For example,
 `#/build/compile-recompute?project=my-project&revision=revision-1` opens the
 committed instrument while displaying that requested context. Opening an
 address does not load or validate those identifiers, change the selected saved
@@ -1887,7 +1889,7 @@ of a bounded, deterministic query:
 
 | Shape | When | Answer |
 |---|---|---|
-| Lookup | no `start` | Nodes whose ID or label contains the case-folded `text`, filtered by `kinds` and `statuses`, ordered by ID |
+| Lookup | no `start` | Nodes whose ID or label contains the lower-cased `text`, filtered by `kinds` and `statuses`, ordered by ID |
 | Neighbourhood | `start` | Nodes within `depth` hops along `edge_kinds`, outgoing, incoming or both, ordered by distance and then ID |
 | Path | `start` and `target` | Every shortest directed path within `depth` hops, in lexicographic order |
 
@@ -1921,6 +1923,113 @@ snapshot can:
 
 The other questions in `PREBUILT_QUERIES` are refused with the input they still
 need. A shortest graph path is a navigation path, not a scientific proof.
+
+### The Atlas view
+
+The Studio's **Atlas** stage opens the snapshot committed with the build
+(`data/studio/atlas_snapshot_20261122.json`).
+`python tools/studio_atlas_snapshot.py --write --source-commit <commit>` writes
+it, and `--check` keeps it current with the source tree.
+- The snapshot is extracted from the working tree. `--source-commit` names the
+  commit that tree is based on, so a snapshot written for a change records the
+  change's parent; the view reads "source tree based on commit …".
+- The browser accepts a snapshot pin only after three checks: it parses it with
+  the shared contract, recomputes its digest and compares that with the recorded
+  one.
+- A committed pin that fails a check shows an *unverifiable* notice instead of
+  the graph.
+
+**Open a snapshot pin** opens another pin from a file, for example one that
+`--print` wrote for another commit. The same three checks apply, and a refused
+pin leaves the open snapshot in place.
+
+Where the work runs depends on the pin's size:
+
+| Pin | Admission and queries | Cancel |
+|---|---|---|
+| Up to 400,000 characters or bytes | the main thread | not offered; the work is short |
+| Larger | a worker | **Cancel** stops the worker |
+
+After a cancel, the previous answer stays on screen, and the next query admits
+the pin again in a new worker. Leaving the stage stops the worker.
+
+The bound comes from measurements on the slowest reference host (Intel Xeon
+E5-2640). The canonical digest dominates the cost:
+- admitting the 309 kB committed pin took 74 ms;
+- admitting a 1.16 MB pin took 697 ms;
+- admitting a pin of 10,000 nodes and 30,000 relations took 4.7 s.
+
+Each snapshot's digest is computed once and reused by every later query. Layout
+takes under a millisecond for 500 nodes, so it stays on the main thread.
+
+Three lenses are deep-linkable instruments:
+
+| Lens | Node kinds |
+|---|---|
+| Architecture (`#/atlas/architecture`, the default) | capabilities, definitions, tests and documentation |
+| Claims (`#/atlas/claims`) | claims, the definitions they derive from, and their documentation |
+| Evidence (`#/atlas/evidence`) | content-addressed artefacts |
+
+The context carries the snapshot and the filter, for example
+`#/atlas/claims?snapshot=<digest>&filter=q%3Dkuramoto%26hops%3D2`.
+- `snapshot` must name the open snapshot. Any other is refused with an
+  *unverifiable* notice; opening its pin shows it.
+- `filter` restores the search (`q`), the focused node (`focus`) and the hop
+  bound (`hops`, 1 to 6). The view refuses, with the reason, an unknown,
+  repeated or empty field or an out-of-range hop count, and opens without the
+  filter.
+- **Link to this view** links the current lens, snapshot and filter. A search
+  longer than the 256-character context bound cannot be linked.
+
+One query answer drives the whole stage. Its parts:
+- the **graph**: columns by hop distance from the focused node, or by kind for a
+  lens lookup;
+- the **node table**, the **relation table** and the **inspector**;
+- a **legend** of node kinds and **breadcrumbs** of recent selections.
+
+The tables show 100 rows per page, so the page stays light. Selecting a node or
+a relation opens its page, and a new answer opens on the page of the selection.
+
+**Zoom out** and **Zoom in** change what the graph draws, not its scale:
+
+| Detail | The graph shows |
+|---|---|
+| Kinds | one group per node kind with its count; relations counted between kinds, also listed as text |
+| Nodes | one labelled node per answer node |
+| Details | nodes with their kind and status, and relations with their kind |
+
+A page of more than 150 nodes opens at *kinds*; a smaller one at *nodes*. The
+counts cover the page shown, not the omitted items. Another opened pin starts at
+this automatic choice again. Zooming in on a page of more than 150 nodes draws
+every node, which takes noticeably longer on a slow host.
+
+Selecting a node or a relation in any of them selects it in all of them. Search
+narrows by ID or label. *Show its neighbourhood* (or Enter) focuses a node
+within the chosen number of hops; Escape returns to the lens.
+
+On a graph node:
+- the arrow keys right and left follow outgoing and incoming relations;
+- the arrow keys down and up step through the table order.
+
+At most 500 nodes and 2,000 relations are shown at once. The summary states how
+many more the answer holds, and a snapshot above the query ceilings is refused
+with its reason. *Pin its position* moves a node in the layout only; layout
+never changes the snapshot or its digest.
+
+The browser answers queries with the same rules as Python. A shared corpus of
+query cases (`tests/data/atlas/queries.json`) proves both languages return the
+same answers, digests, cursors and refusals.
+
+The browser journey `atlas_graph_navigation`
+(`python tools/studio_browser_journey.py --scenario atlas_graph_navigation --base-url <owned preview> --output <file>`)
+checks the stage in Chromium:
+- the shared selection, keyboard movement, a deep link after reload, the zoom
+  levels and accessibility at desktop and mobile width;
+- every Atlas control inside the viewport at 200 % zoom;
+- a 10,000-node, 20,000-relation pin whose admission in a worker is cancelled
+  and its worker closed, then the same pin admitted and queried in a worker;
+- that no main-thread task reaches 250 ms while that pin is open;
+- that leaving the stage stops the worker.
 
 ## Evidence inspector
 

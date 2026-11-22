@@ -4,6 +4,32 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Studio's Atlas stage now browses the committed Atlas snapshot. Before,
+  it showed an unavailable notice.
+  - The browser verifies the snapshot against its contract and its recorded
+    digest. It refuses a deep link that names another snapshot.
+  - Three deep-linkable lenses (architecture, claims, evidence) drive one view
+    model: an SVG graph, node and relation tables, an inspector, a legend and
+    breadcrumbs.
+  - Arrow keys follow directed relations. Display is bounded to 500 nodes and
+    2,000 relations, with the omissions stated. Pinning a position changes the
+    layout only.
+  - Semantic zoom shows kind groups with counted relations, labelled nodes, or
+    nodes and relations with their details. Large pages open on kind groups.
+  - Another snapshot pin can be opened from a file. A pin above 400,000
+    characters is admitted and queried in a worker. Its work can be cancelled,
+    and the main thread stays responsive.
+  - Deep links also restore the search, the focused node and the hop bound
+    through a new opaque `filter` context field. Links to other stages leave the
+    filter behind.
+  - A query reuses its snapshot's digest instead of recomputing it.
+  - The `atlas_graph_navigation` browser journey checks the stage in Chromium.
+  - `tools/studio_atlas_snapshot.py` writes and checks the committed snapshot.
+  - `studio-web/src/shared/contracts/atlasQuery.ts` answers queries with the
+    Python rules, proven by a shared corpus of query cases.
+  - Text matching in Atlas queries now uses lower-casing in both languages,
+    which compares identically in Python and the browser.
+
 - Atlas bounded queries: `scpn_quantum_control.atlas.run_atlas_query` answers
   lookup, neighbourhood and shortest-path queries over a validated snapshot.
   - Access is filtered before traversal and counts, so private material never

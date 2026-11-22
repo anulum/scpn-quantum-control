@@ -55,3 +55,12 @@ export type {
   AtlasSnapshot,
   AtlasTombstone,
 } from "./atlas";
+export {
+  atlasMaxDepth,
+  atlasMaxPageSize,
+  atlasMaxVisibleEdges,
+  atlasQuerySchema,
+  rememberedAtlasSnapshotDigest,
+  runAtlasQuery,
+} from "./atlasQuery";
+export type { AtlasQuery, AtlasQueryAnswer, AtlasQueryOutcome } from "./atlasQuery";

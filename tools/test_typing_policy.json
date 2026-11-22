@@ -1626,6 +1626,7 @@
         "tests/test_structured_ansatz_branches.py",
         "tests/test_structured_log_fallback.py",
         "tests/test_studio_accessibility_browser_journey.py",
+        "tests/test_studio_atlas_snapshot.py",
         "tests/test_studio_browser_journey.py",
         "tests/test_studio_comparison_browser.py",
         "tests/test_studio_local_experiment_browser.py",

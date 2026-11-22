@@ -79,7 +79,7 @@ it("test_workbench_navigation_02: fresh deep link and history events retain exac
     "#/atlas?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2",
   );
   await visit("#/atlas?project=project%20%CE%B1&revision=r%2F1&snapshot=s%2B2");
-  await screen.findByRole("heading", { name: "Atlas unavailable" });
+  await screen.findByRole("heading", { name: "Atlas" });
   act(() => {
     window.history.replaceState(
       null,
@@ -95,11 +95,28 @@ it("test_workbench_navigation_02: fresh deep link and history events retain exac
   expect(inspector.textContent).toContain("not loaded or admitted by navigation");
 });
 
+it("keeps a view filter on its own stage and leaves it behind on every other stage link", async () => {
+  window.history.replaceState(null, "", "#/atlas?snapshot=s%2B2&filter=q%3Dx");
+  render(<QuantumStudioPanel />);
+  await screen.findByRole("heading", { name: "Atlas" });
+  const destinations = screen.getByRole("navigation", { name: "Workbench context destinations" });
+  expect(destinations.querySelector('a[href^="#/atlas"]')?.getAttribute("href")).toBe(
+    "#/atlas?snapshot=s%2B2&filter=q%3Dx",
+  );
+  const views = screen.getByRole("navigation", { name: "Workbench views" });
+  for (const link of within(views).getAllByRole("link"))
+    expect(link.getAttribute("href")).toBe(
+      `${link.getAttribute("href")?.split("?")[0]}?snapshot=s%2B2`,
+    );
+  const inspector = screen.getByRole("complementary", { name: "Workbench inspector" });
+  expect(within(inspector).getByText("q=x", { exact: true })).toBeTruthy();
+});
+
 it("test_workbench_navigation_03: embedded mode exposes keyboard targets and current breadcrumbs", async () => {
   render(<QuantumStudioPanel mode="embedded" />);
   expect(screen.getByText(/Embedded workbench/)).toBeTruthy();
   await visit("#/atlas");
-  await screen.findByRole("heading", { name: "Atlas unavailable" });
+  await screen.findByRole("heading", { name: "Atlas" });
   const content = screen.getByRole("region", { name: "Workbench view" });
   expect(document.activeElement).toBe(content);
   expect(content.tabIndex).toBe(-1);

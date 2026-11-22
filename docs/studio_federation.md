@@ -184,8 +184,8 @@ initialized remote component in its existing React tree with:
 Both modes use the same Workspace, Build, Experiments, Results and Atlas hash
 routes. Embedded mode uses the host layout while retaining the original archive
 editor, saved-state admission and requested-context inspector. `project`,
-`revision` and `snapshot` address fields are opaque context; they grant no
-storage or execution authority. Navigation preserves the mounted draft; reload
+`revision`, `snapshot` and `filter` address fields are opaque context; they grant
+no storage or execution authority. Navigation preserves the mounted draft; reload
 restores the last saved archive. A route-module failure has a Workspace recovery
 link. See [workbench navigation](studio_workbench.md#workbench-navigation) for
 addresses, bounds, unavailable workflows and local acceptance commands.

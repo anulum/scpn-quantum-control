@@ -178,6 +178,7 @@ _SOURCE_SCENARIOS = {
         "topology_symmetry_instrument",
         "attestation_verification",
         "benchmark_databank",
+        "atlas_graph_navigation",
         "capability_resolver",
         "operator_backend_profiles",
         "operator_policy_decisions",

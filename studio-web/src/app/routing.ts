@@ -21,6 +21,8 @@ export interface WorkbenchContext {
   readonly revision: string | null;
   /** Requested Atlas snapshot; navigation does not extract or admit one. */
   readonly snapshot: string | null;
+  /** Requested view filter; opaque to navigation, admitted or refused by the stage reading it. */
+  readonly filter: string | null;
 }
 
 /** Admitted view and compatibility instrument address with exact requested context. */
@@ -51,9 +53,17 @@ export const emptyWorkbenchContext: WorkbenchContext = Object.freeze({
   project: null,
   revision: null,
   snapshot: null,
+  filter: null,
 });
 
 // The address table is closed at build time: only paths of registered stages are routable.
+
+/** Context fields in their stable encoding order. */
+const contextFields = ["project", "revision", "snapshot", "filter"] as const;
+
+function isContextField(key: string): key is (typeof contextFields)[number] {
+  return (contextFields as readonly string[]).includes(key);
+}
 
 /** Narrow a stage name against the actual registry compiled into this application. */
 export function isWorkbenchView(value: string): value is WorkbenchView {
@@ -63,7 +73,7 @@ export function isWorkbenchView(value: string): value is WorkbenchView {
 /** Encode validated context in a stable order without normalising opaque identifiers. */
 export function formatWorkbenchContext(context: WorkbenchContext): string {
   const query = new URLSearchParams();
-  for (const key of ["project", "revision", "snapshot"] as const) {
+  for (const key of contextFields) {
     const value = context[key];
     if (value !== null) query.set(key, value);
   }
@@ -118,7 +128,7 @@ export function parseWorkbenchRoute(
   const context = { ...emptyWorkbenchContext };
   const seen = new Set<string>();
   for (const [key, value] of query) {
-    if ((key !== "project" && key !== "revision" && key !== "snapshot") || seen.has(key))
+    if (!isContextField(key) || seen.has(key))
       return { ok: false, reason: "Unknown or repeated workbench context field" };
     if (value.length === 0 || value.length > 256)
       return { ok: false, reason: "Invalid or oversized workbench identity" };

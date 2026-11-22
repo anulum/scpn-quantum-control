@@ -1249,6 +1249,41 @@ body:has(> * > .qsp-workbench[data-mode="standalone"]) {
   padding: 0.4rem;
   text-align: left;
 }
+.qsp-atlas-graph {
+  max-height: 32rem;
+  overflow: auto;
+  border: 1px solid var(--qsp-line);
+  background: var(--qsp-surface-sunken);
+}
+/* A narrow workbench column must not collapse the graph: an SVG of zero width stops scaling
+   its embedded node buttons, which then escape the scrolling region. */
+.qsp-atlas-graph svg {
+  display: block;
+  height: auto;
+  min-width: 10rem;
+}
+.qsp-atlas-graph line {
+  stroke: var(--qsp-line);
+}
+.qsp-atlas-graph line[data-selected="true"] {
+  stroke: var(--qsp-accent);
+  stroke-width: 3;
+}
+.qsp-atlas-graph circle {
+  fill: var(--qsp-muted);
+}
+.qsp-atlas-graph [data-selected="true"] circle {
+  fill: var(--qsp-accent);
+}
+.qsp-atlas-graph text {
+  fill: var(--qsp-fg-secondary);
+}
+.qsp-atlas-graph .qsp-atlas-node {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 @media (prefers-reduced-motion: reduce) {
   .qsp-workbench,
   .qsp-workbench * {

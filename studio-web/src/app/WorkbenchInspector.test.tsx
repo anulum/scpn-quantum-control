@@ -17,22 +17,48 @@ import { emptyWorkbenchContext } from "./routing";
 import { WorkbenchInspector } from "./WorkbenchInspector";
 
 // Actual Node WebCrypto qualifies previews; native IndexedDB integration is exercised separately.
-beforeEach(() => { vi.stubGlobal("crypto", webcrypto); });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+beforeEach(() => {
+  vi.stubGlobal("crypto", webcrypto);
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 it("retains requested context without inventing an admitted saved workspace", () => {
-  render(<WorkbenchInspector context={{ project: "requested α", revision: "unresolved r", snapshot: "unresolved s" }} saved={null} />);
+  render(
+    <WorkbenchInspector
+      context={{
+        project: "requested α",
+        revision: "unresolved r",
+        snapshot: "unresolved s",
+        filter: "q=unresolved",
+      }}
+      saved={null}
+    />,
+  );
   const inspector = screen.getByRole("complementary", { name: "Workbench inspector" });
   expect(inspector.textContent).toContain("requested α");
   expect(inspector.textContent).toContain("unresolved r");
   expect(inspector.textContent).toContain("unresolved s");
+  expect(inspector.textContent).toContain("q=unresolved");
   expect(inspector.textContent).toContain("No admitted saved workspace");
   expect(screen.queryByText("Admitted saved project")).toBeNull();
 });
 
 it("projects every exact admitted fixture digest while leaving requested identity separate", async () => {
   const preview = await conformanceArchive(corpus, false);
-  render(<WorkbenchInspector context={{ project: "another project", revision: "unresolved revision", snapshot: null }} saved={{ preview, durability: "browser-cache-export-required" }} />);
+  render(
+    <WorkbenchInspector
+      context={{
+        project: "another project",
+        revision: "unresolved revision",
+        snapshot: null,
+        filter: "q=x",
+      }}
+      saved={{ preview, durability: "browser-cache-export-required" }}
+    />,
+  );
   expect(screen.getByText(preview.projectId)).toBeTruthy();
   expect(screen.getByText(preview.workspaceHash)).toBeTruthy();
   expect(screen.getByText(preview.archiveDigest)).toBeTruthy();
@@ -44,11 +70,32 @@ it("projects every exact admitted fixture digest while leaving requested identit
 });
 
 it("projects an actually admitted empty archive without manufacturing revision documents", async () => {
-  const preview = await previewWorkspaceArchive(writeJson({ schema: "quantum_workspace_archive.v1", manifest: {
-    schema: "quantum_workspace.v1", extensions: {}, body: { project_id: "00000000-0000-4000-8000-000000000001", revision_refs: [], draft_ref: null, created_at: "2026-09-30T00:00:00Z", updated_at: "2026-09-30T00:00:00Z", artefact_refs: [] },
-  }, members: [], parameter_units: {} }));
-  render(<WorkbenchInspector context={emptyWorkbenchContext} saved={{ preview, durability: "browser-cache-export-required" }} />);
+  const preview = await previewWorkspaceArchive(
+    writeJson({
+      schema: "quantum_workspace_archive.v1",
+      manifest: {
+        schema: "quantum_workspace.v1",
+        extensions: {},
+        body: {
+          project_id: "00000000-0000-4000-8000-000000000001",
+          revision_refs: [],
+          draft_ref: null,
+          created_at: "2026-09-30T00:00:00Z",
+          updated_at: "2026-09-30T00:00:00Z",
+          artefact_refs: [],
+        },
+      },
+      members: [],
+      parameter_units: {},
+    }),
+  );
+  render(
+    <WorkbenchInspector
+      context={emptyWorkbenchContext}
+      saved={{ preview, durability: "browser-cache-export-required" }}
+    />,
+  );
   expect(screen.getByText("No revision documents")).toBeTruthy();
-  expect(screen.getAllByText("Not selected")).toHaveLength(3);
+  expect(screen.getAllByText("Not selected")).toHaveLength(4);
   expect(screen.getByText(preview.archiveDigest)).toBeTruthy();
 });

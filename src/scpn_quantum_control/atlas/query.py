@@ -9,7 +9,7 @@
 
 Three query shapes share one entry point, :func:`run_atlas_query`:
 
-- **lookup** (no ``start``): a case-folded substring match on ID and label,
+- **lookup** (no ``start``): a lower-cased substring match on ID and label,
   combined conjunctively with kind and status facets;
 - **neighbourhood** (``start`` only): breadth-first traversal along the
   admitted edge kinds, outgoing, incoming or both, to at most ``depth`` hops;
@@ -91,7 +91,8 @@ class AtlasQuery:
     Parameters
     ----------
     text
-        Case-folded substring matched against node ID and label, or ``None``.
+        Lower-cased substring matched against node ID and label, or ``None``.
+        Lower-casing, not full case folding, so the browser matches identically.
     kinds
         Node kinds to keep; empty keeps every kind.
     statuses
@@ -183,7 +184,7 @@ def _refuse(code: str, field: str, message: str) -> AtlasQueryError:
 
 @dataclass(frozen=True)
 class _Normal:
-    """A validated query with sorted facets and a case-folded text."""
+    """A validated query with sorted facets and a lower-cased text."""
 
     text: str | None
     kinds: tuple[str, ...]
@@ -194,8 +195,8 @@ class _Normal:
         """Return whether a node passes the text and facet filters."""
         if (
             self.text is not None
-            and self.text not in node.id.casefold()
-            and self.text not in node.label.casefold()
+            and self.text not in node.id.lower()
+            and self.text not in node.label.lower()
         ):
             return False
         if self.kinds and node.kind not in self.kinds:
@@ -221,7 +222,7 @@ def _normalise(query: AtlasQuery) -> tuple[_Normal, dict[str, object]]:
     if query.target is not None and query.start is None:
         raise _refuse("missing_start", "start", "a path query needs a start node")
     normal = _Normal(
-        text=None if query.text is None else query.text.casefold(),
+        text=None if query.text is None else query.text.lower(),
         kinds=tuple(sorted(set(query.kinds))),
         statuses=tuple(sorted(set(query.statuses))),
         edge_kinds=tuple(sorted(set(query.edge_kinds))),

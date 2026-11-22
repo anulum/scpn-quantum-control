@@ -9,25 +9,89 @@
 import { expect, it } from "vitest";
 import { formatWorkbenchRoute, parseWorkbenchRoute } from "./routing";
 
-it.each(["", "#", "#/", "#/workspace"])("opens the original workspace for %s", hash => {
-  expect(parseWorkbenchRoute(hash)).toEqual({ ok: true, route: { view: "workspace", instrument: null, project: null, revision: null, snapshot: null } });
+it.each(["", "#", "#/", "#/workspace"])("opens the original workspace for %s", (hash) => {
+  expect(parseWorkbenchRoute(hash)).toEqual({
+    ok: true,
+    route: {
+      view: "workspace",
+      instrument: null,
+      project: null,
+      revision: null,
+      snapshot: null,
+      filter: null,
+    },
+  });
 });
 
-it.each(["build", "experiments", "results", "atlas"] as const)("admits only the declared %s view", view => {
-  expect(parseWorkbenchRoute(`#/${view}`)).toEqual({ ok: true, route: { view, instrument: null, project: null, revision: null, snapshot: null } });
-});
+it.each(["build", "experiments", "results", "atlas"] as const)(
+  "admits only the declared %s view",
+  (view) => {
+    expect(parseWorkbenchRoute(`#/${view}`)).toEqual({
+      ok: true,
+      route: {
+        view,
+        instrument: null,
+        project: null,
+        revision: null,
+        snapshot: null,
+        filter: null,
+      },
+    });
+  },
+);
 
 it("retains legacy instrument addresses and exact Unicode/encoded opaque context", () => {
-  const parsed = parseWorkbenchRoute("#/build/compile-recompute?revision=r%2F1&project=p+%CE%B1&snapshot=s%2B2");
-  expect(parsed).toEqual({ ok: true, route: { view: "build", instrument: "compile-recompute", project: "p α", revision: "r/1", snapshot: "s+2" } });
+  const parsed = parseWorkbenchRoute(
+    "#/build/compile-recompute?revision=r%2F1&project=p+%CE%B1&snapshot=s%2B2",
+  );
+  expect(parsed).toEqual({
+    ok: true,
+    route: {
+      view: "build",
+      instrument: "compile-recompute",
+      project: "p α",
+      revision: "r/1",
+      snapshot: "s+2",
+      filter: null,
+    },
+  });
   if (!parsed.ok) throw new Error("Expected admitted fixed fixture");
-  expect(formatWorkbenchRoute(parsed.route)).toBe("#/build/compile-recompute?project=p+%CE%B1&revision=r%2F1&snapshot=s%2B2");
-  expect(parseWorkbenchRoute("#/results/program-ad-replay")).toEqual({ ok: true, route: { view: "results", instrument: "program-ad-replay", project: null, revision: null, snapshot: null } });
+  expect(formatWorkbenchRoute(parsed.route)).toBe(
+    "#/build/compile-recompute?project=p+%CE%B1&revision=r%2F1&snapshot=s%2B2",
+  );
+  expect(parseWorkbenchRoute("#/results/program-ad-replay")).toEqual({
+    ok: true,
+    route: {
+      view: "results",
+      instrument: "program-ad-replay",
+      project: null,
+      revision: null,
+      snapshot: null,
+      filter: null,
+    },
+  });
 });
 
 it.each([
-  "workspace", "#/unknown", "#/build/unknown", "#/results/compile-recompute", "#/workspace/", "#/BUILD", "#/atlas?unknown=x", "#/workspace?project=a&project=b", "#/build?revision=", "#/workspace?project=%", "#/workspace?project=%GG", "#/build?revision=%E0%A4%A", "#/atlas?revision=%FF", "#/atlas?snapshot=%00", "#/atlas?project=%7F", "#/atlas?project=" + "p".repeat(257), "#/" + "x".repeat(4096), "#/workspace?project=a#second",
-])("refuses malformed or unsupported route %s", hash => {
+  "workspace",
+  "#/unknown",
+  "#/build/unknown",
+  "#/results/compile-recompute",
+  "#/workspace/",
+  "#/BUILD",
+  "#/atlas?unknown=x",
+  "#/workspace?project=a&project=b",
+  "#/build?revision=",
+  "#/workspace?project=%",
+  "#/workspace?project=%GG",
+  "#/build?revision=%E0%A4%A",
+  "#/atlas?revision=%FF",
+  "#/atlas?snapshot=%00",
+  "#/atlas?project=%7F",
+  `#/atlas?project=${"p".repeat(257)}`,
+  `#/${"x".repeat(4096)}`,
+  "#/workspace?project=a#second",
+])("refuses malformed or unsupported route %s", (hash) => {
   const result = parseWorkbenchRoute(hash);
   expect(result.ok).toBe(false);
   if (result.ok) throw new Error("Invalid public route admitted");
@@ -35,20 +99,66 @@ it.each([
   expect(result.reason).not.toContain(hash);
 });
 
+it("keeps a requested view filter opaque, last in the stable order and inside the same bounds", () => {
+  const parsed = parseWorkbenchRoute(
+    "#/atlas/claims?filter=q%3Dkuramoto%26hops%3D2&snapshot=s%2B2",
+  );
+  expect(parsed).toEqual({
+    ok: true,
+    route: {
+      view: "atlas",
+      instrument: "claims",
+      project: null,
+      revision: null,
+      snapshot: "s+2",
+      filter: "q=kuramoto&hops=2",
+    },
+  });
+  if (!parsed.ok) throw new Error("Expected admitted filter fixture");
+  expect(formatWorkbenchRoute(parsed.route)).toBe(
+    "#/atlas/claims?snapshot=s%2B2&filter=q%3Dkuramoto%26hops%3D2",
+  );
+  for (const hash of [
+    "#/atlas?filter=",
+    "#/atlas?filter=a&filter=b",
+    `#/atlas?filter=${"f".repeat(257)}`,
+    "#/atlas?filter=%01",
+  ]) {
+    const refused = parseWorkbenchRoute(hash);
+    expect(refused.ok).toBe(false);
+  }
+});
+
 it("admits the exact identifier ceiling without truncation", () => {
   const identity = "x".repeat(256);
-  const result = parseWorkbenchRoute("#/atlas?project=" + identity);
+  const result = parseWorkbenchRoute(`#/atlas?project=${identity}`);
   expect(result.ok && result.route.project).toBe(identity);
 });
 
 it("refuses context whose stable URL encoding would exceed the shared address bound", () => {
   const value = "α".repeat(256);
-  expect(parseWorkbenchRoute(`#/atlas?project=${value}&revision=${value}&snapshot=${value}`)).toEqual({ ok: false, reason: "Encoded workbench address exceeds its bound" });
+  expect(
+    parseWorkbenchRoute(`#/atlas?project=${value}&revision=${value}&snapshot=${value}`),
+  ).toEqual({ ok: false, reason: "Encoded workbench address exceeds its bound" });
 });
 
 it("admits the operator context destination while retaining exact project/revision identity", () => {
- const result=parseWorkbenchRoute("#/operations?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2");
- expect(result).toEqual({ok:true,route:{view:"operations",instrument:null,project:"project α",revision:"r/1",snapshot:"s+2"}});
- if (!result.ok) throw new Error("Operator destination refused");
- expect(formatWorkbenchRoute(result.route)).toBe("#/operations?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2");
+  const result = parseWorkbenchRoute(
+    "#/operations?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2",
+  );
+  expect(result).toEqual({
+    ok: true,
+    route: {
+      view: "operations",
+      instrument: null,
+      project: "project α",
+      revision: "r/1",
+      snapshot: "s+2",
+      filter: null,
+    },
+  });
+  if (!result.ok) throw new Error("Operator destination refused");
+  expect(formatWorkbenchRoute(result.route)).toBe(
+    "#/operations?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2",
+  );
 });

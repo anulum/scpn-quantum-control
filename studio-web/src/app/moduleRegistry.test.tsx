@@ -23,7 +23,7 @@ import { parseWorkbenchRoute } from "./routing";
 import type { WorkbenchView } from "./routing";
 
 describe("workbenchRegistry", () => {
-  it("admits every address the workbench had before it was modular, plus Compare", () => {
+  it("admits every address the workbench had before it was modular, plus Compare and the Atlas lenses", () => {
     expectTypeOf<WorkbenchView>().toEqualTypeOf<
       | "workspace"
       | "build"
@@ -57,6 +57,9 @@ describe("workbenchRegistry", () => {
       ["/evidence/attestation", "evidence", "attestation"],
       ["/evidence/benchmarks", "evidence", "benchmarks"],
       ["/atlas", "atlas", null],
+      ["/atlas/architecture", "atlas", "architecture"],
+      ["/atlas/claims", "atlas", "claims"],
+      ["/atlas/evidence", "atlas", "evidence"],
       ["/operations", "operations", null],
     ]);
   });

@@ -1,0 +1,1698 @@
+{
+ "schema": "quantum_atlas_query_conformance.v1",
+ "fixture_boundary": "Synthetic metadata only.",
+ "snapshots": {
+  "diamond": {
+   "schema": "quantum_atlas_snapshot.v1",
+   "extractor_version": "fixture",
+   "source_commit": "0000000000000000000000000000000000000000",
+   "evidence_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "access_scope": "private",
+   "nodes": [
+    {
+     "id": "definition:fixture/a",
+     "kind": "definition",
+     "label": "Node A",
+     "source_ref": "fixture/a",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/b",
+     "kind": "definition",
+     "label": "Node B",
+     "source_ref": "fixture/b",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/c",
+     "kind": "definition",
+     "label": "Node C",
+     "source_ref": "fixture/c",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/d",
+     "kind": "definition",
+     "label": "Node D",
+     "source_ref": "fixture/d",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/e",
+     "kind": "definition",
+     "label": "Node E",
+     "source_ref": "fixture/e",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/b",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/c",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/b",
+     "kind": "requires",
+     "target": "definition:fixture/d",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/c",
+     "kind": "requires",
+     "target": "definition:fixture/d",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/d",
+     "kind": "requires",
+     "target": "definition:fixture/e",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    }
+   ],
+   "tombstones": [],
+   "exclusions": []
+  },
+  "hidden": {
+   "schema": "quantum_atlas_snapshot.v1",
+   "extractor_version": "fixture",
+   "source_commit": "0000000000000000000000000000000000000000",
+   "evidence_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "access_scope": "private",
+   "nodes": [
+    {
+     "id": "definition:fixture/a",
+     "kind": "definition",
+     "label": "Node A",
+     "source_ref": "fixture/a",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/b",
+     "kind": "definition",
+     "label": "Node B",
+     "source_ref": "fixture/b",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/c",
+     "kind": "definition",
+     "label": "Node C",
+     "source_ref": "fixture/c",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/d",
+     "kind": "definition",
+     "label": "Node D",
+     "source_ref": "fixture/d",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/e",
+     "kind": "definition",
+     "label": "Node E",
+     "source_ref": "fixture/e",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/p",
+     "kind": "definition",
+     "label": "Node P",
+     "source_ref": "fixture/p",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "private",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/b",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/c",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/b",
+     "kind": "requires",
+     "target": "definition:fixture/d",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/c",
+     "kind": "requires",
+     "target": "definition:fixture/d",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/d",
+     "kind": "requires",
+     "target": "definition:fixture/e",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/p",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "private"
+    },
+    {
+     "source": "definition:fixture/p",
+     "kind": "requires",
+     "target": "definition:fixture/e",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "private"
+    }
+   ],
+   "tombstones": [],
+   "exclusions": []
+  },
+  "cycle": {
+   "schema": "quantum_atlas_snapshot.v1",
+   "extractor_version": "fixture",
+   "source_commit": "0000000000000000000000000000000000000000",
+   "evidence_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "access_scope": "private",
+   "nodes": [
+    {
+     "id": "definition:fixture/a",
+     "kind": "definition",
+     "label": "Node A",
+     "source_ref": "fixture/a",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/b",
+     "kind": "definition",
+     "label": "Node B",
+     "source_ref": "fixture/b",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/c",
+     "kind": "definition",
+     "label": "Node C",
+     "source_ref": "fixture/c",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/d",
+     "kind": "definition",
+     "label": "Node D",
+     "source_ref": "fixture/d",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/e",
+     "kind": "definition",
+     "label": "Node E",
+     "source_ref": "fixture/e",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/b",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/a",
+     "kind": "requires",
+     "target": "definition:fixture/c",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/b",
+     "kind": "requires",
+     "target": "definition:fixture/d",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/c",
+     "kind": "requires",
+     "target": "definition:fixture/d",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/d",
+     "kind": "requires",
+     "target": "definition:fixture/e",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/e",
+     "kind": "requires",
+     "target": "definition:fixture/a",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/d",
+     "kind": "requires",
+     "target": "definition:fixture/b",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    }
+   ],
+   "tombstones": [],
+   "exclusions": []
+  },
+  "facets": {
+   "schema": "quantum_atlas_snapshot.v1",
+   "extractor_version": "fixture",
+   "source_commit": "0000000000000000000000000000000000000000",
+   "evidence_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "access_scope": "private",
+   "nodes": [
+    {
+     "id": "definition:fixture/alpha",
+     "kind": "definition",
+     "label": "Node ALPHA",
+     "source_ref": "fixture/alpha",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/beta",
+     "kind": "definition",
+     "label": "Node BETA",
+     "source_ref": "fixture/beta",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "stale",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "test:fixture/gamma",
+     "kind": "test",
+     "label": "Node GAMMA",
+     "source_ref": "fixture/gamma",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    }
+   ],
+   "edges": [],
+   "tombstones": [],
+   "exclusions": []
+  },
+  "prefix": {
+   "schema": "quantum_atlas_snapshot.v1",
+   "extractor_version": "fixture",
+   "source_commit": "0000000000000000000000000000000000000000",
+   "evidence_set_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "access_scope": "private",
+   "nodes": [
+    {
+     "id": "definition:fixture/x",
+     "kind": "definition",
+     "label": "Node X",
+     "source_ref": "fixture/x",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/a",
+     "kind": "definition",
+     "label": "Node A",
+     "source_ref": "fixture/a",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    },
+    {
+     "id": "definition:fixture/ab",
+     "kind": "definition",
+     "label": "Node AB",
+     "source_ref": "fixture/ab",
+     "source_digest": null,
+     "validity_domain": null,
+     "as_of": null,
+     "access": "public",
+     "status": "current",
+     "evidence_refs": [],
+     "null_reasons": {
+      "source_digest": "fixture",
+      "validity_domain": "fixture",
+      "as_of": "fixture"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "definition:fixture/x",
+     "kind": "requires",
+     "target": "definition:fixture/a",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    },
+    {
+     "source": "definition:fixture/x",
+     "kind": "requires",
+     "target": "definition:fixture/ab",
+     "relation_version": "atlas_relation.v1",
+     "derivation_method": "declared",
+     "source_ref": "fixture/edges",
+     "evidence_digest": null,
+     "assumptions": [],
+     "mapping": null,
+     "as_of": null,
+     "access": "public"
+    }
+   ],
+   "tombstones": [],
+   "exclusions": []
+  }
+ },
+ "cases": [
+  {
+   "id": "lookup_all",
+   "snapshot": "diamond",
+   "query": {},
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/c",
+       "definition:fixture/d",
+       "definition:fixture/e"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/c"
+       ],
+       [
+        "definition:fixture/b",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/e"
+       ]
+      ],
+      "paths": [],
+      "total": 5,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lookup_page",
+   "snapshot": "diamond",
+   "query": {
+    "page_size": 2
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ]
+      ],
+      "paths": [],
+      "total": 5,
+      "omitted": 3,
+      "omitted_edges": 0,
+      "next_cursor": "eyJhY2Nlc3MiOiJwdWJsaWMiLCJsYXN0IjoiZGVmaW5pdGlvbjpmaXh0dXJlL2IiLCJxdWVyeSI6ImQwZTY0MjM0MDk1NTgzNzA5MTUyN2NiYzkxZWE2YzQwOTBmNDQyMWI0MjBkMTlmNjAyZTUxOTczNThjOTU1MGMiLCJzbmFwc2hvdCI6IjMyMzRkYzBlMmMyMjQyMjA2ZDEyOWU0ODUzOTQ1Y2YyNzFhMjkwOTBhMmE4M2Q4ZWQ4MDAyNmYxMWZjNmM4MmIifQ==",
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     },
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/c",
+       "definition:fixture/d"
+      ],
+      "edges": [
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ]
+      ],
+      "paths": [],
+      "total": 5,
+      "omitted": 1,
+      "omitted_edges": 0,
+      "next_cursor": "eyJhY2Nlc3MiOiJwdWJsaWMiLCJsYXN0IjoiZGVmaW5pdGlvbjpmaXh0dXJlL2QiLCJxdWVyeSI6ImQwZTY0MjM0MDk1NTgzNzA5MTUyN2NiYzkxZWE2YzQwOTBmNDQyMWI0MjBkMTlmNjAyZTUxOTczNThjOTU1MGMiLCJzbmFwc2hvdCI6IjMyMzRkYzBlMmMyMjQyMjA2ZDEyOWU0ODUzOTQ1Y2YyNzFhMjkwOTBhMmE4M2Q4ZWQ4MDAyNmYxMWZjNmM4MmIifQ==",
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     },
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/e"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 5,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lookup_text",
+   "snapshot": "facets",
+   "query": {
+    "text": "NODE A"
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "fa25932276020f3fd391cec874e15711824ba351020b43125e93310106c55445",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/alpha"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 1,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot fa25932276020f3fd391cec874e15711824ba351020b43125e93310106c55445 of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lookup_kind",
+   "snapshot": "facets",
+   "query": {
+    "kinds": [
+     "test"
+    ]
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "fa25932276020f3fd391cec874e15711824ba351020b43125e93310106c55445",
+      "shape": "lookup",
+      "nodes": [
+       "test:fixture/gamma"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 1,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot fa25932276020f3fd391cec874e15711824ba351020b43125e93310106c55445 of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lookup_edge_kind_filter",
+   "snapshot": "diamond",
+   "query": {
+    "edge_kinds": [
+     "contains"
+    ]
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/c",
+       "definition:fixture/d",
+       "definition:fixture/e"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 5,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds contains"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "neighbourhood_prefix_ids",
+   "snapshot": "prefix",
+   "query": {
+    "start": "definition:fixture/x"
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "4d4216665d3471643d82a96c80920e7a9fb116adefddf49db83e8c3d4d29c0d3",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/x",
+       "definition:fixture/a",
+       "definition:fixture/ab"
+      ],
+      "edges": [
+       [
+        "definition:fixture/x",
+        "requires",
+        "definition:fixture/a"
+       ],
+       [
+        "definition:fixture/x",
+        "requires",
+        "definition:fixture/ab"
+       ]
+      ],
+      "paths": [],
+      "total": 3,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 4d4216665d3471643d82a96c80920e7a9fb116adefddf49db83e8c3d4d29c0d3 of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 1 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lookup_status_kind",
+   "snapshot": "facets",
+   "query": {
+    "kinds": [
+     "definition"
+    ],
+    "statuses": [
+     "current"
+    ]
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "fa25932276020f3fd391cec874e15711824ba351020b43125e93310106c55445",
+      "shape": "lookup",
+      "nodes": [
+       "definition:fixture/alpha"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 1,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot fa25932276020f3fd391cec874e15711824ba351020b43125e93310106c55445 of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "nodes matching every given filter, ordered by ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "neighbourhood_out",
+   "snapshot": "diamond",
+   "query": {
+    "start": "definition:fixture/a",
+    "depth": 2
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/c",
+       "definition:fixture/d"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/c"
+       ],
+       [
+        "definition:fixture/b",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ]
+      ],
+      "paths": [],
+      "total": 4,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 2 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "neighbourhood_in",
+   "snapshot": "diamond",
+   "query": {
+    "start": "definition:fixture/d",
+    "direction": "in"
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/d",
+       "definition:fixture/b",
+       "definition:fixture/c"
+      ],
+      "edges": [
+       [
+        "definition:fixture/b",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ]
+      ],
+      "paths": [],
+      "total": 3,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "in neighbourhood within 1 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "neighbourhood_both_cycle",
+   "snapshot": "cycle",
+   "query": {
+    "start": "definition:fixture/a",
+    "direction": "both",
+    "depth": 6
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "857b586a28e39d2d24bc7453f48124b3b97f4a8e2fb0d4f02aae80b118641ed5",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/c",
+       "definition:fixture/e",
+       "definition:fixture/d"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/c"
+       ],
+       [
+        "definition:fixture/b",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/e"
+       ],
+       [
+        "definition:fixture/e",
+        "requires",
+        "definition:fixture/a"
+       ]
+      ],
+      "paths": [],
+      "total": 5,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 857b586a28e39d2d24bc7453f48124b3b97f4a8e2fb0d4f02aae80b118641ed5 of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "both neighbourhood within 6 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "neighbourhood_kind",
+   "snapshot": "diamond",
+   "query": {
+    "start": "definition:fixture/a",
+    "depth": 6,
+    "edge_kinds": [
+     "contains"
+    ]
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/a"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 1,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 6 hops, ordered by distance and ID",
+       "edge kinds contains"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "path_diamond",
+   "snapshot": "diamond",
+   "query": {
+    "start": "definition:fixture/a",
+    "target": "definition:fixture/e",
+    "depth": 4,
+    "page_size": 1
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "path",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/d",
+       "definition:fixture/e"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/b",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/e"
+       ]
+      ],
+      "paths": [
+       [
+        "definition:fixture/a",
+        "definition:fixture/b",
+        "definition:fixture/d",
+        "definition:fixture/e"
+       ]
+      ],
+      "total": 2,
+      "omitted": 1,
+      "omitted_edges": 0,
+      "next_cursor": "eyJhY2Nlc3MiOiJwdWJsaWMiLCJsYXN0IjpbImRlZmluaXRpb246Zml4dHVyZS9hIiwiZGVmaW5pdGlvbjpmaXh0dXJlL2IiLCJkZWZpbml0aW9uOmZpeHR1cmUvZCIsImRlZmluaXRpb246Zml4dHVyZS9lIl0sInF1ZXJ5IjoiNGE0MGVlMTY2OTYxMzc1M2I0YmQwZTNiMTQ3YTUwZGU5ODQ3MWQwODIzZWNmNDE1MGNkZDczNTg0N2U1YjRmNSIsInNuYXBzaG90IjoiMzIzNGRjMGUyYzIyNDIyMDZkMTI5ZTQ4NTM5NDVjZjI3MWEyOTA5MGEyYTgzZDhlZDgwMDI2ZjExZmM2YzgyYiJ9",
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "every shortest directed path within 4 hops; a navigation path, not a proof",
+       "edge kinds all admitted kinds"
+      ]
+     },
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "path",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/c",
+       "definition:fixture/d",
+       "definition:fixture/e"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/c"
+       ],
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/e"
+       ]
+      ],
+      "paths": [
+       [
+        "definition:fixture/a",
+        "definition:fixture/c",
+        "definition:fixture/d",
+        "definition:fixture/e"
+       ]
+      ],
+      "total": 2,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "every shortest directed path within 4 hops; a navigation path, not a proof",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "path_too_short",
+   "snapshot": "diamond",
+   "query": {
+    "start": "definition:fixture/a",
+    "target": "definition:fixture/e",
+    "depth": 2
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "path",
+      "nodes": [],
+      "edges": [],
+      "paths": [],
+      "total": 0,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "every shortest directed path within 2 hops; a navigation path, not a proof",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "path_cycle",
+   "snapshot": "cycle",
+   "query": {
+    "start": "definition:fixture/b",
+    "target": "definition:fixture/a",
+    "depth": 6
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "857b586a28e39d2d24bc7453f48124b3b97f4a8e2fb0d4f02aae80b118641ed5",
+      "shape": "path",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/d",
+       "definition:fixture/e"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/b",
+        "requires",
+        "definition:fixture/d"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/d",
+        "requires",
+        "definition:fixture/e"
+       ],
+       [
+        "definition:fixture/e",
+        "requires",
+        "definition:fixture/a"
+       ]
+      ],
+      "paths": [
+       [
+        "definition:fixture/b",
+        "definition:fixture/d",
+        "definition:fixture/e",
+        "definition:fixture/a"
+       ]
+      ],
+      "total": 1,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 857b586a28e39d2d24bc7453f48124b3b97f4a8e2fb0d4f02aae80b118641ed5 of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "every shortest directed path within 6 hops; a navigation path, not a proof",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "hidden_public",
+   "snapshot": "hidden",
+   "query": {
+    "start": "definition:fixture/a",
+    "depth": 3,
+    "page_size": 2
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ]
+      ],
+      "paths": [],
+      "total": 5,
+      "omitted": 3,
+      "omitted_edges": 0,
+      "next_cursor": "eyJhY2Nlc3MiOiJwdWJsaWMiLCJsYXN0IjoiZGVmaW5pdGlvbjpmaXh0dXJlL2IiLCJxdWVyeSI6ImE4MzYyODY3MTYzZDU5M2Q4NzYyZDQ1MzYwMDdhNzk2N2JiMmQ4ZGU5YjkwMjlkNDhjODUyZjUzOWNhOGRjMDEiLCJzbmFwc2hvdCI6IjMyMzRkYzBlMmMyMjQyMjA2ZDEyOWU0ODUzOTQ1Y2YyNzFhMjkwOTBhMmE4M2Q4ZWQ4MDAyNmYxMWZjNmM4MmIifQ==",
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 3 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     },
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/c",
+       "definition:fixture/d"
+      ],
+      "edges": [
+       [
+        "definition:fixture/c",
+        "requires",
+        "definition:fixture/d"
+       ]
+      ],
+      "paths": [],
+      "total": 5,
+      "omitted": 1,
+      "omitted_edges": 0,
+      "next_cursor": "eyJhY2Nlc3MiOiJwdWJsaWMiLCJsYXN0IjoiZGVmaW5pdGlvbjpmaXh0dXJlL2QiLCJxdWVyeSI6ImE4MzYyODY3MTYzZDU5M2Q4NzYyZDQ1MzYwMDdhNzk2N2JiMmQ4ZGU5YjkwMjlkNDhjODUyZjUzOWNhOGRjMDEiLCJzbmFwc2hvdCI6IjMyMzRkYzBlMmMyMjQyMjA2ZDEyOWU0ODUzOTQ1Y2YyNzFhMjkwOTBhMmE4M2Q4ZWQ4MDAyNmYxMWZjNmM4MmIifQ==",
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 3 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     },
+     {
+      "snapshot_digest": "3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/e"
+      ],
+      "edges": [],
+      "paths": [],
+      "total": 5,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot 3234dc0e2c2242206d129e4853945cf271a29090a2a83d8ed80026f11fc6c82b of commit 0000000000000000000000000000000000000000, access public",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 3 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "hidden_private",
+   "snapshot": "hidden",
+   "query": {
+    "start": "definition:fixture/a"
+   },
+   "access": "private",
+   "expect": {
+    "outcome": "answer",
+    "pages": [
+     {
+      "snapshot_digest": "c8421c78aa1dd5a2b2ee42daffeed328b5edfd550fe36c55d99dee3a6c196e9f",
+      "shape": "neighbourhood",
+      "nodes": [
+       "definition:fixture/a",
+       "definition:fixture/b",
+       "definition:fixture/c",
+       "definition:fixture/p"
+      ],
+      "edges": [
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/b"
+       ],
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/c"
+       ],
+       [
+        "definition:fixture/a",
+        "requires",
+        "definition:fixture/p"
+       ]
+      ],
+      "paths": [],
+      "total": 4,
+      "omitted": 0,
+      "omitted_edges": 0,
+      "next_cursor": null,
+      "explanation": [
+       "snapshot c8421c78aa1dd5a2b2ee42daffeed328b5edfd550fe36c55d99dee3a6c196e9f of commit 0000000000000000000000000000000000000000, access private",
+       "0 documented exclusions are not part of the graph",
+       "out neighbourhood within 1 hops, ordered by distance and ID",
+       "edge kinds all admitted kinds"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "refuse_private_start",
+   "snapshot": "hidden",
+   "query": {
+    "start": "definition:fixture/p"
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "refusal",
+    "code": "unknown_node",
+    "field": "start"
+   }
+  },
+  {
+   "id": "refuse_absent_start",
+   "snapshot": "hidden",
+   "query": {
+    "start": "definition:fixture/zz"
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "refusal",
+    "code": "unknown_node",
+    "field": "start"
+   }
+  },
+  {
+   "id": "refuse_relation",
+   "snapshot": "diamond",
+   "query": {
+    "edge_kinds": [
+     "equivalent_to"
+    ]
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "refusal",
+    "code": "unknown_relation",
+    "field": "edge_kinds"
+   }
+  },
+  {
+   "id": "refuse_depth",
+   "snapshot": "diamond",
+   "query": {
+    "depth": 7
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "refusal",
+    "code": "oversized_traversal",
+    "field": "depth"
+   }
+  },
+  {
+   "id": "refuse_page",
+   "snapshot": "diamond",
+   "query": {
+    "page_size": 501
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "refusal",
+    "code": "oversized_page",
+    "field": "page_size"
+   }
+  },
+  {
+   "id": "refuse_target_alone",
+   "snapshot": "diamond",
+   "query": {
+    "target": "definition:fixture/e"
+   },
+   "access": "public",
+   "expect": {
+    "outcome": "refusal",
+    "code": "missing_start",
+    "field": "start"
+   }
+  },
+  {
+   "id": "refuse_access",
+   "snapshot": "diamond",
+   "query": {},
+   "access": "admin",
+   "expect": {
+    "outcome": "refusal",
+    "code": "access_refused",
+    "field": "access"
+   }
+  }
+ ]
+}

@@ -295,7 +295,7 @@ def _unmounted_sample(
     page.get_by_role("navigation", name="Workbench context destinations").get_by_role(
         "link", name="Atlas", exact=True
     ).click()
-    expect(page.get_by_role("heading", name="Atlas unavailable", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name="Atlas", exact=True)).to_be_visible()
     assert len(transport.held) == 1
     transport.release(deliver=True)
     page.wait_for_load_state("networkidle")

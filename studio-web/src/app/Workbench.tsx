@@ -84,7 +84,9 @@ export function Workbench({
   const content = useRef<HTMLElement>(null);
   const href = (target: string) => {
     if (registry.stage(target) === undefined) throw new Error("Unregistered workbench stage");
-    return formatWorkbenchRoute({ ...context, view: target, instrument: null });
+    // A filter belongs to the stage that reads it; moving to another stage leaves it behind.
+    const filter = target === view ? context.filter : null;
+    return formatWorkbenchRoute({ ...context, filter, view: target, instrument: null });
   };
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
   const admittedSources = useWorkspaceDocuments(
