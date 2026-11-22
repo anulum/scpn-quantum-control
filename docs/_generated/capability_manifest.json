@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1683,
-    "python_model_source_modules": 894,
+    "python_model_classes": 1687,
+    "python_model_source_modules": 895,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1671
+    "test_files": 1672
   },
   "documentation": {
     "examples": [
@@ -617,7 +617,7 @@
       {
         "package": "atlas",
         "path": "src/scpn_quantum_control/atlas",
-        "python_modules": 1
+        "python_modules": 2
       },
       {
         "package": "benchmark_harness",
@@ -1149,6 +1149,22 @@
       {
         "name": "AtlasExclusion",
         "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasExtraction",
+        "path": "src/scpn_quantum_control/atlas/extractors/snapshot.py"
+      },
+      {
+        "name": "AtlasExtractionError",
+        "path": "src/scpn_quantum_control/atlas/extractors/snapshot.py"
+      },
+      {
+        "name": "AtlasFragment",
+        "path": "src/scpn_quantum_control/atlas/extractors/snapshot.py"
+      },
+      {
+        "name": "AtlasInput",
+        "path": "src/scpn_quantum_control/atlas/extractors/snapshot.py"
       },
       {
         "name": "AtlasNode",
@@ -7643,6 +7659,7 @@
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
       "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
       "src/scpn_quantum_control/atlas/contracts.py",
+      "src/scpn_quantum_control/atlas/extractors/snapshot.py",
       "src/scpn_quantum_control/attested_result_pack.py",
       "src/scpn_quantum_control/backend_dispatch.py",
       "src/scpn_quantum_control/bench_cli.py",
@@ -9785,6 +9802,7 @@
       "tests/test_appqsim_protocol.py",
       "tests/test_async_runner.py",
       "tests/test_atlas_contracts.py",
+      "tests/test_atlas_snapshot_extraction.py",
       "tests/test_attested_result_pack.py",
       "tests/test_attested_result_pack_quality_gate.py",
       "tests/test_audit_advisory_workflow_steps.py",

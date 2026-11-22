@@ -1831,6 +1831,55 @@ cases live in `tests/data/atlas/contracts.json`:
 - `tests/test_atlas_contracts.py` runs them in Python;
 - `studio-web/src/shared/contracts/atlas.test.ts` runs them in TypeScript.
 
+### Snapshot extraction
+
+`scpn_quantum_control.atlas.extractors` builds a validated snapshot from a closed
+list of committed artefacts. It reads bytes only: it never imports or runs what
+an artefact describes, and it loads no numerical or quantum runtime.
+
+| Input | Adapter | What it contributes |
+|---|---|---|
+| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` (required) | `architecture_map` | Each layer becomes a capability. Its implementation files `implements` it, its test files are `contains`-ed by it, and its documentation files `documents` it. |
+| `data/differentiable_phase_qnode/claim_ledger.json` | `claim_ledger` | Each claim becomes a claim node. It `derives_from` its implementation files, and its documentation `documents` it. |
+| `data/hardware_result_packs/manifest.json` | `hardware_result_packs` | Each pack becomes a content-addressed artefact. No support edge is derived from it. |
+
+Provenance follows the inputs:
+- Every input is an artefact bound to its content digest.
+- Every derived node lists that digest as its evidence, and every derived edge names it.
+- Changing an input changes the provenance of everything it declared. Changing a
+  named file changes that node's own digest.
+
+Some names cannot become nodes. These are recorded as scoped exclusions, never as
+invented nodes or edges:
+- a file an input names that the revision does not hold;
+- a file type with no node kind;
+- a surface or evidence identifier that no admitted input resolves;
+- an optional input that is absent.
+
+A malformed input, or an absent required input, refuses the whole extraction.
+
+```python
+from pathlib import Path
+
+from scpn_quantum_control.atlas.extractors import directory_reader, extract_atlas_snapshot
+
+first = extract_atlas_snapshot(directory_reader(Path(".")), source_commit)
+later = extract_atlas_snapshot(
+    directory_reader(Path(".")),
+    next_commit,
+    previous=first.snapshot,
+    removed_at="2026-11-22T00:00:00Z",
+    reuse=first.fragments,
+)
+```
+
+`source_commit` is the full commit whose files the reader serves.
+
+Against a previous snapshot, every node that is no longer extracted becomes a
+tombstone, and earlier tombstones carry forward. A fragment of an earlier run is
+reused only when its input and every file it read are byte-identical. The reused
+result therefore equals a full rebuild.
+
 ## Evidence inspector
 
 The program-AD replay card uses the shared evidence inspector. It displays the

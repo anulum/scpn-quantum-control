@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Atlas snapshot extraction: `scpn_quantum_control.atlas.extractors` builds a
+  validated `quantum_atlas_snapshot.v1` from the committed architecture map,
+  claim ledger and hardware result-pack manifest. It reads bytes only and loads
+  no numerical or quantum runtime.
+  - Provenance: inputs are content-addressed artefacts, and every derived node and
+    edge names the input digest as its evidence.
+  - Exclusions: unresolvable names, absent files and absent optional inputs are
+    scoped exclusions. A malformed or absent required input refuses the whole
+    extraction.
+  - History: against a previous snapshot, removed nodes become tombstones.
+    Reusing unchanged fragments yields exactly the full-rebuild snapshot.
+
 - Atlas snapshot contract: `scpn_quantum_control.atlas` validates
   `quantum_atlas_snapshot.v1` documents, and `studio-web/src/shared/contracts/atlas.ts`
   applies the same rules. A shared corpus proves equal digests and equal refusal
