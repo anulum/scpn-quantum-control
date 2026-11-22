@@ -1880,6 +1880,48 @@ tombstone, and earlier tombstones carry forward. A fragment of an earlier run is
 reused only when its input and every file it read are byte-identical. The reused
 result therefore equals a full rebuild.
 
+### Bounded queries
+
+`run_atlas_query(snapshot, AtlasQuery(...), access="public")` answers one page
+of a bounded, deterministic query:
+
+| Shape | When | Answer |
+|---|---|---|
+| Lookup | no `start` | Nodes whose ID or label contains the case-folded `text`, filtered by `kinds` and `statuses`, ordered by ID |
+| Neighbourhood | `start` | Nodes within `depth` hops along `edge_kinds`, outgoing, incoming or both, ordered by distance and then ID |
+| Path | `start` and `target` | Every shortest directed path within `depth` hops, in lexicographic order |
+
+Access is filtered first. A public query runs on the public projection, so
+private material changes no answer, total or omitted count. An unknown ID is
+refused in the same words whether it is private or absent.
+
+Every result carries:
+- the snapshot digest, the access scope and the normalised query;
+- an explanation of what it was computed from;
+- its `total` and `omitted` counts.
+
+A truncated page says how many items, and how many edges beyond the
+2,000-edge limit, it left out.
+
+A cursor binds the snapshot, the query, the access scope and the last item
+returned, and it is refused anywhere else. Pages never repeat or skip an item.
+The limits:
+- depth is 1 to 6 (1 by default);
+- a page holds at most 500 items;
+- a snapshot may hold at most 10,000 nodes and 100,000 edges.
+
+An unknown relation, kind or status is refused, and so is an oversized
+traversal or an absent snapshot.
+
+`run_prebuilt_query` answers the Atlas design's questions where the current
+snapshot can:
+- `dependents_of`: what derives from, consumes or requires a node;
+- `capabilities_without_tests`;
+- `capabilities_without_documentation`.
+
+The other questions in `PREBUILT_QUERIES` are refused with the input they still
+need. A shortest graph path is a navigation path, not a scientific proof.
+
 ## Evidence inspector
 
 The program-AD replay card uses the shared evidence inspector. It displays the

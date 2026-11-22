@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **895 modules** across **42 package families**
-- **4805 documented public module-level symbols**
+- **896 modules** across **42 package families**
+- **4811 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -946,6 +946,16 @@ Build an Atlas snapshot from a closed list of committed producer artefacts.
 **Classes:** `AtlasInput`, `AtlasExtractionError`, `AtlasFragment`, `AtlasExtraction`
 
 **Functions:** `directory_reader()`, `extract_atlas_snapshot()`
+
+### `scpn_quantum_control.atlas.query`
+
+Answer bounded, deterministic queries over a validated Atlas snapshot.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/atlas/query.py) · Public symbols: **6**
+
+**Classes:** `AtlasQueryError`, `AtlasQuery`, `AtlasQueryResult`, `AtlasPrebuiltQuery`
+
+**Functions:** `run_atlas_query()`, `run_prebuilt_query()`
 
 ## `benchmark_harness`
 

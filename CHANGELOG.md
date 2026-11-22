@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Atlas bounded queries: `scpn_quantum_control.atlas.run_atlas_query` answers
+  lookup, neighbourhood and shortest-path queries over a validated snapshot.
+  - Access is filtered before traversal and counts, so private material never
+    shows up in public totals or omissions.
+  - Each answer is deterministic, ordered and paged. Cursors are bound to the
+    snapshot, the query and the access scope.
+  - Limits are explicit: depth up to 6, pages up to 500 items, 2,000 edges per
+    answer, and snapshot ceilings. Truncation is reported.
+  - `run_prebuilt_query` answers the supported design questions (dependents,
+    capabilities without tests or documentation). The others are refused with
+    the input they need.
+
 - Atlas snapshot extraction: `scpn_quantum_control.atlas.extractors` builds a
   validated `quantum_atlas_snapshot.v1` from the committed architecture map,
   claim ledger and hardware result-pack manifest. It reads bytes only and loads
