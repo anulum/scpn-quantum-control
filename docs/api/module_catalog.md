@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **899 modules** across **42 package families**
-- **4833 documented public module-level symbols**
+- **900 modules** across **42 package families**
+- **4844 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -936,6 +936,16 @@ Validate Atlas snapshots: node and edge vocabulary, identity and legality.
 **Classes:** `AtlasContractError`, `AtlasNode`, `AtlasEdge`, `AtlasTombstone`, `AtlasExclusion`, `AtlasSnapshot`
 
 **Functions:** `parse_atlas_snapshot()`, `snapshot_to_wire()`, `atlas_snapshot_digest()`, `project_public()`
+
+### `scpn_quantum_control.atlas.coverage`
+
+Report capability gaps from the mappings the repository declares, and nothing else.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/atlas/coverage.py) · Public symbols: **10**
+
+**Classes:** `CapabilityGapError`, `DeclaredTest`, `SurfaceEvidence`, `ModuleCoverage`, `CapabilityGap`, `CapabilityCoverage`, `CapabilityGapReport`
+
+**Functions:** `ci_test_owners()`, `capability_gap_report()`, `gap_report_to_wire()`
 
 ### `scpn_quantum_control.atlas.diff`
 
@@ -7947,11 +7957,11 @@ Provider-neutral QPU compute request/result contracts.
 
 Project recorded domain qualification without adjudicating scientific claims.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/qualification_status_projection.py) · Public symbols: **3**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/qualification_status_projection.py) · Public symbols: **4**
 
 **Classes:** `QualificationProjectionWire`, `QualificationProjection`
 
-**Functions:** `project_qualification_status()`
+**Functions:** `project_qualification_status()`, `explicit_test_cohort()`
 
 ### `scpn_quantum_control.quantum_sync_challenge_oracle_product`
 

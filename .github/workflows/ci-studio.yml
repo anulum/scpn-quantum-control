@@ -230,6 +230,8 @@ jobs:
           tools/studio_atlas_workspace_overlay_cases.py
           src/scpn_quantum_control/atlas/diff.py
           tools/studio_atlas_snapshot_diff.py
+          src/scpn_quantum_control/atlas/coverage.py
+          tools/studio_atlas_capability_gaps.py
           tests/test_studio_readout_mitigation_bundle.py
           tests/test_studio_mitigation_instrument_artifact.py
           tests/test_studio_committed_data.py
@@ -245,6 +247,7 @@ jobs:
           tests/test_atlas_workspace_overlay.py
           tests/test_atlas_snapshot_diff.py
           tests/test_studio_atlas_snapshot_diff.py
+          tests/test_atlas_capability_gaps.py
           tools/studio_readout_mitigation_bundle_quality_gates.py
           tests/test_studio_readout_mitigation_bundle_quality_gate.py
       - run: >-
@@ -270,6 +273,8 @@ jobs:
           tools/studio_atlas_workspace_overlay_cases.py
           src/scpn_quantum_control/atlas/diff.py
           tools/studio_atlas_snapshot_diff.py
+          src/scpn_quantum_control/atlas/coverage.py
+          tools/studio_atlas_capability_gaps.py
           tests/test_studio_readout_mitigation_bundle.py
           tests/test_studio_mitigation_instrument_artifact.py
           tests/test_studio_committed_data.py
@@ -285,6 +290,7 @@ jobs:
           tests/test_atlas_workspace_overlay.py
           tests/test_atlas_snapshot_diff.py
           tests/test_studio_atlas_snapshot_diff.py
+          tests/test_atlas_capability_gaps.py
           tools/studio_readout_mitigation_bundle_quality_gates.py
           tests/test_studio_readout_mitigation_bundle_quality_gate.py
       - run: >-
@@ -304,11 +310,12 @@ jobs:
           tests/test_atlas_workspace_overlay.py
           tests/test_atlas_snapshot_diff.py
           tests/test_studio_atlas_snapshot_diff.py
+          tests/test_atlas_capability_gaps.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-readout-mitigation-bundle-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/studio/readout_mitigation_bundle.py,*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py,*/studio/control_proposal_instrument_artifact.py,*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py,*/studio/topology_instrument_artifact.py,*/studio/topology_instrument_templates.py,*/tools/studio_attestation_instrument.py,*/tools/studio_benchmark_databank.py,*/tools/studio_atlas_snapshot.py,*/studio/evidence_lineage.py,*/tools/studio_evidence_lineage.py,*/atlas/extractors/workspace.py,*/tools/studio_atlas_workspace_overlay_cases.py,*/atlas/diff.py,*/tools/studio_atlas_snapshot_diff.py
+          --include=*/studio/readout_mitigation_bundle.py,*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py,*/studio/control_proposal_instrument_artifact.py,*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py,*/studio/topology_instrument_artifact.py,*/studio/topology_instrument_templates.py,*/tools/studio_attestation_instrument.py,*/tools/studio_benchmark_databank.py,*/tools/studio_atlas_snapshot.py,*/studio/evidence_lineage.py,*/tools/studio_evidence_lineage.py,*/atlas/extractors/workspace.py,*/tools/studio_atlas_workspace_overlay_cases.py,*/atlas/diff.py,*/tools/studio_atlas_snapshot_diff.py,*/atlas/coverage.py,*/tools/studio_atlas_capability_gaps.py
   studio-scorecard-bundle-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20

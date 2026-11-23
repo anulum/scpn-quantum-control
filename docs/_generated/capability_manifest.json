@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1702,
-    "python_model_source_modules": 899,
+    "python_model_classes": 1709,
+    "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1678
+    "test_files": 1679
   },
   "documentation": {
     "examples": [
@@ -617,7 +617,7 @@
       {
         "package": "atlas",
         "path": "src/scpn_quantum_control/atlas",
-        "python_modules": 5
+        "python_modules": 6
       },
       {
         "package": "benchmark_harness",
@@ -1439,6 +1439,22 @@
         "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
       },
       {
+        "name": "CapabilityCoverage",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
+      },
+      {
+        "name": "CapabilityGap",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
+      },
+      {
+        "name": "CapabilityGapError",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
+      },
+      {
+        "name": "CapabilityGapReport",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
+      },
+      {
         "name": "CapturedSemanticRecord",
         "path": "src/scpn_quantum_control/semantic_operations.py"
       },
@@ -2073,6 +2089,10 @@
       {
         "name": "DeclaredParameterOrder",
         "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "DeclaredTest",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
       },
       {
         "name": "DeclaredUnit",
@@ -4117,6 +4137,10 @@
       {
         "name": "ModelFamily",
         "path": "src/scpn_quantum_control/ml_examples/contracts.py"
+      },
+      {
+        "name": "ModuleCoverage",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
       },
       {
         "name": "MonitoredKuramotoSpec",
@@ -6903,6 +6927,10 @@
         "path": "src/scpn_quantum_control/qec/surface_code_upde.py"
       },
       {
+        "name": "SurfaceEvidence",
+        "path": "src/scpn_quantum_control/atlas/coverage.py"
+      },
+      {
         "name": "SurrogateCostModel",
         "path": "src/scpn_quantum_control/forecasting/neural_operator_cost_model.py"
       },
@@ -7719,6 +7747,7 @@
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
       "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
       "src/scpn_quantum_control/atlas/contracts.py",
+      "src/scpn_quantum_control/atlas/coverage.py",
       "src/scpn_quantum_control/atlas/diff.py",
       "src/scpn_quantum_control/atlas/extractors/snapshot.py",
       "src/scpn_quantum_control/atlas/extractors/workspace.py",
@@ -9866,6 +9895,7 @@
       "tests/test_appqsim_protocol.py",
       "tests/test_async_runner.py",
       "tests/test_atlas_bounded_queries.py",
+      "tests/test_atlas_capability_gaps.py",
       "tests/test_atlas_contracts.py",
       "tests/test_atlas_snapshot_diff.py",
       "tests/test_atlas_snapshot_extraction.py",

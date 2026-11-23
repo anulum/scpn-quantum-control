@@ -356,6 +356,28 @@ def _ci_owner(root: Path, job: str, tests: tuple[str, ...]) -> str:
     return f"{path.relative_to(root).as_posix()}#{job}"
 
 
+def explicit_test_cohort(job_source: str) -> frozenset[str]:
+    """Return the test files a CI job's pytest commands name explicitly.
+
+    Only ``python -m pytest`` and ``python -m coverage run ... -m pytest``
+    commands without shell operators or test-selection options count, and only
+    their ``tests/*.py`` arguments. A file a directory or shard run may execute is
+    not named, so it is not in the cohort.
+
+    Parameters
+    ----------
+    job_source
+        The job's source block in its workflow.
+
+    Returns
+    -------
+    frozenset[str]
+        Repository-relative test files the job executes by name.
+
+    """
+    return frozenset(_runtime_cohort(job_source))
+
+
 def _runtime_cohort(job_source: str) -> set[str]:
     commands: list[str] = []
     fragments: list[str] = []

@@ -1,0 +1,1331 @@
+{
+  "capabilities": [
+    {
+      "capability": "public_api_facade",
+      "code_coverage": "unmeasured",
+      "docs": [
+        {
+          "path": "docs/differentiable_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/differentiable_programming.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/claim_ledger.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
+          "present": true
+        },
+        {
+          "path": "README.md",
+          "present": true
+        },
+        {
+          "path": "docs/benchmarks_api.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+          "present": true
+        }
+      ],
+      "modules": [
+        {
+          "path": "src/scpn_quantum_control/differentiable_api.py",
+          "percent": null
+        }
+      ],
+      "node_id": "capability:atlas.architecture/public_api_facade",
+      "scientific": [
+        {
+          "claim_id": "differentiable_architecture_rustification_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_baseline_scorecard",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_dependency_environment_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_isolated_benchmark_plan",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_rust_python_inventory",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "phase_qnode_claim_boundary",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "public_claim_table",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "support_surface_alignment",
+          "promotion_status": "bounded_candidate"
+        }
+      ],
+      "support_blockers": [
+        "public orchestration remains Python-first",
+        "dashboard rows still include metadata-only and blocked routes"
+      ],
+      "support_ready": false,
+      "tests": [
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_api.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_ledger.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_rendering.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_programming_benchmarks.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#gradient-tape-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_tape.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_qnode_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-application-domain.yml#phase-qnode-vector-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_vector_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_torch_bridge_compile_boundaries.py",
+          "present": true
+        }
+      ],
+      "title": "Public API facade and dashboard evidence",
+      "ui": []
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "code_coverage": "unmeasured",
+      "docs": [
+        {
+          "path": "docs/differentiable_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/quantum_gradients.md",
+          "present": true
+        },
+        {
+          "path": "docs/differentiable_programming.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/claim_ledger.md",
+          "present": true
+        },
+        {
+          "path": "README.md",
+          "present": true
+        },
+        {
+          "path": "docs/benchmarks_api.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+          "present": true
+        }
+      ],
+      "modules": [
+        {
+          "path": "src/scpn_quantum_control/phase/pennylane_bridge.py",
+          "percent": null
+        },
+        {
+          "path": "src/scpn_quantum_control/phase/qiskit_runtime.py",
+          "percent": null
+        }
+      ],
+      "node_id": "capability:atlas.architecture/qnode_framework_bridges",
+      "scientific": [
+        {
+          "claim_id": "differentiable_architecture_rustification_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_baseline_scorecard",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_dependency_environment_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_isolated_benchmark_plan",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_rust_python_inventory",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "external_framework_comparison",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "phase_qnode_claim_boundary",
+          "promotion_status": "bounded_candidate"
+        }
+      ],
+      "support_blockers": [
+        "provider-plugin execution artefacts are missing",
+        "hardware-plugin and provider-gradient parity artefacts are missing",
+        "live-ticket Runtime/QPU evidence is missing",
+        "provider-gradient methods are not attached to a live-ticket run"
+      ],
+      "support_ready": false,
+      "tests": [
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_pennylane_bridge.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity",
+            ".github/workflows/ci-product-deployment.yml#migration-guides-product-quality"
+          ],
+          "ci_state": "duplicate",
+          "path": "tests/test_phase_pennylane_import.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_external_comparisons.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_api.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_programming_benchmarks.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#gradient-tape-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_tape.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_qnode_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-application-domain.yml#phase-qnode-vector-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_vector_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_torch_bridge_compile_boundaries.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_ledger.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-simulation-artifact.yml#gradient-backend-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qiskit_bridge_contracts.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-simulation-artifact.yml#gradient-backend-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qiskit_gradients.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-simulation-artifact.yml#gradient-backend-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qiskit_runtime.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-core-science.yml#provider-gradient-audit-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_provider_hardware_gradient_audit.py",
+          "present": true
+        }
+      ],
+      "title": "QNode framework bridge layer",
+      "ui": []
+    },
+    {
+      "capability": "program_ad_core",
+      "code_coverage": "unmeasured",
+      "docs": [
+        {
+          "path": "docs/differentiable_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/differentiable_programming.md",
+          "present": true
+        },
+        {
+          "path": "README.md",
+          "present": true
+        },
+        {
+          "path": "docs/benchmarks_api.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/claim_ledger.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+          "present": true
+        }
+      ],
+      "modules": [
+        {
+          "path": "src/scpn_quantum_control/differentiable.py",
+          "percent": null
+        },
+        {
+          "path": "src/scpn_quantum_control/whole_program_frontend.py",
+          "percent": null
+        }
+      ],
+      "node_id": "capability:atlas.architecture/program_ad_core",
+      "scientific": [
+        {
+          "claim_id": "differentiable_architecture_rustification_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_baseline_scorecard",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_dependency_environment_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_isolated_benchmark_plan",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_rust_python_inventory",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "module_hardening_audit",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "phase_qnode_claim_boundary",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "public_claim_table",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "support_surface_alignment",
+          "promotion_status": "bounded_candidate"
+        }
+      ],
+      "support_blockers": [
+        "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
+        "sustained coverage-guided fuzz campaign evidence, Miri, sanitizer, executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
+        "static Python source/bytecode metadata has no executable Rust parity requirement",
+        "compiler lowering remains blocked until a real Program AD backend exists"
+      ],
+      "support_ready": false,
+      "tests": [
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_qnode_rust_parity.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-whole-program-trace.yml#whole-program-trace-value-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_program_ad_effect_ir.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_program_ad_rust_bridge.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_program_ad_rust_interpolation_bridge.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_program_ad_rust_signal_bridge.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_program_ad_rust_cumulative_bridge.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "scpn_quantum_engine/tests/program_ad_interpolation.rs",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "scpn_quantum_engine/tests/program_ad_signal.rs",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "scpn_quantum_engine/tests/program_ad_stencil.rs",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "scpn_quantum_engine/tests/program_ad_cumulative.rs",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "scpn_quantum_engine/tests/program_ad_panic_boundary.rs",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_api.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_programming_benchmarks.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#gradient-tape-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_tape.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_qnode_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-application-domain.yml#phase-qnode-vector-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_vector_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_torch_bridge_compile_boundaries.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_ledger.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_module_hardening_audit.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#whole-program-ad-product-quality",
+            ".github/workflows/ci-control-provider.yml#whole-program-frontend-contracts-quality",
+            ".github/workflows/ci-whole-program-trace.yml#whole-program-trace-value-quality"
+          ],
+          "ci_state": "duplicate",
+          "path": "tests/test_whole_program_frontend.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#whole-program-ad-product-quality",
+            ".github/workflows/ci-whole-program-trace.yml#whole-program-trace-value-quality"
+          ],
+          "ci_state": "duplicate",
+          "path": "tests/test_whole_program_ad_contracts.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_rendering.py",
+          "present": true
+        }
+      ],
+      "title": "Program AD core",
+      "ui": []
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "code_coverage": "unmeasured",
+      "docs": [
+        {
+          "path": "docs/differentiable_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/rust_engine.md",
+          "present": true
+        },
+        {
+          "path": "docs/differentiable_programming.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/claim_ledger.md",
+          "present": true
+        },
+        {
+          "path": "README.md",
+          "present": true
+        },
+        {
+          "path": "docs/benchmarks_api.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+          "present": true
+        }
+      ],
+      "modules": [
+        {
+          "path": "src/scpn_quantum_control/compiler/mlir.py",
+          "percent": null
+        },
+        {
+          "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+          "percent": null
+        }
+      ],
+      "node_id": "capability:atlas.architecture/compiler_ad_native_execution",
+      "scientific": [
+        {
+          "claim_id": "differentiable_architecture_rustification_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_baseline_scorecard",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_dependency_environment_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_isolated_benchmark_plan",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_rust_python_inventory",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "external_framework_comparison",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "phase_qnode_claim_boundary",
+          "promotion_status": "bounded_candidate"
+        }
+      ],
+      "support_blockers": [
+        "isolated compiler-AD benchmark ID is missing",
+        "broad LLVM/JIT lowering remains claim-blocked",
+        "11-case compiler-AD breadth evidence is incomplete",
+        "isolated Enzyme/MLIR benchmark attachment is missing",
+        "configured Catalyst qjit/MLIR/QIR runner evidence is missing",
+        "compiled quantum-classical workflow parity is unimplemented"
+      ],
+      "support_ready": false,
+      "tests": [
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-application-domain.yml#mlir-leaf-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_compiler_lowering.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-native-integration.yml#magnetisation-sectors-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_rust_new_functions.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_external_comparisons.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_api.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_programming_benchmarks.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#gradient-tape-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_tape.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_qnode_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-application-domain.yml#phase-qnode-vector-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_vector_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_torch_bridge_compile_boundaries.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_ledger.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-assurance-policy.yml#qualification-projection-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_differentiable_baseline_scorecard.py",
+          "present": true
+        }
+      ],
+      "title": "Compiler AD native execution",
+      "ui": []
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "code_coverage": "unmeasured",
+      "docs": [
+        {
+          "path": "docs/differentiable_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/quantum_gradients.md",
+          "present": true
+        },
+        {
+          "path": "README.md",
+          "present": true
+        },
+        {
+          "path": "docs/benchmarks_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/differentiable_programming.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/claim_ledger.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+          "present": true
+        },
+        {
+          "path": "docs/qpu_system_capability_dossier.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+          "present": true
+        }
+      ],
+      "modules": [
+        {
+          "path": "src/scpn_quantum_control/phase/qiskit_runtime.py",
+          "percent": null
+        },
+        {
+          "path": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
+          "percent": null
+        }
+      ],
+      "node_id": "capability:atlas.architecture/provider_hardware_boundary",
+      "scientific": [
+        {
+          "claim_id": "differentiable_architecture_rustification_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_baseline_scorecard",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_dependency_environment_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_isolated_benchmark_plan",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_rust_python_inventory",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "phase_qnode_claim_boundary",
+          "promotion_status": "bounded_candidate"
+        }
+      ],
+      "support_blockers": [
+        "live-ticket Runtime/QPU evidence is missing",
+        "provider-gradient methods are not attached to a live-ticket run",
+        "live-ticket hardware execution is missing",
+        "raw counts, calibration, and reference simulator attachments are missing"
+      ],
+      "support_ready": false,
+      "tests": [
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-simulation-artifact.yml#gradient-backend-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qiskit_bridge_contracts.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-simulation-artifact.yml#gradient-backend-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qiskit_gradients.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-simulation-artifact.yml#gradient-backend-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qiskit_runtime.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-core-science.yml#provider-gradient-audit-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_provider_hardware_gradient_audit.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_api.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_programming_benchmarks.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-benchmark-evidence.yml#gradient-tape-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_tape.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_qnode_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-application-domain.yml#phase-qnode-vector-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_qnode_vector_transforms.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-framework-parity.yml#differentiable-parity"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_torch_bridge_compile_boundaries.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_differentiable_claim_ledger.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-core-science.yml#provider-gradient-audit-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_phase_hardware_gradient_campaign.py",
+          "present": true
+        },
+        {
+          "behaviour": true,
+          "ci_owners": [],
+          "ci_state": "unknown",
+          "path": "tests/test_phase_hardware_gradient_policy.py",
+          "present": true
+        }
+      ],
+      "title": "Provider and hardware boundary",
+      "ui": []
+    },
+    {
+      "capability": "benchmark_and_claim_governance",
+      "code_coverage": "unmeasured",
+      "docs": [
+        {
+          "path": "docs/differentiable_api.md",
+          "present": true
+        },
+        {
+          "path": "docs/differentiable_programming.md",
+          "present": true
+        },
+        {
+          "path": "README.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/claim_ledger.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+          "present": true
+        },
+        {
+          "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+          "present": true
+        }
+      ],
+      "modules": [
+        {
+          "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
+          "percent": null
+        }
+      ],
+      "node_id": "capability:atlas.architecture/benchmark_and_claim_governance",
+      "scientific": [
+        {
+          "claim_id": "differentiable_architecture_rustification_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_baseline_scorecard",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_dependency_environment_map",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_isolated_benchmark_plan",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "differentiable_rust_python_inventory",
+          "promotion_status": "bounded_candidate"
+        },
+        {
+          "claim_id": "phase_qnode_claim_boundary",
+          "promotion_status": "bounded_candidate"
+        }
+      ],
+      "support_blockers": [
+        "governance evidence only; no executable Rust surface is required"
+      ],
+      "support_ready": false,
+      "tests": [
+        {
+          "behaviour": true,
+          "ci_owners": [
+            ".github/workflows/ci-assurance-policy.yml#qualification-projection-quality"
+          ],
+          "ci_state": "explicit",
+          "path": "tests/test_differentiable_baseline_scorecard.py",
+          "present": true
+        }
+      ],
+      "title": "Benchmark and claim governance",
+      "ui": []
+    }
+  ],
+  "gaps": [
+    {
+      "capability": "program_ad_core",
+      "declared_in": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+      "detail": "executed by name by 2 jobs: .github/workflows/ci-benchmark-evidence.yml#whole-program-ad-product-quality, .github/workflows/ci-whole-program-trace.yml#whole-program-trace-value-quality",
+      "kind": "duplicate_ci_owner",
+      "surface": "tests/test_whole_program_ad_contracts.py"
+    },
+    {
+      "capability": "program_ad_core",
+      "declared_in": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+      "detail": "executed by name by 3 jobs: .github/workflows/ci-benchmark-evidence.yml#whole-program-ad-product-quality, .github/workflows/ci-control-provider.yml#whole-program-frontend-contracts-quality, .github/workflows/ci-whole-program-trace.yml#whole-program-trace-value-quality",
+      "kind": "duplicate_ci_owner",
+      "surface": "tests/test_whole_program_frontend.py"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "declared_in": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+      "detail": "executed by name by 2 jobs: .github/workflows/ci-framework-parity.yml#differentiable-parity, .github/workflows/ci-product-deployment.yml#migration-guides-product-quality",
+      "kind": "duplicate_ci_owner",
+      "surface": "tests/test_phase_pennylane_import.py"
+    }
+  ],
+  "schema": "scpn_qc_studio_atlas_capability_gaps_v1",
+  "unknowns": [
+    {
+      "capability": "public_api_facade",
+      "statement": "tests/test_differentiable_api.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "public_api_facade",
+      "statement": "tests/test_differentiable_claim_ledger.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "public_api_facade",
+      "statement": "tests/test_differentiable_claim_rendering.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "public_api_facade",
+      "statement": "tests/test_differentiable_programming_benchmarks.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "public_api_facade",
+      "statement": "tests/test_phase_qnode_transforms.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "public_api_facade",
+      "statement": "user-route availability: no UI surface is declared"
+    },
+    {
+      "capability": "public_api_facade",
+      "statement": "code coverage: unmeasured"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "tests/test_differentiable_external_comparisons.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "tests/test_differentiable_api.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "tests/test_differentiable_programming_benchmarks.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "tests/test_phase_qnode_transforms.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "tests/test_differentiable_claim_ledger.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "user-route availability: no UI surface is declared"
+    },
+    {
+      "capability": "qnode_framework_bridges",
+      "statement": "code coverage: unmeasured"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_phase_qnode_rust_parity.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_program_ad_rust_bridge.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_program_ad_rust_interpolation_bridge.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_program_ad_rust_signal_bridge.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_program_ad_rust_cumulative_bridge.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "scpn_quantum_engine/tests/program_ad_interpolation.rs: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "scpn_quantum_engine/tests/program_ad_signal.rs: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "scpn_quantum_engine/tests/program_ad_stencil.rs: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "scpn_quantum_engine/tests/program_ad_cumulative.rs: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "scpn_quantum_engine/tests/program_ad_panic_boundary.rs: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_differentiable_api.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_differentiable_programming_benchmarks.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_phase_qnode_transforms.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_differentiable_claim_ledger.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_differentiable_module_hardening_audit.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "tests/test_differentiable_claim_rendering.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "user-route availability: no UI surface is declared"
+    },
+    {
+      "capability": "program_ad_core",
+      "statement": "code coverage: unmeasured"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "tests/test_differentiable_external_comparisons.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "tests/test_differentiable_api.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "tests/test_differentiable_programming_benchmarks.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "tests/test_phase_qnode_transforms.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "tests/test_differentiable_claim_ledger.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "user-route availability: no UI surface is declared"
+    },
+    {
+      "capability": "compiler_ad_native_execution",
+      "statement": "code coverage: unmeasured"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "tests/test_differentiable_api.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "tests/test_differentiable_programming_benchmarks.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "tests/test_phase_qnode_transforms.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "tests/test_differentiable_claim_ledger.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "tests/test_phase_hardware_gradient_policy.py: no CI job names it; a directory or sharded run may still run it"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "user-route availability: no UI surface is declared"
+    },
+    {
+      "capability": "provider_hardware_boundary",
+      "statement": "code coverage: unmeasured"
+    },
+    {
+      "capability": "benchmark_and_claim_governance",
+      "statement": "user-route availability: no UI surface is declared"
+    },
+    {
+      "capability": "benchmark_and_claim_governance",
+      "statement": "code coverage: unmeasured"
+    }
+  ]
+}

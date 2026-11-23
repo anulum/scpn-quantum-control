@@ -588,3 +588,20 @@ def test_release_profile_excludes_a_falsified_domain_without_demoting_engineerin
     assert "resource_admission_contract_vector: scientific claim falsified" in excluded["reasons"]
     assert not profile["baseline_release_ready"]
     assert hashlib.sha256(receipt.read_bytes()).hexdigest() == digest
+
+
+def test_the_explicit_cohort_names_only_test_files_a_job_runs_by_name() -> None:
+    """Named pytest files count; directories, selections and shell compositions do not."""
+    from scpn_quantum_control.qualification_status_projection import explicit_test_cohort
+
+    job = """
+  quality:
+    steps:
+      - run: python -m pytest tests/test_named.py tests/helpers
+      - run: python -m pytest -k fast tests/test_selected.py
+      - run: python -m pytest tests/test_piped.py | tee log
+      - run: >-
+          python -m coverage run --branch -m pytest
+          tests/test_covered.py
+"""
+    assert explicit_test_cohort(job) == frozenset({"tests/test_named.py", "tests/test_covered.py"})

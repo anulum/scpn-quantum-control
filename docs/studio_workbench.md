@@ -2190,6 +2190,43 @@ shows:
 - the completeness verdict and its reasons;
 - whether the later snapshot is the one open.
 
+### Capability coverage and gaps
+
+`scpn_quantum_control.atlas.capability_gap_report(root)` joins each capability
+of the differentiable architecture map with the mappings the repository
+declares, and with nothing else: filename similarity joins nothing.
+
+- **Tests.** Each declared test surface must exist and define behaviour.
+  - In Python a behaviour is a module-level `test_*` function or a method of a
+    `Test*` class; in Rust a `#[test]`, `proptest!` or `fuzz_target!`. A file
+    that only imports a module is not evidence. Other languages are not judged.
+  - Its CI owner is the job whose pytest command names the file
+    (`qualification_status_projection.explicit_test_cohort`):
+    - *explicit* when one job names it;
+    - *duplicate* when several do, a gap that shows every job;
+    - *unknown* when none does, since a directory or sharded run may still run
+      it.
+- **Native documentation and UI.** Each declared documentation and UI surface
+  must exist.
+- **Four kinds of evidence stay apart.** None is ever combined into a score.
+  - *Code coverage* is unmeasured unless a coverage.py JSON report is given. A
+    module the report does not mention stays unknown, not zero.
+  - *Capability support* is the layer's own readiness and blockers, verbatim.
+  - *Scientific validation* is the ledger status of each claim whose
+    implementation files the layer declares, verbatim, or unassessed.
+  - *User-route availability* stays unknown until a layer declares UI surfaces.
+
+Each gap names its exact owner: the capability, the file that declares the
+surface, and the surface. What cannot be known is listed apart from the gaps.
+The report writes nothing and opens no ticket.
+
+`python tools/studio_atlas_capability_gaps.py --write` writes the committed report
+(`data/studio/atlas_capability_gaps_20261123.json`), and `--check` keeps it
+current after the architecture map, the claim ledger, a declared surface or a CI
+workflow changes. Selecting a capability in the Atlas shows its **Coverage and
+gaps** panel: each kind of evidence on its own line, the declared tests with
+their CI owners, the documentation, the gaps and the unknowns.
+
 ## Evidence inspector
 
 The program-AD replay card uses the shared evidence inspector. It displays the

@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Atlas now reports capability gaps from explicit mappings only.
+  - `scpn_quantum_control.atlas.capability_gap_report` joins each
+    architecture-map capability with its declared tests, native documentation
+    and UI surfaces, and with the CI jobs that name its tests.
+  - Code coverage, capability support, scientific validation and user-route
+    availability stay separate, and what is unmeasured or undeclared stays
+    unknown. There is no score.
+  - Missing surfaces, test files without tests and tests run by name by several
+    jobs are gaps with their exact owners.
+  - `tools/studio_atlas_capability_gaps.py` keeps the committed report current,
+    and the Atlas inspector shows each capability's coverage and gaps.
+  - `qualification_status_projection.explicit_test_cohort` exposes the rule
+    that decides which tests a CI job names.
 - Atlas snapshots can now be compared.
   - **The diff.** `scpn_quantum_control.atlas.diff_atlas_snapshots` matches
     objects by identifier and a typed content hash. Each differing node is

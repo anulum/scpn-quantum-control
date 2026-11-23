@@ -37,6 +37,12 @@ import {
   workspaceOverlayOrigin,
 } from "./atlasSession";
 import { atlasWorkspaceViewOf, overlayAtlasWorkspace } from "./workspaceOverlay";
+import { CapabilityGaps } from "./CapabilityGaps";
+import {
+  type CapabilityEvidence,
+  type CapabilityGapsAdmission,
+  admitCommittedCapabilityGaps,
+} from "./capabilityGaps";
 import { EvidenceLineage, type LineageVerifier } from "./EvidenceLineage";
 import { SnapshotDiffView } from "./SnapshotDiffView";
 import {
@@ -324,6 +330,7 @@ function AtlasAnswerView({
   verifyRecord,
   contextSuffix,
   draftOf,
+  gapsOf,
 }: {
   readonly answer: AtlasQueryAnswer;
   readonly focus: string | null;
@@ -339,6 +346,7 @@ function AtlasAnswerView({
   readonly verifyRecord: LineageVerifier;
   readonly contextSuffix: string;
   readonly draftOf: (node: AtlasNode) => ReactNode;
+  readonly gapsOf: (node: AtlasNode) => CapabilityEvidence | null;
 }) {
   const shown = shownSelection(answer, selection);
   const selectedNode =
@@ -346,6 +354,7 @@ function AtlasAnswerView({
       ? (answer.nodes.find((node) => node.id === shown.id) as AtlasNode)
       : null;
   const lineageRecord = selectedNode === null ? null : lineageOf(selectedNode);
+  const selectedEvidence = selectedNode === null ? null : gapsOf(selectedNode);
   const nodeIndex = (id: string): number => answer.nodes.findIndex((node) => node.id === id);
   const edgeIndex = (key: string): number =>
     answer.edges.findIndex((edge) => edgeKey(edge) === key);
@@ -520,6 +529,7 @@ function AtlasAnswerView({
           />
         ) : null}
         {selectedNode !== null ? draftOf(selectedNode) : null}
+        {selectedEvidence !== null ? <CapabilityGaps evidence={selectedEvidence} /> : null}
         {shown?.kind === "node" ? (
           <>
             <button type="button" onClick={() => onFocus(shown.id)}>
@@ -691,6 +701,7 @@ export default function AtlasView({
   workspace = null,
   draftHref = null,
   checkDraft = parameterEditorAdmits,
+  capabilityGaps = admitCommittedCapabilityGaps,
 }: {
   readonly instrument: string | null;
   readonly contextSuffix: string;
@@ -701,9 +712,11 @@ export default function AtlasView({
   readonly workspace?: AtlasWorkspaceSource | null;
   readonly draftHref?: string | null;
   readonly checkDraft?: AtlasDraftCheck;
+  readonly capabilityGaps?: () => CapabilityGapsAdmission;
 }) {
   const lens = lensOf(instrument);
   const admittedLineage = useMemo(() => lineage(), [lineage]);
+  const admittedGaps = useMemo(() => capabilityGaps(), [capabilityGaps]);
   const store = useSelectionStore();
   const shared = useSelectionState(store);
   const [session, setSession] = useState<AtlasSession | null>(null);
@@ -919,6 +932,11 @@ export default function AtlasView({
     admittedLineage.ok && (info?.origin === committedOrigin || overlaid)
       ? lineageRecordOf(admittedLineage.lineage, node)
       : null;
+  // The gap report, like the lineage, belongs to the committed snapshot.
+  const gapsOf = (node: AtlasNode): CapabilityEvidence | null =>
+    admittedGaps.ok && (info?.origin === committedOrigin || overlaid)
+      ? (admittedGaps.byNode.get(node.id) ?? null)
+      : null;
   // A link names the public pin; the private overlay is rebuilt from it and the workspace.
   const linkDigest = overlaid ? overlayPin.current : info === null ? null : info.digest;
   const mismatch =
@@ -987,6 +1005,7 @@ export default function AtlasView({
         {notice !== null ? <p role="alert">{notice}</p> : null}
         {overlayRefusal !== null ? <p role="alert">{overlayRefusal}</p> : null}
         {!admittedLineage.ok ? <p role="alert">{admittedLineage.reason}</p> : null}
+        {!admittedGaps.ok ? <p role="alert">{admittedGaps.reason}</p> : null}
       </section>
       <SnapshotDiffView open={linkDigest} />
       {!admittedFilter.ok ? (
@@ -1067,6 +1086,7 @@ export default function AtlasView({
               verifyRecord={verifyRecord}
               contextSuffix={contextSuffix}
               draftOf={draftOf}
+              gapsOf={gapsOf}
             />
           ) : null}
         </>
