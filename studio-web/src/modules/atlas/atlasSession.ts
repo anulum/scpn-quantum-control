@@ -294,11 +294,14 @@ export function openAtlasSession(
     : openOnMainThread(source, origin);
 }
 
+/** Origin of the snapshot committed with this build. */
+export const committedOrigin = "committed with this build";
+
 /**
  * Open the snapshot committed with this build.
  *
  * @returns The opening in progress.
  */
 export function openCommittedAtlasSession(): AtlasOpeningTask {
-  return openAtlasSession(pinText, "committed with this build");
+  return openAtlasSession(pinText, committedOrigin);
 }

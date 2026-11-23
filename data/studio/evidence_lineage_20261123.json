@@ -1,0 +1,2438 @@
+{
+  "claims": [
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Framework overlay evidence is installation reproducibility only; it is not GPU, provider, QPU, or performance evidence."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:515522b71c9bfb30eca7b08037e916bde4d987e16e10f2e618b057a4c9da3574",
+            "id": "scpn-quantum-control:claim-ledger:framework_overlay_parity"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Framework overlay evidence is installation reproducibility only; it is not GPU, provider, QPU, or performance evidence.",
+      "claim_id": "framework_overlay_parity",
+      "claim_text": "Optional JAX, PyTorch, TensorFlow CPU, and PennyLane parity is reproducible from an explicit overlay profile.",
+      "evidence": [
+        {
+          "artifact_id": "diff-qnode-framework-overlay-profile-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_manifest.json",
+              "sha256": "abec1f7734625add06bf2669ef812502df6b231e141fdb0686f7cddfdd7d9c57"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_framework_overlay_baseline_20260705/framework_overlay_manifest.json",
+              "sha256": "37dda22935fc4b353128a1f27cc9f75445c2cdbdd147eaac6fb2f5bfd83c962f"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/framework_overlay_manifest_pre_catalyst.json",
+              "sha256": "37dda22935fc4b353128a1f27cc9f75445c2cdbdd147eaac6fb2f5bfd83c962f"
+            }
+          ],
+          "role": "evidence",
+          "state": "ambiguous"
+        },
+        {
+          "artifact_id": "diff-qnode-framework-overlay-profile-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_manifest.json",
+              "sha256": "abec1f7734625add06bf2669ef812502df6b231e141fdb0686f7cddfdd7d9c57"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_framework_overlay_baseline_20260705/framework_overlay_manifest.json",
+              "sha256": "37dda22935fc4b353128a1f27cc9f75445c2cdbdd147eaac6fb2f5bfd83c962f"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/framework_overlay_manifest_pre_catalyst.json",
+              "sha256": "37dda22935fc4b353128a1f27cc9f75445c2cdbdd147eaac6fb2f5bfd83c962f"
+            }
+          ],
+          "role": "benchmark",
+          "state": "ambiguous"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "a264776c17f21cff6a199b59e80cd1dab3d9e716be56083c392c1be475abc03b"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Non-isolated artefacts support functional parity and regression tracking only, not production speed claims."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:c5a949d19a319d1c31a2603d729f5ae41e624a57e17d2405c66b19e9d99bd777",
+            "id": "scpn-quantum-control:claim-ledger:ci_benchmark_evidence"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Non-isolated artefacts support functional parity and regression tracking only, not production speed claims.",
+      "claim_id": "ci_benchmark_evidence",
+      "claim_text": "Differentiable Phase-QNode benchmark artefacts carry CI runner, isolation, load, governor, and artefact-ID metadata.",
+      "evidence": [
+        {
+          "artifact_id": "diff-qnode-ci-evidence-schema-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "cc33ef5ce749782c33f24746a35eb611b289caa0ef7bbf1d833da18b643d7561"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_framework_overlay_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "4e72c22bf8b81e7ae3542bc9131e3dee804b5c0dba3f78931de8dd0d8c7171e4"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "2441fdad5de4751789e2c71a1dfa724d472bff7d9b9120ac1b67f5f4c91d708d"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_observed_load_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "1f5f66d97770f764baa7bd39e103705e4d8022517d85fc3b83f0adf6eb57f2fe"
+            }
+          ],
+          "role": "evidence",
+          "state": "ambiguous"
+        },
+        {
+          "artifact_id": "diff-qnode-ci-evidence-schema-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "cc33ef5ce749782c33f24746a35eb611b289caa0ef7bbf1d833da18b643d7561"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_framework_overlay_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "4e72c22bf8b81e7ae3542bc9131e3dee804b5c0dba3f78931de8dd0d8c7171e4"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "2441fdad5de4751789e2c71a1dfa724d472bff7d9b9120ac1b67f5f4c91d708d"
+            },
+            {
+              "path": "data/differentiable_phase_qnode/ml350_observed_load_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json",
+              "sha256": "1f5f66d97770f764baa7bd39e103705e4d8022517d85fc3b83f0adf6eb57f2fe"
+            }
+          ],
+          "role": "benchmark",
+          "state": "ambiguous"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "79a56f816dfb46a4cc2f00b1b835c40019be0eba8915403dbfc64e736cd50b10"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "External comparison rows are bounded CPU diagnostic evidence only; they do not claim provider or QPU execution."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:14e210ca046b363517e420318d67b0542a8745b6d2c14a9aecdabe163cb55679",
+            "id": "scpn-quantum-control:claim-ledger:external_framework_comparison"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "External comparison rows are bounded CPU diagnostic evidence only; they do not claim provider or QPU execution.",
+      "claim_id": "external_framework_comparison",
+      "claim_text": "The bounded Phase-QNode objective has explicit comparison rows for JAX, PyTorch, TensorFlow, PennyLane, optional Enzyme, and optional Catalyst.",
+      "evidence": [
+        {
+          "artifact_id": "diff-qnode-external-comparison-schema-v1",
+          "candidates": [],
+          "role": "evidence",
+          "state": "missing"
+        },
+        {
+          "artifact_id": "diff-qnode-external-comparison-schema-v1",
+          "candidates": [],
+          "role": "benchmark",
+          "state": "missing"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "1804615a0028ba3bc3c9db079c86f4dcd7a7dc290def13f1673bb1a8fa110e41"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 9,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 10,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 11,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 12,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 13,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 14,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 15,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 16,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 17,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 18,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Bounded Phase-QNode differentiable execution only; PyTorch compile-boundary diagnostics do not promote dynamic-shape, fullgraph, AOTAutograd/export, provider, QPU, or production performance claims."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:184512b146e7164a98b5474df91a258b3fcb86cb9ca5cc57bebb030d68fa7bd3",
+            "id": "scpn-quantum-control:claim-ledger:phase_qnode_claim_boundary"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Bounded Phase-QNode differentiable execution only; PyTorch compile-boundary diagnostics do not promote dynamic-shape, fullgraph, AOTAutograd/export, provider, QPU, or production performance claims.",
+      "claim_id": "phase_qnode_claim_boundary",
+      "claim_text": "Phase-QNode public wording remains bounded to artefact-backed differentiable execution and does not promote broad framework or hardware claims.",
+      "evidence": [
+        {
+          "artifact_id": "diff-qnode-claim-ledger-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/claim_ledger.json",
+              "sha256": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-qnode-claim-ledger-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/claim_ledger.json",
+              "sha256": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "ea9866cc09111dc88e03788f9e832c9c4fcf0167279820d3dd823c22e4972b54"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 9,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Support-surface alignment only; verifies implementation, tests, docs, and generated inventory without promoting performance, provider, or QPU claims."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:99623e1d09fc8c4ec3d43e252bffb12464c1b4efe06201cbfffb026b4898d515",
+            "id": "scpn-quantum-control:claim-ledger:support_surface_alignment"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Support-surface alignment only; verifies implementation, tests, docs, and generated inventory without promoting performance, provider, or QPU claims.",
+      "claim_id": "support_surface_alignment",
+      "claim_text": "Differentiable claim-ledger rows are checked against existing implementation, test, docs, and generated capability-manifest surfaces.",
+      "evidence": [
+        {
+          "artifact_id": "diff-support-surface-alignment-audit-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+              "sha256": "7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-support-surface-alignment-audit-v1",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+              "sha256": "7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "25d5fcbff7b5e8a76f2d8f70117d22764fa9a9b7075c5a7fac1c5c9c175a64eb"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Per-slice hardening governance only; no provider execution, QPU execution, accelerator execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:c507f8aec897b5a844cb80f1ef0b2bc9b4704d382254afa89f5f8211d60f5a7c",
+            "id": "scpn-quantum-control:claim-ledger:hardening_slice_gate"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Per-slice hardening governance only; no provider execution, QPU execution, accelerator execution, or production benchmark promotion is implied.",
+      "claim_id": "hardening_slice_gate",
+      "claim_text": "Every differentiable hardening slice has a typed checklist for focused Ruff, mypy, module-specific pytest, test-quality audit, claim-ledger validation, and benchmark-evidence classification checks.",
+      "evidence": [
+        {
+          "artifact_id": "diff-hardening-slice-gate-v1",
+          "candidates": [],
+          "role": "evidence",
+          "state": "missing"
+        },
+        {
+          "artifact_id": "diff-hardening-slice-gate-v1",
+          "candidates": [],
+          "role": "benchmark",
+          "state": "missing"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "72d0a4a91be2165c0c2f0802d76cebc02f028c2a25c8572f030a9f3ca4f72e76"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Module-hardening governance only; no provider execution, QPU execution, full formal proof, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:fb61b168243fe60f37f2bef2d263133156b0371446cb504badc5a74e2d937d9e",
+            "id": "scpn-quantum-control:claim-ledger:module_hardening_audit"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Module-hardening governance only; no provider execution, QPU execution, full formal proof, or production benchmark promotion is implied.",
+      "claim_id": "module_hardening_audit",
+      "claim_text": "Differentiable-programming modules are audited against the live module inventory, module-specific test surfaces, and declared fail-closed diagnostic surfaces before promotion.",
+      "evidence": [
+        {
+          "artifact_id": "diff-module-hardening-audit-v1",
+          "candidates": [],
+          "role": "evidence",
+          "state": "missing"
+        },
+        {
+          "artifact_id": "diff-module-hardening-audit-v1",
+          "candidates": [],
+          "role": "benchmark",
+          "state": "missing"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "88cff56c099bdeed3e0be4b1373acfd643a9fbf5169d12e7ab3152029d36dce2"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "External-validation environment lockfiles support reviewer reproduction only; they do not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:5f8811844ea6cc5e4742327c09c27e5214a08f70a04a9c078a49034a8eca6ae8",
+            "id": "scpn-quantum-control:claim-ledger:external_validation_environment_lock"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "External-validation environment lockfiles support reviewer reproduction only; they do not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+      "claim_id": "external_validation_environment_lock",
+      "claim_text": "The differentiable external-validation package has exact environment lockfile checksums for runtime, development, CI, framework overlay, and Enzyme runner reproduction.",
+      "evidence": [
+        {
+          "artifact_id": "differentiable-external-validation-environment-manifest-20260616",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
+              "sha256": "38ec47fb0e8a85dfe1fbc4e179e051ce8236ca39b24098f9676d186f24c5926c"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "differentiable-external-validation-environment-manifest-20260616",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
+              "sha256": "38ec47fb0e8a85dfe1fbc4e179e051ce8236ca39b24098f9676d186f24c5926c"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "104b161f7124aac32ef9d07479f27cc6666c7cb4416614980a75796780076ce6"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 9,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Public claim table governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:27ad9c930fc431854559a8eca171bc9a6c20551a29524c2988986eac043e44f7",
+            "id": "scpn-quantum-control:claim-ledger:public_claim_table"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Public claim table governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied.",
+      "claim_id": "public_claim_table",
+      "claim_text": "The differentiable lane exposes a public-safe claim table generated from the committed ledger.",
+      "evidence": [
+        {
+          "artifact_id": "diff-public-claim-table-20260616",
+          "candidates": [],
+          "role": "evidence",
+          "state": "missing"
+        },
+        {
+          "artifact_id": "diff-public-claim-table-20260616",
+          "candidates": [],
+          "role": "benchmark",
+          "state": "missing"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "bd28ed088493e533698ceecc643397015145f80d930edbaa922d2a899e34d388"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "External-validation artefact-bundle governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:8343897f4a5c9241169a535d9a4a98b9909c1a73f0523be53fbd9516f3ca69ae",
+            "id": "scpn-quantum-control:claim-ledger:external_validation_artifact_bundle"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "External-validation artefact-bundle governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied.",
+      "claim_id": "external_validation_artifact_bundle",
+      "claim_text": "The differentiable external-validation package has a reproducible manifest over committed evidence artefacts.",
+      "evidence": [
+        {
+          "artifact_id": "diff-external-validation-artifact-bundle-20260616",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
+              "sha256": "5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-external-validation-artifact-bundle-20260616",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
+              "sha256": "5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "b2ac975d08ec06d1c59ed0505afa3b6924cda3ed1a1f500e33bd245acaac6254"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Technical-report governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:6f366f6bc292260f13fae8481d1415e4c3160f2fe21949259a4a3833ed6bc98b",
+            "id": "scpn-quantum-control:claim-ledger:external_validation_technical_report"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Technical-report governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied.",
+      "claim_id": "external_validation_technical_report",
+      "claim_text": "The differentiable lane has a public technical report summarizing comparison evidence, reproducibility artefacts, provider-family status, and promotion blockers.",
+      "evidence": [
+        {
+          "artifact_id": "diff-external-validation-technical-report-20260616",
+          "candidates": [],
+          "role": "evidence",
+          "state": "missing"
+        },
+        {
+          "artifact_id": "diff-external-validation-technical-report-20260616",
+          "candidates": [],
+          "role": "benchmark",
+          "state": "missing"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "bb248049ab6e27880def35e377b54bf0490686cdcdd53e27dc8eb32a65596b7e"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Differentiable baseline scorecard governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:ad3ee006e6a19f2608fd1866e1ab0bd3930bd0967f99685df228defa0800b3f9",
+            "id": "scpn-quantum-control:claim-ledger:differentiable_baseline_scorecard"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Differentiable baseline scorecard governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied.",
+      "claim_id": "differentiable_baseline_scorecard",
+      "claim_text": "The differentiable lane has a deterministic category scorecard that keeps promotion blocked until external baselines, promoted claim-ledger rows, and isolated benchmark evidence agree.",
+      "evidence": [
+        {
+          "artifact_id": "diff-baseline-scorecard-20260620",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json",
+              "sha256": "8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-baseline-scorecard-20260620",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json",
+              "sha256": "8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "d7b1f43d2cf3c23513cc64e2c2303a8573d78295c249cd3bb132bca2b40fb474"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Differentiable Rust/Python inventory governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:eece13f885c3e42da2f6f867628c4be025cbec985580a88b221ae17a2207b010",
+            "id": "scpn-quantum-control:claim-ledger:differentiable_rust_python_inventory"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Differentiable Rust/Python inventory governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied.",
+      "claim_id": "differentiable_rust_python_inventory",
+      "claim_text": "The differentiable lane has a deterministic Rust/Python surface inventory that classifies rustification, polyglot, provider, hardware, compiler, metadata, and deprecation states before broad Rust migration.",
+      "evidence": [
+        {
+          "artifact_id": "diff-rust-python-inventory-20260620",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
+              "sha256": "fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-rust-python-inventory-20260620",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
+              "sha256": "fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "adf88f0cd4ae44925db7c19427023e0dd351aa4a4d2992f5223502802a008851"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 9,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 10,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 11,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 12,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Differentiable architecture and Rustification routing governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:46296b935bf485a316f218e0ec6faf5b9c7a80fc38d742d5fdb32a8ea822ef30",
+            "id": "scpn-quantum-control:claim-ledger:differentiable_architecture_rustification_map"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Differentiable architecture and Rustification routing governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied.",
+      "claim_id": "differentiable_architecture_rustification_map",
+      "claim_text": "The differentiable lane has a deterministic architecture and Rustification routing map that links public API, QNode bridge, Program AD, compiler/native, provider/hardware, and benchmark/claim-governance layers to existing inventory and scorecard evidence.",
+      "evidence": [
+        {
+          "artifact_id": "diff-architecture-rustification-map-20260627",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+              "sha256": "6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-architecture-rustification-map-20260627",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+              "sha256": "6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "12f60ac6793bee8374d7124378bf8b7bde60b164d6d3e931ccc9e3c3e365d47b"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 9,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 10,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 11,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Differentiable dependency and environment map governance only; no dependency promotion, framework parity promotion, Enzyme promotion, provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:7d11504d30221d0894ecb811716f47e642fdc35988508fce8a9fc39c1dea0b92",
+            "id": "scpn-quantum-control:claim-ledger:differentiable_dependency_environment_map"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Differentiable dependency and environment map governance only; no dependency promotion, framework parity promotion, Enzyme promotion, provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied.",
+      "claim_id": "differentiable_dependency_environment_map",
+      "claim_text": "The differentiable lane has a deterministic dependency and environment evidence map that groups runtime, development, CI Python matrix, CPU framework overlay, and Enzyme runner lock profiles before dependency or benchmark promotion.",
+      "evidence": [
+        {
+          "artifact_id": "diff-dependency-environment-map-20260627",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
+              "sha256": "7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-dependency-environment-map-20260627",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
+              "sha256": "7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "80fdcad28086c01af1f2062e48ca49325a0898f2fa8f73124c228f62384afa8d"
+    },
+    {
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 1,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 2,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 3,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 4,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 5,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 6,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 7,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 8,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 9,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 10,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 11,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 12,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 13,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 14,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 15,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          },
+          {
+            "dimension": 16,
+            "operation_family": "claim-ledger-surface",
+            "status": "present"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-model",
+          "validity_domain": {
+            "note": "Differentiable isolated benchmark batch planning governance only; no isolated_affinity evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied."
+          }
+        },
+        "evidence_kind": "curated",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "differentiable-claim-ledger",
+          "reference_backend": "committed-ledger-json"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python -m scpn_quantum_control.studio.evidence_bundle --claim-ledger",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "validate"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:d9491468e601503ab656f6b7d82f91ba76e39e5b5dc740d1414f1efaea569b23",
+            "id": "scpn-quantum-control:claim-ledger:differentiable_isolated_benchmark_plan"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.evidence-replay.v1",
+        "scpn_evidence_level": 1,
+        "substrate": "numerical-model"
+      },
+      "certification": {
+        "reason": "no reference-validation certification is committed for this claim",
+        "state": "absent"
+      },
+      "claim_boundary": "Differentiable isolated benchmark batch planning governance only; no isolated_affinity evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "claim_id": "differentiable_isolated_benchmark_plan",
+      "claim_text": "The differentiable lane has a deterministic reserved-host isolated benchmark batch plan over the current non-isolated benchmark and evidence artefacts before any benchmark promotion.",
+      "evidence": [
+        {
+          "artifact_id": "diff-isolated-benchmark-plan-20260627",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json",
+              "sha256": "70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266"
+            }
+          ],
+          "role": "evidence",
+          "state": "resolved"
+        },
+        {
+          "artifact_id": "diff-isolated-benchmark-plan-20260627",
+          "candidates": [
+            {
+              "path": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json",
+              "sha256": "70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266"
+            }
+          ],
+          "role": "benchmark",
+          "state": "resolved"
+        }
+      ],
+      "promotion_status": "bounded_candidate",
+      "record_digest": "367ceeea7fe63370e642340346ac7eaf7f453c044987ff00873a234c4e96d723"
+    }
+  ],
+  "packs": [
+    {
+      "artefacts": [
+        {
+          "bytes": 45413,
+          "custody": "digest-matches",
+          "path": "data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+          "recorded_sha256": "dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 88263,
+          "custody": "digest-matches",
+          "path": "data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+          "recorded_sha256": "cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 167645,
+          "custody": "digest-matches",
+          "path": "data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+          "recorded_sha256": "43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 87873,
+          "custody": "digest-matches",
+          "path": "data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json",
+          "recorded_sha256": "69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 5801,
+          "custody": "digest-matches",
+          "path": "figures/phase1/phase1_dla_parity_summary.json",
+          "recorded_sha256": "cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9",
+          "role": "reproduced_summary"
+        }
+      ],
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 45413,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 88263,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 167645,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 87873,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 5801,
+            "operation_family": "hardware-result-pack:reproduced_summary",
+            "status": "bounded-support"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-support"
+        },
+        "derived_from": [
+          {
+            "entity_digest": "sha256:dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          }
+        ],
+        "evidence_kind": "measured",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "ibm_kingston",
+          "reference_backend": "committed-raw-counts"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python scripts/analyse_phase1_dla_parity.py",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "execute"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:61b4f84742a9fd411b13ba5b1a98e5fdb2fd548dcd71e11921101592393c02bc",
+            "id": "scpn-quantum-control:hardware-result-pack:phase1_dla_parity_ibm_kingston_2026_04"
+          }
+        },
+        "recompute_environment": {
+          "available": true,
+          "toolchain": {
+            "command": "python scripts/analyse_phase1_dla_parity.py"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.hardware-result-pack.v1",
+        "scpn_evidence_level": 2,
+        "substrate": "hardware-unmitigated"
+      },
+      "claim_scope": "Supports the n=4 Phase 1 DLA parity asymmetry observation from committed raw counts and the published analysis table.",
+      "id": "phase1_dla_parity_ibm_kingston_2026_04",
+      "job_ids": [
+        "ibm-run-ecf490aec9c2405b",
+        "ibm-run-b9141dcd7f32c9d8",
+        "ibm-run-15d0c46dff8797b3",
+        "ibm-run-dd41a90491e86f89",
+        "ibm-run-763b5f0212c5d3d2"
+      ],
+      "manifest_status": "promoted_raw_count_evidence",
+      "non_claims": [
+        "broad quantum advantage",
+        "monotone scaling validation",
+        "GUESS mitigation validation",
+        "multi-device replication"
+      ],
+      "record_digest": "122e10860b76781ecea383677460d958cb86a506d6a25e648f3dba5e36d77c6c",
+      "title": "Phase 1 DLA parity raw-count observation on ibm_kingston"
+    },
+    {
+      "artefacts": [
+        {
+          "bytes": 589381,
+          "custody": "digest-matches",
+          "path": "data/phase2_dla_parity/phase2_reduced_ag_2026-05-05T121357Z.json",
+          "recorded_sha256": "8f1db016de49dd36d33c8d462bd64a7c3cbda44cca5557314ab97a4f6cd6c6b9",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 5347,
+          "custody": "digest-matches",
+          "path": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+          "recorded_sha256": "a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980",
+          "role": "reproduced_summary"
+        }
+      ],
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 589381,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 5347,
+            "operation_family": "hardware-result-pack:reproduced_summary",
+            "status": "bounded-support"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-support"
+        },
+        "derived_from": [
+          {
+            "entity_digest": "sha256:8f1db016de49dd36d33c8d462bd64a7c3cbda44cca5557314ab97a4f6cd6c6b9",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          }
+        ],
+        "evidence_kind": "measured",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "ibm_kingston",
+          "reference_backend": "committed-raw-counts"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python scripts/analyse_phase2_dla_parity.py --verify-integrity",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "execute"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:c78e3b6cae73e4f747770f8da4715b9eadc2f7f67d4c502671b5f43f0ccb4368",
+            "id": "scpn-quantum-control:hardware-result-pack:phase2_dla_parity_ag_ibm_kingston_2026_05_05"
+          }
+        },
+        "recompute_environment": {
+          "available": true,
+          "toolchain": {
+            "command": "python scripts/analyse_phase2_dla_parity.py --verify-integrity"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.hardware-result-pack.v1",
+        "scpn_evidence_level": 2,
+        "substrate": "hardware-unmitigated"
+      },
+      "claim_scope": "Supports the reduced n=4 A+G replication and readout-control claim only.",
+      "id": "phase2_dla_parity_ag_ibm_kingston_2026_05_05",
+      "job_ids": [
+        "ibm-run-7da8644af35021fb",
+        "ibm-run-6f9990bba1d90a12"
+      ],
+      "manifest_status": "promoted_raw_count_evidence",
+      "non_claims": [
+        "broad quantum advantage",
+        "n=6-12 scaling validation",
+        "GUESS mitigation validation",
+        "frontier promotion"
+      ],
+      "record_digest": "aa356562b38e3684227da7ff452040136580ba16fa31ff5b8f41286bb063bc30",
+      "title": "Phase 2 reduced A+G DLA parity replication on ibm_kingston"
+    },
+    {
+      "artefacts": [
+        {
+          "bytes": 944830,
+          "custody": "digest-matches",
+          "path": "data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json",
+          "recorded_sha256": "06d879f64ccd48cadafdc73d56085132e575cdc8e868fad9d04ef3739907628a",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 3462,
+          "custody": "digest-matches",
+          "path": "data/phase2_scaling_bc/phase2_scaling_bc_summary_2026-05-05.json",
+          "recorded_sha256": "82d3c52f1c41fbdb0381219eee9aca3f7effe8397a495cfd738d36ef0ae955f2",
+          "role": "reproduced_summary"
+        }
+      ],
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 944830,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 3462,
+            "operation_family": "hardware-result-pack:reproduced_summary",
+            "status": "bounded-support"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-support"
+        },
+        "derived_from": [
+          {
+            "entity_digest": "sha256:06d879f64ccd48cadafdc73d56085132e575cdc8e868fad9d04ef3739907628a",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:82d3c52f1c41fbdb0381219eee9aca3f7effe8397a495cfd738d36ef0ae955f2",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          }
+        ],
+        "evidence_kind": "measured",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "ibm_kingston",
+          "reference_backend": "committed-raw-counts"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python scripts/analyse_phase2_scaling_bc.py data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json --sha256 f9718c3789329dbaa96a1667f8a581e3d1774632b961a1760c044138ccab6550",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "execute"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:d19d072f1842f2df2130f1127d76f71aed3ebca61d4a11bbd13d9987fbe9daa0",
+            "id": "scpn-quantum-control:hardware-result-pack:phase2_scaling_bc_ibm_kingston_2026_05_05"
+          }
+        },
+        "recompute_environment": {
+          "available": true,
+          "toolchain": {
+            "command": "python scripts/analyse_phase2_scaling_bc.py data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json --sha256 f9718c3789329dbaa96a1667f8a581e3d1774632b961a1760c044138ccab6550"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.hardware-result-pack.v1",
+        "scpn_evidence_level": 2,
+        "substrate": "hardware-unmitigated"
+      },
+      "claim_scope": "Supports mixed B-C scaling evidence and explicitly falsifies a simple monotone scaling story.",
+      "id": "phase2_scaling_bc_ibm_kingston_2026_05_05",
+      "job_ids": [
+        "ibm-run-1f46ebd0da8912ff"
+      ],
+      "manifest_status": "promoted_mixed_raw_count_evidence",
+      "non_claims": [
+        "monotone scaling validation",
+        "broad quantum advantage",
+        "GUESS mitigation validation",
+        "frontier promotion"
+      ],
+      "record_digest": "c0766ab97ac3a4b234d95a3cf6e5641e3a2aa1e84422aa98d38f8caf03244e3d",
+      "title": "Phase 2 B-C mixed scaling run on ibm_kingston"
+    },
+    {
+      "artefacts": [
+        {
+          "bytes": 399642,
+          "custody": "digest-matches",
+          "path": "data/phase2_popcount_control/phase2_popcount_control_2026-05-05T135318Z.json",
+          "recorded_sha256": "ff3e0554cd2245665534591a73898fe3bab47b2a9e44a988d4de9360da3c6925",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 20130,
+          "custody": "digest-matches",
+          "path": "data/phase2_popcount_control/phase2_popcount_control_summary_2026-05-05.json",
+          "recorded_sha256": "8d58536519c9a410fa3a35b03642d94377f752f83338ed28c5e4a0dcc00b2b95",
+          "role": "reproduced_summary"
+        }
+      ],
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 399642,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 20130,
+            "operation_family": "hardware-result-pack:reproduced_summary",
+            "status": "bounded-support"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-support"
+        },
+        "derived_from": [
+          {
+            "entity_digest": "sha256:ff3e0554cd2245665534591a73898fe3bab47b2a9e44a988d4de9360da3c6925",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:8d58536519c9a410fa3a35b03642d94377f752f83338ed28c5e4a0dcc00b2b95",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          }
+        ],
+        "evidence_kind": "measured",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "ibm_kingston",
+          "reference_backend": "committed-raw-counts"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python scripts/analyse_phase2_popcount_control.py --verify-integrity",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "execute"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:5e9a613c48586983c8deb1ea5d1445e4fe789bf0b53ff94d13e568c2815f7b10",
+            "id": "scpn-quantum-control:hardware-result-pack:phase2_popcount_control_ibm_kingston_2026_05_05"
+          }
+        },
+        "recompute_environment": {
+          "available": true,
+          "toolchain": {
+            "command": "python scripts/analyse_phase2_popcount_control.py --verify-integrity"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.hardware-result-pack.v1",
+        "scpn_evidence_level": 2,
+        "substrate": "hardware-unmitigated"
+      },
+      "claim_scope": "Tests the excitation-count confound in the DLA parity leakage experiment.",
+      "id": "phase2_popcount_control_ibm_kingston_2026_05_05",
+      "job_ids": [
+        "ibm-run-7d468e2b1e44b406",
+        "ibm-run-b3424c38cfe03c86"
+      ],
+      "manifest_status": "promoted_control_raw_count_evidence",
+      "non_claims": [
+        "broad quantum advantage",
+        "monotone scaling validation",
+        "GUESS mitigation validation",
+        "multi-device replication"
+      ],
+      "record_digest": "489342a4c5a422c19f23754b48c2f28e1348d24dec61bca3483f43bcbaeec6e2",
+      "title": "Phase 2 excitation-count control on ibm_kingston"
+    },
+    {
+      "artefacts": [
+        {
+          "bytes": 90433,
+          "custody": "digest-matches",
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+          "recorded_sha256": "109d23a2ac984b82ac96734d973fe4fd039f13e4348d8556bea548cecb89d82c",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 58701,
+          "custody": "digest-matches",
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+          "recorded_sha256": "69df107be28459e0911245fff8cd5b4aa45bf6dd1f20e2f8abeebe74092e8578",
+          "role": "reproduced_analysis"
+        },
+        {
+          "bytes": 268339,
+          "custody": "digest-matches",
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json",
+          "recorded_sha256": "13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2",
+          "role": "raw_counts"
+        },
+        {
+          "bytes": 146390,
+          "custody": "digest-matches",
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json",
+          "recorded_sha256": "abf41e74c1f3ffbd6e44a1217415c9717b4171465713f15bd5f3a54e6a0b37e0",
+          "role": "reproduced_analysis"
+        },
+        {
+          "bytes": 140915,
+          "custody": "digest-matches",
+          "path": "data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_ibm-run-cf4835290f607387.json",
+          "recorded_sha256": "2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517",
+          "role": "mitigation_summary"
+        }
+      ],
+      "bundle": {
+        "cases": [
+          {
+            "dimension": 90433,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 58701,
+            "operation_family": "hardware-result-pack:reproduced_analysis",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 268339,
+            "operation_family": "hardware-result-pack:raw_counts",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 146390,
+            "operation_family": "hardware-result-pack:reproduced_analysis",
+            "status": "bounded-support"
+          },
+          {
+            "dimension": 140915,
+            "operation_family": "hardware-result-pack:mitigation_summary",
+            "status": "bounded-support"
+          }
+        ],
+        "claim_boundary": {
+          "admission": "admitted",
+          "status": "bounded-support"
+        },
+        "derived_from": [
+          {
+            "entity_digest": "sha256:109d23a2ac984b82ac96734d973fe4fd039f13e4348d8556bea548cecb89d82c",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:69df107be28459e0911245fff8cd5b4aa45bf6dd1f20e2f8abeebe74092e8578",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:abf41e74c1f3ffbd6e44a1217415c9717b4171465713f15bd5f3a54e6a0b37e0",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          },
+          {
+            "entity_digest": "sha256:2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517",
+            "kind": "evidence",
+            "studio": "scpn-quantum-control"
+          }
+        ],
+        "evidence_kind": "measured",
+        "freshness": "traceable-unchecked",
+        "numeric_provenance": {
+          "active_backend": "ibm_kingston",
+          "reference_backend": "committed-raw-counts"
+        },
+        "prov": {
+          "activity": {
+            "ended": "2026-06-26T00:00:00Z",
+            "regenerated_by": "python scripts/analyse_fim_ibm_pilot.py && python scripts/analyse_fim_ibm_repeated_followup.py && python scripts/analyse_fim_readout_matrix_mitigation.py",
+            "started": "2026-06-26T00:00:00Z",
+            "studio": "scpn-quantum-control",
+            "verb": "execute"
+          },
+          "agent": {
+            "operator": "scpn-quantum-control/studio-emitter"
+          },
+          "entity": {
+            "digest": "sha256:fa3fd9fcd563c45e80674da3cd904e8d75425219e0954e78e91c5dbbef874ccf",
+            "id": "scpn-quantum-control:hardware-result-pack:scpn_fim_negative_ibm_kingston_2026_05_05"
+          }
+        },
+        "recompute_environment": {
+          "available": true,
+          "toolchain": {
+            "command": "python scripts/analyse_fim_ibm_pilot.py && python scripts/analyse_fim_ibm_repeated_followup.py && python scripts/analyse_fim_readout_matrix_mitigation.py"
+          }
+        },
+        "ro_crate_profile": "scpn-studio/0.1",
+        "schema": "studio.hardware-result-pack.v1",
+        "scpn_evidence_level": 2,
+        "substrate": "hardware-unmitigated"
+      },
+      "claim_scope": "Supports the negative result for simple digital lambda=4 FIM hardware protection on the tested circuit family.",
+      "id": "scpn_fim_negative_ibm_kingston_2026_05_05",
+      "job_ids": [
+        "ibm-run-4c0bd60c3fc2c532",
+        "ibm-run-cf4835290f607387"
+      ],
+      "manifest_status": "promoted_negative_result",
+      "non_claims": [
+        "hardware coherence protection in general",
+        "biological FIM validation",
+        "therapeutic or clinical claim",
+        "broad quantum advantage"
+      ],
+      "record_digest": "c642f5888b0e5ece7a2fe6134e80598fbb25bbca4a17fcd98cfe8ce12cc689c8",
+      "title": "SCPN/FIM ibm_kingston pilot and repeated follow-up negative result"
+    }
+  ],
+  "replications": [
+    {
+      "alpha": 0.05,
+      "campaign": "iqm_dla_d10_retest_prereg_2026-07-22",
+      "decision": {
+        "field": "negative_sign_replicates",
+        "value": false
+      },
+      "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero",
+      "job_ids": [
+        "019f8809-42d7-7b53-8284-fda06fcc9e7b",
+        "019f8809-448d-7fe0-9eff-3c255477655a"
+      ],
+      "kind": "primary_decision_rule",
+      "path": "data/iqm_paper_replication/iqm_dla_d10_retest_primary_analysis_2026-07-22.json",
+      "record_digest": "b5660809e163066d6d95f05831e3350043d3ed09e1f39b0df46330b66dd47e53",
+      "section": "primary_sign_replication",
+      "sha256": "442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be"
+    }
+  ],
+  "schema": "scpn_qc_studio_evidence_lineage_v1"
+}

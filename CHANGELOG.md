@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Atlas inspector shows the evidence lineage of a claim, a hardware result
+  pack or a replication analysis. Every source-owned status is shown verbatim.
+  - Claims show their ledger status, bundle axes and certificate or its absence.
+    Each declared evidence identifier is resolved, ambiguous or missing.
+  - Packs show their manifest status beside their bundle and the custody of each
+    file. A failed replication is searchable by its decision.
+  - `scpn_quantum_control.studio.evidence_lineage` builds the lineage, and
+    `tools/studio_evidence_lineage.py` writes and checks
+    `data/studio/evidence_lineage_20261123.json`.
+  - The Atlas extractor now links packs to their files, and claims to evidence
+    that resolves to exactly one file.
+  - The `atlas_evidence_lineage` browser journey checks it in Chromium.
+
 - The Studio's Atlas stage now browses the committed Atlas snapshot. Before,
   it showed an unavailable notice.
   - The browser verifies the snapshot against its contract and its recorded

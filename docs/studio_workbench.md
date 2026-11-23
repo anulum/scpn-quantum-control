@@ -1843,7 +1843,8 @@ an artefact describes, and it loads no numerical or quantum runtime.
 |---|---|---|
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` (required) | `architecture_map` | Each layer becomes a capability. Its implementation files `implements` it, its test files are `contains`-ed by it, and its documentation files `documents` it. |
 | `data/differentiable_phase_qnode/claim_ledger.json` | `claim_ledger` | Each claim becomes a claim node. It `derives_from` its implementation files, and its documentation `documents` it. |
-| `data/hardware_result_packs/manifest.json` | `hardware_result_packs` | Each pack becomes a content-addressed artefact. No support edge is derived from it. |
+| `data/hardware_result_packs/manifest.json` | `hardware_result_packs` | Each pack becomes a content-addressed artefact that `derives_from` each of its raw-count, summary and analysis files, by their recorded digests. No support edge is derived from it. |
+| `data/studio/evidence_lineage_20261123.json` | `evidence_lineage` | A claim `derives_from` each evidence file its identifier resolves to exactly once. An ambiguous or missing identifier becomes an exclusion. Each replication analysis becomes an artefact whose label states its decision. |
 
 Provenance follows the inputs:
 - Every input is an artefact bound to its content digest.
@@ -2030,6 +2031,36 @@ checks the stage in Chromium:
   and its worker closed, then the same pin admitted and queried in a worker;
 - that no main-thread task reaches 250 ms while that pin is open;
 - that leaving the stage stops the worker.
+
+### Evidence lineage
+
+Selecting a claim, a hardware result pack or a replication analysis in the Atlas
+opens its **evidence lineage** in the inspector. The lineage is committed with
+the build (`data/studio/evidence_lineage_20261123.json`).
+`python tools/studio_evidence_lineage.py --write` writes it from its source
+owners, and `--check` keeps it current. Every status is its owner's, shown
+verbatim; none is merged, raised or relabelled.
+
+| Record | What it shows |
+|---|---|
+| Claim | The ledger `promotion_status` and the schema-B bundle of `scpn_quantum_control.studio.evidence_bundle`, with its claim status, admission, evidence kind, substrate and freshness. It also shows the reference-validation certificate or why there is none, and each declared evidence identifier: *resolved* to one committed file with its sha256, *ambiguous* with every candidate, or *missing custody*. |
+| Hardware result pack | The manifest `status` beside the bundle's claim status, the scope and non-claims, the provider jobs, and each raw-count, summary and analysis file with its recorded digest and the custody of the committed file. |
+| Replication analysis | Its decision field verbatim, for example `negative_sign_replicates = false`, with the analysis file and its sha256. The Atlas search finds it by that text. |
+
+A claim whose bundle says `reference-validated` without a committed certificate
+is refused when the lineage is admitted, so no view can show it as validated.
+**Verify lineage record** recomputes the record's canonical digest
+(`scpn_qc_studio_evidence_lineage_record_v1`) in the browser. It proves the
+record shown is the record the builder wrote, and nothing about the science. A
+verdict that arrives after the selection changed is discarded. The lineage
+belongs to the committed snapshot; another opened pin shows none.
+
+The journey `atlas_evidence_lineage` checks this in Chromium:
+- an unvalidated claim keeps its statuses;
+- its record verifies, and its exact hashes and missing custody are shown;
+- the negative pack shows both statuses;
+- the failed replication is found by search;
+- the panel passes the accessibility audit at desktop and mobile width.
 
 ## Evidence inspector
 

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **896 modules** across **42 package families**
-- **4811 documented public module-level symbols**
+- **897 modules** across **42 package families**
+- **4816 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5702,6 +5702,16 @@ Emit schema-B STUDIO evidence bundles from QUANTUM ledgers.
 **Classes:** `StudioBundleValidation`
 
 **Functions:** `evidence_axes()`, `build_claim_ledger_bundle()`, `build_claim_ledger_bundles()`, `build_hardware_result_pack_bundle()`, `build_hardware_result_pack_bundles()`, `validate_bundle()`, `validate_bundles()`
+
+### `scpn_quantum_control.studio.evidence_lineage`
+
+Join claims, hardware result packs and replication analyses into one evidence lineage.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/evidence_lineage.py) · Public symbols: **5**
+
+**Classes:** `ReplicationSource`
+
+**Functions:** `sealed_record()`, `portable_bundle()`, `artifact_index()`, `build_evidence_lineage()`
 
 ### `scpn_quantum_control.studio.executive`
 

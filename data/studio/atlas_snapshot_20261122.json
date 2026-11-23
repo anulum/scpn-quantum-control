@@ -8,6 +8,214 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:0f907c19aa9ed47a72c22c44811cedbd6a2c1a42e168a15d4e1f792ced5c67cf",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:8f1db016de49dd36d33c8d462bd64a7c3cbda44cca5557314ab97a4f6cd6c6b9"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:0f907c19aa9ed47a72c22c44811cedbd6a2c1a42e168a15d4e1f792ced5c67cf",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:6a2f8a7064bb428d88ad5eb1d849bac59391fdc3b41612fd7d36bec1f401482c",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:06d879f64ccd48cadafdc73d56085132e575cdc8e868fad9d04ef3739907628a"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:6a2f8a7064bb428d88ad5eb1d849bac59391fdc3b41612fd7d36bec1f401482c",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:82d3c52f1c41fbdb0381219eee9aca3f7effe8397a495cfd738d36ef0ae955f2"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:b01bc2a54da779f2af61d06f0ce98fbf8520f27b2d2a90ccefa5ce7c539b6540",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:109d23a2ac984b82ac96734d973fe4fd039f13e4348d8556bea548cecb89d82c"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:b01bc2a54da779f2af61d06f0ce98fbf8520f27b2d2a90ccefa5ce7c539b6540",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:b01bc2a54da779f2af61d06f0ce98fbf8520f27b2d2a90ccefa5ce7c539b6540",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:b01bc2a54da779f2af61d06f0ce98fbf8520f27b2d2a90ccefa5ce7c539b6540",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:69df107be28459e0911245fff8cd5b4aa45bf6dd1f20e2f8abeebe74092e8578"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:b01bc2a54da779f2af61d06f0ce98fbf8520f27b2d2a90ccefa5ce7c539b6540",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:abf41e74c1f3ffbd6e44a1217415c9717b4171465713f15bd5f3a54e6a0b37e0"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:cd52a023b4fcc2c4753a42e45dd8ca08dc6b82747b1cbf5867d8d0fd62e3ad8f",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:8d58536519c9a410fa3a35b03642d94377f752f83338ed28c5e4a0dcc00b2b95"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:cd52a023b4fcc2c4753a42e45dd8ca08dc6b82747b1cbf5867d8d0fd62e3ad8f",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:ff3e0554cd2245665534591a73898fe3bab47b2a9e44a988d4de9360da3c6925"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:ce23a1d4fa8f2e2deebf7b96529461d2363e173bee80088f589f211e87211dd9",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:ce23a1d4fa8f2e2deebf7b96529461d2363e173bee80088f589f211e87211dd9",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:ce23a1d4fa8f2e2deebf7b96529461d2363e173bee80088f589f211e87211dd9",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:ce23a1d4fa8f2e2deebf7b96529461d2363e173bee80088f589f211e87211dd9",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "artefact:sha256:ce23a1d4fa8f2e2deebf7b96529461d2363e173bee80088f589f211e87211dd9",
+        "source_ref": "data/hardware_result_packs/manifest.json",
+        "target": "artefact:sha256:dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
         "evidence_digest": "6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3",
         "kind": "contains",
         "mapping": null,
@@ -944,6 +1152,19 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/differentiable_architecture_rustification_map",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
         "evidence_digest": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
         "kind": "derives_from",
         "mapping": null,
@@ -996,6 +1217,19 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/differentiable_baseline_scorecard",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
         "evidence_digest": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
         "kind": "derives_from",
         "mapping": null,
@@ -1016,6 +1250,19 @@
         "source": "claim:differentiable.claim_ledger/differentiable_baseline_scorecard",
         "source_ref": "data/differentiable_phase_qnode/claim_ledger.json",
         "target": "definition:repo/src:scpn_quantum_control:differentiable_baseline_scorecard.py"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/differentiable_dependency_environment_map",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786"
       },
       {
         "access": "public",
@@ -1055,6 +1302,19 @@
         "source": "claim:differentiable.claim_ledger/differentiable_dependency_environment_map",
         "source_ref": "data/differentiable_phase_qnode/claim_ledger.json",
         "target": "definition:repo/src:scpn_quantum_control:differentiable_external_validation.py"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/differentiable_isolated_benchmark_plan",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266"
       },
       {
         "access": "public",
@@ -1113,6 +1373,19 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/differentiable_rust_python_inventory",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
         "evidence_digest": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
         "kind": "derives_from",
         "mapping": null,
@@ -1152,6 +1425,19 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/external_validation_artifact_bundle",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
         "evidence_digest": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
         "kind": "derives_from",
         "mapping": null,
@@ -1159,6 +1445,19 @@
         "source": "claim:differentiable.claim_ledger/external_validation_artifact_bundle",
         "source_ref": "data/differentiable_phase_qnode/claim_ledger.json",
         "target": "definition:repo/src:scpn_quantum_control:differentiable_external_validation.py"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/external_validation_environment_lock",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:38ec47fb0e8a85dfe1fbc4e179e051ce8236ca39b24098f9676d186f24c5926c"
       },
       {
         "access": "public",
@@ -1211,6 +1510,19 @@
         "source": "claim:differentiable.claim_ledger/module_hardening_audit",
         "source_ref": "data/differentiable_phase_qnode/claim_ledger.json",
         "target": "definition:repo/src:scpn_quantum_control:differentiable_module_hardening_audit.py"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/phase_qnode_claim_boundary",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
       },
       {
         "access": "public",
@@ -1315,6 +1627,19 @@
         "source": "claim:differentiable.claim_ledger/public_claim_table",
         "source_ref": "data/differentiable_phase_qnode/claim_ledger.json",
         "target": "definition:repo/src:scpn_quantum_control:differentiable_claim_rendering.py"
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "derives_from",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "claim:differentiable.claim_ledger/support_surface_alignment",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "target": "artefact:sha256:7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8"
       },
       {
         "access": "public",
@@ -3969,7 +4294,7 @@
         "target": "capability:atlas.architecture/compiler_ad_native_execution"
       }
     ],
-    "evidence_set_hash": "efe227e724eabf3efe648932429a7d09492a0d5caebddddc69397d9b4668e487",
+    "evidence_set_hash": "28b9a1980db2e6f9ade7fe9d950501c0353b8d7b49408a91f0c1369f6cc8b2ae",
     "exclusions": [
       {
         "reason": "evidence artefact identifier; its record is not an Atlas input",
@@ -4178,15 +4503,64 @@
       {
         "reason": "surface identifier; the inventory that resolves it is not an Atlas input",
         "source_ref": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json#qnode_framework_bridges:qiskit_runtime_qpu_provider_evidence_bundle"
+      },
+      {
+        "reason": "evidence identifier ambiguous with 4 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#ci_benchmark_evidence:diff-qnode-ci-evidence-schema-v1"
+      },
+      {
+        "reason": "evidence identifier missing with 0 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#external_framework_comparison:diff-qnode-external-comparison-schema-v1"
+      },
+      {
+        "reason": "evidence identifier missing with 0 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#external_validation_technical_report:diff-external-validation-technical-report-20260616"
+      },
+      {
+        "reason": "evidence identifier ambiguous with 3 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#framework_overlay_parity:diff-qnode-framework-overlay-profile-v1"
+      },
+      {
+        "reason": "evidence identifier missing with 0 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#hardening_slice_gate:diff-hardening-slice-gate-v1"
+      },
+      {
+        "reason": "evidence identifier missing with 0 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#module_hardening_audit:diff-module-hardening-audit-v1"
+      },
+      {
+        "reason": "evidence identifier missing with 0 committed candidates",
+        "source_ref": "data/studio/evidence_lineage_20261123.json#public_claim_table:diff-public-claim-table-20260616"
       }
     ],
-    "extractor_version": "atlas-extractor.1",
+    "extractor_version": "atlas-extractor.2",
     "nodes": [
       {
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:06d879f64ccd48cadafdc73d56085132e575cdc8e868fad9d04ef3739907628a",
+        "kind": "artefact",
+        "label": "phase2_scaling_bc_ibm_kingston_2026_05_05 raw_counts: data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "06d879f64ccd48cadafdc73d56085132e575cdc8e868fad9d04ef3739907628a",
+        "source_ref": "data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase2_scaling_bc_ibm_kingston_2026_05_05",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "artefact:sha256:0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
         "kind": "artefact",
@@ -4230,6 +4604,85 @@
         "evidence_refs": [
           "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
         ],
+        "id": "artefact:sha256:109d23a2ac984b82ac96734d973fe4fd039f13e4348d8556bea548cecb89d82c",
+        "kind": "artefact",
+        "label": "scpn_fim_negative_ibm_kingston_2026_05_05 raw_counts: data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "109d23a2ac984b82ac96734d973fe4fd039f13e4348d8556bea548cecb89d82c",
+        "source_ref": "data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "scpn_fim_negative_ibm_kingston_2026_05_05",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2",
+        "kind": "artefact",
+        "label": "scpn_fim_negative_ibm_kingston_2026_05_05 raw_counts: data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2",
+        "source_ref": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "scpn_fim_negative_ibm_kingston_2026_05_05",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517",
+        "kind": "artefact",
+        "label": "scpn_fim_negative_ibm_kingston_2026_05_05 mitigation_summary: data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_ibm-run-cf4835290f607387.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517",
+        "source_ref": "data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_ibm-run-cf4835290f607387.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "scpn_fim_negative_ibm_kingston_2026_05_05",
+          "role": "mitigation_summary"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "kind": "artefact",
+        "label": "Evidence lineage",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "status": "current",
+        "validity_domain": {
+          "schema": "scpn_qc_studio_evidence_lineage_v1"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
         "id": "artefact:sha256:34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c",
         "kind": "artefact",
         "label": "Hardware result-pack manifest",
@@ -4247,6 +4700,88 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:38ec47fb0e8a85dfe1fbc4e179e051ce8236ca39b24098f9676d186f24c5926c",
+        "kind": "artefact",
+        "label": "differentiable-external-validation-environment-manifest-20260616",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "38ec47fb0e8a85dfe1fbc4e179e051ce8236ca39b24098f9676d186f24c5926c",
+        "source_ref": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "differentiable-external-validation-environment-manifest-20260616",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752",
+        "kind": "artefact",
+        "label": "phase1_dla_parity_ibm_kingston_2026_04 raw_counts: data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752",
+        "source_ref": "data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase1_dla_parity_ibm_kingston_2026_04",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be",
+        "kind": "artefact",
+        "label": "Replication iqm_dla_d10_retest_prereg_2026-07-22: negative_sign_replicates = false",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be",
+        "source_ref": "data/iqm_paper_replication/iqm_dla_d10_retest_primary_analysis_2026-07-22.json",
+        "status": "current",
+        "validity_domain": {
+          "campaign": "iqm_dla_d10_retest_prereg_2026-07-22",
+          "decision": "negative_sign_replicates",
+          "value": "false"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862",
+        "kind": "artefact",
+        "label": "diff-external-validation-artifact-bundle-20260616",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862",
+        "source_ref": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-external-validation-artifact-bundle-20260616",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37",
           "6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3"
         ],
         "id": "artefact:sha256:6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3",
@@ -4261,6 +4796,46 @@
         "validity_domain": {
           "claim_boundary": "Differentiable architecture and Rustification routing map only; no broad Rustification promotion, provider execution, hardware execution, GPU execution, LLVM/JIT execution, or isolated benchmark claim is implied.",
           "schema": "scpn_qc_differentiable_architecture_map_v1"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:69df107be28459e0911245fff8cd5b4aa45bf6dd1f20e2f8abeebe74092e8578",
+        "kind": "artefact",
+        "label": "scpn_fim_negative_ibm_kingston_2026_05_05 reproduced_analysis: data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "69df107be28459e0911245fff8cd5b4aa45bf6dd1f20e2f8abeebe74092e8578",
+        "source_ref": "data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "scpn_fim_negative_ibm_kingston_2026_05_05",
+          "role": "reproduced_analysis"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038",
+        "kind": "artefact",
+        "label": "phase1_dla_parity_ibm_kingston_2026_04 raw_counts: data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038",
+        "source_ref": "data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase1_dla_parity_ibm_kingston_2026_04",
+          "role": "raw_counts"
         }
       },
       {
@@ -4290,6 +4865,186 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266",
+        "kind": "artefact",
+        "label": "diff-isolated-benchmark-plan-20260627",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266",
+        "source_ref": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-isolated-benchmark-plan-20260627",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8",
+        "kind": "artefact",
+        "label": "diff-support-surface-alignment-audit-v1",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8",
+        "source_ref": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-support-surface-alignment-audit-v1",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786",
+        "kind": "artefact",
+        "label": "diff-dependency-environment-map-20260627",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786",
+        "source_ref": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-dependency-environment-map-20260627",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:82d3c52f1c41fbdb0381219eee9aca3f7effe8397a495cfd738d36ef0ae955f2",
+        "kind": "artefact",
+        "label": "phase2_scaling_bc_ibm_kingston_2026_05_05 reproduced_summary: data/phase2_scaling_bc/phase2_scaling_bc_summary_2026-05-05.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "82d3c52f1c41fbdb0381219eee9aca3f7effe8397a495cfd738d36ef0ae955f2",
+        "source_ref": "data/phase2_scaling_bc/phase2_scaling_bc_summary_2026-05-05.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase2_scaling_bc_ibm_kingston_2026_05_05",
+          "role": "reproduced_summary"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6",
+        "kind": "artefact",
+        "label": "diff-baseline-scorecard-20260620",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6",
+        "source_ref": "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-baseline-scorecard-20260620",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:8d58536519c9a410fa3a35b03642d94377f752f83338ed28c5e4a0dcc00b2b95",
+        "kind": "artefact",
+        "label": "phase2_popcount_control_ibm_kingston_2026_05_05 reproduced_summary: data/phase2_popcount_control/phase2_popcount_control_summary_2026-05-05.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "8d58536519c9a410fa3a35b03642d94377f752f83338ed28c5e4a0dcc00b2b95",
+        "source_ref": "data/phase2_popcount_control/phase2_popcount_control_summary_2026-05-05.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase2_popcount_control_ibm_kingston_2026_05_05",
+          "role": "reproduced_summary"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:8f1db016de49dd36d33c8d462bd64a7c3cbda44cca5557314ab97a4f6cd6c6b9",
+        "kind": "artefact",
+        "label": "phase2_dla_parity_ag_ibm_kingston_2026_05_05 raw_counts: data/phase2_dla_parity/phase2_reduced_ag_2026-05-05T121357Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "8f1db016de49dd36d33c8d462bd64a7c3cbda44cca5557314ab97a4f6cd6c6b9",
+        "source_ref": "data/phase2_dla_parity/phase2_reduced_ag_2026-05-05T121357Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase2_dla_parity_ag_ibm_kingston_2026_05_05",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980",
+        "kind": "artefact",
+        "label": "phase2_dla_parity_ag_ibm_kingston_2026_05_05 reproduced_summary: data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980",
+        "source_ref": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase2_dla_parity_ag_ibm_kingston_2026_05_05",
+          "role": "reproduced_summary"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:abf41e74c1f3ffbd6e44a1217415c9717b4171465713f15bd5f3a54e6a0b37e0",
+        "kind": "artefact",
+        "label": "scpn_fim_negative_ibm_kingston_2026_05_05 reproduced_analysis: data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "abf41e74c1f3ffbd6e44a1217415c9717b4171465713f15bd5f3a54e6a0b37e0",
+        "source_ref": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "scpn_fim_negative_ibm_kingston_2026_05_05",
+          "role": "reproduced_analysis"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
           "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
         ],
         "id": "artefact:sha256:b01bc2a54da779f2af61d06f0ce98fbf8520f27b2d2a90ccefa5ce7c539b6540",
@@ -4307,6 +5062,46 @@
           "executed_utc": "2026-05-05",
           "hardware_family": "IBM Heron r2",
           "status": "promoted_negative_result"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d",
+        "kind": "artefact",
+        "label": "phase1_dla_parity_ibm_kingston_2026_04 raw_counts: data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d",
+        "source_ref": "data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase1_dla_parity_ibm_kingston_2026_04",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9",
+        "kind": "artefact",
+        "label": "phase1_dla_parity_ibm_kingston_2026_04 reproduced_summary: figures/phase1/phase1_dla_parity_summary.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9",
+        "source_ref": "figures/phase1/phase1_dla_parity_summary.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase1_dla_parity_ibm_kingston_2026_04",
+          "role": "reproduced_summary"
         }
       },
       {
@@ -4353,6 +5148,66 @@
           "executed_utc": "2026-04-10",
           "hardware_family": "IBM Heron r2",
           "status": "promoted_raw_count_evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7",
+        "kind": "artefact",
+        "label": "phase1_dla_parity_ibm_kingston_2026_04 raw_counts: data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7",
+        "source_ref": "data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase1_dla_parity_ibm_kingston_2026_04",
+          "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
+        ],
+        "id": "artefact:sha256:fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b",
+        "kind": "artefact",
+        "label": "diff-rust-python-inventory-20260620",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b",
+        "source_ref": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-rust-python-inventory-20260620",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
+        ],
+        "id": "artefact:sha256:ff3e0554cd2245665534591a73898fe3bab47b2a9e44a988d4de9360da3c6925",
+        "kind": "artefact",
+        "label": "phase2_popcount_control_ibm_kingston_2026_05_05 raw_counts: data/phase2_popcount_control/phase2_popcount_control_2026-05-05T135318Z.json",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "ff3e0554cd2245665534591a73898fe3bab47b2a9e44a988d4de9360da3c6925",
+        "source_ref": "data/phase2_popcount_control/phase2_popcount_control_2026-05-05T135318Z.json",
+        "status": "current",
+        "validity_domain": {
+          "pack": "phase2_popcount_control_ibm_kingston_2026_05_05",
+          "role": "raw_counts"
         }
       },
       {
@@ -4497,7 +5352,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/ci_benchmark_evidence",
         "kind": "claim",
@@ -4517,7 +5373,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_architecture_rustification_map",
         "kind": "claim",
@@ -4537,7 +5394,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_baseline_scorecard",
         "kind": "claim",
@@ -4557,7 +5415,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_dependency_environment_map",
         "kind": "claim",
@@ -4577,7 +5436,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_isolated_benchmark_plan",
         "kind": "claim",
@@ -4597,7 +5457,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_rust_python_inventory",
         "kind": "claim",
@@ -4617,7 +5478,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/external_framework_comparison",
         "kind": "claim",
@@ -4637,7 +5499,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/external_validation_artifact_bundle",
         "kind": "claim",
@@ -4657,7 +5520,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/external_validation_environment_lock",
         "kind": "claim",
@@ -4677,7 +5541,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/external_validation_technical_report",
         "kind": "claim",
@@ -4697,7 +5562,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/framework_overlay_parity",
         "kind": "claim",
@@ -4717,7 +5583,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/hardening_slice_gate",
         "kind": "claim",
@@ -4737,7 +5604,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/module_hardening_audit",
         "kind": "claim",
@@ -4757,7 +5625,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/phase_qnode_claim_boundary",
         "kind": "claim",
@@ -4777,7 +5646,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/public_claim_table",
         "kind": "claim",
@@ -4797,7 +5667,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05"
+          "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+          "2dd308bfd834f798084a72e2a2baa59363beaee21cc85f75a45189462a71dd37"
         ],
         "id": "claim:differentiable.claim_ledger/support_surface_alignment",
         "kind": "claim",
@@ -5720,7 +6591,7 @@
           "as_of": "committed declarations carry no observation time",
           "validity_domain": "the input states no validity scope"
         },
-        "source_digest": "fc9ffa941a29ed921d86388541d746520cffa82a49559e7dbc69c094d52cd67f",
+        "source_digest": "f799b7a2065854a1b8ffb5e7e029a82b4a733b0b437f091d3fbf8d59563ad955",
         "source_ref": "README.md",
         "status": "current",
         "validity_domain": null
@@ -6708,8 +7579,8 @@
       }
     ],
     "schema": "quantum_atlas_snapshot.v1",
-    "source_commit": "7af74248b5b343627ebf600b8701267879f5baeb",
+    "source_commit": "297cea25ecb97304e6be03a526c10c95aef14ab2",
     "tombstones": []
   },
-  "snapshot_digest": "1fa6227beafd24e7c716899f92a14f4c6bb9e9c49d1de4f5a54ae474f7ba48a9"
+  "snapshot_digest": "d4a09d6ac66f7766605ba8ca235b053d44a7b73cd49ac8da88756b047bc3ae2e"
 }

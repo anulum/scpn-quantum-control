@@ -493,3 +493,144 @@ def test_extraction_imports_no_optional_runtime() -> None:
     )
 
     assert completed.stdout.strip() == ""
+
+
+_LINEAGE = "data/lineage.json"
+_LINEAGE_INPUTS = (*_INPUTS, AtlasInput(_LINEAGE, "evidence_lineage", False))
+
+
+def _lineage_document(**replication: Any) -> dict[str, Any]:
+    """Return a fixture evidence lineage with one claim and one replication.
+
+    Parameters
+    ----------
+    **replication : Any
+        Fields that replace the replication record's defaults.
+
+    Returns
+    -------
+    dict[str, Any]
+        The lineage document.
+
+    """
+    record = {
+        "path": "data/replication.json",
+        "sha256": "c" * 64,
+        "campaign": "fixture_campaign",
+        "decision": {"field": "sign_replicates", "value": False},
+        **replication,
+    }
+    candidate = {"path": "data/evidence.json", "sha256": "a" * 64}
+    return {
+        "schema": "scpn_qc_studio_evidence_lineage_v1",
+        "claims": [
+            {
+                "claim_id": "core_returns_one",
+                "claim_text": "core() returns one.",
+                "claim_boundary": "Fixture claim.",
+                "evidence": [
+                    {
+                        "artifact_id": "evidence-id",
+                        "role": "evidence",
+                        "state": "resolved",
+                        "candidates": [candidate],
+                    },
+                    {
+                        "artifact_id": "shared-schema",
+                        "role": "benchmark",
+                        "state": "ambiguous",
+                        "candidates": [candidate, {"path": "data/other.json", "sha256": "b" * 64}],
+                    },
+                    {
+                        "artifact_id": "gone",
+                        "role": "evidence",
+                        "state": "missing",
+                        "candidates": [],
+                    },
+                ],
+            }
+        ],
+        "replications": [record],
+    }
+
+
+def test_pack_artefacts_and_resolved_evidence_become_derivations(tmp_path: Path) -> None:
+    """A pack derives from its files; a claim derives only from evidence that resolved once.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Directory of the synthetic revision.
+
+    """
+    _write_tree(tmp_path, [_layer("alpha")])
+    manifest = json.loads((tmp_path / _PACKS).read_text(encoding="utf-8"))
+    manifest["packs"][0]["artifacts"] = [
+        {"path": "data/raw.json", "role": "raw_counts", "sha256": "d" * 64, "bytes": 2}
+    ]
+    (tmp_path / _PACKS).write_text(json.dumps(manifest), encoding="utf-8")
+    (tmp_path / _LINEAGE).write_text(json.dumps(_lineage_document()), encoding="utf-8")
+
+    snapshot = _extract(tmp_path, inputs=_LINEAGE_INPUTS).snapshot
+    relations = {(edge.source, edge.kind, edge.target) for edge in snapshot.edges}
+    nodes = {node.id: node for node in snapshot.nodes}
+    pack = next(node.id for node in snapshot.nodes if node.source_ref == f"{_PACKS}#fixture_pack")
+    claim = "claim:differentiable.claim_ledger/core_returns_one"
+
+    assert (pack, "derives_from", "artefact:sha256:" + "d" * 64) in relations
+    assert (claim, "derives_from", "artefact:sha256:" + "a" * 64) in relations
+    assert all(target != "artefact:sha256:" + "b" * 64 for _source, _kind, target in relations)
+    reasons = {exclusion.reason for exclusion in snapshot.exclusions}
+    assert "evidence identifier ambiguous with 2 committed candidates" in reasons
+    assert "evidence identifier missing with 0 committed candidates" in reasons
+    replication = nodes["artefact:sha256:" + "c" * 64]
+    assert replication.label == "Replication fixture_campaign: sign_replicates = false"
+    assert dict(replication.validity_domain or ()) == {
+        "campaign": "fixture_campaign",
+        "decision": "sign_replicates",
+        "value": "false",
+    }
+
+
+def test_the_lineage_supplies_its_claims_without_the_ledger(tmp_path: Path) -> None:
+    """Without the ledger input, the lineage's own claim nodes keep every relation valid.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Directory of the synthetic revision.
+
+    """
+    _write_tree(tmp_path, [_layer("alpha")], ledger=False)
+    lineage = _lineage_document(decision={"field": "sign_replicates", "value": True})
+    (tmp_path / _LINEAGE).write_text(json.dumps(lineage), encoding="utf-8")
+
+    nodes = {node.id: node for node in _extract(tmp_path, inputs=_LINEAGE_INPUTS).snapshot.nodes}
+
+    claim = nodes["claim:differentiable.claim_ledger/core_returns_one"]
+    assert claim.source_ref == f"{_LINEAGE}#core_returns_one"
+    assert nodes["artefact:sha256:" + "c" * 64].label.endswith("sign_replicates = true")
+
+
+@pytest.mark.parametrize(
+    "decision",
+    [None, {"field": "sign_replicates", "value": "no"}, {"field": "", "value": False}],
+)
+def test_a_replication_without_a_boolean_decision_refuses(tmp_path: Path, decision: Any) -> None:
+    """A replication must state its decision as a named boolean.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Directory of the synthetic revision.
+    decision : Any
+        The malformed decision.
+
+    """
+    _write_tree(tmp_path, [_layer("alpha")])
+    lineage = _lineage_document(decision=decision)
+    (tmp_path / _LINEAGE).write_text(json.dumps(lineage), encoding="utf-8")
+
+    with pytest.raises(AtlasExtractionError) as refusal:
+        _extract(tmp_path, inputs=_LINEAGE_INPUTS)
+    assert refusal.value.code == "malformed_input"

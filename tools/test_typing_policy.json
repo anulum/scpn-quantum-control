@@ -1629,6 +1629,7 @@
         "tests/test_studio_atlas_snapshot.py",
         "tests/test_studio_browser_journey.py",
         "tests/test_studio_comparison_browser.py",
+        "tests/test_studio_evidence_lineage.py",
         "tests/test_studio_local_experiment_browser.py",
         "tests/test_studio_owned_worker_journey.py",
         "tests/test_studio_resource_browser_journey.py",

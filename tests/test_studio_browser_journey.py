@@ -179,6 +179,7 @@ _SOURCE_SCENARIOS = {
         "attestation_verification",
         "benchmark_databank",
         "atlas_graph_navigation",
+        "atlas_evidence_lineage",
         "capability_resolver",
         "operator_backend_profiles",
         "operator_policy_decisions",

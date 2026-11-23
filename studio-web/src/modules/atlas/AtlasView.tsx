@@ -14,9 +14,18 @@ import {
   type AtlasOpeningTask,
   type AtlasSession,
   type AtlasSessionInfo,
+  committedOrigin,
   openAtlasSession,
   openCommittedAtlasSession,
 } from "./atlasSession";
+import { EvidenceLineage, type LineageVerifier } from "./EvidenceLineage";
+import {
+  type LineageAdmission,
+  type LineageRecord,
+  admitCommittedEvidenceLineage,
+  lineageRecordOf,
+  verifyLineageRecord,
+} from "./evidenceLineage";
 import {
   type AtlasFilter,
   type AtlasLayout,
@@ -290,6 +299,9 @@ function AtlasAnswerView({
   onSelect,
   onFocus,
   onPin,
+  lineageOf,
+  verifyRecord,
+  contextSuffix,
 }: {
   readonly answer: AtlasQueryAnswer;
   readonly focus: string | null;
@@ -301,8 +313,16 @@ function AtlasAnswerView({
   readonly onSelect: (selection: Selection) => void;
   readonly onFocus: (focus: string | null) => void;
   readonly onPin: (id: string, spot: readonly [number, number]) => void;
+  readonly lineageOf: (node: AtlasNode) => LineageRecord | null;
+  readonly verifyRecord: LineageVerifier;
+  readonly contextSuffix: string;
 }) {
   const shown = shownSelection(answer, selection);
+  const selectedNode =
+    shown?.kind === "node"
+      ? (answer.nodes.find((node) => node.id === shown.id) as AtlasNode)
+      : null;
+  const lineageRecord = selectedNode === null ? null : lineageOf(selectedNode);
   const nodeIndex = (id: string): number => answer.nodes.findIndex((node) => node.id === id);
   const edgeIndex = (key: string): number =>
     answer.edges.findIndex((edge) => edgeKey(edge) === key);
@@ -469,6 +489,13 @@ function AtlasAnswerView({
       </div>
       <section aria-label="Atlas inspector">
         <Inspector answer={answer} selection={shown} onSelect={choose} />
+        {lineageRecord !== null ? (
+          <EvidenceLineage
+            record={lineageRecord}
+            verify={verifyRecord}
+            contextSuffix={contextSuffix}
+          />
+        ) : null}
         {shown?.kind === "node" ? (
           <>
             <button type="button" onClick={() => onFocus(shown.id)}>
@@ -523,13 +550,18 @@ export default function AtlasView({
   contextSuffix,
   open = openCommittedAtlasSession,
   openFile = (file: File) => openAtlasSession(file, file.name),
+  lineage = admitCommittedEvidenceLineage,
+  verifyRecord = verifyLineageRecord,
 }: {
   readonly instrument: string | null;
   readonly contextSuffix: string;
   readonly open?: () => AtlasOpeningTask;
   readonly openFile?: (file: File) => AtlasOpeningTask;
+  readonly lineage?: () => LineageAdmission;
+  readonly verifyRecord?: LineageVerifier;
 }) {
   const lens = lensOf(instrument);
+  const admittedLineage = useMemo(() => lineage(), [lineage]);
   const [session, setSession] = useState<AtlasSession | null>(null);
   const [committedRefusal, setCommittedRefusal] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -651,6 +683,11 @@ export default function AtlasView({
   };
   const requested = contextValue(contextSuffix, "snapshot");
   const info: AtlasSessionInfo | null = session?.info ?? null;
+  // The lineage is committed for this build's snapshot; another opened pin has none.
+  const lineageOf = (node: AtlasNode): LineageRecord | null =>
+    admittedLineage.ok && info?.origin === committedOrigin
+      ? lineageRecordOf(admittedLineage.lineage, node)
+      : null;
   const mismatch =
     info !== null && requested !== null && requested !== info.digest && requested !== overridden
       ? `the requested snapshot ${requested} is not the open snapshot (${info.digest}); open its pin to view it.`
@@ -702,6 +739,7 @@ export default function AtlasView({
           </p>
         ) : null}
         {notice !== null ? <p role="alert">{notice}</p> : null}
+        {!admittedLineage.ok ? <p role="alert">{admittedLineage.reason}</p> : null}
       </section>
       {!admittedFilter.ok ? (
         <p role="alert">{`The requested Atlas filter was refused because ${admittedFilter.reason}; the view opens without it.`}</p>
@@ -768,6 +806,9 @@ export default function AtlasView({
               onSelect={select}
               onFocus={(focus) => setFilter({ ...filter, focus })}
               onPin={(id, spot) => setPinned((previous) => new Map(previous).set(id, spot))}
+              lineageOf={lineageOf}
+              verifyRecord={verifyRecord}
+              contextSuffix={contextSuffix}
             />
           ) : null}
         </>

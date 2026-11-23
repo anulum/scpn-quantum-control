@@ -667,6 +667,10 @@ _WITH_EVIDENCE: dict[str, tuple[str, str]] = {
     "attestation_verification": ("tools.studio_attestation_browser", "run_attestation_journey"),
     "benchmark_databank": ("tools.studio_benchmark_browser", "run_benchmark_journey"),
     "atlas_graph_navigation": ("tools.studio_atlas_browser", "run_atlas_journey"),
+    "atlas_evidence_lineage": (
+        "tools.studio_atlas_lineage_browser",
+        "run_atlas_lineage_journey",
+    ),
     "capability_resolver": ("tools.studio_capability_browser", "run_capability_journey"),
     "pulse_feasibility": ("tools.studio_pulse_browser", "run_pulse_journey"),
     "compiler_trace_inspector": (
@@ -703,6 +707,7 @@ _SCENARIOS = (
     "attestation_verification",
     "benchmark_databank",
     "atlas_graph_navigation",
+    "atlas_evidence_lineage",
     "capability_resolver",
     "operator_backend_profiles",
     "operator_policy_decisions",

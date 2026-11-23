@@ -8,7 +8,7 @@
 """Build an Atlas snapshot from a closed list of committed producer artefacts.
 
 The extractor reads bytes only. It never imports or runs what an artefact
-describes, so discovery needs no optional quantum runtime. Three adapters are
+describes, so discovery needs no optional quantum runtime. Four adapters are
 admitted:
 
 - ``architecture_map``: the committed differentiable architecture map
@@ -19,8 +19,16 @@ admitted:
   a claim node that ``derives_from`` its implementation files and is
   ``documents``-ed by its documentation files;
 - ``hardware_result_packs``: the committed hardware result-pack manifest. Each
-  pack becomes a content-addressed artefact. No support edge is derived,
-  because a pack's scope is not a reviewed capability assertion.
+  pack becomes a content-addressed artefact that ``derives_from`` each of its
+  raw-count, summary and analysis files, by their recorded digests. No support
+  edge is derived, because a pack's scope is not a reviewed capability
+  assertion;
+- ``evidence_lineage``: the committed evidence lineage
+  (:mod:`scpn_quantum_control.studio.evidence_lineage`). A claim ``derives_from``
+  each evidence file its identifier resolves to exactly one of. An ambiguous or
+  missing identifier is recorded as an exclusion, never linked to a guessed
+  file. Each replication analysis becomes an artefact whose label states its
+  decision, so a failed replication stays searchable.
 
 Every input becomes an artefact node bound to its content digest. Every
 derived node and edge names that digest as evidence, so changing an input
@@ -54,7 +62,7 @@ from ..contracts import (
     parse_atlas_snapshot,
 )
 
-EXTRACTOR_VERSION = "atlas-extractor.1"
+EXTRACTOR_VERSION = "atlas-extractor.2"
 EVIDENCE_SET_SCHEMA = "quantum_atlas_evidence_set.v1"
 ARCHITECTURE_MAP_SCHEMA = "scpn_qc_differentiable_architecture_map_v1"
 
@@ -89,6 +97,7 @@ DEFAULT_INPUTS: tuple[AtlasInput, ...] = (
     ),
     AtlasInput("data/differentiable_phase_qnode/claim_ledger.json", "claim_ledger", False),
     AtlasInput("data/hardware_result_packs/manifest.json", "hardware_result_packs", False),
+    AtlasInput("data/studio/evidence_lineage_20261123.json", "evidence_lineage", False),
 )
 
 _CODE_SUFFIXES = frozenset({".py", ".rs", ".ts", ".tsx", ".js", ".jl"})
@@ -463,12 +472,83 @@ def _hardware_result_packs(builder: _Builder, document: Mapping[str, object]) ->
             }
             or None,
         )
+        listed = _records(pack, "artifacts", f"{path}#{pack_id}") if "artifacts" in pack else []
+        for artefact in listed:
+            role = _text(artefact, "role", path)
+            relative = _text(artefact, "path", path)
+            recorded = _text(artefact, "sha256", path)
+            target = f"artefact:sha256:{recorded}"
+            builder.node(
+                target,
+                "artefact",
+                f"{pack_id} {role}: {relative}",
+                source_ref=relative,
+                source_digest=recorded,
+                domain={"pack": pack_id, "role": role},
+            )
+            builder.edge(f"artefact:sha256:{digest}", "derives_from", target)
+
+
+def _evidence_lineage(builder: _Builder, document: Mapping[str, object]) -> None:
+    path = builder.item.path
+    _input_node(builder, "Evidence lineage", {"schema": _text(document, "schema", path)})
+    for claim in _records(document, "claims", path):
+        claim_id = _name(_text(claim, "claim_id", path), path)
+        node_id = f"claim:differentiable.claim_ledger/{claim_id}"
+        builder.node(
+            node_id,
+            "claim",
+            _text(claim, "claim_text", path),
+            source_ref=f"{path}#{claim_id}",
+            source_digest=None,
+            domain={"claim_boundary": _text(claim, "claim_boundary", path)},
+        )
+        for item in _records(claim, "evidence", f"{path}#{claim_id}"):
+            identifier = _text(item, "artifact_id", path)
+            state = _text(item, "state", path)
+            candidates = _records(item, "candidates", path)
+            if state != "resolved" or len(candidates) != 1:
+                builder.exclude(
+                    f"{path}#{claim_id}:{identifier}",
+                    f"evidence identifier {state} with {len(candidates)} committed candidates",
+                )
+                continue
+            relative = _text(candidates[0], "path", path)
+            recorded = _text(candidates[0], "sha256", path)
+            target = f"artefact:sha256:{recorded}"
+            builder.node(
+                target,
+                "artefact",
+                identifier,
+                source_ref=relative,
+                source_digest=recorded,
+                domain={"artifact_id": identifier, "role": _text(item, "role", path)},
+            )
+            builder.edge(node_id, "derives_from", target)
+    for replication in _records(document, "replications", path):
+        relative = _text(replication, "path", path)
+        decision = replication.get("decision")
+        field = _text(decision, "field", path) if isinstance(decision, dict) else ""
+        value = decision.get("value") if isinstance(decision, dict) else None
+        if not field or not isinstance(value, bool):
+            raise _refuse("malformed_input", path, "a replication decision must be a boolean")
+        verdict = "true" if value else "false"
+        campaign = _text(replication, "campaign", path)
+        builder.node(
+            f"artefact:sha256:{_text(replication, 'sha256', path)}",
+            "artefact",
+            f"Replication {campaign}: {field} = {verdict}",
+            source_ref=relative,
+            source_digest=_text(replication, "sha256", path),
+            domain={"campaign": campaign, "decision": field, "value": verdict},
+        )
 
 
 _ADAPTERS: Mapping[str, Callable[[_Builder, Mapping[str, object]], None]] = {
     "architecture_map": _architecture_map,
     "claim_ledger": _claim_ledger,
     "hardware_result_packs": _hardware_result_packs,
+    "evidence_lineage": _evidence_lineage,
 }
 
 
