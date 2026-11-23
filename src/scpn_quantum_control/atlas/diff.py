@@ -30,7 +30,7 @@ from types import MappingProxyType
 from typing import Literal, cast
 
 from ..studio_workspace.canonical import canonical_digest
-from .contracts import AtlasEdge, AtlasSnapshot, snapshot_to_wire
+from .contracts import AtlasEdge, AtlasSnapshot, AtlasTombstone, snapshot_to_wire
 
 NODE_CONTENT_SCHEMA = "quantum_atlas_node_content.v1"
 """Domain of a node's typed content hash."""
@@ -266,6 +266,56 @@ def _category(kind: str, node_id: str, calibrated: set[str]) -> ChangeCategory:
     return "calibration" if node_id in calibrated else CATEGORY_OF_KIND[kind]
 
 
+def _gone(
+    node_id: str,
+    was: Mapping[str, object],
+    category: ChangeCategory,
+    tombstone: AtlasTombstone | None,
+) -> NodeDifference:
+    return NodeDifference(
+        node_id,
+        str(was["kind"]),
+        "removed" if tombstone is None else "tombstoned",
+        category,
+        (),
+        node_content_hash(was),
+        None,
+        None if tombstone is None else f"{tombstone.reason} (removed at {tombstone.removed_at})",
+    )
+
+
+def _node_difference(
+    node_id: str,
+    was: Mapping[str, object] | None,
+    now: Mapping[str, object] | None,
+    calibrated: set[str],
+    tombstones: Mapping[str, AtlasTombstone],
+) -> NodeDifference | None:
+    if was is None:
+        added = cast(Mapping[str, object], now)
+        kind = str(added["kind"])
+        category = _category(kind, node_id, calibrated)
+        return NodeDifference(
+            node_id, kind, "added", category, (), None, node_content_hash(added), None
+        )
+    category = _category(str(was["kind"]), node_id, calibrated)
+    if now is None:
+        return _gone(node_id, was, category, tombstones.get(node_id))
+    before_hash, after_hash = node_content_hash(was), node_content_hash(now)
+    if before_hash == after_hash:
+        return None
+    fields = tuple(
+        sorted(
+            key
+            for key in was.keys() | now.keys()
+            if key != "evidence_refs" and was.get(key) != now.get(key)
+        )
+    )
+    return NodeDifference(
+        node_id, str(now["kind"]), "changed", category, fields, before_hash, after_hash, None
+    )
+
+
 def _node_differences(
     before: AtlasSnapshot, after: AtlasSnapshot
 ) -> tuple[list[NodeDifference], int]:
@@ -275,65 +325,13 @@ def _node_differences(
     differences: list[NodeDifference] = []
     unchanged = 0
     for node_id in sorted(old.keys() | new.keys()):
-        was, now = old.get(node_id), new.get(node_id)
-        if was is None:
-            now = cast(Mapping[str, object], now)
-            kind = str(now["kind"])
-            differences.append(
-                NodeDifference(
-                    node_id,
-                    kind,
-                    "added",
-                    _category(kind, node_id, calibrated),
-                    (),
-                    None,
-                    node_content_hash(now),
-                    None,
-                )
-            )
-            continue
-        kind = str(was["kind"])
-        category = _category(kind, node_id, calibrated)
-        if now is None:
-            tombstone = tombstones.get(node_id)
-            differences.append(
-                NodeDifference(
-                    node_id,
-                    kind,
-                    "removed" if tombstone is None else "tombstoned",
-                    category,
-                    (),
-                    node_content_hash(was),
-                    None,
-                    None
-                    if tombstone is None
-                    else f"{tombstone.reason} (removed at {tombstone.removed_at})",
-                )
-            )
-            continue
-        before_hash, after_hash = node_content_hash(was), node_content_hash(now)
-        if before_hash == after_hash:
+        difference = _node_difference(
+            node_id, old.get(node_id), new.get(node_id), calibrated, tombstones
+        )
+        if difference is None:
             unchanged += 1
-            continue
-        fields = tuple(
-            sorted(
-                key
-                for key in was.keys() | now.keys()
-                if key != "evidence_refs" and was.get(key) != now.get(key)
-            )
-        )
-        differences.append(
-            NodeDifference(
-                node_id,
-                str(now["kind"]),
-                "changed",
-                category,
-                fields,
-                before_hash,
-                after_hash,
-                None,
-            )
-        )
+        else:
+            differences.append(difference)
     return differences, unchanged
 
 

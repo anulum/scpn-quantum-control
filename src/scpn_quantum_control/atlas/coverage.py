@@ -31,7 +31,7 @@ from __future__ import annotations
 import ast
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Literal, cast
@@ -363,6 +363,69 @@ def _claims(root: Path) -> list[tuple[str, str, frozenset[str]]]:
     return rows
 
 
+_GapSink = Callable[[GapKind, str, str], None]
+_NoteSink = Callable[[str], None]
+
+
+def _declared_test(
+    root: Path, path: str, owners: Mapping[str, tuple[str, ...]], gap: _GapSink, note: _NoteSink
+) -> DeclaredTest:
+    present = (root / path).is_file()
+    behaviour = _defines_tests(root / path) if present else None
+    jobs = owners.get(path, ())
+    state: CiOwnerState = "unknown" if not jobs else "explicit" if len(jobs) == 1 else "duplicate"
+    if not present:
+        gap("missing_test", path, "the declared test file does not exist")
+    elif behaviour is None:
+        note(f"{path}: test behaviour is not judged for this language")
+    elif not behaviour:
+        gap(
+            "test_without_behaviour",
+            path,
+            "the file defines no test; importing a module is not evidence",
+        )
+    if state == "duplicate":
+        gap("duplicate_ci_owner", path, f"executed by name by {len(jobs)} jobs: {', '.join(jobs)}")
+    elif state == "unknown" and present:
+        note(f"{path}: no CI job names it; a directory or sharded run may still run it")
+    return DeclaredTest(path, present, behaviour, state, jobs)
+
+
+def _surfaces(
+    root: Path,
+    layer: Mapping[str, object],
+    key: str,
+    layer_id: str,
+    absent: tuple[GapKind, str],
+    gap: _GapSink,
+) -> tuple[SurfaceEvidence, ...]:
+    items = tuple(
+        SurfaceEvidence(path, (root / path).is_file()) for path in _paths(layer, key, layer_id)
+    )
+    for item in items:
+        if not item.present:
+            gap(absent[0], item.path, absent[1])
+    return items
+
+
+_ABSENT_DOC: tuple[GapKind, str] = ("missing_doc", "the declared documentation does not exist")
+_ABSENT_UI: tuple[GapKind, str] = ("missing_ui", "the declared UI surface does not exist")
+
+
+def _scientific(
+    layer: Mapping[str, object],
+    layer_id: str,
+    modules: Sequence[str],
+    claims: Sequence[tuple[str, str, frozenset[str]]],
+) -> tuple[tuple[str, str], ...]:
+    implemented = (
+        set(modules)
+        | set(_paths(layer, "python_surfaces", layer_id))
+        | set(_paths(layer, "rust_surfaces", layer_id))
+    )
+    return tuple(sorted((claim, status) for claim, status, files in claims if files & implemented))
+
+
 def _capability(
     root: Path,
     layer: Mapping[str, object],
@@ -377,82 +440,36 @@ def _capability(
     def gap(kind: GapKind, surface: str, detail: str) -> None:
         gaps.append(CapabilityGap(layer_id, kind, ARCHITECTURE_MAP_PATH, surface, detail))
 
-    tests: list[DeclaredTest] = []
-    for path in _paths(layer, "test_surfaces", layer_id):
-        present = (root / path).is_file()
-        behaviour = _defines_tests(root / path) if present else None
-        jobs = owners.get(path, ())
-        state: CiOwnerState = (
-            "unknown" if not jobs else "explicit" if len(jobs) == 1 else "duplicate"
-        )
-        tests.append(DeclaredTest(path, present, behaviour, state, jobs))
-        if not present:
-            gap("missing_test", path, "the declared test file does not exist")
-        elif behaviour is None:
-            unknowns.append((layer_id, f"{path}: test behaviour is not judged for this language"))
-        elif not behaviour:
-            gap(
-                "test_without_behaviour",
-                path,
-                "the file defines no test; importing a module is not evidence",
-            )
-        if state == "duplicate":
-            gap(
-                "duplicate_ci_owner",
-                path,
-                f"executed by name by {len(jobs)} jobs: {', '.join(jobs)}",
-            )
-        elif state == "unknown" and present:
-            unknowns.append(
-                (
-                    layer_id,
-                    f"{path}: no CI job names it; a directory or sharded run may still run it",
-                )
-            )
-    docs = [
-        SurfaceEvidence(path, (root / path).is_file())
-        for path in _paths(layer, "docs_surfaces", layer_id)
-    ]
-    for item in docs:
-        if not item.present:
-            gap("missing_doc", item.path, "the declared documentation does not exist")
-    ui = [
-        SurfaceEvidence(path, (root / path).is_file())
-        for path in _paths(layer, "ui_surfaces", layer_id)
-    ]
-    for item in ui:
-        if not item.present:
-            gap("missing_ui", item.path, "the declared UI surface does not exist")
+    def note(text: str) -> None:
+        unknowns.append((layer_id, text))
+
+    tests = tuple(
+        _declared_test(root, path, owners, gap, note)
+        for path in _paths(layer, "test_surfaces", layer_id)
+    )
+    docs = _surfaces(root, layer, "docs_surfaces", layer_id, _ABSENT_DOC, gap)
+    ui = _surfaces(root, layer, "ui_surfaces", layer_id, _ABSENT_UI, gap)
     if not ui:
-        unknowns.append((layer_id, "user-route availability: no UI surface is declared"))
+        note("user-route availability: no UI surface is declared")
     modules = _paths(layer, "owner_modules", layer_id)
     if coverage is None:
-        unknowns.append((layer_id, "code coverage: unmeasured"))
-    module_coverage = tuple(
-        ModuleCoverage(path, None if coverage is None else coverage.get(path)) for path in modules
-    )
-    implemented = (
-        set(modules)
-        | set(_paths(layer, "python_surfaces", layer_id))
-        | set(_paths(layer, "rust_surfaces", layer_id))
-    )
-    scientific = tuple(
-        sorted((claim, status) for claim, status, files in claims if files & implemented)
-    )
+        note("code coverage: unmeasured")
+    scientific = _scientific(layer, layer_id, modules, claims)
     if not scientific:
-        unknowns.append(
-            (layer_id, "scientific validation: unassessed; no ledger claim is implemented here")
-        )
+        note("scientific validation: unassessed; no ledger claim is implemented here")
     blockers = layer.get("blockers", [])
     return CapabilityCoverage(
         capability=layer_id,
         node_id=f"capability:atlas.architecture/{layer_id}",
         title=str(layer.get("title")),
-        tests=tuple(tests),
-        docs=tuple(docs),
-        ui=tuple(ui),
+        tests=tests,
+        docs=docs,
+        ui=ui,
         code_coverage="unmeasured" if coverage is None else "measured",
-        modules=module_coverage,
+        modules=tuple(
+            ModuleCoverage(path, None if coverage is None else coverage.get(path))
+            for path in modules
+        ),
         support_ready=layer.get("rustification_ready") is True,
         support_blockers=tuple(map(str, blockers)) if isinstance(blockers, list) else (),
         scientific=scientific,

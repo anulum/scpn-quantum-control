@@ -298,6 +298,62 @@ def _sign(interval: tuple[float, float]) -> int:
     return 1 if low > 0 else -1 if high < 0 else 0
 
 
+_Verdict = tuple[ComparisonStatus, tuple[str, ...]]
+
+
+def _assumption_verdict(
+    left: ComparableValue,
+    right: ComparableValue,
+    sides: set[tuple[str, str]],
+    home: tuple[str, str],
+    accepted: frozenset[tuple[str, str]],
+) -> _Verdict | None:
+    missing = tuple(
+        f"{name} is not stated for {item.value_id}"
+        for item in (left, right)
+        for name, value in item.key
+        if value is None
+    )
+    if missing:
+        return "insufficient_evidence", missing
+    differing = tuple(
+        f"{name} differs: {a} / {b}"
+        for (name, a), (_, b) in zip(left.key, right.key, strict=True)
+        if a != b
+    )
+    if differing:
+        return "non_comparable", differing
+    unaccepted = sorted(side for side in sides if side != home and side not in accepted)
+    if len(sides) > 1 and unaccepted:
+        return "non_comparable", tuple(
+            f"{PRODUCER_EQUIVALENCE_NOT_ACCEPTED}: {producer} {version}"
+            for producer, version in unaccepted
+        )
+    return None
+
+
+def _criterion_verdict(
+    left: tuple[float, float] | None, right: tuple[float, float] | None, criterion: Criterion
+) -> _Verdict:
+    if left is None or right is None:
+        return "insufficient_evidence", (f"{criterion} needs an interval for both values",)
+    if criterion == "interval_overlap":
+        overlap = left[0] <= right[1] and right[0] <= left[1]
+        return (
+            ("agreement", ("the intervals overlap",))
+            if overlap
+            else ("disagreement", ("the intervals do not overlap",))
+        )
+    signs = (_sign(left), _sign(right))
+    if 0 in signs:
+        return "insufficient_evidence", (
+            "an interval includes zero, so its sign is not established",
+        )
+    if signs[0] == signs[1]:
+        return "agreement", ("both intervals exclude zero on the same side",)
+    return "disagreement", ("the intervals exclude zero on opposite sides",)
+
+
 def compare_values(
     left: ComparableValue,
     right: ComparableValue,
@@ -337,57 +393,17 @@ def compare_values(
     if criterion not in CRITERIA:
         raise ComparabilityError(f"unknown criterion {criterion!r}")
     sides = {(left.producer, left.producer_version), (right.producer, right.producer_version)}
-    federated = len(sides) > 1
-    negative = left.negative or right.negative
-
-    def judged(status: ComparisonStatus, *reasons: str) -> Comparison:
-        return Comparison(
-            left.value_id, right.value_id, criterion, status, reasons, federated, negative
-        )
-
-    missing = [
-        f"{name} is not stated for {item.value_id}"
-        for item in (left, right)
-        for name, value in item.key
-        if value is None
-    ]
-    if missing:
-        return judged("insufficient_evidence", *missing)
-    differing = [
-        f"{name} differs: {a} / {b}"
-        for (name, a), (_, b) in zip(left.key, right.key, strict=True)
-        if a != b
-    ]
-    if differing:
-        return judged("non_comparable", *differing)
-    unaccepted = sorted(side for side in sides if side != home and side not in accepted)
-    if federated and unaccepted:
-        return judged(
-            "non_comparable",
-            *(
-                f"{PRODUCER_EQUIVALENCE_NOT_ACCEPTED}: {producer} {version}"
-                for producer, version in unaccepted
-            ),
-        )
-    if left.interval is None or right.interval is None:
-        return judged("insufficient_evidence", f"{criterion} needs an interval for both values")
-    if criterion == "interval_overlap":
-        overlap = left.interval[0] <= right.interval[1] and right.interval[0] <= left.interval[1]
-        return judged(
-            "agreement" if overlap else "disagreement",
-            "the intervals overlap" if overlap else "the intervals do not overlap",
-        )
-    signs = (_sign(left.interval), _sign(right.interval))
-    if 0 in signs:
-        return judged(
-            "insufficient_evidence", "an interval includes zero, so its sign is not established"
-        )
-    same = signs[0] == signs[1]
-    return judged(
-        "agreement" if same else "disagreement",
-        "both intervals exclude zero on the same side"
-        if same
-        else "the intervals exclude zero on opposite sides",
+    status, reasons = _assumption_verdict(
+        left, right, sides, home, accepted
+    ) or _criterion_verdict(left.interval, right.interval, criterion)
+    return Comparison(
+        left.value_id,
+        right.value_id,
+        criterion,
+        status,
+        reasons,
+        len(sides) > 1,
+        left.negative or right.negative,
     )
 
 
