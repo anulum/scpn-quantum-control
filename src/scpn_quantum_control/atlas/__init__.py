@@ -11,11 +11,13 @@ The facade exposes the snapshot contract: the node and edge vocabulary,
 identity classes, edge legality, access projection and the canonical digest
 that the browser computes too, and the bounded, access-filtered queries over a
 validated snapshot, the diff of two snapshots with the potential impact of what
-changed, and the capability gap report built from explicit mappings. Extraction lives in :mod:`scpn_quantum_control.atlas.extractors`.
+changed, the capability gap report built from explicit mappings, and claim
+comparisons judged only under compatible assumptions. Extraction lives in :mod:`scpn_quantum_control.atlas.extractors`.
 """
 
 from __future__ import annotations
 
+from .comparability import ComparableValue, Comparison, compare_values, filter_comparisons
 from .contracts import (
     EDGE_ALIASES_V1,
     EDGE_KINDS,
@@ -68,9 +70,13 @@ __all__ = [
     "AtlasSnapshotDiff",
     "AtlasTombstone",
     "CapabilityGapReport",
+    "ComparableValue",
+    "Comparison",
     "atlas_snapshot_digest",
     "capability_gap_report",
+    "compare_values",
     "diff_atlas_snapshots",
+    "filter_comparisons",
     "parse_atlas_snapshot",
     "project_public",
     "resolve_saved_view",

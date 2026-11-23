@@ -38,6 +38,7 @@ import {
 } from "./atlasSession";
 import { atlasWorkspaceViewOf, overlayAtlasWorkspace } from "./workspaceOverlay";
 import { CapabilityGaps } from "./CapabilityGaps";
+import { ClaimComparisons } from "./ClaimComparisons";
 import {
   type CapabilityEvidence,
   type CapabilityGapsAdmission,
@@ -1008,6 +1009,7 @@ export default function AtlasView({
         {!admittedGaps.ok ? <p role="alert">{admittedGaps.reason}</p> : null}
       </section>
       <SnapshotDiffView open={linkDigest} />
+      <ClaimComparisons />
       {!admittedFilter.ok ? (
         <p role="alert">{`The requested Atlas filter was refused because ${admittedFilter.reason}; the view opens without it.`}</p>
       ) : null}

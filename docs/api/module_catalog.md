@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **900 modules** across **42 package families**
-- **4844 documented public module-level symbols**
+- **901 modules** across **42 package families**
+- **4854 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -926,6 +926,16 @@ Held-out synthetic QRC certificates and exact reservoir objectives.
 **Functions:** `generate_synthetic_reservoir_task()`, `certify_reservoir_training()`
 
 ## `atlas`
+
+### `scpn_quantum_control.atlas.comparability`
+
+Compare claimed values only when what they measure, and how, is the same.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/atlas/comparability.py) · Public symbols: **10**
+
+**Classes:** `ComparabilityError`, `ComparableValue`, `Comparison`
+
+**Functions:** `parse_comparable_value()`, `verify_value_sources()`, `compare_values()`, `filter_comparisons()`, `value_to_wire()`, `comparison_to_wire()`, `build_comparison_record()`
 
 ### `scpn_quantum_control.atlas.contracts`
 

@@ -4,6 +4,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Atlas now compares claims only under compatible assumptions.
+  - `scpn_quantum_control.atlas.compare_values` checks a seven-field
+    comparability key before any number. A field that is not stated gives
+    insufficient evidence; a field that differs gives non-comparable.
+  - A value from another producer or version stays non-comparable until that
+    producer equivalence is accepted. Nothing is accepted by default.
+  - Criteria (`interval_overlap`, `same_sign`) are declared before values are
+    compared. `filter_comparisons` never hides counter-evidence or a
+    disagreement.
+  - Every value cites a committed JSON file by sha256 and a pointer for each
+    number. A number that is not exactly the cited field is refused.
+  - `tools/studio_atlas_claim_comparison.py` keeps the committed record of the
+    d10 retest and powered depth-profile values current. The record gives no
+    agreement. The Atlas shows it with a status filter and a list of the
+    counter-evidence that the filter would hide.
 - The Atlas now reports capability gaps from explicit mappings only.
   - `scpn_quantum_control.atlas.capability_gap_report` joins each
     architecture-map capability with its declared tests, native documentation

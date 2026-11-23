@@ -1,0 +1,167 @@
+{
+  "accepted": [],
+  "comparisons": [
+    {
+      "criterion": "interval_overlap",
+      "federated": false,
+      "left": "d10-even-arm-leakage",
+      "negative": false,
+      "reasons": [
+        "estimand differs: even-arm parity leakage at DLA depth 10 / odd-arm parity leakage at DLA depth 10"
+      ],
+      "right": "d10-odd-arm-leakage",
+      "status": "non_comparable"
+    },
+    {
+      "criterion": "same_sign",
+      "federated": false,
+      "left": "d10-asymmetry",
+      "negative": true,
+      "reasons": [
+        "unit is not stated for powered-delta-8"
+      ],
+      "right": "powered-delta-8",
+      "status": "insufficient_evidence"
+    },
+    {
+      "criterion": "same_sign",
+      "federated": false,
+      "left": "powered-delta-8",
+      "negative": false,
+      "reasons": [
+        "unit is not stated for powered-delta-8",
+        "unit is not stated for powered-delta-12"
+      ],
+      "right": "powered-delta-12",
+      "status": "insufficient_evidence"
+    }
+  ],
+  "home": {
+    "producer": "scpn-quantum-control",
+    "version": "1.3.0"
+  },
+  "record_digest": "8e47cce04a4fa8336a108d0a6d53aed92e440da53c6b0e9fdbedd6492cf5260c",
+  "schema": "scpn_qc_studio_claim_comparisons_v1",
+  "values": [
+    {
+      "estimate": 0.4610595703125,
+      "interval": [
+        0.4502858492544852,
+        0.4718697947747976
+      ],
+      "key": {
+        "calibration": "IQM device calibration at the 2026-07-22 run",
+        "dataset": "iqm_dla_d10_retest 2026-07-22",
+        "estimand": "even-arm parity leakage at DLA depth 10",
+        "model": "DLA parity circuit, IQM paper replication",
+        "noise": "device noise as run",
+        "unit": "probability",
+        "uq_method": "Wilson 95 % interval"
+      },
+      "negative": false,
+      "producer": "scpn-quantum-control",
+      "producer_version": "1.3.0",
+      "source": {
+        "estimate": "primary_sign_replication.leak_even",
+        "high": "s1_two_sided.wilson95_even.1",
+        "low": "s1_two_sided.wilson95_even.0",
+        "path": "data/iqm_paper_replication/iqm_dla_d10_retest_primary_analysis_2026-07-22.json",
+        "sha256": "442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be"
+      },
+      "value_id": "d10-even-arm-leakage"
+    },
+    {
+      "estimate": 0.44775390625,
+      "interval": [
+        0.437012789004063,
+        0.45854399985027255
+      ],
+      "key": {
+        "calibration": "IQM device calibration at the 2026-07-22 run",
+        "dataset": "iqm_dla_d10_retest 2026-07-22",
+        "estimand": "odd-arm parity leakage at DLA depth 10",
+        "model": "DLA parity circuit, IQM paper replication",
+        "noise": "device noise as run",
+        "unit": "probability",
+        "uq_method": "Wilson 95 % interval"
+      },
+      "negative": false,
+      "producer": "scpn-quantum-control",
+      "producer_version": "1.3.0",
+      "source": {
+        "estimate": "primary_sign_replication.leak_odd",
+        "high": "s1_two_sided.wilson95_odd.1",
+        "low": "s1_two_sided.wilson95_odd.0",
+        "path": "data/iqm_paper_replication/iqm_dla_d10_retest_primary_analysis_2026-07-22.json",
+        "sha256": "442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be"
+      },
+      "value_id": "d10-odd-arm-leakage"
+    },
+    {
+      "estimate": 0.0133056640625,
+      "interval": null,
+      "key": {
+        "calibration": "IQM device calibration at the 2026-07-22 run",
+        "dataset": "iqm_dla_d10_retest 2026-07-22",
+        "estimand": "difference_even_minus_odd at DLA depth 10",
+        "model": "DLA parity circuit, IQM paper replication",
+        "noise": "device noise as run",
+        "unit": "probability difference",
+        "uq_method": "one-sided normal test at alpha 0.05"
+      },
+      "negative": true,
+      "producer": "scpn-quantum-control",
+      "producer_version": "1.3.0",
+      "source": {
+        "estimate": "primary_sign_replication.difference_even_minus_odd",
+        "path": "data/iqm_paper_replication/iqm_dla_d10_retest_primary_analysis_2026-07-22.json",
+        "sha256": "442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be"
+      },
+      "value_id": "d10-asymmetry"
+    },
+    {
+      "estimate": 0.0224594055223,
+      "interval": null,
+      "key": {
+        "calibration": "12 IQM Garnet calibration epochs",
+        "dataset": "iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04",
+        "estimand": "delta_8, secondary per-depth random effect",
+        "model": "DLA parity circuit, IQM paper replication",
+        "noise": "device noise as run",
+        "unit": null,
+        "uq_method": "safeguarded HKSJ random-effects t"
+      },
+      "negative": false,
+      "producer": "scpn-quantum-control",
+      "producer_version": "1.3.0",
+      "source": {
+        "estimate": "secondary_per_depth_random_effects.8.mean",
+        "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_analysis_2026-10-11.json",
+        "sha256": "640134f4546af25ac8c1c30cf18230e83c1acbecc71cddd7a448cb134de348ad"
+      },
+      "value_id": "powered-delta-8"
+    },
+    {
+      "estimate": 0.0051490027077,
+      "interval": null,
+      "key": {
+        "calibration": "12 IQM Garnet calibration epochs",
+        "dataset": "iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04",
+        "estimand": "delta_12, secondary per-depth random effect",
+        "model": "DLA parity circuit, IQM paper replication",
+        "noise": "device noise as run",
+        "unit": null,
+        "uq_method": "safeguarded HKSJ random-effects t"
+      },
+      "negative": false,
+      "producer": "scpn-quantum-control",
+      "producer_version": "1.3.0",
+      "source": {
+        "estimate": "secondary_per_depth_random_effects.12.mean",
+        "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_analysis_2026-10-11.json",
+        "sha256": "640134f4546af25ac8c1c30cf18230e83c1acbecc71cddd7a448cb134de348ad"
+      },
+      "value_id": "powered-delta-12"
+    }
+  ]
+}

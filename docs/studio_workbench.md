@@ -2227,6 +2227,59 @@ workflow changes. Selecting a capability in the Atlas shows its **Coverage and
 gaps** panel: each kind of evidence on its own line, the declared tests with
 their CI owners, the documentation, the gaps and the unknowns.
 
+### Claim comparisons
+
+`scpn_quantum_control.atlas.compare_values(left, right, criterion, home=…)`
+compares two values only when their assumptions are compatible.
+
+- **The comparability key.** Each value states seven fields: estimand, unit,
+  model, dataset, calibration, noise and uncertainty method.
+  - A field that is not stated makes the pair *insufficient evidence*.
+  - A field that differs makes the pair *non-comparable*. Close numbers do not
+    change that.
+- **Producers.** A value from another producer or version is *federated*.
+  - A federated pair is non-comparable until that producer and version are on
+    the accepted list.
+  - Nothing is accepted by default.
+- **Criteria.** Each criterion is declared before the values are compared:
+  - `interval_overlap` gives agreement when the stated intervals overlap and
+    disagreement when they do not;
+  - `same_sign` gives agreement when both intervals exclude zero on the same
+    side and disagreement when they exclude it on opposite sides.
+  A missing interval, or an interval that contains zero, leaves the pair
+  insufficient.
+- **Counter-evidence.** `filter_comparisons(comparisons, statuses)` returns the
+  selected comparisons together with the comparisons the filter would hide that
+  involve a negative value or disagree. A filter never hides counter-evidence.
+
+The values come from committed results. Each value cites:
+
+- a committed JSON file, by path and sha256;
+- a dotted pointer for each number it carries.
+
+The build refuses any number that is not exactly the cited field. It also
+refuses a digest that differs, an unsafe or absent path, and a pointer that does
+not resolve.
+
+`python tools/studio_atlas_claim_comparison.py --write` builds the sealed record
+(`data/studio/atlas_claim_comparisons_20261123.json`) from the declared values
+(`data/studio/atlas_claim_comparison_values_20261123.json`), and `--check` keeps
+it current. The declared values cite the d10 retest and the powered depth
+profile. The record gives no agreement:
+
+| Pair | Verdict | Why |
+| --- | --- | --- |
+| d10 even-arm vs odd-arm leakage | non-comparable | The estimands differ. Their intervals overlap, but that is not agreement. |
+| d10 asymmetry vs `delta_8` | insufficient evidence, counter-evidence | The powered analysis states no unit. |
+| `delta_8` vs `delta_12` | insufficient evidence | Neither states a unit. |
+
+The Atlas **Claim comparisons** panel admits the record only when its canonical
+digest recomputes. It then lists:
+
+- each pair with the sources it cites, its criterion, verdict and reasons;
+- a status filter;
+- the counter-evidence the filter would hide, in its own list.
+
 ## Evidence inspector
 
 The program-AD replay card uses the shared evidence inspector. It displays the

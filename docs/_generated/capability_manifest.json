@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1709,
-    "python_model_source_modules": 900,
+    "python_model_classes": 1712,
+    "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1679
+    "test_files": 1680
   },
   "documentation": {
     "examples": [
@@ -617,7 +617,7 @@
       {
         "package": "atlas",
         "path": "src/scpn_quantum_control/atlas",
-        "python_modules": 6
+        "python_modules": 7
       },
       {
         "package": "benchmark_harness",
@@ -1629,6 +1629,18 @@
       {
         "name": "CommittedWasmReplayCertificate",
         "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
+      },
+      {
+        "name": "ComparabilityError",
+        "path": "src/scpn_quantum_control/atlas/comparability.py"
+      },
+      {
+        "name": "ComparableValue",
+        "path": "src/scpn_quantum_control/atlas/comparability.py"
+      },
+      {
+        "name": "Comparison",
+        "path": "src/scpn_quantum_control/atlas/comparability.py"
       },
       {
         "name": "ComparisonBudget",
@@ -7746,6 +7758,7 @@
       "src/scpn_quantum_control/applications/quantum_kernel.py",
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
       "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
+      "src/scpn_quantum_control/atlas/comparability.py",
       "src/scpn_quantum_control/atlas/contracts.py",
       "src/scpn_quantum_control/atlas/coverage.py",
       "src/scpn_quantum_control/atlas/diff.py",
@@ -9896,6 +9909,7 @@
       "tests/test_async_runner.py",
       "tests/test_atlas_bounded_queries.py",
       "tests/test_atlas_capability_gaps.py",
+      "tests/test_atlas_claim_comparability.py",
       "tests/test_atlas_contracts.py",
       "tests/test_atlas_snapshot_diff.py",
       "tests/test_atlas_snapshot_extraction.py",
