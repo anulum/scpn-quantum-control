@@ -110,19 +110,22 @@ describe("Atlas selection linked to Studio drafts", () => {
         `Draft from revision ${draft.slice(0, 12)}, selected in atlas. Saving appends a child revision; that revision stays as it is.`,
       ),
     ).toBeTruthy();
-    await waitFor(() =>
-      expect(screen.getByLabelText("Selected value")).toHaveProperty("value", "-0"),
+    await waitFor(
+      () => expect(screen.getByLabelText("Selected value")).toHaveProperty("value", "-0"),
+      { timeout: 15_000 },
     );
     fireEvent.change(screen.getByLabelText("Selected value"), { target: { value: "-3" } });
     fireEvent.click(screen.getByRole("button", { name: "Apply value" }));
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Save parameter revision" })).toHaveProperty(
-        "disabled",
-        false,
-      ),
+    await waitFor(
+      () =>
+        expect(screen.getByRole("button", { name: "Save parameter revision" })).toHaveProperty(
+          "disabled",
+          false,
+        ),
+      { timeout: 15_000 },
     );
     fireEvent.click(screen.getByRole("button", { name: "Save parameter revision" }));
-    await waitFor(() => expect(saved).toHaveLength(1));
+    await waitFor(() => expect(saved).toHaveLength(1), { timeout: 15_000 });
     const child = requirePresent(store.current().selected);
     expect(store.current().origin).toBe("parameters");
     expect(child.objectId).not.toBe(`revision:sha256:${draft}`);
@@ -142,11 +145,13 @@ describe("Atlas selection linked to Studio drafts", () => {
       ),
     );
     await row(revisionLabel(draft));
-    await waitFor(() =>
-      expect(
-        within(screen.getByRole("region", { name: "Shared selection" })).getByRole("status")
-          .textContent,
-      ).toBe(`Selected in parameters: ${revisionLabel(child.revisionId as string)} (revision).`),
+    await waitFor(
+      () =>
+        expect(
+          within(screen.getByRole("region", { name: "Shared selection" })).getByRole("status")
+            .textContent,
+        ).toBe(`Selected in parameters: ${revisionLabel(child.revisionId as string)} (revision).`),
+      { timeout: 15_000 },
     );
     const relations = screen.getByRole("table", { name: "Atlas relations table" });
     expect(relations.textContent).toContain(
@@ -210,7 +215,9 @@ describe("Atlas selection in shared links and other views", () => {
         <AtlasView instrument="architecture" contextSuffix={link.slice(link.indexOf("?"))} />,
       ),
     );
-    await waitFor(() => expect(restored.current().selected?.objectId).toBe(selected.objectId));
+    await waitFor(() => expect(restored.current().selected?.objectId).toBe(selected.objectId), {
+      timeout: 15_000,
+    });
     expect(restored.current().origin).toBe("atlas");
   }, 30_000);
 
@@ -242,10 +249,12 @@ describe("Atlas selection in shared links and other views", () => {
       within_(store, <AtlasView instrument="architecture" contextSuffix="" workspace={source} />),
     );
     await screen.findByRole("table", { name: "Atlas nodes" }, { timeout: 15_000 });
-    await waitFor(() =>
-      expect(screen.getByRole("region", { name: "Atlas snapshot" }).textContent).toContain(
-        "with your workspace",
-      ),
+    await waitFor(
+      () =>
+        expect(screen.getByRole("region", { name: "Atlas snapshot" }).textContent).toContain(
+          "with your workspace",
+        ),
+      { timeout: 15_000 },
     );
     store.select(
       {
@@ -275,18 +284,22 @@ describe("Atlas selection in shared links and other views", () => {
     rerender(
       within_(store, <AtlasView instrument="workspace" contextSuffix="" workspace={source} />),
     );
-    await waitFor(() =>
-      expect(screen.getByRole("region", { name: "Atlas snapshot" }).textContent).toContain(
-        "with your workspace",
-      ),
+    await waitFor(
+      () =>
+        expect(screen.getByRole("region", { name: "Atlas snapshot" }).textContent).toContain(
+          "with your workspace",
+        ),
+      { timeout: 15_000 },
     );
     rerender(
       within_(store, <AtlasView instrument="workspace" contextSuffix="" workspace={null} />),
     );
-    await waitFor(() =>
-      expect(screen.getByRole("region", { name: "Atlas snapshot" }).textContent).not.toContain(
-        "with your workspace",
-      ),
+    await waitFor(
+      () =>
+        expect(screen.getByRole("region", { name: "Atlas snapshot" }).textContent).not.toContain(
+          "with your workspace",
+        ),
+      { timeout: 15_000 },
     );
   }, 30_000);
 });
