@@ -23713,6 +23713,26 @@
       ]
     },
     {
+      "path": "src/scpn_quantum_control/atlas/__init__.py",
+      "module": "scpn_quantum_control.atlas",
+      "source_sha256": "c001f0700e69a98f9b983e0036ebfceaaabcefc36bd4eeeab0f2df874a37633f",
+      "has_declared_all": true,
+      "declared_all": [],
+      "all_container_type": "list",
+      "star_names": [],
+      "bindings": []
+    },
+    {
+      "path": "src/scpn_quantum_control/atlas/extractors/__init__.py",
+      "module": "scpn_quantum_control.atlas.extractors",
+      "source_sha256": "e31be4e3e0f5de23cdab05db8d13292e41cea84af3f6fa891e5c9aca21bd7566",
+      "has_declared_all": true,
+      "declared_all": [],
+      "all_container_type": "list",
+      "star_names": [],
+      "bindings": []
+    },
+    {
       "path": "src/scpn_quantum_control/benchmark_harness/__init__.py",
       "module": "scpn_quantum_control.benchmark_harness",
       "source_sha256": "5d894d3475ea40fbd2eb239f8bb6e58dab4e230ba567ddd672720af9def943d0",
