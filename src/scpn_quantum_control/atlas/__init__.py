@@ -10,7 +10,8 @@
 The facade exposes the snapshot contract: the node and edge vocabulary,
 identity classes, edge legality, access projection and the canonical digest
 that the browser computes too, and the bounded, access-filtered queries over a
-validated snapshot. Extraction lives in :mod:`scpn_quantum_control.atlas.extractors`.
+validated snapshot, and the diff of two snapshots with the potential impact of
+what changed. Extraction lives in :mod:`scpn_quantum_control.atlas.extractors`.
 """
 
 from __future__ import annotations
@@ -32,6 +33,12 @@ from .contracts import (
     project_public,
     snapshot_to_wire,
 )
+from .diff import (
+    AtlasDiffError,
+    AtlasSnapshotDiff,
+    diff_atlas_snapshots,
+    resolve_saved_view,
+)
 from .query import (
     PREBUILT_QUERIES,
     AtlasQuery,
@@ -49,6 +56,7 @@ __all__ = [
     "RELATION_VERSION",
     "SNAPSHOT_SCHEMA",
     "AtlasContractError",
+    "AtlasDiffError",
     "AtlasEdge",
     "AtlasExclusion",
     "AtlasNode",
@@ -56,10 +64,13 @@ __all__ = [
     "AtlasQueryError",
     "AtlasQueryResult",
     "AtlasSnapshot",
+    "AtlasSnapshotDiff",
     "AtlasTombstone",
     "atlas_snapshot_digest",
+    "diff_atlas_snapshots",
     "parse_atlas_snapshot",
     "project_public",
+    "resolve_saved_view",
     "run_atlas_query",
     "run_prebuilt_query",
     "snapshot_to_wire",

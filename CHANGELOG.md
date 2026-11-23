@@ -4,6 +4,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Atlas snapshots can now be compared.
+  - **The diff.** `scpn_quantum_control.atlas.diff_atlas_snapshots` matches
+    objects by identifier and a typed content hash. Each differing node is
+    added, removed, tombstoned or changed (with its fields), in the categories
+    code, data, contract, documentation or calibration. Relations are compared
+    too.
+  - **Potential impact.** It follows typed dependency relations only, and each
+    impacted node keeps its shortest path. The analysis is labelled incomplete,
+    with its reasons, whenever an extraction excluded something, a node on a
+    path is not current, or a relation followed was not observed.
+  - **Saved views.** `resolve_saved_view` says whether each node a saved view
+    names is present, tombstoned or absent.
+  - **Tools.** `tools/studio_atlas_snapshot_diff.py` admits two pins and writes
+    a sealed comparison record. The Atlas opens such a record, verifies its
+    digest and shows the changes and their potential impact.
 - The Atlas and the Studio stages now share one selection.
   - **Your workspace in the Atlas.** A new Workspace lens shows your workspace's
     experiment revisions, parameters, programs and runs. They form a private

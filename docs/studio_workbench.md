@@ -2119,6 +2119,77 @@ back through the inspector to find the child beside its parent. Along the way it
 checks that no URL carries a private identifier and audits the Atlas at desktop
 and mobile width.
 
+### Snapshot comparison
+
+`scpn_quantum_control.atlas.diff_atlas_snapshots(before, after)` compares two
+snapshots of the same access scope. Objects are matched by identifier.
+
+**What counts as a change.** A node changed only when what it states changed:
+its typed content hash (`quantum_atlas_node_content.v1`) covers every field
+except `evidence_refs`, which move with any byte of the inputs that list them.
+Each differing node is one of:
+- *added*;
+- *removed*;
+- *tombstoned*: removed, and the later snapshot records its removal and the
+  reason;
+- *changed*, with the fields that differ.
+
+**Categories.**
+
+| Category | Node kinds |
+|---|---|
+| code | definitions, tests, programs |
+| data | artefacts, revisions, runs, instances |
+| contract | capabilities, claims, parameters |
+| documentation | documentation |
+| calibration | backends, and any node a `calibrated_by` relation targets |
+
+Relations are compared too, as added, removed or changed.
+
+**Potential impact.**
+- Impact spreads from each changed, removed or tombstoned node along typed
+  dependency relations only, from the dependency to what depends on it:
+  - from target to source for `derives_from`, `consumes`, `requires`,
+    `constrained_by`, `documents`, `contains`, `benchmarked_against` and
+    `calibrated_by`;
+  - from source to target for `implements`, `lowers_to`, `verified_by`,
+    `supports` and `produces`.
+- `supersedes`, `maps_to` and `contradicts_under_assumptions` carry no impact.
+- Each impacted node keeps the shortest path that reaches it.
+- The analysis is complete only when three things hold: neither extraction
+  excluded anything, every node on a path is current, and every relation
+  followed was observed (`extracted` or `measured`), not `declared`, `curated`
+  or `import_adjacency`. Otherwise it lists why it is incomplete.
+- It is potential impact, never an exhaustive proof.
+
+**Saved views.** `resolve_saved_view(snapshot, ids)` resolves the nodes a saved
+view names against a later snapshot. Each one is present, tombstoned (with its
+reason and removal time) or absent.
+
+**From the command line.**
+
+```bash
+git show <commit>:data/studio/atlas_snapshot_20261122.json > before.json
+cp data/studio/atlas_snapshot_20261122.json after.json
+python tools/studio_atlas_snapshot_diff.py --before before.json --after after.json --output diff.json
+```
+
+Each pin is admitted first: its schema, its contract and its recorded digest
+must hold. The record (`scpn_qc_studio_atlas_snapshot_diff_v1`) holds:
+- both snapshot digests and source commits;
+- the classified changes, the impact paths and the completeness verdict;
+- a canonical record digest (`scpn_qc_studio_atlas_snapshot_diff_record_v1`).
+
+An existing output file is kept, never overwritten.
+
+**In the Atlas.** **Open a snapshot comparison** admits such a record. The
+browser recomputes the record digest and does not recompute the comparison. It
+shows:
+- the changed objects and relations;
+- each impacted object with its path;
+- the completeness verdict and its reasons;
+- whether the later snapshot is the one open.
+
 ## Evidence inspector
 
 The program-AD replay card uses the shared evidence inspector. It displays the

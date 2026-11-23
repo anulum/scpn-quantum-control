@@ -38,6 +38,7 @@ import {
 } from "./atlasSession";
 import { atlasWorkspaceViewOf, overlayAtlasWorkspace } from "./workspaceOverlay";
 import { EvidenceLineage, type LineageVerifier } from "./EvidenceLineage";
+import { SnapshotDiffView } from "./SnapshotDiffView";
 import {
   type LineageAdmission,
   type LineageRecord,
@@ -987,6 +988,7 @@ export default function AtlasView({
         {overlayRefusal !== null ? <p role="alert">{overlayRefusal}</p> : null}
         {!admittedLineage.ok ? <p role="alert">{admittedLineage.reason}</p> : null}
       </section>
+      <SnapshotDiffView open={linkDigest} />
       {!admittedFilter.ok ? (
         <p role="alert">{`The requested Atlas filter was refused because ${admittedFilter.reason}; the view opens without it.`}</p>
       ) : null}

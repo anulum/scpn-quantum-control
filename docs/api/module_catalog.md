@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **898 modules** across **42 package families**
-- **4822 documented public module-level symbols**
+- **899 modules** across **42 package families**
+- **4833 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -936,6 +936,16 @@ Validate Atlas snapshots: node and edge vocabulary, identity and legality.
 **Classes:** `AtlasContractError`, `AtlasNode`, `AtlasEdge`, `AtlasTombstone`, `AtlasExclusion`, `AtlasSnapshot`
 
 **Functions:** `parse_atlas_snapshot()`, `snapshot_to_wire()`, `atlas_snapshot_digest()`, `project_public()`
+
+### `scpn_quantum_control.atlas.diff`
+
+Compare two Atlas snapshots and trace the potential impact of what changed.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/atlas/diff.py) · Public symbols: **11**
+
+**Classes:** `AtlasDiffError`, `NodeDifference`, `EdgeDifference`, `ImpactStep`, `ImpactedNode`, `AtlasSnapshotDiff`, `ViewReference`
+
+**Functions:** `node_content_hash()`, `diff_atlas_snapshots()`, `diff_to_wire()`, `resolve_saved_view()`
 
 ### `scpn_quantum_control.atlas.extractors.snapshot`
 

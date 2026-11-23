@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1695,
-    "python_model_source_modules": 898,
+    "python_model_classes": 1702,
+    "python_model_source_modules": 899,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1676
+    "test_files": 1678
   },
   "documentation": {
     "examples": [
@@ -617,7 +617,7 @@
       {
         "package": "atlas",
         "path": "src/scpn_quantum_control/atlas",
-        "python_modules": 4
+        "python_modules": 5
       },
       {
         "package": "benchmark_harness",
@@ -1143,6 +1143,10 @@
         "path": "src/scpn_quantum_control/atlas/contracts.py"
       },
       {
+        "name": "AtlasDiffError",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
+      },
+      {
         "name": "AtlasEdge",
         "path": "src/scpn_quantum_control/atlas/contracts.py"
       },
@@ -1189,6 +1193,10 @@
       {
         "name": "AtlasSnapshot",
         "path": "src/scpn_quantum_control/atlas/contracts.py"
+      },
+      {
+        "name": "AtlasSnapshotDiff",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
       },
       {
         "name": "AtlasTombstone",
@@ -2487,6 +2495,10 @@
         "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
       },
       {
+        "name": "EdgeDifference",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
+      },
+      {
         "name": "EigenpairDerivative",
         "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
@@ -3403,6 +3415,14 @@
         "path": "src/scpn_quantum_control/identity_observer_product.py"
       },
       {
+        "name": "ImpactStep",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
+      },
+      {
+        "name": "ImpactedNode",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
+      },
+      {
         "name": "ImplicitDerivativeRefusal",
         "path": "src/scpn_quantum_control/differentiable_implicit_kkt.py"
       },
@@ -4249,6 +4269,10 @@
       {
         "name": "NoAdvantageCertificate",
         "path": "src/scpn_quantum_control/advantage_language_protocol.py"
+      },
+      {
+        "name": "NodeDifference",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
       },
       {
         "name": "NumericalMethodRequest",
@@ -7363,6 +7387,10 @@
         "path": "src/scpn_quantum_control/studio/executive.py"
       },
       {
+        "name": "ViewReference",
+        "path": "src/scpn_quantum_control/atlas/diff.py"
+      },
+      {
         "name": "VirtualRealtimeClock",
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
@@ -7691,6 +7719,7 @@
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
       "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
       "src/scpn_quantum_control/atlas/contracts.py",
+      "src/scpn_quantum_control/atlas/diff.py",
       "src/scpn_quantum_control/atlas/extractors/snapshot.py",
       "src/scpn_quantum_control/atlas/extractors/workspace.py",
       "src/scpn_quantum_control/atlas/query.py",
@@ -9838,6 +9867,7 @@
       "tests/test_async_runner.py",
       "tests/test_atlas_bounded_queries.py",
       "tests/test_atlas_contracts.py",
+      "tests/test_atlas_snapshot_diff.py",
       "tests/test_atlas_snapshot_extraction.py",
       "tests/test_atlas_workspace_overlay.py",
       "tests/test_attested_result_pack.py",
@@ -11154,6 +11184,7 @@
       "tests/test_structured_log_fallback.py",
       "tests/test_studio_accessibility_browser_journey.py",
       "tests/test_studio_atlas_snapshot.py",
+      "tests/test_studio_atlas_snapshot_diff.py",
       "tests/test_studio_attestation_instrument.py",
       "tests/test_studio_benchmark_databank.py",
       "tests/test_studio_benchmark_databank_bundle.py",

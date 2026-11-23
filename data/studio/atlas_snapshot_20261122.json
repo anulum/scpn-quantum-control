@@ -6591,7 +6591,7 @@
           "as_of": "committed declarations carry no observation time",
           "validity_domain": "the input states no validity scope"
         },
-        "source_digest": "56873a3d159d534a9e54dc94c209730cd7fe170945991a118ff9bb7eb2c438cd",
+        "source_digest": "e517e2b4f755bcfa943c78dc98082d28ceb4dbdfc7d514434086e84cd189995e",
         "source_ref": "README.md",
         "status": "current",
         "validity_domain": null
@@ -7579,8 +7579,8 @@
       }
     ],
     "schema": "quantum_atlas_snapshot.v1",
-    "source_commit": "a091a7fd19a6564197e659967ccfa8aef4dddc0e",
+    "source_commit": "b263870732f30f61d62dd7948ab6511d209f8a53",
     "tombstones": []
   },
-  "snapshot_digest": "67ceb12f5bbe4367730576e9cbb572534333a32e195d29c0d12acd8906ba402f"
+  "snapshot_digest": "e7669957aeb426248974aa9ffd584008d3206e0f921cb22768fb82bfa8481120"
 }
