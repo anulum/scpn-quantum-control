@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import cast
@@ -31,12 +32,14 @@ from scpn_quantum_control.hardware_result_packs import (  # noqa: E402
     load_manifest,
 )
 from scpn_quantum_control.studio.evidence_bundle import (  # noqa: E402
+    NEGATIVE_RESULT_RULES,
     EvidenceSource,
     build_claim_ledger_bundle,
     build_claim_ledger_bundles,
     build_hardware_result_pack_bundle,
     build_hardware_result_pack_bundles,
     evidence_axes,
+    negative_result_evidence,
     validate_bundle,
     validate_bundles,
 )
@@ -139,18 +142,31 @@ def test_blocked_claim_carries_fail_closed_upstream_dependency() -> None:
 
 
 def test_hardware_result_pack_bundles_use_physical_substrate_and_artifact_edges() -> None:
-    """Committed hardware packs emit bounded-support bundles with artifact digest edges."""
+    """Committed packs emit bounded support, and the promoted negative pack stays refuted."""
     manifest_path = REPO_ROOT / MANIFEST_RELATIVE_PATH
     manifest = load_manifest(manifest_path)
     bundles = build_hardware_result_pack_bundles(manifest_path=manifest_path)
     validations = validate_bundles(bundles)
+    pairs = zip(manifest["packs"], bundles, strict=True)
+    by_status = {pack["status"]: bundle for pack, bundle in pairs}
+    negative = by_status["promoted_negative_result"]
+    positive = [bundle for bundle in bundles if bundle is not negative]
 
     assert len(bundles) == len(manifest["packs"]) == 5
     assert all(validation.verdict.admitted for validation in validations)
     assert {bundle.schema for bundle in bundles} == {"studio.hardware-result-pack.v1"}
-    assert {bundle.evidence_kind for bundle in bundles} == {EvidenceKind.MEASURED}
     assert {bundle.substrate for bundle in bundles} == {Substrate.HARDWARE_UNMITIGATED}
-    assert {bundle.claim_boundary.status for bundle in bundles} == {ClaimStatus.BOUNDED_SUPPORT}
+    assert {bundle.evidence_kind for bundle in positive} == {EvidenceKind.MEASURED}
+    assert {bundle.claim_boundary.status for bundle in positive} == {ClaimStatus.BOUNDED_SUPPORT}
+    assert negative.evidence_kind is EvidenceKind.FALSIFIED
+    assert negative.claim_boundary.status is ClaimStatus.REFUTED
+    assert negative.statistical_evidence is not None
+    assert negative.statistical_evidence.to_dict() == {
+        "trials": 15,
+        "failures": 14,
+        "test_name": "Welch t-test per comparison",
+    }
+    assert {case.status for case in negative.cases} == {"refuted"}
     for pack, bundle in zip(manifest["packs"], bundles, strict=True):
         assert len(bundle.derived_from) == len(pack["artifacts"])
         assert {edge.entity_digest for edge in bundle.derived_from} == {
@@ -218,3 +234,167 @@ def test_validation_summary_is_json_ready() -> None:
     assert summary["entity_id"].startswith("scpn-quantum-control:hardware-result-pack:")
     assert summary["admitted"] is True
     assert summary["rejections"] == []
+
+
+def _analysis(root: Path, comparisons: object) -> Path:
+    """Write a fixture analysis below ``root`` and return the repository root.
+
+    Parameters
+    ----------
+    root : Path
+        Fixture repository root.
+    comparisons : object
+        The analysis ``comparisons`` value.
+
+    Returns
+    -------
+    Path
+        The fixture repository root.
+
+    """
+    rule = NEGATIVE_RESULT_RULES["scpn_fim_negative_ibm_kingston_2026_05_05"]
+    path = root / rule.analysis
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"comparisons": comparisons}), encoding="utf-8")
+    return root
+
+
+def test_negative_result_counts_follow_the_declared_rule(tmp_path: Path) -> None:
+    """Each comparison of the observable is a trial; each positive delta is a failure.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Fixture repository root.
+
+    """
+    rule = NEGATIVE_RESULT_RULES["scpn_fim_negative_ibm_kingston_2026_05_05"]
+    comparisons = [
+        {"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": 0.2},
+        {"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": -0.1},
+        {"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": 0},
+        {"observable": "state_retention", "delta_lambda_4_minus_0": 0.5},
+        "not a comparison",
+    ]
+
+    evidence = negative_result_evidence(rule, _analysis(tmp_path, comparisons))
+
+    assert evidence.to_dict() == {"trials": 3, "failures": 1, "test_name": rule.test_name}
+
+
+@pytest.mark.parametrize(
+    "comparisons",
+    [
+        None,
+        [],
+        [{"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": "0.2"}],
+        [{"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": True}],
+        [{"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": float("nan")}],
+    ],
+)
+def test_negative_result_counts_refuse_an_unusable_analysis(
+    tmp_path: Path, comparisons: object
+) -> None:
+    """No comparison, or a delta that is not a finite number, refuses the count.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Fixture repository root.
+    comparisons : object
+        The analysis ``comparisons`` value.
+
+    """
+    rule = NEGATIVE_RESULT_RULES["scpn_fim_negative_ibm_kingston_2026_05_05"]
+    with pytest.raises(ValueError, match="needs finite"):
+        negative_result_evidence(rule, _analysis(tmp_path, comparisons))
+
+
+def test_a_negative_pack_without_a_rule_refuses_emission() -> None:
+    """A promoted negative pack with no declared rule never falls back to bounded support."""
+    with pytest.raises(ValueError, match="needs a declared counting rule"):
+        build_hardware_result_pack_bundle(
+            {"id": "undeclared", "status": "promoted_negative_result", "artifacts": []}
+        )
+
+
+def test_a_non_object_analysis_refuses_the_count(tmp_path: Path) -> None:
+    """An analysis file that is not a JSON object holds no comparisons.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Fixture repository root.
+
+    """
+    rule = NEGATIVE_RESULT_RULES["scpn_fim_negative_ibm_kingston_2026_05_05"]
+    path = tmp_path / rule.analysis
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="needs finite"):
+        negative_result_evidence(rule, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "artifacts",
+    [
+        [],
+        "invalid",
+        [
+            {
+                "role": "raw_counts",
+                "path": NEGATIVE_RESULT_RULES[
+                    "scpn_fim_negative_ibm_kingston_2026_05_05"
+                ].analysis,
+                "sha256": "a" * 64,
+            }
+        ],
+        [
+            {
+                "role": "reproduced_analysis",
+                "path": NEGATIVE_RESULT_RULES[
+                    "scpn_fim_negative_ibm_kingston_2026_05_05"
+                ].analysis,
+                "sha256": "",
+            }
+        ],
+    ],
+)
+def test_a_negative_pack_must_record_its_declared_analysis(artifacts: object) -> None:
+    """The counted analysis must be a reproduced analysis the pack itself records.
+
+    Parameters
+    ----------
+    artifacts : object
+        The pack's ``artifacts`` value.
+
+    """
+    with pytest.raises(ValueError, match="is not a recorded reproduced analysis"):
+        build_hardware_result_pack_bundle(
+            {
+                "id": "scpn_fim_negative_ibm_kingston_2026_05_05",
+                "status": "promoted_negative_result",
+                "artifacts": artifacts,
+            }
+        )
+
+
+def test_negative_result_counts_only_the_recorded_bytes(tmp_path: Path) -> None:
+    """Counting refuses analysis bytes that differ from the digest the pack records.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Fixture repository root.
+
+    """
+    rule = NEGATIVE_RESULT_RULES["scpn_fim_negative_ibm_kingston_2026_05_05"]
+    comparisons = [{"observable": "magnetisation_leakage", "delta_lambda_4_minus_0": 0.2}]
+    root = _analysis(tmp_path, comparisons)
+    recorded = hashlib.sha256((root / rule.analysis).read_bytes()).hexdigest()
+
+    counted = negative_result_evidence(rule, root, expected_sha256=recorded)
+
+    assert (counted.trials, counted.failures) == (1, 1)
+    with pytest.raises(ValueError, match="does not match its recorded sha256"):
+        negative_result_evidence(rule, root, expected_sha256="0" * 64)

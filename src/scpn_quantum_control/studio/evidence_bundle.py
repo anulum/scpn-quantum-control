@@ -19,16 +19,24 @@ they do not become hardware-validated or reference-validated solely because raw
 counts exist. Falsified rows must use the platform's ``falsified``/``refuted``
 pair so negative findings remain explicit and are never laundered into
 validation.
+
+A pack the manifest promotes as a negative result (``promoted_negative_result``)
+becomes ``falsified``/``refuted``. Its statistical evidence is counted from its
+reproduced analysis by a declared rule (:data:`NEGATIVE_RESULT_RULES`). A
+promoted negative pack without a rule refuses emission instead of falling back
+to bounded support.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import math
 import platform
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Literal, cast
 
 from scpn_studio_platform.evidence import (
@@ -49,12 +57,14 @@ from scpn_studio_platform.evidence import (
     ProvAgent,
     ProvEntity,
     RecomputeEnvironment,
+    StatisticalEvidence,
     Substrate,
     ValidityDomain,
     validate_studio_bundle,
 )
 
 from ..differentiable_claim_ledger import (
+    REPO_ROOT,
     ClaimLedger,
     ClaimLedgerRow,
     PromotionStatus,
@@ -78,6 +88,54 @@ EvidenceSource = Literal[
 
 DEFAULT_ACTIVITY_TIMESTAMP = "2026-06-26T00:00:00Z"
 """Stable timestamp for deterministic bundles built from committed artefacts."""
+
+NEGATIVE_RESULT_STATUS = "promoted_negative_result"
+"""Manifest status of a pack promoted as a negative finding."""
+
+
+@dataclass(frozen=True, slots=True)
+class NegativeResultRule:
+    """How a promoted negative result is counted from its reproduced analysis.
+
+    Parameters
+    ----------
+    analysis
+        Repository-relative path of the reproduced analysis.
+    observable
+        Comparison observable that decides the outcome.
+    delta
+        Comparison field whose positive value is a failure of the tested hypothesis.
+    test_name
+        The test behind each comparison.
+
+    """
+
+    analysis: str
+    observable: str
+    delta: str
+    test_name: str
+
+
+NEGATIVE_RESULT_RULES: Mapping[str, NegativeResultRule] = MappingProxyType(
+    {
+        "scpn_fim_negative_ibm_kingston_2026_05_05": NegativeResultRule(
+            analysis=(
+                "data/scpn_fim_hamiltonian/"
+                "fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json"
+            ),
+            observable="magnetisation_leakage",
+            delta="delta_lambda_4_minus_0",
+            test_name="Welch t-test per comparison",
+        ),
+    }
+)
+"""Declared counting rules of the promoted negative packs.
+
+The FIM rule follows the analysis's own interpretation rule: a positive
+magnetisation-leakage delta means lambda=4 leaked more than lambda=0, which
+falsifies the simple hardware-protection interpretation. Each comparison is one
+trial; no aggregate p-value is stated.
+"""
 
 
 @dataclass(frozen=True, slots=True)
@@ -367,7 +425,99 @@ def _pack_artifact_digest_edges(pack: Mapping[str, Any]) -> tuple[DerivedEdge, .
     return tuple(edges)
 
 
-def _pack_cases(pack: Mapping[str, Any]) -> tuple[CaseResult, ...]:
+def negative_result_evidence(
+    rule: NegativeResultRule,
+    repo_root: Path = REPO_ROOT,
+    *,
+    expected_sha256: str | None = None,
+) -> StatisticalEvidence:
+    """Count a negative result's trials and failures from its reproduced analysis.
+
+    Parameters
+    ----------
+    rule
+        The declared counting rule.
+    repo_root
+        Repository root the analysis path is relative to.
+    expected_sha256
+        The analysis digest a pack records; the counted bytes must match it.
+
+    Returns
+    -------
+    StatisticalEvidence
+        One trial per comparison of the rule's observable; a failure per positive delta.
+
+    Raises
+    ------
+    ValueError
+        The analysis differs from its recorded digest, holds no such comparison, or a
+        delta is not a finite number.
+
+    """
+    data = (repo_root / rule.analysis).read_bytes()
+    if expected_sha256 is not None and hashlib.sha256(data).hexdigest() != expected_sha256:
+        raise ValueError(f"{rule.analysis}: does not match its recorded sha256")
+    document = json.loads(data.decode("utf-8"))
+    comparisons = document.get("comparisons") if isinstance(document, Mapping) else None
+    deltas = [
+        item.get(rule.delta)
+        for item in (comparisons if isinstance(comparisons, list) else [])
+        if isinstance(item, Mapping) and item.get("observable") == rule.observable
+    ]
+    finite = [
+        float(value)
+        for value in deltas
+        if isinstance(value, int | float) and not isinstance(value, bool) and math.isfinite(value)
+    ]
+    if not deltas or len(finite) != len(deltas):
+        raise ValueError(
+            f"{rule.analysis}: needs finite {rule.delta} values for {rule.observable} comparisons"
+        )
+    return StatisticalEvidence(
+        trials=len(finite),
+        failures=sum(1 for value in finite if value > 0),
+        test_name=rule.test_name,
+    )
+
+
+def _recorded_analysis_digest(pack_id: str, pack: Mapping[str, Any], path: str) -> str:
+    """Return the sha256 a pack records for its reproduced analysis at ``path``.
+
+    Parameters
+    ----------
+    pack_id
+        The pack's identifier, for the refusal message.
+    pack
+        Manifest row of the pack.
+    path
+        Repository-relative path of the declared analysis.
+
+    Returns
+    -------
+    str
+        The recorded hex digest.
+
+    Raises
+    ------
+    ValueError
+        The pack records no reproduced analysis at ``path`` with a digest.
+
+    """
+    artifacts = pack.get("artifacts", ())
+    rows = artifacts if isinstance(artifacts, Sequence) and not isinstance(artifacts, str) else ()
+    for artifact in rows:
+        if (
+            isinstance(artifact, Mapping)
+            and artifact.get("role") == "reproduced_analysis"
+            and artifact.get("path") == path
+            and isinstance(artifact.get("sha256"), str)
+            and artifact["sha256"]
+        ):
+            return str(artifact["sha256"])
+    raise ValueError(f"{pack_id}: {path} is not a recorded reproduced analysis of the pack")
+
+
+def _pack_cases(pack: Mapping[str, Any], status: ClaimStatus) -> tuple[CaseResult, ...]:
     """Return per-artifact case rows for a hardware result-pack bundle."""
     artifacts = pack.get("artifacts", ())
     if not isinstance(artifacts, Sequence) or isinstance(artifacts, str | bytes):
@@ -383,7 +533,7 @@ def _pack_cases(pack: Mapping[str, Any]) -> tuple[CaseResult, ...]:
             CaseResult(
                 operation_family=f"hardware-result-pack:{role}",
                 dimension=dimension,
-                status=ClaimStatus.BOUNDED_SUPPORT.value,
+                status=status.value,
             )
         )
     return tuple(cases)
@@ -393,6 +543,7 @@ def build_hardware_result_pack_bundle(
     pack: Mapping[str, Any],
     *,
     activity_timestamp: str = DEFAULT_ACTIVITY_TIMESTAMP,
+    repo_root: Path = REPO_ROOT,
 ) -> EvidenceBundle:
     """Build a schema-B bundle for one committed hardware result pack.
 
@@ -402,22 +553,39 @@ def build_hardware_result_pack_bundle(
         One pack record from ``data/hardware_result_packs/manifest.json``.
     activity_timestamp
         Deterministic PROV timestamp for the source-tree emission.
+    repo_root
+        Repository root of a negative pack's reproduced analysis.
 
     Returns
     -------
     EvidenceBundle
-        The platform schema-B bundle for the pack.
+        The platform schema-B bundle for the pack: ``falsified``/``refuted`` with its
+        statistical evidence for a promoted negative result, otherwise bounded support.
 
     Raises
     ------
     ValueError
-        If the pack lacks an ``id``.
+        If the pack lacks an ``id``, or a promoted negative pack has no declared rule.
 
     """
     pack_id = str(pack.get("id", "")).strip()
     if not pack_id:
         raise ValueError("hardware result pack must carry a non-empty id")
     evidence_kind, substrate = evidence_axes("hardware-unmitigated")
+    status = ClaimStatus.BOUNDED_SUPPORT
+    statistical: StatisticalEvidence | None = None
+    if pack.get("status") == NEGATIVE_RESULT_STATUS:
+        rule = NEGATIVE_RESULT_RULES.get(pack_id)
+        if rule is None:
+            raise ValueError(
+                f"{pack_id}: a promoted negative result needs a declared counting rule"
+            )
+        statistical = negative_result_evidence(
+            rule,
+            repo_root,
+            expected_sha256=_recorded_analysis_digest(pack_id, pack, rule.analysis),
+        )
+        evidence_kind, status = EvidenceKind.FALSIFIED, ClaimStatus.REFUTED
     command = str(pack.get("reproduce_command", "")).strip()
     return EvidenceBundle(
         schema=HARDWARE_RESULT_PACK_SCHEMA,
@@ -432,17 +600,15 @@ def build_hardware_result_pack_bundle(
         agent=_studio_agent(),
         evidence_level=EvidenceLevel.SCIENTIFICALLY_CURATED,
         evidence_kind=evidence_kind,
-        claim_boundary=ClaimBoundary(
-            status=ClaimStatus.BOUNDED_SUPPORT,
-            admission=AdmissionDecision.ADMITTED,
-        ),
+        claim_boundary=ClaimBoundary(status=status, admission=AdmissionDecision.ADMITTED),
         substrate=substrate,
         freshness=Freshness.TRACEABLE_UNCHECKED,
         numeric_provenance=NumericProvenance(
             active_backend=str(pack.get("backend", "hardware-result-pack")),
             reference_backend="committed-raw-counts",
         ),
-        cases=_pack_cases(pack),
+        statistical_evidence=statistical,
+        cases=_pack_cases(pack, status),
         recompute_environment=RecomputeEnvironment(
             toolchain={"python": platform.python_version(), "command": command or "verify"},
             available=True,
@@ -520,13 +686,17 @@ def validate_bundles(bundles: Iterable[EvidenceBundle]) -> tuple[StudioBundleVal
 
 __all__ = [
     "DEFAULT_ACTIVITY_TIMESTAMP",
+    "NEGATIVE_RESULT_RULES",
+    "NEGATIVE_RESULT_STATUS",
     "EvidenceSource",
+    "NegativeResultRule",
     "StudioBundleValidation",
     "build_claim_ledger_bundle",
     "build_claim_ledger_bundles",
     "build_hardware_result_pack_bundle",
     "build_hardware_result_pack_bundles",
     "evidence_axes",
+    "negative_result_evidence",
     "validate_bundle",
     "validate_bundles",
 ]

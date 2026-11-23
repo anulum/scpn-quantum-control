@@ -2044,7 +2044,7 @@ verbatim; none is merged, raised or relabelled.
 | Record | What it shows |
 |---|---|
 | Claim | The ledger `promotion_status` and the schema-B bundle of `scpn_quantum_control.studio.evidence_bundle`, with its claim status, admission, evidence kind, substrate and freshness. It also shows the reference-validation certificate or why there is none, and each declared evidence identifier: *resolved* to one committed file with its sha256, *ambiguous* with every candidate, or *missing custody*. |
-| Hardware result pack | The manifest `status` beside the bundle's claim status, the scope and non-claims, the provider jobs, and each raw-count, summary and analysis file with its recorded digest and the custody of the committed file. |
+| Hardware result pack | The manifest `status` beside the bundle's claim status (`refuted`, with counted statistical evidence, for the pack promoted as a negative result), the scope and non-claims, the provider jobs, and each raw-count, summary and analysis file with its recorded digest and the custody of the committed file. |
 | Replication analysis | Its decision field verbatim, for example `negative_sign_replicates = false`, with the analysis file and its sha256. The Atlas search finds it by that text. |
 
 A claim whose bundle says `reference-validated` without a committed certificate
@@ -2058,7 +2058,8 @@ belongs to the committed snapshot; another opened pin shows none.
 The journey `atlas_evidence_lineage` checks this in Chromium:
 - an unvalidated claim keeps its statuses;
 - its record verifies, and its exact hashes and missing custody are shown;
-- the negative pack shows both statuses;
+- the negative pack shows its manifest status beside its bundle's `falsified` kind and
+  `refuted` claim status;
 - the failed replication is found by search;
 - the panel passes the accessibility audit at desktop and mobile width.
 

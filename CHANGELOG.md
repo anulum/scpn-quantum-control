@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The promoted negative hardware result pack (the SCPN/FIM ibm_kingston pilot and
+  repeated follow-up) is now emitted as `falsified`/`refuted`. Before, it was
+  `bounded-support` like every other pack. Its statistical evidence is counted
+  from its reproduced analysis by a declared rule: 15 magnetisation-leakage
+  comparisons of lambda=4 against lambda=0, with lambda=4 leaking more in 14,
+  each a Welch t-test. A promoted negative pack without a declared rule now
+  refuses emission instead of falling back to bounded support. The evidence
+  lineage and the Atlas snapshot carry the new status.
+
 - The Atlas inspector shows the evidence lineage of a claim, a hardware result
   pack or a replication analysis. Every source-owned status is shown verbatim.
   - Claims show their ledger status, bundle axes and certificate or its absence.

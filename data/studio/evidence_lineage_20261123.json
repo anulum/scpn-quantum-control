@@ -2310,32 +2310,32 @@
           {
             "dimension": 90433,
             "operation_family": "hardware-result-pack:raw_counts",
-            "status": "bounded-support"
+            "status": "refuted"
           },
           {
             "dimension": 58701,
             "operation_family": "hardware-result-pack:reproduced_analysis",
-            "status": "bounded-support"
+            "status": "refuted"
           },
           {
             "dimension": 268339,
             "operation_family": "hardware-result-pack:raw_counts",
-            "status": "bounded-support"
+            "status": "refuted"
           },
           {
             "dimension": 146390,
             "operation_family": "hardware-result-pack:reproduced_analysis",
-            "status": "bounded-support"
+            "status": "refuted"
           },
           {
             "dimension": 140915,
             "operation_family": "hardware-result-pack:mitigation_summary",
-            "status": "bounded-support"
+            "status": "refuted"
           }
         ],
         "claim_boundary": {
           "admission": "admitted",
-          "status": "bounded-support"
+          "status": "refuted"
         },
         "derived_from": [
           {
@@ -2364,7 +2364,7 @@
             "studio": "scpn-quantum-control"
           }
         ],
-        "evidence_kind": "measured",
+        "evidence_kind": "falsified",
         "freshness": "traceable-unchecked",
         "numeric_provenance": {
           "active_backend": "ibm_kingston",
@@ -2395,6 +2395,11 @@
         "ro_crate_profile": "scpn-studio/0.1",
         "schema": "studio.hardware-result-pack.v1",
         "scpn_evidence_level": 2,
+        "statistical_evidence": {
+          "failures": 14,
+          "test_name": "Welch t-test per comparison",
+          "trials": 15
+        },
         "substrate": "hardware-unmitigated"
       },
       "claim_scope": "Supports the negative result for simple digital lambda=4 FIM hardware protection on the tested circuit family.",
@@ -2410,7 +2415,7 @@
         "therapeutic or clinical claim",
         "broad quantum advantage"
       ],
-      "record_digest": "c642f5888b0e5ece7a2fe6134e80598fbb25bbca4a17fcd98cfe8ce12cc689c8",
+      "record_digest": "ed93e8b38922bb39b6a70880690d81fa0d0341b76fd14d1b21a9baeaa21496ce",
       "title": "SCPN/FIM ibm_kingston pilot and repeated follow-up negative result"
     }
   ],

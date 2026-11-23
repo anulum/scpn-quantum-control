@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **897 modules** across **42 package families**
-- **4816 documented public module-level symbols**
+- **4818 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5697,11 +5697,11 @@ Coverage-frontier report for QUANTUM's differentiable claim ledger.
 
 Emit schema-B STUDIO evidence bundles from QUANTUM ledgers.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/evidence_bundle.py) · Public symbols: **8**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/evidence_bundle.py) · Public symbols: **10**
 
-**Classes:** `StudioBundleValidation`
+**Classes:** `NegativeResultRule`, `StudioBundleValidation`
 
-**Functions:** `evidence_axes()`, `build_claim_ledger_bundle()`, `build_claim_ledger_bundles()`, `build_hardware_result_pack_bundle()`, `build_hardware_result_pack_bundles()`, `validate_bundle()`, `validate_bundles()`
+**Functions:** `evidence_axes()`, `build_claim_ledger_bundle()`, `build_claim_ledger_bundles()`, `negative_result_evidence()`, `build_hardware_result_pack_bundle()`, `build_hardware_result_pack_bundles()`, `validate_bundle()`, `validate_bundles()`
 
 ### `scpn_quantum_control.studio.evidence_lineage`
 

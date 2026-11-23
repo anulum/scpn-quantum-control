@@ -125,7 +125,7 @@ def _rewrite(path: Path, change: Callable[[Record], None]) -> None:
 
 
 def test_the_repository_lineage_keeps_every_status_verbatim() -> None:
-    """Claims stay unvalidated, the negative pack keeps both statuses, the replication fails."""
+    """Claims stay unvalidated, the negative pack is refuted with counts, the replication fails."""
     lineage = build_evidence_lineage(_ROOT)
     claims = {claim["claim_id"]: claim for claim in _records(lineage, "claims")}
     packs = {pack["id"]: pack for pack in _records(lineage, "packs")}
@@ -138,7 +138,8 @@ def test_the_repository_lineage_keeps_every_status_verbatim() -> None:
         assert claim["bundle"]["freshness"] == "traceable-unchecked"
     negative = packs["scpn_fim_negative_ibm_kingston_2026_05_05"]
     assert negative["manifest_status"] == "promoted_negative_result"
-    assert negative["bundle"]["claim_boundary"]["status"] == "bounded-support"
+    assert negative["bundle"]["claim_boundary"]["status"] == "refuted"
+    assert negative["bundle"]["statistical_evidence"]["trials"] == 15
     custody = {item["custody"] for pack in packs.values() for item in pack["artefacts"]}
     assert custody == {"digest-matches"}
     (replication,) = _records(lineage, "replications")

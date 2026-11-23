@@ -8,7 +8,7 @@
 | Package version | 1.3.0 |
 | Public API exports | 883 |
 | Python source modules | 897 |
-| Public Python classes | 1692 |
+| Public Python classes | 1693 |
 | Domain package families | 41 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
