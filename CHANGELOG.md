@@ -4,6 +4,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The Atlas and the Studio stages now share one selection.
+  - **Your workspace in the Atlas.** A new Workspace lens shows your workspace's
+    experiment revisions, parameters, programs and runs. They form a private
+    overlay on the committed snapshot, built in the browser and never linked.
+    `scpn_quantum_control.atlas.extractors.workspace` builds the same overlay in
+    Python, and committed parity cases bind the two
+    (`tools/studio_atlas_workspace_overlay_cases.py`).
+  - **Drafts.** A revision the parameter editor admits opens as a new draft.
+    Saving appends a child revision and selects it. A revision the editor
+    refuses is shown read-only with the editor's reason.
+  - **Selection.** The selection carries the snapshot, object and content
+    identity and the view that made it, and stops after one change. A source
+    chosen in the explorer is selected in the Atlas too.
+  - **Links and removed objects.** Links carry only public identifiers.
+    `filter` gains `sel`, for a public node. A selection the open snapshot no
+    longer holds is explained by its tombstone, its changed content or its
+    absence.
+  - The `atlas_studio_selection` browser journey checks the round trip in
+    Chromium.
 - The promoted negative hardware result pack (the SCPN/FIM ibm_kingston pilot and
   repeated follow-up) is now emitted as `falsified`/`refuted`. Before, it was
   `bounded-support` like every other pack. Its statistical evidence is counted

@@ -180,6 +180,7 @@ _SOURCE_SCENARIOS = {
         "benchmark_databank",
         "atlas_graph_navigation",
         "atlas_evidence_lineage",
+        "atlas_studio_selection",
         "capability_resolver",
         "operator_backend_profiles",
         "operator_policy_decisions",

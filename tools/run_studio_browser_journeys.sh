@@ -340,6 +340,22 @@ python -m coverage combine --rcfile=/dev/null --append --keep \
     --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-atlas-lineage-browser.coverage"
 
 python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-atlas-selection-browser.coverage" \
+    --include="*/tools/studio_atlas_selection_browser.py,*/tools/studio_browser_journey.py" \
+    tools/studio_browser_journey.py --scenario atlas_studio_selection \
+    --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-atlas-selection-journey.json"
+STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+    python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-atlas-selection-browser.coverage" \
+    --include="*/tools/studio_atlas_selection_browser.py" \
+    -m pytest --noconftest -q tools/tests/test_studio_atlas_selection_browser.py
+python -m coverage report --rcfile=/dev/null \
+    --data-file="$RUNNER_TEMP/studio-atlas-selection-browser.coverage" \
+    --include="*/tools/studio_atlas_selection_browser.py" --precision=2 --show-missing --fail-under=100
+python -m coverage combine --rcfile=/dev/null --append --keep \
+    --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-atlas-selection-browser.coverage"
+
+python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
     --data-file="$RUNNER_TEMP/studio-capability-browser.coverage" \
     --include="*/tools/studio_capability_browser.py,*/tools/studio_browser_journey.py" \
     tools/studio_browser_journey.py --scenario capability_resolver \

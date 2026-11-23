@@ -60,6 +60,7 @@ describe("workbenchRegistry", () => {
       ["/atlas/architecture", "atlas", "architecture"],
       ["/atlas/claims", "atlas", "claims"],
       ["/atlas/evidence", "atlas", "evidence"],
+      ["/atlas/workspace", "atlas", "workspace"],
       ["/operations", "operations", null],
     ]);
   });

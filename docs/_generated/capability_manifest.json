@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1693,
-    "python_model_source_modules": 897,
+    "python_model_classes": 1695,
+    "python_model_source_modules": 898,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1675
+    "test_files": 1676
   },
   "documentation": {
     "examples": [
@@ -617,7 +617,7 @@
       {
         "package": "atlas",
         "path": "src/scpn_quantum_control/atlas",
-        "python_modules": 3
+        "python_modules": 4
       },
       {
         "package": "benchmark_harness",
@@ -7567,6 +7567,14 @@
         "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
       },
       {
+        "name": "WorkspaceOverlayError",
+        "path": "src/scpn_quantum_control/atlas/extractors/workspace.py"
+      },
+      {
+        "name": "WorkspaceView",
+        "path": "src/scpn_quantum_control/atlas/extractors/workspace.py"
+      },
+      {
         "name": "XYCompileRecomputeUnit",
         "path": "src/scpn_quantum_control/studio/recompute_kernel.py"
       },
@@ -7684,6 +7692,7 @@
       "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
       "src/scpn_quantum_control/atlas/contracts.py",
       "src/scpn_quantum_control/atlas/extractors/snapshot.py",
+      "src/scpn_quantum_control/atlas/extractors/workspace.py",
       "src/scpn_quantum_control/atlas/query.py",
       "src/scpn_quantum_control/attested_result_pack.py",
       "src/scpn_quantum_control/backend_dispatch.py",
@@ -9830,6 +9839,7 @@
       "tests/test_atlas_bounded_queries.py",
       "tests/test_atlas_contracts.py",
       "tests/test_atlas_snapshot_extraction.py",
+      "tests/test_atlas_workspace_overlay.py",
       "tests/test_attested_result_pack.py",
       "tests/test_attested_result_pack_quality_gate.py",
       "tests/test_audit_advisory_workflow_steps.py",

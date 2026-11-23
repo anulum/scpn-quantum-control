@@ -1,0 +1,329 @@
+{
+  "cases": [
+    {
+      "expected": {
+        "exclusions": [
+          [
+            "data/fixture.json:missing.py",
+            "absent"
+          ],
+          [
+            "workspace/0f0e0d0c-0b0a-4908-8706-050403020100/4444444444444444444444444444444444444444444444444444444444444444",
+            "parent revision 7777777777777777777777777777777777777777777777777777777777777777 is not in the workspace"
+          ],
+          [
+            "workspace/0f0e0d0c-0b0a-4908-8706-050403020100/6666666666666666666666666666666666666666666666666666666666666666",
+            "the parameter key is not an Atlas identifier"
+          ],
+          [
+            "workspace/0f0e0d0c-0b0a-4908-8706-050403020100/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "the run or attempt identifier is not a lowercase UUID"
+          ],
+          [
+            "workspace/0f0e0d0c-0b0a-4908-8706-050403020100/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "revision 7777777777777777777777777777777777777777777777777777777777777777 is not in the workspace"
+          ]
+        ],
+        "private_edges": [
+          [
+            "program:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/9999999999999999999999999999999999999999999999999999999999999999",
+            "consumes",
+            "parameter:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/coupling.K"
+          ],
+          [
+            "program:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/9999999999999999999999999999999999999999999999999999999999999999",
+            "consumes",
+            "parameter:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/omega"
+          ],
+          [
+            "program:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/9999999999999999999999999999999999999999999999999999999999999999",
+            "consumes",
+            "revision:sha256:3333333333333333333333333333333333333333333333333333333333333333"
+          ],
+          [
+            "program:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/9999999999999999999999999999999999999999999999999999999999999999",
+            "consumes",
+            "revision:sha256:4444444444444444444444444444444444444444444444444444444444444444"
+          ],
+          [
+            "revision:sha256:4444444444444444444444444444444444444444444444444444444444444444",
+            "derives_from",
+            "revision:sha256:3333333333333333333333333333333333333333333333333333333333333333"
+          ],
+          [
+            "run:11111111-2222-4333-8444-555555555555/66666666-7777-4888-8999-aaaaaaaaaaaa",
+            "consumes",
+            "revision:sha256:4444444444444444444444444444444444444444444444444444444444444444"
+          ]
+        ],
+        "private_node_ids": [
+          "parameter:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/coupling.K",
+          "parameter:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/omega",
+          "program:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/9999999999999999999999999999999999999999999999999999999999999999",
+          "revision:sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "revision:sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "run:11111111-2222-4333-8444-555555555555/66666666-7777-4888-8999-aaaaaaaaaaaa",
+          "run:22222222-3333-4444-8555-666666666666/66666666-7777-4888-8999-aaaaaaaaaaaa"
+        ],
+        "snapshot_digest": "63aa8b129a07e65599ceda8be73817461f7c617f4115dcede0d4dd955626eb9d",
+        "tombstone_ids": [
+          "definition:repo/src:retired.py"
+        ]
+      },
+      "name": "revisions_parameters_programs_and_runs",
+      "previous": null,
+      "workspace": {
+        "documents": {
+          "1111111111111111111111111111111111111111111111111111111111111111": {
+            "body": {
+              "key": "coupling.K"
+            },
+            "schema": "parameter_spec.v1"
+          },
+          "2222222222222222222222222222222222222222222222222222222222222222": {
+            "body": {
+              "key": "omega"
+            },
+            "schema": "parameter_spec.v1"
+          },
+          "3333333333333333333333333333333333333333333333333333333333333333": {
+            "body": {
+              "parameters": {
+                "bad key": {
+                  "dtype": "float64"
+                },
+                "coupling.K": {
+                  "dtype": "float64"
+                },
+                "omega": {
+                  "dtype": "float64"
+                }
+              },
+              "parent_revision_hashes": [],
+              "program_ref": {
+                "schema": "program.v1",
+                "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+              }
+            },
+            "schema": "experiment_revision.v1"
+          },
+          "4444444444444444444444444444444444444444444444444444444444444444": {
+            "body": {
+              "parameters": {
+                "coupling.K": {
+                  "dtype": "float64"
+                }
+              },
+              "parent_revision_hashes": [
+                "3333333333333333333333333333333333333333333333333333333333333333",
+                "7777777777777777777777777777777777777777777777777777777777777777"
+              ],
+              "program_ref": {
+                "schema": "program.v1",
+                "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+              }
+            },
+            "schema": "experiment_revision.v1"
+          },
+          "5555555555555555555555555555555555555555555555555555555555555555": {
+            "body": {
+              "key": "omega"
+            },
+            "schema": "parameter_spec.v1"
+          },
+          "6666666666666666666666666666666666666666666666666666666666666666": {
+            "body": {
+              "key": "bad key"
+            },
+            "schema": "parameter_spec.v1"
+          },
+          "8888888888888888888888888888888888888888888888888888888888888888": {
+            "body": {
+              "attempt_id": "66666666-7777-4888-8999-aaaaaaaaaaaa",
+              "revision_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+              "run_id": "11111111-2222-4333-8444-555555555555"
+            },
+            "schema": "local_run_record.v1"
+          },
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": {
+            "body": {
+              "attempt_id": "66666666-7777-4888-8999-aaaaaaaaaaaa",
+              "revision_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+              "run_id": "run-1"
+            },
+            "schema": "local_run_record.v1"
+          },
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc": {
+            "body": {},
+            "schema": "resolved_settings.v1"
+          },
+          "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+            "body": {
+              "attempt_id": "66666666-7777-4888-8999-aaaaaaaaaaaa",
+              "revision_hash": "7777777777777777777777777777777777777777777777777777777777777777",
+              "run_id": "22222222-3333-4444-8555-666666666666"
+            },
+            "schema": "local_run_record.v1"
+          }
+        },
+        "project_id": "0f0e0d0c-0b0a-4908-8706-050403020100",
+        "updated_at": "2026-11-23T10:00:00Z",
+        "workspace_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "expected": {
+        "exclusions": [
+          [
+            "data/fixture.json:missing.py",
+            "absent"
+          ]
+        ],
+        "private_edges": [],
+        "private_node_ids": [],
+        "snapshot_digest": "9a7bfa608052f58c6f499d0559faafc878bb86aea6ff807c1aff23566212e25e",
+        "tombstone_ids": [
+          "definition:repo/src:retired.py"
+        ]
+      },
+      "name": "empty_workspace",
+      "previous": null,
+      "workspace": {
+        "documents": {},
+        "project_id": "0f0e0d0c-0b0a-4908-8706-050403020100",
+        "updated_at": "2026-11-23T09:00:00Z",
+        "workspace_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "expected": {
+        "exclusions": [
+          [
+            "data/fixture.json:missing.py",
+            "absent"
+          ]
+        ],
+        "private_edges": [
+          [
+            "program:workspace.1e2d3c4b-5a69-4788-9a6b-5c4d3e2f1a0b/9999999999999999999999999999999999999999999999999999999999999999",
+            "consumes",
+            "revision:sha256:3333333333333333333333333333333333333333333333333333333333333333"
+          ]
+        ],
+        "private_node_ids": [
+          "program:workspace.1e2d3c4b-5a69-4788-9a6b-5c4d3e2f1a0b/9999999999999999999999999999999999999999999999999999999999999999",
+          "revision:sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        ],
+        "snapshot_digest": "f5a320d330941270e96d6824b61cd8e428625fdf5a09e1ec59a382145bc78720",
+        "tombstone_ids": [
+          "definition:repo/src:retired.py",
+          "parameter:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/coupling.K",
+          "parameter:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/omega",
+          "program:workspace.0f0e0d0c-0b0a-4908-8706-050403020100/9999999999999999999999999999999999999999999999999999999999999999",
+          "revision:sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "run:11111111-2222-4333-8444-555555555555/66666666-7777-4888-8999-aaaaaaaaaaaa",
+          "run:22222222-3333-4444-8555-666666666666/66666666-7777-4888-8999-aaaaaaaaaaaa"
+        ]
+      },
+      "name": "replaced_workspace",
+      "previous": "revisions_parameters_programs_and_runs",
+      "workspace": {
+        "documents": {
+          "3333333333333333333333333333333333333333333333333333333333333333": {
+            "body": {
+              "parameters": {},
+              "parent_revision_hashes": [],
+              "program_ref": {
+                "schema": "program.v1",
+                "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+              }
+            },
+            "schema": "experiment_revision.v1"
+          }
+        },
+        "project_id": "1e2d3c4b-5a69-4788-9a6b-5c4d3e2f1a0b",
+        "updated_at": "2026-11-23T11:00:00Z",
+        "workspace_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    }
+  ],
+  "overlay_version": "workspace-overlay.1",
+  "public": {
+    "access_scope": "public",
+    "edges": [
+      {
+        "access": "public",
+        "as_of": null,
+        "assumptions": [],
+        "derivation_method": "declared",
+        "evidence_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "kind": "implements",
+        "mapping": null,
+        "relation_version": "atlas_relation.v1",
+        "source": "definition:repo/src:overlay.py",
+        "source_ref": "data/fixture.json",
+        "target": "capability:atlas.fixture/overlay"
+      }
+    ],
+    "evidence_set_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "exclusions": [
+      {
+        "reason": "absent",
+        "source_ref": "data/fixture.json:missing.py"
+      }
+    ],
+    "extractor_version": "atlas-extractor.2",
+    "nodes": [
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ],
+        "id": "capability:atlas.fixture/overlay",
+        "kind": "capability",
+        "label": "Overlay fixture capability",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time",
+          "source_digest": "a declaration inside its input, without its own content",
+          "validity_domain": "the input states no validity scope"
+        },
+        "source_digest": null,
+        "source_ref": "data/fixture.json",
+        "status": "current",
+        "validity_domain": null
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ],
+        "id": "definition:repo/src:overlay.py",
+        "kind": "definition",
+        "label": "src/overlay.py",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time",
+          "validity_domain": "the input states no validity scope"
+        },
+        "source_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "source_ref": "src/overlay.py",
+        "status": "current",
+        "validity_domain": null
+      }
+    ],
+    "schema": "quantum_atlas_snapshot.v1",
+    "source_commit": "0123456789abcdef0123456789abcdef01234567",
+    "tombstones": [
+      {
+        "id": "definition:repo/src:retired.py",
+        "kind": "definition",
+        "last_source_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "reason": "no longer extracted from the admitted inputs",
+        "removed_at": "2026-11-20T00:00:00Z"
+      }
+    ]
+  },
+  "public_digest": "65efe35ea062843ff56576acd6612fccc6b53a7dc0249eedddc191e025131297",
+  "schema": "scpn_qc_studio_atlas_workspace_overlay_cases_v1"
+}

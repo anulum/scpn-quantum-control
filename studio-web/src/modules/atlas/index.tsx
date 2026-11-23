@@ -8,10 +8,14 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { NavigationServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type {
+  NavigationServices,
+  SourceServices,
+  WorkspaceViewServices,
+} from "../../shared/contracts/workbench";
 
 /** Shell services this module uses; the compiler refuses any other. */
-type Services = NavigationServices;
+type Services = NavigationServices & SourceServices;
 
 const AtlasView = lazy(() => import("./AtlasView"));
 /** Browse the committed Atlas snapshot through deep-linkable lenses. */
@@ -24,10 +28,19 @@ export const atlasModule: StudioModule<Services, WorkspaceViewServices, "atlas">
       id: "atlas" as const,
       label: "Atlas",
       group: "context",
-      instruments: ["architecture", "claims", "evidence"],
-      render: (services: Services, instrument: string | null) => (
-        <AtlasView instrument={instrument} contextSuffix={services.contextSuffix} />
-      ),
+      instruments: ["architecture", "claims", "evidence", "workspace"],
+      render: (services: Services, instrument: string | null) => {
+        // The same admitted workspace the explorer shows is overlaid as private objects.
+        const preview = services.workspace.preview ?? services.workspace.saved?.preview ?? null;
+        return (
+          <AtlasView
+            instrument={instrument}
+            contextSuffix={services.contextSuffix}
+            workspace={preview === null ? null : { json: preview.json, codecs: services.codecs }}
+            draftHref={services.workspaceHref}
+          />
+        );
+      },
     },
   ],
   capabilities: [

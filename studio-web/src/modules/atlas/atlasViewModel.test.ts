@@ -13,6 +13,7 @@ import {
   aggregateAtlasAnswer,
   atlasFilterBound,
   atlasKeyTarget,
+  atlasLensOfKind,
   atlasNodeZoomLimit,
   atlasViewHref,
   atlasViewQuery,
@@ -116,11 +117,19 @@ describe("Atlas view model", () => {
     expect(atlasKeyTarget(line, "a", "Home")).toBeNull();
   });
 
+  it("names the first lens that keeps a node kind, or none", () => {
+    expect(atlasLensOfKind("capability")).toBe("architecture");
+    expect(atlasLensOfKind("claim")).toBe("claims");
+    expect(atlasLensOfKind("artefact")).toBe("evidence");
+    expect(atlasLensOfKind("revision")).toBe("workspace");
+    expect(atlasLensOfKind("backend")).toBeNull();
+  });
+
   it("admits a filter only with known, single, non-empty fields and a bounded hop count", () => {
     expect(parseAtlasFilter(null)).toEqual({ ok: true, filter: defaultAtlasFilter });
     expect(parseAtlasFilter("q=node+e&focus=definition%3Aa%2Fb&hops=3")).toEqual({
       ok: true,
-      filter: { text: "node e", focus: "definition:a/b", depth: 3 },
+      filter: { text: "node e", focus: "definition:a/b", depth: 3, selected: null },
     });
     const refusals = Object.fromEntries(
       ["zoom=1", "q=a&q=b", "q=", "hops=0", "hops=7", "hops=2.5", "hops=10"].map((value) => {
@@ -141,9 +150,16 @@ describe("Atlas view model", () => {
 
   it("encodes filters in a stable order and round-trips them through a deep link", () => {
     expect(formatAtlasFilter(defaultAtlasFilter)).toBeNull();
-    const filter = { text: "node e", focus: "definition:a/b", depth: 2 };
+    const filter = { text: "node e", focus: "definition:a/b", depth: 2, selected: null };
     const encoded = formatAtlasFilter(filter);
     expect(encoded).toBe("q=node+e&focus=definition%3Aa%2Fb&hops=2");
+    const chosen = { ...defaultAtlasFilter, selected: "definition:repo/src:a.py" };
+    expect(formatAtlasFilter(chosen)).toBe("sel=definition%3Arepo%2Fsrc%3Aa.py");
+    expect(parseAtlasFilter(formatAtlasFilter(chosen))).toEqual({ ok: true, filter: chosen });
+    expect(parseAtlasFilter("sel=a&sel=b")).toEqual({
+      ok: false,
+      reason: "it has an unknown or repeated field",
+    });
     expect(parseAtlasFilter(encoded)).toEqual({ ok: true, filter });
     const href = atlasViewHref("claims", "?project=p+%CE%B1&snapshot=old&revision=r", "d1", filter);
     expect(href).toBe(

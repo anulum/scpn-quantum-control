@@ -15,6 +15,9 @@ import {
   appendParameterRevision,
   parameterSourceFromArchive,
 } from "../../shared/parameters/parameterRevision";
+import { useSelectionState, useSelectionStore } from "../../shared/selection/selectionStore";
+
+const revisionPrefix = "revision:sha256:";
 
 /** Bind a fully admitted archive to the original workspace owner's atomic save. */
 export interface ParameterWorkspaceProps {
@@ -30,28 +33,59 @@ export interface ParameterWorkspaceProps {
   ) => Promise<void>;
 }
 
-/** Resolve original revision/specifications and delegate persistence without a second store. */
+/**
+ * Resolve original revision/specifications and delegate persistence without a second store.
+ *
+ * A revision selected in another view (such as the Atlas) opens as the draft source; saving
+ * appends a child revision and selects it, and the selected revision itself never changes.
+ */
 export function ParameterWorkspace({ preview, rawCodecs, saveArchive }: ParameterWorkspaceProps) {
+  const store = useSelectionStore();
+  const shared = useSelectionState(store);
+  const selected = shared.selected;
+  const wanted = selected?.objectId.startsWith(revisionPrefix) ? selected.revisionId : null;
   const [state, setState] = useState<{
     readonly json: string;
     readonly codecs: ReadonlyMap<string, RawCodec>;
+    readonly wanted: string | null;
     readonly source: ParameterDraftSource | null;
     readonly refusal: boolean;
+    readonly fallback: boolean;
   } | null>(null);
   useEffect(() => {
     let live = true;
-    void parameterSourceFromArchive(preview.json, rawCodecs)
-      .then((source) => {
-        if (live) setState({ json: preview.json, codecs: rawCodecs, source, refusal: false });
-      })
-      .catch(() => {
-        if (live) setState({ json: preview.json, codecs: rawCodecs, source: null, refusal: true });
-      });
+    const settle = (source: ParameterDraftSource | null, refusal: boolean, fallback: boolean) => {
+      if (live)
+        setState({ json: preview.json, codecs: rawCodecs, wanted, source, refusal, fallback });
+    };
+    const opening =
+      wanted === null
+        ? parameterSourceFromArchive(preview.json, rawCodecs).then((source) => ({
+            source,
+            fallback: false,
+          }))
+        : parameterSourceFromArchive(preview.json, rawCodecs, wanted).then(
+            (source) => ({ source: source as ParameterDraftSource | null, fallback: false }),
+            // A selected revision of another workspace leaves this one's draft revision.
+            () =>
+              parameterSourceFromArchive(preview.json, rawCodecs).then((source) => ({
+                source,
+                fallback: true,
+              })),
+          );
+    void opening
+      .then(({ source, fallback }) => settle(source, false, fallback))
+      .catch(() => settle(null, true, false));
     return () => {
       live = false;
     };
-  }, [preview.json, rawCodecs]);
-  if (state === null || state.json !== preview.json || state.codecs !== rawCodecs)
+  }, [preview.json, rawCodecs, wanted]);
+  if (
+    state === null ||
+    state.json !== preview.json ||
+    state.codecs !== rawCodecs ||
+    state.wanted !== wanted
+  )
     return (
       <p role="note" aria-live="polite">
         Reading admitted parameter source…
@@ -68,20 +102,39 @@ export function ParameterWorkspace({ preview, rawCodecs, saveArchive }: Paramete
       </p>
     );
   return (
-    <ParameterEditor
-      source={source}
-      onSave={async (snapshot, signal) => {
-        const child = await appendParameterRevision(
-          preview.json,
-          source,
-          snapshot,
-          rawCodecs,
-          new Date().toISOString(),
-        );
-        if (signal.aborted) throw new Error("Parameter revision save cancelled before transaction");
-        await saveArchive(child.archive, preview.json, signal);
-        return child.revisionHash;
-      }}
-    />
+    <>
+      {wanted !== null && shared.origin !== null ? (
+        <p role="note">
+          {state.fallback
+            ? `The revision selected in ${shared.origin} is not in this workspace; its draft revision opens instead.`
+            : `Draft from revision ${wanted.slice(0, 12)}, selected in ${shared.origin}. Saving appends a child revision; that revision stays as it is.`}
+        </p>
+      ) : null}
+      <ParameterEditor
+        source={source}
+        onSave={async (snapshot, signal) => {
+          const child = await appendParameterRevision(
+            preview.json,
+            source,
+            snapshot,
+            rawCodecs,
+            new Date().toISOString(),
+          );
+          if (signal.aborted)
+            throw new Error("Parameter revision save cancelled before transaction");
+          await saveArchive(child.archive, preview.json, signal);
+          store?.select(
+            {
+              snapshotDigest: child.archive.workspaceHash,
+              objectId: `${revisionPrefix}${child.revisionHash}`,
+              revisionId: child.revisionHash,
+              access: "private",
+            },
+            "parameters",
+          );
+          return child.revisionHash;
+        }}
+      />
+    </>
   );
 }

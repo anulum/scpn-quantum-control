@@ -1963,20 +1963,21 @@ E5-2640). The canonical digest dominates the cost:
 Each snapshot's digest is computed once and reused by every later query. Layout
 takes under a millisecond for 500 nodes, so it stays on the main thread.
 
-Three lenses are deep-linkable instruments:
+Four lenses are deep-linkable instruments:
 
 | Lens | Node kinds |
 |---|---|
 | Architecture (`#/atlas/architecture`, the default) | capabilities, definitions, tests and documentation |
 | Claims (`#/atlas/claims`) | claims, the definitions they derive from, and their documentation |
 | Evidence (`#/atlas/evidence`) | content-addressed artefacts |
+| Workspace (`#/atlas/workspace`) | your workspace's experiment revisions, programs, parameters and runs (see [Atlas selection and Studio drafts](#atlas-selection-and-studio-drafts)) |
 
 The context carries the snapshot and the filter, for example
 `#/atlas/claims?snapshot=<digest>&filter=q%3Dkuramoto%26hops%3D2`.
 - `snapshot` must name the open snapshot. Any other is refused with an
   *unverifiable* notice; opening its pin shows it.
-- `filter` restores the search (`q`), the focused node (`focus`) and the hop
-  bound (`hops`, 1 to 6). The view refuses, with the reason, an unknown,
+- `filter` restores the search (`q`), the focused node (`focus`), the selected
+  public node (`sel`) and the hop bound (`hops`, 1 to 6). The view refuses, with the reason, an unknown,
   repeated or empty field or an out-of-range hop count, and opens without the
   filter.
 - **Link to this view** links the current lens, snapshot and filter. A search
@@ -2062,6 +2063,61 @@ The journey `atlas_evidence_lineage` checks this in Chromium:
   `refuted` claim status;
 - the failed replication is found by search;
 - the panel passes the accessibility audit at desktop and mobile width.
+
+### Atlas selection and Studio drafts
+
+The Atlas and the Studio stages share one selection per workbench. It records
+the object's identity, not the view that shows it: the snapshot it was selected
+in, the Atlas node identifier, the content digest, and which view selected it
+(Atlas, parameters or sources), with a change count.
+
+**Your workspace in the Atlas.**
+- When a workspace is open, the Atlas overlays it on the committed snapshot as
+  private objects:
+  - each experiment revision (`revision:sha256:<hash>`);
+  - each parameter specification (`parameter:workspace.<project>/<key>`);
+  - each program a revision names (`program:workspace.<project>/<digest>`);
+  - each local run (`run:<run id>/<attempt id>`).
+- A revision `derives_from` its parents, a program `consumes` the revisions that
+  name it and the parameters they bind, and a run `consumes` its revision.
+- An object that cannot take an Atlas identifier is listed as an exclusion with
+  its reason.
+- The overlay is private, is built in your browser, and is never stored or sent.
+- Objects of a workspace you replaced become tombstones, dated by the new
+  workspace's update time.
+- `scpn_quantum_control.atlas.extractors.workspace` builds the same overlay in
+  Python. `python tools/studio_atlas_workspace_overlay_cases.py --check` keeps
+  the committed cases (`data/studio/atlas_workspace_overlay_cases.json`) current,
+  and the browser reproduces every digest they record.
+
+**Opening a draft.**
+- Select a revision in the Workspace lens. The inspector asks the parameter
+  editor's own admission whether it opens that revision.
+- If the editor admits it, **Open as a new parameter draft** opens it in the
+  Workspace stage. Saving appends a child revision and selects it; the revision
+  you opened never changes.
+- If the editor refuses it, the revision is shown read-only, with the editor's
+  reason.
+- Choosing a source in the explorer selects it too, and the Atlas follows. The
+  inspector line **Selected object** shows the identity and links to the Atlas.
+  A selection is announced once; a view never re-announces another view's
+  selection.
+
+**Shared links.** A link carries only public identifiers: the committed
+snapshot's digest and, for a public node, `sel`. A selected workspace object
+never enters a link, and the overlay's digest is never linked.
+
+**When the selection is gone.** If the open snapshot no longer holds the
+selected object, the Atlas says why:
+- the snapshot's tombstone, with its removal time and reason;
+- a changed content digest;
+- or that the snapshot neither holds it nor records its removal.
+
+The journey `atlas_studio_selection` checks this in Chromium. It opens the
+Kuramoto sample, selects its revision, drafts from it, saves a child, and comes
+back through the inspector to find the child beside its parent. Along the way it
+checks that no URL carries a private identifier and audits the Atlas at desktop
+and mobile width.
 
 ## Evidence inspector
 

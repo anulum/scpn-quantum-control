@@ -20,7 +20,7 @@ import {
 } from "../../shared/contracts/atlasQuery";
 
 /** A registered lens. */
-export type AtlasLens = "architecture" | "claims" | "evidence";
+export type AtlasLens = "architecture" | "claims" | "evidence" | "workspace";
 
 /** One lens: the label of its link and the node kinds it keeps. */
 export interface AtlasLensDefinition {
@@ -38,7 +38,18 @@ export const atlasLenses: Readonly<Record<AtlasLens, AtlasLensDefinition>> = {
   },
   claims: { label: "Claims", kinds: ["claim", "definition", "documentation"] },
   evidence: { label: "Evidence", kinds: ["artefact"] },
+  workspace: { label: "Workspace", kinds: ["revision", "program", "parameter", "run"] },
 };
+/**
+ * Return the first lens that keeps a node kind.
+ *
+ * @param kind - A node kind.
+ * @returns The lens, or null for a kind no lens keeps.
+ */
+export function atlasLensOfKind(kind: AtlasNodeKind): AtlasLens | null {
+  const lenses = Object.keys(atlasLenses) as AtlasLens[];
+  return lenses.find((name) => atlasLenses[name].kinds.includes(kind)) ?? null;
+}
 /** Lens shown when the route names none. */
 export const defaultAtlasLens: AtlasLens = "architecture";
 /** Nodes shown at once; the query owner's page bound. */
@@ -91,9 +102,16 @@ export interface AtlasFilter {
   readonly focus: string | null;
   /** Hop bound of the neighbourhood. */
   readonly depth: number;
+  /** Selected public node a link restores, or null; it narrows no query. */
+  readonly selected: string | null;
 }
 /** Filter of a view that a link does not narrow. */
-export const defaultAtlasFilter: AtlasFilter = Object.freeze({ text: "", focus: null, depth: 1 });
+export const defaultAtlasFilter: AtlasFilter = Object.freeze({
+  text: "",
+  focus: null,
+  depth: 1,
+  selected: null,
+});
 /** Longest encoded filter a link carries; the workbench router admits no longer context value. */
 export const atlasFilterBound = 256;
 
@@ -112,10 +130,10 @@ export type AtlasFilterAdmission =
       readonly reason: string;
     };
 
-const filterFields: readonly string[] = ["q", "focus", "hops"];
+const filterFields: readonly string[] = ["q", "focus", "hops", "sel"];
 
 /**
- * Admit a requested filter: the fields `q`, `focus` and `hops`, each at most once and non-empty.
+ * Admit a requested filter: the fields `q`, `focus`, `hops` and `sel`, each at most once and non-empty.
  *
  * @param value - The route's encoded filter, or null when the route carries none.
  * @returns The admitted filter, or the refusal reason.
@@ -125,6 +143,7 @@ export function parseAtlasFilter(value: string | null): AtlasFilterAdmission {
   const seen = new Set<string>();
   let text = "";
   let focus: string | null = null;
+  let selected: string | null = null;
   let depth = 1;
   for (const [key, field] of new URLSearchParams(value)) {
     if (!filterFields.includes(key) || seen.has(key))
@@ -133,10 +152,11 @@ export function parseAtlasFilter(value: string | null): AtlasFilterAdmission {
     if (field === "") return { ok: false, reason: `its ${key} field is empty` };
     if (key === "q") text = field;
     else if (key === "focus") focus = field;
+    else if (key === "sel") selected = field;
     else if (/^[1-9]$/.test(field) && Number(field) <= atlasMaxDepth) depth = Number(field);
     else return { ok: false, reason: `its hops field must be 1 to ${atlasMaxDepth}` };
   }
-  return { ok: true, filter: { text, focus, depth } };
+  return { ok: true, filter: { text, focus, depth, selected } };
 }
 
 /**
@@ -150,6 +170,7 @@ export function formatAtlasFilter(filter: AtlasFilter): string | null {
   if (filter.text !== "") fields.set("q", filter.text);
   if (filter.focus !== null) fields.set("focus", filter.focus);
   if (filter.depth !== 1) fields.set("hops", String(filter.depth));
+  if (filter.selected !== null) fields.set("sel", filter.selected);
   const encoded = fields.toString();
   return encoded === "" ? null : encoded;
 }

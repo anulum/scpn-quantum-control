@@ -54,6 +54,8 @@ export interface AtlasQueryTask {
 export interface AtlasSession {
   /** The open snapshot. */
   readonly info: AtlasSessionInfo;
+  /** The validated snapshot on the main thread, or null when a worker holds it. */
+  readonly snapshot: AtlasSnapshot | null;
   /**
    * Start one query.
    *
@@ -120,10 +122,27 @@ export function nativeAtlasWorker(): AtlasWorkerPort {
   return port;
 }
 
-function mainThreadQuery(snapshot: AtlasSnapshot, query: AtlasQuery): AtlasQueryTask {
+function snapshotSession(
+  snapshot: AtlasSnapshot,
+  info: AtlasSessionInfo,
+  access = "public",
+): AtlasSession {
+  return {
+    info,
+    snapshot,
+    query: (query) => mainThreadQuery(snapshot, query, access),
+    dispose: () => {},
+  };
+}
+
+function mainThreadQuery(
+  snapshot: AtlasSnapshot,
+  query: AtlasQuery,
+  access: string,
+): AtlasQueryTask {
   let cancelled = false;
   return {
-    outcome: runAtlasQuery(snapshot, query).then((outcome) => (cancelled ? null : outcome)),
+    outcome: runAtlasQuery(snapshot, query, access).then((outcome) => (cancelled ? null : outcome)),
     cancel: () => {
       cancelled = true;
     },
@@ -160,7 +179,7 @@ function openOnMainThread(source: string | Blob, origin: string): AtlasOpeningTa
     };
     return {
       ok: true,
-      session: { info, query: (query) => mainThreadQuery(snapshot, query), dispose: () => {} },
+      session: snapshotSession(snapshot, info),
     };
   })();
   return {
@@ -248,6 +267,7 @@ function openInWorker(
       ok: true,
       session: {
         info: { ...reply.summary, origin, tier: "worker" },
+        snapshot: null,
         query: (query) => {
           const task = channel.request({ type: "query", query });
           return {
@@ -296,6 +316,38 @@ export function openAtlasSession(
 
 /** Origin of the snapshot committed with this build. */
 export const committedOrigin = "committed with this build";
+/** Origin of the private overlay of the committed snapshot and the admitted workspace. */
+export const workspaceOverlayOrigin = "committed with this build, with your workspace";
+
+/**
+ * Open a main-thread session over a snapshot that is already validated.
+ *
+ * Queries run at the snapshot's own access scope, so a private overlay shows its
+ * private objects to the person whose workspace it is; a pin keeps public queries.
+ *
+ * @param snapshot - The validated snapshot, such as a workspace overlay.
+ * @param digest - Its canonical digest.
+ * @param origin - Where it came from, as the view states it.
+ * @returns The session; it holds no worker.
+ */
+export function openSnapshotSession(
+  snapshot: AtlasSnapshot,
+  digest: string,
+  origin: string,
+): AtlasSession {
+  return snapshotSession(
+    snapshot,
+    {
+      digest,
+      sourceCommit: snapshot.sourceCommit,
+      nodes: snapshot.nodes.length,
+      edges: snapshot.edges.length,
+      origin,
+      tier: "main thread",
+    },
+    snapshot.accessScope,
+  );
+}
 
 /**
  * Open the snapshot committed with this build.
