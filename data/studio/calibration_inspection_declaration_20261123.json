@@ -1,0 +1,177 @@
+{
+  "schema": "scpn_qc_studio_calibration_inspection_declaration_v1",
+  "targets": [
+    {
+      "target_id": "iqm-garnet",
+      "snapshot_source": "IQM Resonance garnet",
+      "plan_quantum_computer": "garnet"
+    }
+  ],
+  "policies": [
+    {
+      "experiment_type": "iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04",
+      "citation": {
+        "path": "docs/campaigns/iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04.md",
+        "sha256": "410b4b59352d53b9ced1a1f42bf14a51dca75fdfa350026f62f9a890db60618c",
+        "section": "Calibration-epoch admission"
+      },
+      "rules": [
+        {
+          "kind": "snapshot_date_equals_block_date"
+        },
+        {
+          "kind": "distinct_calibration_set",
+          "excluded_from": {
+            "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_design_2026-09-04.json",
+            "sha256": "df7f9df1b914dd7cf432be35e94a57b6c19c8c48065f9d673f0525bb1e8d25f5",
+            "pointer": "source.excluded_calibration_set_ids"
+          }
+        },
+        {
+          "kind": "required_couplers",
+          "couplers": [
+            [
+              2,
+              7
+            ],
+            [
+              7,
+              12
+            ],
+            [
+              12,
+              13
+            ]
+          ]
+        },
+        {
+          "kind": "request_names_calibration_set"
+        }
+      ]
+    }
+  ],
+  "snapshots": [
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_01_calibration_2026-09-23.json",
+      "sha256": "bbc395888f2657ae46c39a74a049b8aba88e6568493778a8ed2d5946d7a7439d",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_02_calibration_2026-09-24.json",
+      "sha256": "f5c9b3ed617b2baa7da42c36ee3564c98802d104bc587af7747539fccd09b78f",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_03_calibration_2026-09-25.json",
+      "sha256": "1be3928f74766dd7274c116e41e2ad27170c10c7c1235cf97d7dadf0103486ee",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_04_calibration_2026-09-26.json",
+      "sha256": "79e21bf0272181e1e02bf4baa93211351d1178be5fe5940789dcae952f936303",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_05_calibration_2026-09-27.json",
+      "sha256": "5205e1f69412991115bb1751abf495f0db5fa3ea832ae5e54a3a1c1a82075ec9",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_06_calibration_2026-09-29.json",
+      "sha256": "f047ad31cc827978f117828efcd785eb10e0da2d7cc4831368ac5ec1542094bb",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_07_calibration_2026-10-01.json",
+      "sha256": "a81135e3d194daf8ed795da2e1aaeaeb13a9c3a0704c7e177ec63718149e16a7",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_08_calibration_2026-10-02.json",
+      "sha256": "a8ca87fded0418844d87545fdf692bab939d1089b5c382622f705531c74a054d",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_09_calibration_2026-10-03.json",
+      "sha256": "0bae07300547c65eaf6f57eea4ca55494c7433656a65bf05cce6d1cbc7e6b0b7",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_10_calibration_2026-10-04.json",
+      "sha256": "c229b586361e8940d396e0c520527a8b48332fe6360c352cb5ffc8a428cfba69",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_11_calibration_2026-10-05.json",
+      "sha256": "0e9737dbbe0c3327110f2c77be134f3d6a0a071dc027fee6cc4b7855bf0de09a",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_12_calibration_2026-10-06.json",
+      "sha256": "13f250c10882d004ccd152e9814690a1727127f06b4bc251f46d0bcf217f1ee3",
+      "target_id": "iqm-garnet"
+    }
+  ],
+  "plans": [
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_01_submission_2026-09-23.json",
+      "sha256": "72766b11e2d6239beeb27960a79ceee3e3432487b57819d48a9bc3e67e5b5c0a",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_02_submission_2026-09-24.json",
+      "sha256": "94962cbbb09bd0971d15be180136b282c644a10fc6710d3f12dc773892487160",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_03_submission_2026-09-25.json",
+      "sha256": "f0143915df6b0117b2917b4bb93fd2742b5d6340ecc0b69c50145d7be8d00559",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_04_submission_2026-09-26.json",
+      "sha256": "ccbd6b61b95de428be401acb91c717c79b4d7747d6c087ea786caa6a01fd0de0",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_05_submission_2026-09-27.json",
+      "sha256": "2b6ef13b16e6835363bc4c65f54ec67a717ddd88610bd0bd4565584c6e92e57a",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_06_submission_2026-09-29.json",
+      "sha256": "1e90b354b39d5a8dc91f26e567476ec99f58a75e1542a14c80141148dac285ac",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_07_submission_2026-10-01.json",
+      "sha256": "8d42902d1bb1fbb3eded599fac6fb8faeb43ca2cdd7d45f86e0e44e4b4b5742c",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_08_submission_2026-10-02.json",
+      "sha256": "e6361b17b90d3824115eeea0cabd874f0f0d1f25428749dea16e65346e43ce88",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_09_submission_2026-10-03.json",
+      "sha256": "b34fb5dced2b7bb164de78659aeb4075b6b8a7e86dfb84a96c61acfcc03fd966",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_10_submission_2026-10-04.json",
+      "sha256": "dac4883d47ab38c3b72f4c4c3fe583c60e651fbf47f4e6121eb62f4276e12e9e",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_11_submission_2026-10-05.json",
+      "sha256": "3a1e6090e6ade3a8bdbc691fbea00058908863b8920861365ea77aa217a94a47",
+      "target_id": "iqm-garnet"
+    },
+    {
+      "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_12_submission_2026-10-06.json",
+      "sha256": "390e29eaff1e4143a37b8a63561a0c11987399dd4ad2c442123c02663eb0687b",
+      "target_id": "iqm-garnet"
+    }
+  ]
+}

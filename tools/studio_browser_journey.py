@@ -676,6 +676,10 @@ _WITH_EVIDENCE: dict[str, tuple[str, str]] = {
         "run_atlas_selection_journey",
     ),
     "capability_resolver": ("tools.studio_capability_browser", "run_capability_journey"),
+    "calibration_snapshot_diff": (
+        "tools.studio_calibration_browser",
+        "run_calibration_journey",
+    ),
     "pulse_feasibility": ("tools.studio_pulse_browser", "run_pulse_journey"),
     "compiler_trace_inspector": (
         "tools.studio_compiler_trace_browser",
@@ -714,6 +718,7 @@ _SCENARIOS = (
     "atlas_evidence_lineage",
     "atlas_studio_selection",
     "capability_resolver",
+    "calibration_snapshot_diff",
     "operator_backend_profiles",
     "operator_policy_decisions",
     "operator_review_dossiers",

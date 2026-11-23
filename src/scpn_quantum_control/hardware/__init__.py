@@ -70,6 +70,14 @@ if TYPE_CHECKING:
         register_backend,
         unregister_backend,
     )
+    from .calibration_inspection import (
+        CalibrationSnapshot,
+        FreshnessPolicy,
+        PlanJudgement,
+        build_inspection_record,
+        judge_plan,
+        snapshot_drift,
+    )
     from .classical import (
         INTEGRATION_GRID_RELATIVE_TOLERANCE,
         bloch_vectors_from_json,
@@ -930,6 +938,30 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.hardware.provider_capability_discovery",
         "ProviderMetadataProbe",
     ),
+    "CalibrationSnapshot": (
+        "scpn_quantum_control.hardware.calibration_inspection",
+        "CalibrationSnapshot",
+    ),
+    "FreshnessPolicy": (
+        "scpn_quantum_control.hardware.calibration_inspection",
+        "FreshnessPolicy",
+    ),
+    "PlanJudgement": (
+        "scpn_quantum_control.hardware.calibration_inspection",
+        "PlanJudgement",
+    ),
+    "build_inspection_record": (
+        "scpn_quantum_control.hardware.calibration_inspection",
+        "build_inspection_record",
+    ),
+    "judge_plan": (
+        "scpn_quantum_control.hardware.calibration_inspection",
+        "judge_plan",
+    ),
+    "snapshot_drift": (
+        "scpn_quantum_control.hardware.calibration_inspection",
+        "snapshot_drift",
+    ),
     "assess_provider_capability_snapshot": (
         "scpn_quantum_control.hardware.provider_capability_discovery",
         "assess_provider_capability_snapshot",
@@ -1237,6 +1269,12 @@ __all__ = [
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",
+    "CalibrationSnapshot",
+    "FreshnessPolicy",
+    "PlanJudgement",
+    "build_inspection_record",
+    "judge_plan",
+    "snapshot_drift",
     "AggregatorProviderOptionalDependencyRow",
     "CERTIFICATION_CRITERIA",
     "CertificationCriterion",

@@ -1326,6 +1326,42 @@ stopping that preview. This verifies local instruments, not deployed availabilit
 or scientific qualification.
 
 
+## Calibration snapshots
+
+**Devices & Operations → Calibration snapshots** shows the committed calibration
+inspection record. **Open calibration inspection** admits the record only when its
+canonical digest recomputes. The panel then shows:
+
+- **Freshness policies.** Each experiment type's policy, the document and section
+  that declare it, and its rules. No universal lifetime exists.
+- **The selected snapshot.**
+  - Its source, target, date, file and sha256.
+  - Whether it is the current calibration of the target or superseded, and by
+    which calibration set.
+  - The plans that name it.
+  - Every qubit readout error and coupler CZ fidelity. A reading the snapshot does
+    not report shows as *unknown*.
+- **Changes from the previous snapshot.** Each element that changed, appeared,
+  disappeared, became unknown or became known, with both values.
+- **Plans and their calibration.** Each plan's block date, the calibration set it
+  names and the source verdict. A blocked plan lists every reason and keeps the
+  set it named.
+- **Calibration reference check.** Paste the calibration file sha256 that a
+  dossier or profile binds.
+  - A superseded snapshot or an unknown digest is reported as blocking the
+    dossiers bound to it.
+  - No other snapshot is substituted.
+
+The record comes from `tools/studio_calibration_inspection.py` (see the hardware
+guide). The panel submits nothing and compiles nothing. The
+`calibration_snapshot_diff` browser journey compares the built panel with an
+independent build of the record:
+
+```bash
+python tools/studio_browser_journey.py --scenario calibration_snapshot_diff \
+  --base-url http://127.0.0.1:4173/ --output /tmp/calibration-journey.json
+```
+
 ## Operator policy decisions
 
 Open **Devices & Operations**, then **Open policy example**. The inspector

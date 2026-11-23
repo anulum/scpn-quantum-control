@@ -928,6 +928,57 @@ callers must now supply the explicit context; a `RouteVerbSupport` alone remains
 a provenance-shaped assertion, not a qualified catalogue row. Reconstructing a
 positive row (including dataclass replacement) requires the context again.
 
+### Calibration snapshots, drift and freshness by experiment type
+
+`hardware/calibration_inspection.py` reads committed calibration snapshots. Each
+snapshot records one device target on one date. It holds the calibration set, the
+readout error of each qubit, and the CZ fidelity of each declared coupler, all
+verbatim.
+
+- **Unknown readings.** A qubit or coupler the snapshot does not report is
+  `None`, never a perfect value.
+- **Drift.** `snapshot_drift(before, after)` compares two snapshots of one target
+  element by element. A reading can change, appear, disappear, become unknown or
+  become known. No threshold is applied.
+- **Freshness policy.** Freshness belongs to an experiment type and is declared
+  together with the document that fixes it. There is no default lifetime.
+  - A plan whose type has no declared policy is blocked.
+  - The rules are `snapshot_date_equals_block_date`, `distinct_calibration_set`,
+    `required_couplers`, `request_names_calibration_set` and `max_age_days`.
+  - Ages are counted in whole days, because the committed snapshots carry a date
+    only.
+- **Supersession.** `judge_plan` blocks a plan whose snapshot was superseded,
+  meaning a later snapshot of the same target is dated on or before the plan's
+  block.
+- **No replacement.** A blocked plan keeps the calibration set it named. Nothing
+  selects another snapshot, target or device, and nothing compiles without a
+  target.
+
+```python
+import json
+from pathlib import Path
+
+from scpn_quantum_control.hardware import build_inspection_record
+
+declaration = json.loads(
+    Path("data/studio/calibration_inspection_declaration_20261123.json").read_text()
+)
+record = build_inspection_record(declaration, Path("."))  # run from the repository root
+print({plan["status"] for plan in record["plans"]})  # {'admitted'}
+```
+
+`build_inspection_record` seals a declared set of snapshots, plans and policies.
+`tools/studio_calibration_inspection.py --write` writes the record of the twelve
+committed IQM Garnet calibration epochs of the powered depth-profile campaign
+(`data/studio/calibration_inspection_20261123.json`), and `--check` keeps it
+current.
+
+- **The policy.** The campaign's preregistration declares it in "Calibration-epoch
+  admission": a snapshot dated on the block's date, a calibration set never used
+  before, the three primary-layout couplers, and a request that names the set.
+- **The result.** All twelve epochs are admitted. Between consecutive epochs the
+  calibration set always changed, and 49 or 50 of the 50 readings changed.
+
 ## Circuit Tools
 
 ### Circuit Cutting (`circuit_cutting.py`, `cutting_runner.py`)

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **901 modules** across **42 package families**
-- **4854 documented public module-level symbols**
+- **902 modules** across **42 package families**
+- **4871 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3218,6 +3218,16 @@ Plugin / backend extension API.
 **Classes:** `BackendProtocol`, `QuantumBackendDescriptor`, `BackendRegistrationError`, `BackendRegistry`
 
 **Functions:** `get_registry()`, `register_backend()`, `unregister_backend()`, `get_backend()`, `describe_backend()`, `discover_backends()`, `list_backends()`, `list_quantum_backends()`, `describe_hal_backend_profile()`, `list_hal_backend_descriptors()`, `qiskit_ibm_factory()`, `qiskit_aer_factory()`, `cirq_factory()`, `braket_factory()`, `pennylane_factory()`, `iqm_factory()`, `analog_kuramoto_factory()`, `hybrid_digital_analog_factory()`
+
+### `scpn_quantum_control.hardware.calibration_inspection`
+
+Inspect dated device calibration snapshots, their drift and the plans that use them.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/calibration_inspection.py) · Public symbols: **17**
+
+**Classes:** `CalibrationInspectionError`, `CalibrationSnapshot`, `ElementChange`, `SnapshotDrift`, `PolicyRule`, `FreshnessPolicy`, `CalibrationPlan`, `PlanJudgement`
+
+**Functions:** `read_committed_json()`, `parse_calibration_snapshot()`, `snapshot_drift()`, `parse_freshness_policy()`, `parse_submission_plan()`, `judge_plan()`, `snapshot_to_wire()`, `drift_to_wire()`, `build_inspection_record()`
 
 ### `scpn_quantum_control.hardware.circuit_cutting`
 

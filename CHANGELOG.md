@@ -4,6 +4,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Studio can inspect dated calibration snapshots, their drift and the plans that
+  use them.
+  - `scpn_quantum_control.hardware.calibration_inspection` keeps each qubit's
+    readout error and each coupler's CZ fidelity verbatim. A missing reading is
+    unknown, never perfect.
+  - `snapshot_drift` compares snapshots of one target element by element, with no
+    threshold.
+  - Freshness is a declared policy of an experiment type, cited with its source.
+    There is no default lifetime. A plan on a superseded snapshot, or one
+    without a policy, is blocked and keeps the set it named.
+  - `tools/studio_calibration_inspection.py` keeps the committed record of the
+    twelve IQM Garnet epochs of the powered depth-profile campaign current. All
+    twelve are admitted under their preregistered rules.
+  - **Devices & Operations → Calibration snapshots** shows the element map, the
+    drift, the policies, the plan verdicts and a calibration reference check.
+    The `calibration_snapshot_diff` browser journey qualifies it.
 - The Atlas now compares claims only under compatible assumptions.
   - `scpn_quantum_control.atlas.compare_values` checks a seven-field
     comparability key before any number. A field that is not stated gives

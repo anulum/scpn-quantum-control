@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1712,
-    "python_model_source_modules": 901,
+    "python_model_classes": 1720,
+    "python_model_source_modules": 902,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1680
+    "test_files": 1681
   },
   "documentation": {
     "examples": [
@@ -712,7 +712,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 87
+        "python_modules": 88
       },
       {
         "package": "identity",
@@ -1427,8 +1427,20 @@
         "path": "src/scpn_quantum_control/analog_mapping/calibrate.py"
       },
       {
+        "name": "CalibrationInspectionError",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+      },
+      {
+        "name": "CalibrationPlan",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+      },
+      {
         "name": "CalibrationSensitivity",
         "path": "src/scpn_quantum_control/analog_mapping/calibrate.py"
+      },
+      {
+        "name": "CalibrationSnapshot",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
       },
       {
         "name": "CampaignHarnessRow",
@@ -2535,6 +2547,10 @@
         "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
       {
+        "name": "ElementChange",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+      },
+      {
         "name": "EnforceDecision",
         "path": "src/scpn_quantum_control/hardware_safe_execution.py"
       },
@@ -2997,6 +3013,10 @@
       {
         "name": "FreeEnergyResult",
         "path": "src/scpn_quantum_control/fep/variational_free_energy.py"
+      },
+      {
+        "name": "FreshnessPolicy",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
       },
       {
         "name": "FrozenDesignConstants",
@@ -5403,6 +5423,10 @@
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
       {
+        "name": "PlanJudgement",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+      },
+      {
         "name": "PlannedCell",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py"
       },
@@ -5433,6 +5457,10 @@
       {
         "name": "PolicyGatedAdapterError",
         "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
+        "name": "PolicyRule",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
       },
       {
         "name": "PolyglotParityCertificate",
@@ -6783,6 +6811,10 @@
         "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
       },
       {
+        "name": "SnapshotDrift",
+        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+      },
+      {
         "name": "SolverDerivativeRefusal",
         "path": "src/scpn_quantum_control/differentiable_implicit_sensitivity.py"
       },
@@ -8096,6 +8128,7 @@
       "src/scpn_quantum_control/hardware/async_runner.py",
       "src/scpn_quantum_control/hardware/backend_profiles.py",
       "src/scpn_quantum_control/hardware/backends.py",
+      "src/scpn_quantum_control/hardware/calibration_inspection.py",
       "src/scpn_quantum_control/hardware/circuit_cutting.py",
       "src/scpn_quantum_control/hardware/circuit_export.py",
       "src/scpn_quantum_control/hardware/cirq_adapter.py",
@@ -9982,6 +10015,7 @@
       "tests/test_build_kuramoto_conventions.py",
       "tests/test_build_march_job_id_commitments.py",
       "tests/test_build_studio_wasm_bundle.py",
+      "tests/test_calibration_inspection.py",
       "tests/test_campaign_harness_product.py",
       "tests/test_campaign_harness_product_quality_gate.py",
       "tests/test_campaign_parameter_generators.py",

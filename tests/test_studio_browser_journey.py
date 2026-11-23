@@ -182,6 +182,7 @@ _SOURCE_SCENARIOS = {
         "atlas_evidence_lineage",
         "atlas_studio_selection",
         "capability_resolver",
+        "calibration_snapshot_diff",
         "operator_backend_profiles",
         "operator_policy_decisions",
         "operator_review_dossiers",

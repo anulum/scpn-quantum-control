@@ -6,6 +6,7 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — source-owned devices and operations
 import { BackendProfiles } from "./profiles/BackendProfiles";
+import { CalibrationInspector } from "./calibration/CalibrationInspector";
 import { PolicyInspector } from "./policy/PolicyInspector";
 import { OperatorDossier } from "./dossiers/OperatorDossier";
 import { JobJournal } from "./journal/JobJournal";
@@ -15,6 +16,7 @@ export default function OperationsView() {
     <article className="qsp-panel">
       <h3>Devices &amp; Operations</h3>
       <BackendProfiles />
+      <CalibrationInspector />
       <PolicyInspector />
       <OperatorDossier />
       <JobJournal />
