@@ -140,7 +140,7 @@
       "classification": "locked_versions",
       "version_pins": [
         "anyhow==1.0.104",
-        "clap==4.6.7",
+        "clap==4.6.9",
         "criterion==0.5.1",
         "scpn-quantum-engine==0.3.0",
         "pyo3==0.30.1",
@@ -148,7 +148,7 @@
         "numpy==0.30.0",
         "nalgebra==0.35.0",
         "num-complex==0.4.6",
-        "rand==0.10.3",
+        "rand==0.10.4",
         "rayon==1.11.0",
         "reqwest==0.13.5",
         "scpn-quantum-program-ad-replay==0.1.0",
@@ -159,7 +159,7 @@
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "172d2772bf7bf878ec89367a546e3dce1f3201b1345cef125cb830f3a7a03b36"
+        "cd445e122cb00538c4bb01b77290703372ad9f48dad6d645dba4026ea4994fef"
       ],
       "evidence_status": "locked",
       "blockers": [],

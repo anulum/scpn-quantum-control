@@ -228,7 +228,7 @@ def build_differentiable_dependency_environment_evidence(
             "locked_versions",
             (
                 "anyhow==1.0.104",
-                "clap==4.6.7",
+                "clap==4.6.9",
                 "criterion==0.5.1",
                 "scpn-quantum-engine==0.3.0",
                 "pyo3==0.30.1",
@@ -236,7 +236,7 @@ def build_differentiable_dependency_environment_evidence(
                 "numpy==0.30.0",
                 "nalgebra==0.35.0",
                 "num-complex==0.4.6",
-                "rand==0.10.3",
+                "rand==0.10.4",
                 "rayon==1.11.0",
                 "reqwest==0.13.5",
                 "scpn-quantum-program-ad-replay==0.1.0",
