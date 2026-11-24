@@ -15,6 +15,7 @@ import { ParameterWorkspace } from "./ParameterWorkspace";
 import type { WorkspaceArchivePreview } from "../../shared/storage/workspaceArchive";
 import { parseWorkspaceManifest, readJson, writeJson } from "../../shared/contracts";
 import {
+  admitWorkspaceArchive,
   archiveSnapshotDomain,
   createWorkspaceArchive,
 } from "../../shared/storage/workspaceArchive";
@@ -26,8 +27,56 @@ import {
   createParameterDraft,
   parameterDraftReducer,
 } from "../../shared/parameters/parameterDraft";
+import { SelectionProvider, createSelectionStore } from "../../shared/selection/selectionStore";
 
 afterEach(cleanup);
+
+/** Render the editor under a selection made in the Atlas. */
+function renderSelected(preview: WorkspaceArchivePreview, revision: string, snapshot: string) {
+  const store = createSelectionStore();
+  store.select(
+    {
+      snapshotDigest: snapshot,
+      objectId: `revision:sha256:${revision}`,
+      revisionId: revision,
+      access: "private",
+    },
+    "atlas",
+  );
+  render(
+    <SelectionProvider value={store}>
+      <ParameterWorkspace
+        preview={preview}
+        rawCodecs={conformanceCodecs}
+        saveArchive={async () => {}}
+      />
+    </SelectionProvider>,
+  );
+}
+
+it("opens a revision of this workspace selected in the Atlas as the draft source", async () => {
+  const preview = await conformanceArchive(corpusText, false);
+  const archive = await admitWorkspaceArchive(preview.json, conformanceCodecs);
+  const refs = archive.manifest.body["revision_refs"] as readonly { readonly sha256: string }[];
+  const revision = requirePresent(refs.at(-1)).sha256;
+  renderSelected(preview, revision, preview.workspaceHash);
+  expect(
+    await screen.findByText(
+      `Draft from revision ${revision.slice(0, 12)}, selected in atlas. Saving appends a child revision; that revision stays as it is.`,
+    ),
+  ).toBeTruthy();
+});
+
+it("opens this workspace's draft revision when the selected revision belongs to another", async () => {
+  const preview = await conformanceArchive(corpusText, false);
+  renderSelected(preview, "0".repeat(64), "a".repeat(64));
+  expect(
+    await screen.findByText(
+      "The revision selected in atlas is not in this workspace; its draft revision opens instead.",
+    ),
+  ).toBeTruthy();
+  expect(await screen.findByRole("button", { name: "Save parameter revision" })).toBeTruthy();
+});
 
 it("builds a completely admitted child and passes exact prior identity to the original save owner", async () => {
   const original = await conformanceArchive(corpusText, false);
