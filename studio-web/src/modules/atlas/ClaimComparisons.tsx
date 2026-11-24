@@ -7,6 +7,7 @@
 // scpn-quantum-control — claim comparisons with a filter that never hides counter-evidence
 
 import { useEffect, useState } from "react";
+import { ScrollRegion } from "../../shared/browser/ScrollRegion";
 import {
   type ClaimComparison,
   type ClaimComparisons as ComparisonRecord,
@@ -26,7 +27,11 @@ function Rows({
   readonly sources: ComparisonRecord["sources"];
 }) {
   return (
-    <div className="qsp-data-scroll">
+    <ScrollRegion
+      className="qsp-data-scroll"
+      name={`${label} table scrolling`}
+      action={`Scroll ${label}`}
+    >
       <table aria-label={label}>
         <thead>
           <tr>
@@ -49,7 +54,7 @@ function Rows({
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

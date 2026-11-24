@@ -111,6 +111,10 @@ describe("Claim comparisons panel", () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByRole("table", { name: "Counter-evidence kept visible" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Scroll Selected comparisons" }));
+    expect(document.activeElement).toBe(
+      screen.getByRole("region", { name: "Selected comparisons table scrolling" }),
+    );
   });
 
   it("never lets the filter hide counter-evidence", async () => {

@@ -230,6 +230,10 @@ describe("Capability gaps panel", () => {
       "tests/test_gone.pymissing",
       "tests/test_empty.pydefines no test; no CI job names it",
     ]);
+    fireEvent.click(screen.getByRole("button", { name: "Scroll Declared tests" }));
+    expect(document.activeElement).toBe(
+      screen.getByRole("region", { name: "Declared tests table scrolling" }),
+    );
     expect(screen.getByLabelText("Declared documentation").textContent).toContain(
       "docs/gone.md (missing)",
     );

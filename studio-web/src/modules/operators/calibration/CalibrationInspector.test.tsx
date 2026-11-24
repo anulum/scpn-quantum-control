@@ -135,6 +135,10 @@ describe("Calibration inspector", () => {
     expect(
       within(readings).getByRole("rowheader", { name: "c0-1" }).parentElement?.textContent,
     ).toBe("c0-1CZ fidelityunknown");
+    fireEvent.click(screen.getByRole("button", { name: "Scroll Element readings" }));
+    expect(document.activeElement).toBe(
+      screen.getByRole("region", { name: "Element readings table scrolling" }),
+    );
   });
 
   it("test_calibration_snapshot_diff_02: a superseded reference blocks its dossiers", async () => {
@@ -177,6 +181,10 @@ describe("Calibration inspector", () => {
     const row = within(plans).getAllByRole("row")[1];
     expect(row?.getAttribute("data-status")).toBe("blocked");
     expect(row?.textContent).toContain("max_age_days: 3 days old, bound 2");
+    fireEvent.click(screen.getByRole("button", { name: "Scroll Plans and their calibration" }));
+    expect(document.activeElement).toBe(
+      screen.getByRole("region", { name: "Plans and their calibration table scrolling" }),
+    );
   });
 
   it("test_calibration_snapshot_diff_04: every historical snapshot stays viewable with its drift", async () => {
@@ -200,6 +208,12 @@ describe("Calibration inspector", () => {
     expect(
       screen.getByText(/50 element\(s\) differ, 0 read the same; the calibration set changed\./),
     ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Scroll Changes from the previous snapshot" }),
+    );
+    expect(document.activeElement).toBe(
+      screen.getByRole("region", { name: "Changes from the previous snapshot table scrolling" }),
+    );
   });
 
   it("test_calibration_snapshot_diff_05: a blocked plan keeps its named set and offers no replacement", async () => {

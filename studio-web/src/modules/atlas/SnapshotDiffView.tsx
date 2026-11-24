@@ -7,6 +7,7 @@
 // scpn-quantum-control — an admitted snapshot comparison and its potential impact
 
 import { useRef, useState } from "react";
+import { ScrollRegion } from "../../shared/browser/ScrollRegion";
 import { type SnapshotDiff, type SnapshotDiffAdmission, admitSnapshotDiff } from "./snapshotDiff";
 
 function short(digest: string): string {
@@ -34,7 +35,11 @@ function Comparison({ diff, open }: { readonly diff: SnapshotDiff; readonly open
           ? "The impact follows only observed relations of complete extractions. It is potential impact, not a proof."
           : `The impact analysis is incomplete, so it is not exhaustive: ${diff.incompleteReasons.join("; ")}.`}
       </p>
-      <div className="qsp-data-scroll">
+      <ScrollRegion
+        className="qsp-data-scroll"
+        name="Changed objects table scrolling"
+        action="Scroll Changed objects"
+      >
         <table aria-label="Changed objects">
           <thead>
             <tr>
@@ -55,8 +60,12 @@ function Comparison({ diff, open }: { readonly diff: SnapshotDiff; readonly open
             ))}
           </tbody>
         </table>
-      </div>
-      <div className="qsp-data-scroll">
+      </ScrollRegion>
+      <ScrollRegion
+        className="qsp-data-scroll"
+        name="Changed relations table scrolling"
+        action="Scroll Changed relations"
+      >
         <table aria-label="Changed relations">
           <thead>
             <tr>
@@ -77,8 +86,12 @@ function Comparison({ diff, open }: { readonly diff: SnapshotDiff; readonly open
             ))}
           </tbody>
         </table>
-      </div>
-      <div className="qsp-data-scroll">
+      </ScrollRegion>
+      <ScrollRegion
+        className="qsp-data-scroll"
+        name="Potential impact table scrolling"
+        action="Scroll Potential impact"
+      >
         <table aria-label="Potential impact">
           <thead>
             <tr>
@@ -101,7 +114,7 @@ function Comparison({ diff, open }: { readonly diff: SnapshotDiff; readonly open
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </>
   );
 }

@@ -7,6 +7,7 @@
 // scpn-quantum-control — dated calibration snapshots, drift, policies and plan verdicts
 
 import { useId, useState } from "react";
+import { ScrollRegion } from "../../../shared/browser/ScrollRegion";
 import recordText from "../../../../../data/studio/calibration_inspection_20261123.json?raw";
 import {
   type CalibrationInspection,
@@ -49,7 +50,11 @@ function Readings({ snapshot }: { readonly snapshot: InspectedSnapshot }) {
     ...snapshot.couplers.map((item) => ({ ...item, quantity: "CZ fidelity" })),
   ];
   return (
-    <div className="qsp-data-scroll">
+    <ScrollRegion
+      className="qsp-data-scroll"
+      name="Element readings table scrolling"
+      action="Scroll Element readings"
+    >
       <table aria-label="Element readings">
         <thead>
           <tr>
@@ -68,7 +73,7 @@ function Readings({ snapshot }: { readonly snapshot: InspectedSnapshot }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -82,7 +87,11 @@ function Drift({
   const drift = record.drifts.find((item) => item.after === snapshot.calibrationSetId);
   if (drift === undefined) return <p>No earlier snapshot of this target is recorded.</p>;
   return (
-    <div className="qsp-data-scroll">
+    <ScrollRegion
+      className="qsp-data-scroll"
+      name="Changes from the previous snapshot table scrolling"
+      action="Scroll Changes from the previous snapshot"
+    >
       <p>{`Changes from ${drift.before}: ${drift.changes.length} element(s) differ, ${drift.unchanged} read the same${drift.calibrationSetChanged ? "; the calibration set changed" : ""}.`}</p>
       <table aria-label="Changes from the previous snapshot">
         <thead>
@@ -104,13 +113,17 @@ function Drift({
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
 function Plans({ record }: { readonly record: CalibrationInspection }) {
   return (
-    <div className="qsp-data-scroll">
+    <ScrollRegion
+      className="qsp-data-scroll"
+      name="Plans and their calibration table scrolling"
+      action="Scroll Plans and their calibration"
+    >
       <table aria-label="Plans and their calibration">
         <thead>
           <tr>
@@ -133,7 +146,7 @@ function Plans({ record }: { readonly record: CalibrationInspection }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

@@ -6,6 +6,7 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-control — a capability's separate kinds of evidence and its gaps
 
+import { ScrollRegion } from "../../shared/browser/ScrollRegion";
 import type { CapabilityEvidence, GapTest } from "./capabilityGaps";
 
 function testState(test: GapTest): string {
@@ -60,7 +61,11 @@ export function CapabilityGaps({ evidence }: { readonly evidence: CapabilityEvid
                 .join("; ")}
         </dd>
       </dl>
-      <div className="qsp-data-scroll">
+      <ScrollRegion
+        className="qsp-data-scroll"
+        name="Declared tests table scrolling"
+        action="Scroll Declared tests"
+      >
         <table aria-label="Declared tests">
           <thead>
             <tr>
@@ -77,7 +82,7 @@ export function CapabilityGaps({ evidence }: { readonly evidence: CapabilityEvid
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       <ul aria-label="Declared documentation">
         {evidence.docs.map((doc) => (
           <li key={doc.path}>{`${doc.path} (${doc.present ? "present" : "missing"})`}</li>

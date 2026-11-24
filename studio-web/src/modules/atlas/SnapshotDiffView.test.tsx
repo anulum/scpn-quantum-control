@@ -45,6 +45,12 @@ describe("Snapshot comparison view", () => {
         "definition:repo/left.py derives_from definition:repo/top.py",
       ),
     ).toBeTruthy();
+    for (const name of ["Changed objects", "Changed relations", "Potential impact"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Scroll ${name}` }));
+      expect(document.activeElement).toBe(
+        screen.getByRole("region", { name: `${name} table scrolling` }),
+      );
+    }
   });
 
   it("states a complete analysis for observed relations, without claiming proof", async () => {

@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The scrolling tables of the Atlas claim comparisons, the snapshot comparison,
+  the capability gaps and the calibration inspector can now be reached from the
+  keyboard. Each table has a named scrolling region and a button that moves the
+  focus into it, as the result and coupling tables already did. Before, these
+  tables sat in plain scrolling containers with no keyboard entry; at 200 % zoom
+  the accessibility journey reported the claim comparisons table as a scrolling
+  region without focusable content.
 - Studio performance budgets are declared and measured.
   - `data/studio/resource_budgets_20261123.json` holds the targets: cold load,
     initial JavaScript, interaction, worker cancellation, graph tiers and queries,
