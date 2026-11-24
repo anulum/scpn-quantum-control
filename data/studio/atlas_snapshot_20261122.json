@@ -7579,8 +7579,8 @@
       }
     ],
     "schema": "quantum_atlas_snapshot.v1",
-    "source_commit": "cbaf15022037430d874d9614e3ef9a76e0375221",
+    "source_commit": "4cf4422ca59b0279ecc917744b43f77841501b1b",
     "tombstones": []
   },
-  "snapshot_digest": "9632d2eb4b1074ae1e873005cb1569a5f2fdb8146f2784569e984018240a781a"
+  "snapshot_digest": "5bf046d13e8c662db47cdf4c15448b968fb80989d67b332995b87579e1ce5a63"
 }

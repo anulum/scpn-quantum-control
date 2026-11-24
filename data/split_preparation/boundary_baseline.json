@@ -2175,9 +2175,9 @@
       "source": "src/scpn_quantum_control/qualification_status_projection.py",
       "scope": "_runtime_status",
       "call_sha256": "86983db37d336fc0e0c74bf747bf48b7fa06f674cbecfd6bbb1ec96df5435a87",
-      "source_sha256": "41744b9dd42026555a4bf24026979b9f8acaf1c9a2494bca296e4759f6a18fd1",
+      "source_sha256": "ce9476b3f194495926fcb334d5b4766df5ec6e3d35bde64dbe9e7cf51c754e95",
       "role": "mixed-probe",
-      "reason": "Receipt module identifiers and installed distribution ownership are validated, but first-party names remain permitted; this data-driven probe is not classified as external-only.",
+      "reason": "Receipt module identifiers and installed distribution ownership are validated, but first-party names remain permitted; this data-driven probe is not classified as external-only. Complete source re-reviewed after the public explicit_test_cohort wrapper over _runtime_cohort was added; _runtime_status and its probe call AST are unchanged.",
       "count": 1
     },
     {
@@ -2211,9 +2211,9 @@
       "source": "src/scpn_quantum_control/studio/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "3851c9be2a5152f315306405a1926330977ba739eaa88eaef59dd635c595a3dc",
-      "source_sha256": "e0e2e67675d1ef554724c5f4486dfe081287e7c17ba3ed702529d222f4e08a9b",
+      "source_sha256": "4c8bb6a1761926e0ebde45f3bf9df34f458b92e33838ac43a949cbf50f4dd563",
       "role": "first-party-lazy",
-      "reason": "Complete source reviewed after adding two literal operator-policy exports from the original workspace owner. The name-to-module comprehension and package-relative __getattr__ resolver AST are unchanged; original ordered star-import API is unchanged. Defining modules remain expanded as lazy dependencies.",
+      "reason": "Complete source reviewed after adding two literal operator-policy exports from the original workspace owner, and again after adding nine literal evidence-lineage exports from studio.evidence_lineage. The name-to-module comprehension and package-relative __getattr__ resolver AST are unchanged; the ordered star-import API gains only the nine names the public export identity record approves. Defining modules remain expanded as lazy dependencies.",
       "count": 1
     },
     {

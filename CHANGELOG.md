@@ -19,7 +19,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   cold load fell from 0.17 to below 0.001 in measurement.
 - Studio can inspect dated calibration snapshots, their drift and the plans that
   use them.
-  - `scpn_quantum_control.hardware.calibration_inspection` keeps each qubit's
+  - `scpn_quantum_control.studio.calibration_inspection` keeps each qubit's
     readout error and each coupler's CZ fidelity verbatim. A missing reading is
     unknown, never perfect.
   - `snapshot_drift` compares snapshots of one target element by element, with no

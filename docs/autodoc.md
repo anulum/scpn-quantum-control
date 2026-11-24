@@ -279,7 +279,7 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ProviderCapabilitySnapshot, ProviderCapabilityDecision, assess_provider_capability_snapshot, probe_aggregator_provider_capability, snapshot_from_azure_target, snapshot_from_braket_device, snapshot_from_dwave_solver, snapshot_from_iqm_backend, snapshot_from_ionq_backend, snapshot_from_oqc_target, snapshot_from_pasqal_target, snapshot_from_qiskit_runtime_backend, snapshot_from_qbraid_device, snapshot_from_quandela_processor, snapshot_from_quantinuum_backend, snapshot_from_quera_bloqade, snapshot_from_rigetti_qcs, snapshot_from_strangeworks_backend]
 
-::: scpn_quantum_control.hardware.calibration_inspection
+::: scpn_quantum_control.studio.calibration_inspection
     options:
       members: [CalibrationSnapshot, ElementChange, SnapshotDrift, PolicyRule, FreshnessPolicy, CalibrationPlan, PlanJudgement, CalibrationInspectionError, read_committed_json, parse_calibration_snapshot, snapshot_drift, parse_freshness_policy, parse_submission_plan, judge_plan, snapshot_to_wire, drift_to_wire, build_inspection_record]
 

@@ -557,17 +557,6 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ),
         ),
     ),
-    "scpn_quantum_control.hardware": (
-        57,
-        (
-            ("CalibrationSnapshot", "scpn_quantum_control.hardware.calibration_inspection"),
-            ("FreshnessPolicy", "scpn_quantum_control.hardware.calibration_inspection"),
-            ("PlanJudgement", "scpn_quantum_control.hardware.calibration_inspection"),
-            ("build_inspection_record", "scpn_quantum_control.hardware.calibration_inspection"),
-            ("judge_plan", "scpn_quantum_control.hardware.calibration_inspection"),
-            ("snapshot_drift", "scpn_quantum_control.hardware.calibration_inspection"),
-        ),
-    ),
     "scpn_quantum_control.atlas": (
         0,
         (

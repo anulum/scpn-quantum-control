@@ -924,7 +924,7 @@ graph TD
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
-    hardware["hardware/ (88)\nBackends + registry + async + provenance"]
+    hardware["hardware/ (87)\nBackends + registry + async + provenance"]
     mitigation["mitigation/ (15)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]

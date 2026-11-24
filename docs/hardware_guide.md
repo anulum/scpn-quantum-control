@@ -930,7 +930,7 @@ positive row (including dataclass replacement) requires the context again.
 
 ### Calibration snapshots, drift and freshness by experiment type
 
-`hardware/calibration_inspection.py` reads committed calibration snapshots. Each
+`scpn_quantum_control.studio.calibration_inspection` reads committed calibration snapshots. Each
 snapshot records one device target on one date. It holds the calibration set, the
 readout error of each qubit, and the CZ fidelity of each declared coupler, all
 verbatim.
@@ -958,7 +958,7 @@ verbatim.
 import json
 from pathlib import Path
 
-from scpn_quantum_control.hardware import build_inspection_record
+from scpn_quantum_control.studio.calibration_inspection import build_inspection_record
 
 declaration = json.loads(
     Path("data/studio/calibration_inspection_declaration_20261123.json").read_text()

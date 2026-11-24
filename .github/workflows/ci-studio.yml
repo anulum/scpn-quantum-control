@@ -234,7 +234,7 @@ jobs:
           tools/studio_atlas_capability_gaps.py
           src/scpn_quantum_control/atlas/comparability.py
           tools/studio_atlas_claim_comparison.py
-          src/scpn_quantum_control/hardware/calibration_inspection.py
+          src/scpn_quantum_control/studio/calibration_inspection.py
           tools/studio_calibration_inspection.py tools/studio_resource_budgets.py
           tests/test_studio_readout_mitigation_bundle.py
           tests/test_studio_mitigation_instrument_artifact.py
@@ -283,7 +283,7 @@ jobs:
           tools/studio_atlas_capability_gaps.py
           src/scpn_quantum_control/atlas/comparability.py
           tools/studio_atlas_claim_comparison.py
-          src/scpn_quantum_control/hardware/calibration_inspection.py
+          src/scpn_quantum_control/studio/calibration_inspection.py
           tools/studio_calibration_inspection.py tools/studio_resource_budgets.py
           tests/test_studio_readout_mitigation_bundle.py
           tests/test_studio_mitigation_instrument_artifact.py
@@ -329,7 +329,7 @@ jobs:
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-readout-mitigation-bundle-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/studio/readout_mitigation_bundle.py,*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py,*/studio/control_proposal_instrument_artifact.py,*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py,*/studio/topology_instrument_artifact.py,*/studio/topology_instrument_templates.py,*/tools/studio_attestation_instrument.py,*/tools/studio_benchmark_databank.py,*/tools/studio_atlas_snapshot.py,*/studio/evidence_lineage.py,*/tools/studio_evidence_lineage.py,*/atlas/extractors/workspace.py,*/tools/studio_atlas_workspace_overlay_cases.py,*/atlas/diff.py,*/tools/studio_atlas_snapshot_diff.py,*/atlas/coverage.py,*/tools/studio_atlas_capability_gaps.py,*/atlas/comparability.py,*/tools/studio_atlas_claim_comparison.py,*/hardware/calibration_inspection.py,*/tools/studio_calibration_inspection.py,*/tools/studio_resource_budgets.py
+          --include=*/studio/readout_mitigation_bundle.py,*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py,*/studio/control_proposal_instrument_artifact.py,*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py,*/studio/topology_instrument_artifact.py,*/studio/topology_instrument_templates.py,*/tools/studio_attestation_instrument.py,*/tools/studio_benchmark_databank.py,*/tools/studio_atlas_snapshot.py,*/studio/evidence_lineage.py,*/tools/studio_evidence_lineage.py,*/atlas/extractors/workspace.py,*/tools/studio_atlas_workspace_overlay_cases.py,*/atlas/diff.py,*/tools/studio_atlas_snapshot_diff.py,*/atlas/coverage.py,*/tools/studio_atlas_capability_gaps.py,*/atlas/comparability.py,*/tools/studio_atlas_claim_comparison.py,*/studio/calibration_inspection.py,*/tools/studio_calibration_inspection.py,*/tools/studio_resource_budgets.py
   studio-scorecard-bundle-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20

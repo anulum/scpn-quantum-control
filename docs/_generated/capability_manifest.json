@@ -712,7 +712,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 88
+        "python_modules": 87
       },
       {
         "package": "identity",
@@ -772,7 +772,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 55
+        "python_modules": 56
       },
       {
         "package": "studio_workspace",
@@ -1428,11 +1428,11 @@
       },
       {
         "name": "CalibrationInspectionError",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "CalibrationPlan",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "CalibrationSensitivity",
@@ -1440,7 +1440,7 @@
       },
       {
         "name": "CalibrationSnapshot",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "CampaignHarnessRow",
@@ -2548,7 +2548,7 @@
       },
       {
         "name": "ElementChange",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "EnforceDecision",
@@ -3016,7 +3016,7 @@
       },
       {
         "name": "FreshnessPolicy",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "FrozenDesignConstants",
@@ -5424,7 +5424,7 @@
       },
       {
         "name": "PlanJudgement",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "PlannedCell",
@@ -5460,7 +5460,7 @@
       },
       {
         "name": "PolicyRule",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "PolyglotParityCertificate",
@@ -6812,7 +6812,7 @@
       },
       {
         "name": "SnapshotDrift",
-        "path": "src/scpn_quantum_control/hardware/calibration_inspection.py"
+        "path": "src/scpn_quantum_control/studio/calibration_inspection.py"
       },
       {
         "name": "SolverDerivativeRefusal",
@@ -8128,7 +8128,6 @@
       "src/scpn_quantum_control/hardware/async_runner.py",
       "src/scpn_quantum_control/hardware/backend_profiles.py",
       "src/scpn_quantum_control/hardware/backends.py",
-      "src/scpn_quantum_control/hardware/calibration_inspection.py",
       "src/scpn_quantum_control/hardware/circuit_cutting.py",
       "src/scpn_quantum_control/hardware/circuit_export.py",
       "src/scpn_quantum_control/hardware/cirq_adapter.py",
@@ -8488,6 +8487,7 @@
       "src/scpn_quantum_control/stochastic_estimators_product.py",
       "src/scpn_quantum_control/structured_log_fallback.py",
       "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
+      "src/scpn_quantum_control/studio/calibration_inspection.py",
       "src/scpn_quantum_control/studio/committed_data.py",
       "src/scpn_quantum_control/studio/compiler_trace.py",
       "src/scpn_quantum_control/studio/control_proposal_instrument_artifact.py",

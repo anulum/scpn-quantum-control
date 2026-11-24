@@ -12,7 +12,7 @@ lists committed device calibration snapshots, the committed plans that name
 their calibration sets, and each experiment type's freshness policy with the
 document that fixes it. The build verifies every file by sha256, maps each
 snapshot's elements, compares consecutive snapshots and judges every plan
-(:func:`scpn_quantum_control.hardware.calibration_inspection.build_inspection_record`).
+(:func:`scpn_quantum_control.studio.calibration_inspection.build_inspection_record`).
 
 Run ``python tools/studio_calibration_inspection.py --write`` after the
 declaration or a cited file changes, and ``--check`` to compare the committed
@@ -27,7 +27,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-from scpn_quantum_control.hardware.calibration_inspection import build_inspection_record
+from scpn_quantum_control.studio.calibration_inspection import build_inspection_record
 from scpn_quantum_control.studio.committed_data import run_committed_data_cli
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]

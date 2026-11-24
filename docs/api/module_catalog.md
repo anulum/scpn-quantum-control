@@ -3219,16 +3219,6 @@ Plugin / backend extension API.
 
 **Functions:** `get_registry()`, `register_backend()`, `unregister_backend()`, `get_backend()`, `describe_backend()`, `discover_backends()`, `list_backends()`, `list_quantum_backends()`, `describe_hal_backend_profile()`, `list_hal_backend_descriptors()`, `qiskit_ibm_factory()`, `qiskit_aer_factory()`, `cirq_factory()`, `braket_factory()`, `pennylane_factory()`, `iqm_factory()`, `analog_kuramoto_factory()`, `hybrid_digital_analog_factory()`
 
-### `scpn_quantum_control.hardware.calibration_inspection`
-
-Inspect dated device calibration snapshots, their drift and the plans that use them.
-
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/calibration_inspection.py) · Public symbols: **17**
-
-**Classes:** `CalibrationInspectionError`, `CalibrationSnapshot`, `ElementChange`, `SnapshotDrift`, `PolicyRule`, `FreshnessPolicy`, `CalibrationPlan`, `PlanJudgement`
-
-**Functions:** `read_committed_json()`, `parse_calibration_snapshot()`, `snapshot_drift()`, `parse_freshness_policy()`, `parse_submission_plan()`, `judge_plan()`, `snapshot_to_wire()`, `drift_to_wire()`, `build_inspection_record()`
-
 ### `scpn_quantum_control.hardware.circuit_cutting`
 
 Circuit cutting for scaling to 32-64 oscillators.
@@ -5696,6 +5686,16 @@ Federate the committed native-speedup benchmark rows as a schema-B bundle.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/benchmark_databank_bundle.py) · Public symbols: **2**
 
 **Functions:** `build_benchmark_databank_bundle()`, `main()`
+
+### `scpn_quantum_control.studio.calibration_inspection`
+
+Inspect dated device calibration snapshots, their drift and the plans that use them.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/calibration_inspection.py) · Public symbols: **17**
+
+**Classes:** `CalibrationInspectionError`, `CalibrationSnapshot`, `ElementChange`, `SnapshotDrift`, `PolicyRule`, `FreshnessPolicy`, `CalibrationPlan`, `PlanJudgement`
+
+**Functions:** `read_committed_json()`, `parse_calibration_snapshot()`, `snapshot_drift()`, `parse_freshness_policy()`, `parse_submission_plan()`, `judge_plan()`, `snapshot_to_wire()`, `drift_to_wire()`, `build_inspection_record()`
 
 ### `scpn_quantum_control.studio.committed_data`
 

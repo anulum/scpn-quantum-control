@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 import tools.studio_calibration_inspection as inspection_tool
-from scpn_quantum_control.hardware.calibration_inspection import (
+from scpn_quantum_control.studio.calibration_inspection import (
     DECLARATION_SCHEMA,
     RECORD_DIGEST_SCHEMA,
     CalibrationInspectionError,
