@@ -9,6 +9,7 @@
 import { expect, it } from "vitest";
 import { compareImmutableRuns, comparisonKeyFields } from "./comparisonModel";
 import type { ComparisonSnapshot } from "./comparisonModel";
+import { resultLimits } from "../../shared/results/resultModel";
 
 const baseline: ComparisonSnapshot = Object.freeze({
   revisionHash: "a".repeat(64),
@@ -182,7 +183,11 @@ it.each(
     [{ key: "order", time: Infinity, value: 1 }],
     [{ key: "order", time: 0, value: NaN }],
     [{ key: "", time: 0, value: 1 }],
-    Array.from({ length: 65537 }, (_, index) => ({ key: "order", time: index, value: 1 })),
+    Array.from({ length: resultLimits.samples + 1 }, (_, index) => ({
+      key: "order",
+      time: index,
+      value: 1,
+    })),
   ].map((observations) => ({ observations })),
 )("refuses malformed or unbounded original observations before comparison", ({ observations }) => {
   expect(() => compareImmutableRuns({ ...baseline, observations }, baseline)).toThrow(

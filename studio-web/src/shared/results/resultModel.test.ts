@@ -279,7 +279,8 @@ it("decimates only display indices, retaining endpoints and exact selected sampl
   expect(indices.at(-1)).toBe(65535);
   expect(indices).toContain(12345);
   expect(resultDisplayIndices(2000)).toHaveLength(999);
-  for (const length of [-1, 0.5, 65537]) expect(() => resultDisplayIndices(length)).toThrow();
+  for (const length of [-1, 0.5, resultLimits.samples + 1])
+    expect(() => resultDisplayIndices(length)).toThrow();
   for (const selected of [-1, 0.5, 3]) expect(() => resultDisplayIndices(3, selected)).toThrow();
 });
 

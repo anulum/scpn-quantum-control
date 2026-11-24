@@ -59,12 +59,12 @@ export function ResultLoader({ plan = null, outcome = null }: ResultLoaderProps)
       current = false;
     };
   }, [plan, outcome]);
-  const inspect = async () => {
+  const inspect = async (text: string) => {
     const epoch = ++generation.current;
     setBusy(true);
     setMessage("");
     try {
-      const result = await inspectAnalyseProducer(json);
+      const result = await inspectAnalyseProducer(text);
       if (live.current && generation.current === epoch) {
         setImported(result);
         setMessage("Original producer metadata admitted; saved workspace unchanged.");
@@ -80,11 +80,26 @@ export function ResultLoader({ plan = null, outcome = null }: ResultLoaderProps)
       if (live.current && generation.current === epoch) setBusy(false);
     }
   };
+  // A file is read and inspected directly: tens of MiB in the text area take minutes to lay out.
+  const open = (file: File) => {
+    const epoch = ++generation.current;
+    void file.text().then(
+      (text) => {
+        if (live.current && generation.current === epoch) void inspect(text);
+      },
+      () => {
+        if (live.current && generation.current === epoch)
+          setMessage(
+            "Producer file could not be read; previous result and saved workspace retained.",
+          );
+      },
+    );
+  };
   return (
     <section aria-label="Source result inspector" className="qsp-workspace">
       <h4>Inspect original result values</h4>
       <p>
-        The latest disposed local experiment is displayed with its original source. Paste an
+        The latest disposed local experiment is displayed with its original source. Paste or open an
         original executive analyse JSON export to inspect its producer-declared axes and raw values.
         This reads data locally and does not execute a script or submit a job.
       </p>
@@ -111,11 +126,23 @@ export function ResultLoader({ plan = null, outcome = null }: ResultLoaderProps)
         type="button"
         disabled={busy || json === ""}
         onClick={() => {
-          void inspect();
+          void inspect(json);
         }}
       >
         Inspect producer result
       </button>
+      <label>
+        Open a producer JSON file
+        <input
+          type="file"
+          accept=".json,application/json"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file !== undefined) open(file);
+            event.target.value = "";
+          }}
+        />
+      </label>
       <p role="status" aria-label="Result import status">
         {message}
       </p>

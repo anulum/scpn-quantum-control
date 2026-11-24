@@ -630,7 +630,9 @@ unconfirmed or differently bound attempt refuses result admission.
 
 To inspect an existing Python synchronisation analysis, paste the complete
 `scpn-studio-run analyse` JSON export into **Result producer JSON**, then choose
-**Inspect producer result**. Its original filtration thresholds, Betti counts
+**Inspect producer result**. For a large export, use **Open a producer JSON
+file** instead: the file is read and inspected directly, without placing tens
+of MiB in the text area, which can take minutes to lay out. Its original filtration thresholds, Betti counts
 and producer-declared units remain explicit. The source SHA256 identifies the
 imported bytes; metadata admission does not verify the producer's scientific
 claims or attestations. Malformed, unsupported, oversized or inexact integer
@@ -658,8 +660,12 @@ units, dtype, state and interval metadata. **Export SVG** downloads the displaye
 charts and the complete raw source metadata. Both retain the evidence caption,
 claim boundary and source SHA256, including when chart points are reduced.
 Exports are local downloads and leave saved workspace state unchanged. The
-inspector accepts at most 16 panels and 65,536 samples in a producer import of
-at most 2 MiB UTF-8; these are product bounds rather than measured host capacity.
+inspector accepts at most 16 panels and 131,072 samples in a producer import of
+at most 64 MiB UTF-8. These are product bounds, not measured host capacity. They
+are set so that an export at the sample ceiling, written by the CLI with
+two-space indentation and full-precision numbers, still fits the byte bound.
+The resource budget journey opens a 100,000-point trajectory as a file and
+records the time to admit and draw it and the live JavaScript heap it adds.
 When a panel has more samples than its 1,000 chart markers, the chart keeps each
 segment's smallest and largest value, the first and last samples and the
 selected sample. No extremum disappears from the chart, and the table and the

@@ -55,6 +55,37 @@ it("reads an actually sealed original CLI export without inferring time or uncer
   ).toBe(true);
 });
 
+it("admits an export at the sample ceiling in the CLI's own indented JSON, within the byte ceiling", async () => {
+  const record = JSON.parse(json) as {
+    result: { outputs: { inspection: { panels: Record<string, unknown>[] } } };
+  };
+  const inspection = record.result.outputs.inspection;
+  const template = requirePresent(inspection.panels[0]);
+  // Full-precision numbers are the longest a sample can be written, so this is the largest export.
+  const x = (index: number) => 0.12345678901234568 + index * 1e-9;
+  inspection.panels = [
+    {
+      ...template,
+      id: "ceiling",
+      valueDtype: "float64",
+      samples: Array.from({ length: resultLimits.samples }, (_, index) => ({
+        coordinate: x(index),
+        objectId: "trajectory",
+        columnId: null,
+        x: x(index),
+        y: null,
+        value: -0.12345678901234568,
+        status: "finite",
+        interval: null,
+      })),
+    },
+  ];
+  const text = JSON.stringify(record, null, 2);
+  expect(new TextEncoder().encode(text).length).toBeLessThanOrEqual(resultLimits.importBytes);
+  const result = await inspectAnalyseProducer(text);
+  expect(requirePresent(result.panels[0]).samples).toHaveLength(resultLimits.samples);
+}, 300_000);
+
 it.each([
   "",
   " ".repeat(resultLimits.importBytes + 1),

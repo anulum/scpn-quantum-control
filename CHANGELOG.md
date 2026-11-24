@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The result inspector admits a 100 000-point trajectory, so the trajectory budget is met.
+  - The sample ceiling rises from 65 536 to 131 072 and the import ceiling from 2 MiB to 64 MiB. The old byte
+    ceiling was the real limit: the CLI writes indented JSON, about 320–345 bytes a sample, so 2 MiB held about
+    6 000 samples and the sample ceiling could not be reached. The new byte ceiling holds a CLI export at the new
+    sample ceiling.
+  - **Open a producer JSON file** reads an export and inspects it directly. Pasted, a 30 MiB export took 107 s to
+    lay out in the text area on the reference host; opened as a file it is admitted and drawn in 9.4 s.
+  - The resource budget journey now measures the trajectory instead of reporting the ceiling. It opens a real CLI
+    analyse export whose inspection is a deterministic 100 000-point series with two spikes. It checks that the
+    chart draws at most 1 000 markers with both ends and both spikes, and records the time and the live JavaScript
+    heap it adds (11.8 MiB, after a full collection, from the DevTools protocol).
+  - On the reference host every budget passes and none is missed.
 - Local jobs no longer fail on hosts with many cores.
   - What failed: OpenBLAS (in NumPy and SciPy) and the Rust engine's Rayon pool start one thread per core, and each
     thread reserves address space. On a 24-core host a worker needed more than its 4 GiB address-space limit; the

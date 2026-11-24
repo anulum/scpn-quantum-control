@@ -15,7 +15,10 @@ The journey measures, in the browser that runs it:
 - the visible response to a graph selection;
 - each graph tier's admission, the bounded neighbourhood query at the largest
   tier and the cancellation of its admission;
-- the workers and JavaScript heap left after repeated mounting and unmounting.
+- the workers and JavaScript heap left after repeated mounting and unmounting;
+- a 100 000-point trajectory opened as a producer file in the Results view:
+  the time to admit and draw it, the live JavaScript heap it adds and whether
+  the chart keeps every spike when it decimates.
 
 The record judges each measurement against its declared budget
 (:func:`tools.studio_resource_budgets.judge_budgets`). A missed budget is
@@ -26,6 +29,8 @@ itself fails only when a measurement cannot be made.
 from __future__ import annotations
 
 import functools
+import json
+import math
 import os
 import re
 import tempfile
@@ -55,13 +60,18 @@ _pin_text = functools.cache(tier_pin_text)
 SAMPLES: Final[int] = 20
 #: Mount and unmount cycles of the graph.
 CYCLES: Final[int] = 5
-#: The result inspector's sample ceiling, which the result model tests verify.
-TRAJECTORY_CEILING: Final[int] = 65_536
+#: Points of the trajectory the result inspector must admit and decimate.
+TRAJECTORY_POINTS: Final[int] = 100_000
+#: Samples set far outside the series, which decimation must keep as markers.
+TRAJECTORY_SPIKES: Final[dict[int, float]] = {1: 50.0, 40_001: -50.0}
+#: Title of the synthetic trajectory panel, which names its chart.
+TRAJECTORY_TITLE: Final[str] = "Synthetic budget trajectory"
+#: Markers the result inspector draws at most per panel (``resultLimits.displayPoints``).
+DISPLAY_MARKERS: Final[int] = 1000
 #: Window after navigation start in which long tasks count towards blocking time.
 TBT_WINDOW_MS: Final[float] = 5000.0
 #: Where each measurement that is not taken in the page comes from.
 PROVENANCE: Final[dict[str, str]] = {
-    "trajectory_points": "the result inspector's declared sample ceiling, verified by its model tests",
     "initial_javascript": "gzip level 9 of the entry script and module preloads the preview serves",
     "cold_load_tbt": "long tasks over 50 ms after first contentful paint, within 5 s of navigation",
 }
@@ -413,6 +423,138 @@ def _cycles(page: Page) -> dict[str, object]:
     return {"worker_leak": float(len(page.workers)), "retained_memory": retained}
 
 
+def trajectory_export(points: int = TRAJECTORY_POINTS) -> str:
+    """Return a real CLI analyse export whose inspection is one synthetic trajectory.
+
+    The request, plan and claim boundary are those of an actual ``analyse`` run; only the
+    inspection is replaced, by a deterministic float64 series ``sin(i / 500)`` with the
+    :data:`TRAJECTORY_SPIKES` set far outside it. It is written as the CLI writes, with
+    sorted keys and two-space indentation.
+
+    Parameters
+    ----------
+    points
+        Samples of the series; a spike beyond the last sample is left out.
+
+    Returns
+    -------
+    str
+        The export text.
+
+    """
+    from tools.studio_result_browser import analyse_export
+
+    record = json.loads(analyse_export())
+    inspection = record["result"]["outputs"]["inspection"]
+    template = inspection["panels"][0]
+    values = [math.sin(index / 500) for index in range(points)]
+    for index, value in TRAJECTORY_SPIKES.items():
+        if index < points:
+            values[index] = value
+    inspection["title"] = TRAJECTORY_TITLE
+    inspection["caption"] = (
+        "Deterministic synthetic series of the Studio resource budget, not a measurement or a "
+        "model output. Two spikes test that decimation keeps extrema."
+    )
+    inspection["panels"] = [
+        {
+            **template,
+            "id": "trajectory",
+            "title": TRAJECTORY_TITLE,
+            "valueLabel": "Value",
+            "valueDtype": "float64",
+            "samples": [
+                {
+                    "coordinate": index * 0.01,
+                    "objectId": "trajectory",
+                    "columnId": None,
+                    "x": index * 0.01,
+                    "y": None,
+                    "value": value,
+                    "status": "finite",
+                    "interval": None,
+                }
+                for index, value in enumerate(values)
+            ],
+        }
+    ]
+    return json.dumps(record, sort_keys=True, indent=2)
+
+
+def _heap(page: Page) -> float:
+    """Collect garbage and return the page's used JavaScript heap, from the DevTools protocol.
+
+    Parameters
+    ----------
+    page
+        Owned Chromium page.
+
+    Returns
+    -------
+    float
+        Used heap bytes after a full collection, so only live objects count.
+
+    """
+    session = page.context.new_cdp_session(page)
+    try:
+        session.send("HeapProfiler.collectGarbage")
+        return float(session.send("Runtime.getHeapUsage")["usedSize"])
+    finally:
+        session.detach()
+
+
+def measure_trajectory(page: Page) -> tuple[dict[str, object], dict[str, object]]:
+    """Open the synthetic trajectory in the Results view and check its decimated chart.
+
+    The export is opened as a file, as a user would at this size: pasted, the text area alone
+    takes minutes to lay out.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+
+    Returns
+    -------
+    tuple[dict[str, object], dict[str, object]]
+        ``trajectory_points`` (the points admitted and drawn with every spike kept, else 0),
+        and the export's bytes, the time to admit and draw it, the live heap it adds and the
+        drawn markers.
+
+    """
+    from playwright.sync_api import expect
+
+    text = trajectory_export()
+    page.get_by_role("navigation", name="Workbench views").get_by_role(
+        "link", name="Analyse", exact=True
+    ).click()
+    loader = page.get_by_role("region", name="Source result inspector", exact=True)
+    status = loader.get_by_role("status", name="Result import status")
+    before = _heap(page)
+    with tempfile.TemporaryDirectory() as directory:
+        export = Path(directory) / "trajectory.json"
+        export.write_text(text, encoding="utf-8")
+        started = time.perf_counter()
+        loader.get_by_label("Open a producer JSON file").set_input_files(export, timeout=600000)
+        expect(status).not_to_have_text("", timeout=600000)
+    detail: dict[str, object] = {"bytes": len(text.encode("utf-8")), "status": status.inner_text()}
+    drawn: list[int] = []
+    if detail["status"] == "Original producer metadata admitted; saved workspace unchanged.":
+        chart = loader.get_by_role("img", name=f"{TRAJECTORY_TITLE} chart")
+        expect(chart.locator("[data-index]").first).to_be_attached(timeout=600000)
+        drawn = chart.locator("[data-index]").evaluate_all(
+            "nodes => nodes.map(node => Number(node.dataset.index))"
+        )
+    detail["admission_ms"] = (time.perf_counter() - started) * 1000.0
+    # Decimated means within the marker budget, with both ends and every spike still drawn.
+    kept = len(drawn) <= DISPLAY_MARKERS and {0, TRAJECTORY_POINTS - 1, *TRAJECTORY_SPIKES} <= set(
+        drawn
+    )
+    detail |= {"markers": len(drawn), "extrema_kept": kept, "heap_bytes": _heap(page) - before}
+    points = float(TRAJECTORY_POINTS) if kept else 0.0
+    return {"trajectory_points": points}, {"trajectory": detail}
+
+
 def _walk(
     page: Page, url: str, observations: list[str], *, evidence: dict[str, object]
 ) -> dict[str, object]:
@@ -453,12 +595,15 @@ def _walk(
     observations.append("graph-tiers-measured")
     measured.update(_cycles(page))
     observations.append("repeated-navigation-measured")
-    measured["trajectory_points"] = float(TRAJECTORY_CEILING)
+    trajectory, trajectory_detail = measure_trajectory(page)
+    measured.update(trajectory)
+    observations.append("trajectory-measured")
     record = judge_budgets(load_budgets(), measured)
     record["detail"] = {
         "tier_admission_ms": admissions,
         "interaction_samples_ms": selections,
         **detail,
+        **trajectory_detail,
     }
     record["provenance"] = dict(PROVENANCE)
     record["environment"] = host_environment()

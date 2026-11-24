@@ -17,8 +17,10 @@ from typing import TYPE_CHECKING
 import pytest
 
 import tools.studio_resource_budgets_browser as budgets_browser
+from tools.studio_preview_custody import run_custodied_journey
 from tools.studio_resource_budgets_browser import (
     host_environment,
+    measure_trajectory,
     percentile95,
     run_resource_budgets_journey,
 )
@@ -33,6 +35,35 @@ def test_the_95th_percentile_is_the_nearest_rank() -> None:
     """Twenty samples give the 19th smallest; one sample gives itself."""
     assert percentile95([float(value) for value in range(1, 21)]) == 19.0
     assert percentile95([7.0]) == 7.0
+
+
+def test_the_trajectory_export_is_a_cli_analyse_export_with_one_spiked_series() -> None:
+    """The fixture keeps the real CLI request and plan, writes as the CLI does and is deterministic."""
+    text = budgets_browser.trajectory_export(1000)
+    record = json.loads(text)
+    assert (record["request"]["verb"], record["plan"]["verb"]) == ("analyse", "analyse")
+    assert record["result"]["status"] == "succeeded"
+    inspection = record["result"]["outputs"]["inspection"]
+    assert inspection["claimBoundary"] == record["plan"]["claim_boundary"]
+    assert inspection["title"] == budgets_browser.TRAJECTORY_TITLE
+    [panel] = inspection["panels"]
+    assert (panel["title"], panel["valueDtype"], len(panel["samples"])) == (
+        budgets_browser.TRAJECTORY_TITLE,
+        "float64",
+        1000,
+    )
+    values = [sample["value"] for sample in panel["samples"]]
+    assert values[1] == 50.0
+    assert max(abs(value) for value in values[2:]) <= 1.0
+    assert text == json.dumps(record, sort_keys=True, indent=2)
+    assert budgets_browser.trajectory_export(1000) == text
+    full = json.loads(budgets_browser.trajectory_export())
+    samples = full["result"]["outputs"]["inspection"]["panels"][0]["samples"]
+    assert len(samples) == budgets_browser.TRAJECTORY_POINTS
+    assert [samples[index]["value"] for index in budgets_browser.TRAJECTORY_SPIKES] == [
+        50.0,
+        -50.0,
+    ]
 
 
 def test_a_wait_that_never_ends_is_a_failed_measurement() -> None:
@@ -115,6 +146,41 @@ def test_resource_budgets_journey_refuses_unowned_preview_before_browser_creatio
         run_resource_budgets_journey(url)
 
 
+def test_a_refused_trajectory_is_a_missed_budget_not_a_failed_measurement(
+    program_bundle: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An export the real inspector refuses gives no trajectory points and keeps its message.
+
+    Parameters
+    ----------
+    program_bundle
+        Genuine source-owned built Studio artifacts.
+    monkeypatch
+        Replaces the trajectory export with text the inspector refuses.
+
+    """
+    monkeypatch.setattr(budgets_browser, "trajectory_export", lambda: "{")
+
+    def walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
+        page.goto(url + "#/workspace", wait_until="networkidle")
+        measured, detail = measure_trajectory(page)
+        observations.append("trajectory-refused")
+        return {"measured": measured, "detail": detail}
+
+    with owned_fault_host(program_bundle) as preview:
+        observed = run_custodied_journey(preview, {}, "workbench_resource_budgets", walk)
+    assert observed["measured"] == {"trajectory_points": 0.0}
+    detail = observed["detail"]
+    assert isinstance(detail, dict)
+    trajectory = detail["trajectory"]
+    assert "refused" in trajectory["status"]
+    assert (trajectory["markers"], trajectory["extrema_kept"], trajectory["bytes"]) == (
+        0,
+        False,
+        1,
+    )
+
+
 def test_resource_budgets_journey_records_every_verdict(program_bundle: Path) -> None:
     """Every declared budget gets a verdict; misses are listed, nothing is relaxed.
 
@@ -138,8 +204,11 @@ def test_resource_budgets_journey_records_every_verdict(program_bundle: Path) ->
         "worker_cancel_ack",
         "worker_leak",
     }
-    assert statuses["trajectory_points"] == "fail"
-    assert "trajectory_points" in record["missed"]
+    assert statuses["trajectory_points"] == "pass"
+    assert "trajectory_points" not in record["missed"]
+    trajectory = record["detail"]["trajectory"]
+    assert trajectory["extrema_kept"] is True
+    assert 0 < trajectory["markers"] <= budgets_browser.DISPLAY_MARKERS
     assert statuses["worker_leak"] == "pass"
     assert record["environment"]["cores"]
 

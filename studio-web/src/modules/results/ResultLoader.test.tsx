@@ -69,6 +69,84 @@ it("reads actual original CLI values through public controls and preserves the a
   expect(screen.getByRole("table", { name: "Betti H0 raw values" })).toBeTruthy();
 });
 
+/** A file whose text arrives, or fails, only when the test says so. */
+function heldFile() {
+  const held: { resolve?: (text: string) => void; reject?: (cause: unknown) => void } = {};
+  const file = new File(["held"], "held.json", { type: "application/json" });
+  Object.defineProperty(file, "text", {
+    value: () =>
+      new Promise<string>((resolve, reject) => {
+        held.resolve = resolve;
+        held.reject = reject;
+      }),
+  });
+  return { file, held };
+}
+const openFile = (file: File | null) => {
+  fireEvent.change(screen.getByLabelText("Open a producer JSON file"), {
+    target: { files: file === null ? [] : [file] },
+  });
+};
+
+it("opens a producer JSON file and inspects it directly, without filling the text area", async () => {
+  render(<ResultLoader />);
+  openFile(null);
+  expect(screen.getByRole("status", { name: "Result import status" }).textContent).toBe("");
+  openFile(new File([json], "export.json", { type: "application/json" }));
+  await screen.findByRole("heading", { name: "Phase-cloud synchronisation witness" });
+  expect(screen.getByRole("status", { name: "Result import status" }).textContent).toContain(
+    "saved workspace unchanged",
+  );
+  expect((screen.getByLabelText("Result producer JSON") as HTMLTextAreaElement).value).toBe("");
+});
+
+it("keeps the previous result when a producer file cannot be read", async () => {
+  render(<ResultLoader />);
+  importText(json);
+  await screen.findByRole("heading", { name: "Phase-cloud synchronisation witness" });
+  const { file, held } = heldFile();
+  openFile(file);
+  await act(async () => {
+    held.reject?.(new Error("unreadable"));
+  });
+  expect(screen.getByRole("status", { name: "Result import status" }).textContent).toBe(
+    "Producer file could not be read; previous result and saved workspace retained.",
+  );
+  expect(screen.getByRole("heading", { name: "Phase-cloud synchronisation witness" })).toBeTruthy();
+});
+
+it("ignores a file read that finishes after a newer import, whether it succeeds or fails", async () => {
+  render(<ResultLoader />);
+  const late = heldFile();
+  const failing = heldFile();
+  openFile(late.file);
+  openFile(failing.file);
+  importText(json);
+  await screen.findByRole("heading", { name: "Phase-cloud synchronisation witness" });
+  const admitted = screen.getByRole("status", { name: "Result import status" }).textContent;
+  await act(async () => {
+    late.held.resolve?.("{");
+    failing.held.reject?.(new Error("late"));
+  });
+  expect(screen.getByRole("status", { name: "Result import status" }).textContent).toBe(admitted);
+  expect(screen.getByRole("heading", { name: "Phase-cloud synchronisation witness" })).toBeTruthy();
+});
+
+it("writes no state when a file read finishes after unmount", async () => {
+  const view = render(<ResultLoader />);
+  const read = heldFile();
+  const failed = heldFile();
+  openFile(read.file);
+  const late = read.held;
+  openFile(failed.file);
+  view.unmount();
+  await act(async () => {
+    late.resolve?.(json);
+    failed.held.reject?.(new Error("after unmount"));
+  });
+  expect(screen.queryByRole("status", { name: "Result import status" })).toBeNull();
+});
+
 it("retains newest actual source bytes when an older real digest completion arrives later", async () => {
   const original = sources.inspectAnalyseProducer;
   let release!: () => void;

@@ -66,13 +66,19 @@ export interface ResultSnapshot {
   /** Producer explicitly reported partial output. */ readonly partial: boolean;
   /** Admitted bounded original panels. */ readonly panels: readonly ResultPanel[];
 }
-/** Product rendering/import ceilings, independent of host capacity. */
+/**
+ * Product rendering/import ceilings, independent of host capacity.
+ *
+ * The sample ceiling (2^17) is above the 100 000-point trajectory budget. The byte ceiling holds a
+ * producer export at the sample ceiling in the CLI's own indented JSON, about 345 bytes a sample at
+ * full float precision, so the sample ceiling can be reached through an import.
+ */
 export const resultLimits = Object.freeze({
   /** Maximum linked source panels. */ panels: 16,
-  /** Maximum original samples across all panels. */ samples: 65536,
+  /** Maximum original samples across all panels. */ samples: 131072,
   /** Maximum displayed original markers per panel. */ displayPoints: 1000,
   /** Maximum raw table rows per page. */ tableRows: 20,
-  /** Maximum original UTF-8 producer import bytes. */ importBytes: 2 * 1024 * 1024,
+  /** Maximum original UTF-8 producer import bytes. */ importBytes: 64 * 1024 * 1024,
 });
 
 function object(value: unknown, keys: readonly string[]): Record<string, unknown> {
