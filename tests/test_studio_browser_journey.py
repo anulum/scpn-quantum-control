@@ -183,6 +183,7 @@ _SOURCE_SCENARIOS = {
         "atlas_studio_selection",
         "capability_resolver",
         "calibration_snapshot_diff",
+        "workbench_resource_budgets",
         "operator_backend_profiles",
         "operator_policy_decisions",
         "operator_review_dossiers",

@@ -283,6 +283,30 @@ it("decimates only display indices, retaining endpoints and exact selected sampl
   for (const selected of [-1, 0.5, 3]) expect(() => resultDisplayIndices(3, selected)).toThrow();
 });
 
+it("keeps every bucket's extrema when decimating source values, within the marker budget", () => {
+  const length = resultLimits.samples;
+  const values: (number | null)[] = Array.from({ length }, (_, index) => Math.sin(index / 500));
+  values[1] = 50;
+  values[40_001] = -50;
+  values[777] = null;
+  const indices = resultDisplayIndices(length, 33_333, values);
+  expect(indices.length).toBeLessThanOrEqual(resultLimits.displayPoints);
+  expect(indices).toContain(1);
+  expect(indices).toContain(40_001);
+  expect(indices).toContain(33_333);
+  expect(indices[0]).toBe(0);
+  expect(indices.at(-1)).toBe(length - 1);
+  expect([...indices]).toEqual([...indices].sort((left, right) => left - right));
+  expect(new Set(indices).size).toBe(indices.length);
+  const gaps = Array.from({ length: 4_000 }, () => null);
+  expect(resultDisplayIndices(4_000, null, gaps).length).toBeLessThanOrEqual(
+    resultLimits.displayPoints,
+  );
+  expect(resultDisplayIndices(4_000, null, gaps)).toContain(0);
+  expect(resultDisplayIndices(3, null, [1, 2, 3])).toEqual([0, 1, 2]);
+  expect(() => resultDisplayIndices(4, null, [1, 2, 3])).toThrow();
+});
+
 it.each(["\u0000", "\u000b", "\u001f"])(
   "refuses source text that cannot be represented in XML without corruption",
   (value) => {

@@ -660,6 +660,10 @@ claim boundary and source SHA256, including when chart points are reduced.
 Exports are local downloads and leave saved workspace state unchanged. The
 inspector accepts at most 16 panels and 65,536 samples in a producer import of
 at most 2 MiB UTF-8; these are product bounds rather than measured host capacity.
+When a panel has more samples than its 1,000 chart markers, the chart keeps each
+segment's smallest and largest value, the first and last samples and the
+selected sample. No extremum disappears from the chart, and the table and the
+exports keep every sample.
 
 The original browser dispatcher checks actual shipped WASM values against their
 saved output identity, imports an actual CLI export with nonuniform thresholds,
@@ -2874,6 +2878,56 @@ competitive comparison. The CI baseline was measured on Python 3.12 before the
 CI job moved to Python 3.15, and its re-baseline is pending. Regenerate or
 check the pin with `python tools/studio_benchmark_databank.py --write` or
 `--check` after a benchmark artefact changes.
+
+## Resource budgets
+
+`data/studio/resource_budgets_20261123.json` declares the Studio's performance
+budgets. They are targets, not results:
+
+- **Cold load:** largest contentful paint below 2 s, cumulative layout shift
+  below 0.05 and total blocking time below 200 ms.
+- **Code:** below 200 KiB of compressed initial JavaScript.
+- **Response:** a visible response to a graph selection below 100 ms at the 95th
+  percentile, and a worker cancellation acknowledged within 250 ms.
+- **Graph:** tiers of 100, 1,000 and 10,000 nodes with up to 100,000 relations.
+  - At most 500 nodes and 2,000 relations are drawn by default.
+  - A bounded neighbourhood query stays below 500 ms at the 95th percentile at
+    the largest tier.
+- **Trajectory:** 100,000 points decimated with every bucket's extrema kept.
+- **Leaks:** no worker is left after repeated mounting and unmounting of the
+  graph.
+- **Record only:** retained memory and layout time have no numeric target, so
+  they never pass by default.
+
+**The verdict rule.** `tools/studio_resource_budgets.py` and the browser's
+`shared/performance/budgetVerdict.ts` share one rule:
+
+- a measurement passes exactly when its declared comparator holds;
+- a missing measurement is *unmeasured*, never a pass;
+- a record-only budget is *recorded* without a verdict.
+
+There is no tolerance, no retry and no relaxed second threshold. A shared case
+file keeps the two implementations in step.
+
+**The fixtures.** The graph tiers are generated deterministically, and the
+browser and Python fixtures pin the same snapshot digests.
+
+**Measuring.** The `workbench_resource_budgets` browser journey measures the
+budgets on the built preview and the real WASM. It writes a record of every
+verdict, the missed budgets, the samples behind each percentile and the host
+(CPU, cores, memory and load):
+
+```bash
+python tools/studio_browser_journey.py --scenario workbench_resource_budgets \
+  --base-url http://127.0.0.1:4173/ --output /tmp/resource-budgets.json
+```
+
+A missed budget is reported, not hidden: the journey fails only when a
+measurement cannot be made.
+
+The trajectory budget is reported as missed. The result inspector's ceiling of
+65,536 samples is below the 100,000-point target, and that ceiling is not raised
+to meet it.
 
 ## What this installation can do
 

@@ -680,6 +680,10 @@ _WITH_EVIDENCE: dict[str, tuple[str, str]] = {
         "tools.studio_calibration_browser",
         "run_calibration_journey",
     ),
+    "workbench_resource_budgets": (
+        "tools.studio_resource_budgets_browser",
+        "run_resource_budgets_journey",
+    ),
     "pulse_feasibility": ("tools.studio_pulse_browser", "run_pulse_journey"),
     "compiler_trace_inspector": (
         "tools.studio_compiler_trace_browser",
@@ -719,6 +723,7 @@ _SCENARIOS = (
     "atlas_studio_selection",
     "capability_resolver",
     "calibration_snapshot_diff",
+    "workbench_resource_budgets",
     "operator_backend_profiles",
     "operator_policy_decisions",
     "operator_review_dossiers",

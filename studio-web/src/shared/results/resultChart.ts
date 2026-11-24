@@ -128,7 +128,11 @@ export function projectResultChart(
   const samples = indexed.map(({ sample }) => sample);
   const selectedIndex = samples.findIndex((sample) => selected(sample, selection));
   const indices = new Set(
-    resultDisplayIndices(samples.length, selectedIndex < 0 ? null : selectedIndex),
+    resultDisplayIndices(
+      samples.length,
+      selectedIndex < 0 ? null : selectedIndex,
+      samples.map((sample) => sample.value),
+    ),
   );
   const xs = range(samples.map((sample) => sample.x));
   const yValues = samples.flatMap((sample) => {

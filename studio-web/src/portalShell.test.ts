@@ -35,4 +35,25 @@ describe("portal shell", () => {
     expect(icon.querySelector("title")?.textContent).toBe("Quantum Control");
     expect(icon.querySelector("ellipse")).not.toBeNull();
   });
+
+  it("preloads only font faces the stylesheet declares and ships, so their swap shifts nothing", () => {
+    const shell = new DOMParser().parseFromString(
+      readFileSync(resolve("index.html"), "utf8"),
+      "text/html",
+    );
+    const tokens = readFileSync(resolve("src/tokens.css"), "utf8");
+    const preloads = [...shell.querySelectorAll('link[rel="preload"][as="font"]')];
+    expect(preloads.map((link) => link.getAttribute("href"))).toEqual([
+      "/src/fonts/hanken-grotesk-latin-400-normal.woff2",
+      "/src/fonts/hanken-grotesk-latin-500-normal.woff2",
+      "/src/fonts/hanken-grotesk-latin-600-normal.woff2",
+    ]);
+    for (const link of preloads) {
+      const href = link.getAttribute("href") ?? "";
+      expect(link.getAttribute("type")).toBe("font/woff2");
+      expect(link.hasAttribute("crossorigin")).toBe(true);
+      expect(tokens).toContain(`url("./fonts/${href.split("/").at(-1)}")`);
+      expect(readFileSync(resolve(href.slice(1))).byteLength).toBeGreaterThan(0);
+    }
+  });
 });

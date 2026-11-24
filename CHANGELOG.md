@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Studio performance budgets are declared and measured.
+  - `data/studio/resource_budgets_20261123.json` holds the targets: cold load,
+    initial JavaScript, interaction, worker cancellation, graph tiers and queries,
+    trajectory decimation and worker leaks.
+  - One strict verdict rule exists in Python and in the browser, with shared
+    cases: pass, fail, unmeasured or recorded, and nothing relaxed.
+  - The `workbench_resource_budgets` browser journey measures the built
+    workbench and records every verdict and missed budget.
+- Charts now keep each bucket's smallest and largest value when they reduce
+  long series to their marker budget. Before, uniform spacing could drop a peak.
+- The workbench preloads its three above-the-fold font faces. The swap from the
+  fallback font no longer shifts the layout, and cumulative layout shift on a
+  cold load fell from 0.17 to below 0.001 in measurement.
 - Studio can inspect dated calibration snapshots, their drift and the plans that
   use them.
   - `scpn_quantum_control.hardware.calibration_inspection` keeps each qubit's

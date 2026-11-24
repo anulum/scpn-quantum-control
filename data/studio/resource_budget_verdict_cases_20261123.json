@@ -1,0 +1,115 @@
+{
+  "schema": "scpn_qc_studio_resource_budget_verdict_cases_v1",
+  "cases": [
+    {
+      "budget": {
+        "id": "lt",
+        "metric": "m",
+        "comparator": "<",
+        "target": 500,
+        "unit": "ms"
+      },
+      "measured": 499.999,
+      "status": "pass"
+    },
+    {
+      "budget": {
+        "id": "lt",
+        "metric": "m",
+        "comparator": "<",
+        "target": 500,
+        "unit": "ms"
+      },
+      "measured": 500,
+      "status": "fail"
+    },
+    {
+      "budget": {
+        "id": "lt",
+        "metric": "m",
+        "comparator": "<",
+        "target": 500,
+        "unit": "ms"
+      },
+      "measured": 500.001,
+      "status": "fail"
+    },
+    {
+      "budget": {
+        "id": "le",
+        "metric": "m",
+        "comparator": "<=",
+        "target": 0,
+        "unit": "workers"
+      },
+      "measured": 0,
+      "status": "pass"
+    },
+    {
+      "budget": {
+        "id": "le",
+        "metric": "m",
+        "comparator": "<=",
+        "target": 0,
+        "unit": "workers"
+      },
+      "measured": 1,
+      "status": "fail"
+    },
+    {
+      "budget": {
+        "id": "ge",
+        "metric": "m",
+        "comparator": ">=",
+        "target": 100000,
+        "unit": "points"
+      },
+      "measured": 100000,
+      "status": "pass"
+    },
+    {
+      "budget": {
+        "id": "ge",
+        "metric": "m",
+        "comparator": ">=",
+        "target": 100000,
+        "unit": "points"
+      },
+      "measured": 65536,
+      "status": "fail"
+    },
+    {
+      "budget": {
+        "id": "rec",
+        "metric": "m",
+        "comparator": "record",
+        "target": null,
+        "unit": "bytes"
+      },
+      "measured": 12345678,
+      "status": "recorded"
+    },
+    {
+      "budget": {
+        "id": "lt",
+        "metric": "m",
+        "comparator": "<",
+        "target": 500,
+        "unit": "ms"
+      },
+      "measured": null,
+      "status": "unmeasured"
+    },
+    {
+      "budget": {
+        "id": "rec",
+        "metric": "m",
+        "comparator": "record",
+        "target": null,
+        "unit": "bytes"
+      },
+      "measured": null,
+      "status": "unmeasured"
+    }
+  ]
+}

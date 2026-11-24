@@ -1,0 +1,104 @@
+{
+  "schema": "scpn_qc_studio_resource_budgets_v1",
+  "note": "Targets for the Studio. They are not measured results. A record-only budget has no numeric target and never passes by default.",
+  "budgets": [
+    {
+      "id": "cold_load_lcp",
+      "metric": "largest contentful paint on a cold load of the workbench",
+      "comparator": "<",
+      "target": 2000,
+      "unit": "ms"
+    },
+    {
+      "id": "cold_load_cls",
+      "metric": "cumulative layout shift on a cold load of the workbench",
+      "comparator": "<",
+      "target": 0.05,
+      "unit": "score"
+    },
+    {
+      "id": "cold_load_tbt",
+      "metric": "total blocking time on a cold load of the workbench",
+      "comparator": "<",
+      "target": 200,
+      "unit": "ms"
+    },
+    {
+      "id": "initial_javascript",
+      "metric": "compressed JavaScript the entry page loads before any lazy chunk",
+      "comparator": "<",
+      "target": 204800,
+      "unit": "bytes"
+    },
+    {
+      "id": "interaction_p95",
+      "metric": "95th percentile of visible response to a graph selection",
+      "comparator": "<",
+      "target": 100,
+      "unit": "ms"
+    },
+    {
+      "id": "worker_cancel_ack",
+      "metric": "time from cancelling a worker task to its acknowledgement",
+      "comparator": "<",
+      "target": 250,
+      "unit": "ms"
+    },
+    {
+      "id": "graph_tiers",
+      "metric": "largest graph tier admitted, as nodes and relations",
+      "comparator": ">=",
+      "target": 10000,
+      "unit": "nodes, with up to 100000 relations"
+    },
+    {
+      "id": "visible_subgraph_nodes",
+      "metric": "nodes drawn by default at every tier",
+      "comparator": "<=",
+      "target": 500,
+      "unit": "nodes"
+    },
+    {
+      "id": "visible_subgraph_edges",
+      "metric": "relations drawn by default at every tier",
+      "comparator": "<=",
+      "target": 2000,
+      "unit": "relations"
+    },
+    {
+      "id": "graph_query_p95",
+      "metric": "95th percentile of a bounded neighbourhood query at the largest tier",
+      "comparator": "<",
+      "target": 500,
+      "unit": "ms"
+    },
+    {
+      "id": "trajectory_points",
+      "metric": "longest trajectory decimated with every bucket's extrema kept",
+      "comparator": ">=",
+      "target": 100000,
+      "unit": "points"
+    },
+    {
+      "id": "worker_leak",
+      "metric": "workers left after repeated mounting and unmounting of the graph",
+      "comparator": "<=",
+      "target": 0,
+      "unit": "workers"
+    },
+    {
+      "id": "retained_memory",
+      "metric": "JavaScript heap retained after repeated navigation",
+      "comparator": "record",
+      "target": null,
+      "unit": "bytes"
+    },
+    {
+      "id": "layout",
+      "metric": "layout of the visible subgraph, measured apart from queries",
+      "comparator": "record",
+      "target": null,
+      "unit": "ms"
+    }
+  ]
+}

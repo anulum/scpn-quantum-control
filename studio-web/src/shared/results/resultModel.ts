@@ -284,24 +284,62 @@ export function rawResultText(value: number): string {
   return Object.is(value, -0) ? "-0" : String(value);
 }
 
-/** Keep all original values; choose only bounded indices for chart rendering. */
+/** Indices of one bucket's smallest and largest finite value, or its first index when none is finite. */
+function bucketExtrema(values: readonly (number | null)[], from: number, to: number): number[] {
+  let low = -1,
+    high = -1;
+  for (let index = from; index < to; index++) {
+    const value = values[index];
+    if (value === null || value === undefined || !Number.isFinite(value)) continue;
+    if (low < 0 || value < (values[low] as number)) low = index;
+    if (high < 0 || value > (values[high] as number)) high = index;
+  }
+  return low < 0 ? [from] : [low, high];
+}
+
+/**
+ * Keep all original values; choose only bounded indices for chart rendering.
+ *
+ * With source values, the indices keep each bucket's smallest and largest finite value as well as
+ * the endpoints and the selected sample, so no extremum disappears from the chart. Without them,
+ * indices are evenly spaced.
+ *
+ * @param length - Number of original samples.
+ * @param selectedIndex - The selected sample, always kept, or null.
+ * @param values - The samples' source values, `null` where a value is missing; same length.
+ * @returns Sorted, distinct indices, at most {@link resultLimits.displayPoints}.
+ */
 export function resultDisplayIndices(
   length: number,
   selectedIndex: number | null = null,
+  values: readonly (number | null)[] | null = null,
 ): readonly number[] {
   if (
     !Number.isSafeInteger(length) ||
     length < 0 ||
     length > resultLimits.samples ||
     (selectedIndex !== null &&
-      (!Number.isSafeInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= length))
+      (!Number.isSafeInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= length)) ||
+    (values !== null && values.length !== length)
   )
     throw new ResultRefusal("Bounded source display length and selected index required");
   if (length <= resultLimits.displayPoints) return Array.from({ length }, (_, index) => index);
-  const count = resultLimits.displayPoints - 1;
-  const indices = new Set(
-    Array.from({ length: count }, (_, index) => Math.floor((index * (length - 1)) / (count - 1))),
-  );
+  const indices = new Set<number>([0, length - 1]);
+  if (values === null) {
+    const count = resultLimits.displayPoints - 1;
+    for (let index = 0; index < count; index++)
+      indices.add(Math.floor((index * (length - 1)) / (count - 1)));
+  } else {
+    // Two extrema per bucket, plus both endpoints and the selected sample, stay within the budget.
+    const buckets = Math.floor((resultLimits.displayPoints - 3) / 2);
+    for (let bucket = 0; bucket < buckets; bucket++)
+      for (const index of bucketExtrema(
+        values,
+        Math.floor((bucket * length) / buckets),
+        Math.floor(((bucket + 1) * length) / buckets),
+      ))
+        indices.add(index);
+  }
   if (selectedIndex !== null) indices.add(selectedIndex);
   return Object.freeze([...indices].sort((left, right) => left - right));
 }
