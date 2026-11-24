@@ -9,12 +9,13 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from shutil import copytree
 
 import pytest
 
-from tools.studio_capability_browser import run_capability_journey
+from tools.studio_capability_browser import CAPABILITIES, run_capability_journey
 from tools.tests.test_studio_browser_runtime_refusal import owned_fault_host
 from tools.tests.test_studio_program_authoring_browser import program_bundle as program_bundle
 
@@ -39,6 +40,23 @@ def test_capability_resolver_refuses_unowned_preview_before_browser_creation(url
     """
     with pytest.raises(ValueError):
         run_capability_journey(url)
+
+
+def test_the_journey_names_every_capability_the_modules_declare() -> None:
+    """The journey's capability set equals the capabilities the module sources declare.
+
+    A module that declares a capability the journey does not name fails here, before any
+    browser starts, instead of only in the late browser job.
+    """
+    modules = Path(__file__).resolve().parents[2] / "studio-web/src/modules"
+    declared: set[str] = set()
+    for index in sorted(modules.glob("*/index.tsx")):
+        block = re.search(
+            r"\n  capabilities: \[\n(.*?)\n  \],", index.read_text(encoding="utf-8"), re.S
+        )
+        if block is not None:
+            declared.update(re.findall(r'\bid: "([^"]+)"', block.group(1)))
+    assert declared == CAPABILITIES
 
 
 def test_capability_resolver_through_the_built_evidence_stage(program_bundle: Path) -> None:

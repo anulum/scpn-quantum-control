@@ -18,6 +18,21 @@ if TYPE_CHECKING:
     from playwright.sync_api import Locator, Page
 
 AXE_SOURCE = Path(__file__).resolve().parents[1] / "studio-web/node_modules/axe-core/axe.min.js"
+#: Every capability the registered modules declare. A module that declares a new one must
+#: add it here, so the list on the Workspace stage is checked by name, not only by count.
+CAPABILITIES = frozenset(
+    {
+        "browse-atlas",
+        "durable-local-jobs",
+        "execute-on-hardware",
+        "recompute-xy-compile",
+        "replay-program-ad",
+        "run-local-experiments",
+        "save-projects",
+        "verify-attestations",
+        "verify-benchmarks",
+    }
+)
 
 
 def _state(section: Locator, capability: str) -> str | None:
@@ -38,10 +53,14 @@ def _check_before(section: Locator, observations: list[str]) -> None:
     """
     from playwright.sync_api import expect
 
-    expect(section.locator("[data-capability]")).to_have_count(8)
-    expect(section.locator('[data-capability="save-projects"]')).to_have_attribute(
-        "data-state", "stable"
-    )
+    listed = section.locator("[data-capability]")
+    expect(listed).to_have_count(len(CAPABILITIES))
+    names = listed.evaluate_all("items => items.map(item => item.dataset.capability)")
+    assert set(names) == CAPABILITIES, sorted(set(names) ^ CAPABILITIES)
+    for capability in ("save-projects", "browse-atlas"):
+        expect(section.locator(f'[data-capability="{capability}"]')).to_have_attribute(
+            "data-state", "stable"
+        )
     assert _state(section, "recompute-xy-compile") == "degraded"
     assert _state(section, "execute-on-hardware") == "unavailable"
     assert _state(section, "durable-local-jobs") == "unavailable"
