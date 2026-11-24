@@ -1084,7 +1084,7 @@
           "candidates": [
             {
               "path": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
-              "sha256": "5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862"
+              "sha256": "27f3c39f15e6b151efaaaa583b334d3379be683b6667b2bba4ad95ae89008c9d"
             }
           ],
           "role": "evidence",
@@ -1095,7 +1095,7 @@
           "candidates": [
             {
               "path": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
-              "sha256": "5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862"
+              "sha256": "27f3c39f15e6b151efaaaa583b334d3379be683b6667b2bba4ad95ae89008c9d"
             }
           ],
           "role": "benchmark",
@@ -1103,7 +1103,7 @@
         }
       ],
       "promotion_status": "bounded_candidate",
-      "record_digest": "b2ac975d08ec06d1c59ed0505afa3b6924cda3ed1a1f500e33bd245acaac6254"
+      "record_digest": "f5497c6bb34eb86a719b35d2b372dd4915276a3067b068cfa069ce9064bed691"
     },
     {
       "bundle": {
@@ -1659,7 +1659,7 @@
           "candidates": [
             {
               "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
-              "sha256": "7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786"
+              "sha256": "a5575c87c3109c6cc648af888c76632696e99d1ba3c762c15f7087971752b958"
             }
           ],
           "role": "evidence",
@@ -1670,7 +1670,7 @@
           "candidates": [
             {
               "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
-              "sha256": "7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786"
+              "sha256": "a5575c87c3109c6cc648af888c76632696e99d1ba3c762c15f7087971752b958"
             }
           ],
           "role": "benchmark",
@@ -1678,7 +1678,7 @@
         }
       ],
       "promotion_status": "bounded_candidate",
-      "record_digest": "80fdcad28086c01af1f2062e48ca49325a0898f2fa8f73124c228f62384afa8d"
+      "record_digest": "75d0ddc5bbf6e2cbee32441dde40bdb4d36c6f1a57db9a551fddf895e5f5c405"
     },
     {
       "bundle": {

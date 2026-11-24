@@ -1152,7 +1152,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -1217,7 +1217,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -1256,13 +1256,13 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
         "source": "claim:differentiable.claim_ledger/differentiable_dependency_environment_map",
         "source_ref": "data/studio/evidence_lineage_20261123.json",
-        "target": "artefact:sha256:7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786"
+        "target": "artefact:sha256:a5575c87c3109c6cc648af888c76632696e99d1ba3c762c15f7087971752b958"
       },
       {
         "access": "public",
@@ -1308,7 +1308,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -1373,7 +1373,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -1425,13 +1425,13 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
         "source": "claim:differentiable.claim_ledger/external_validation_artifact_bundle",
         "source_ref": "data/studio/evidence_lineage_20261123.json",
-        "target": "artefact:sha256:5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862"
+        "target": "artefact:sha256:27f3c39f15e6b151efaaaa583b334d3379be683b6667b2bba4ad95ae89008c9d"
       },
       {
         "access": "public",
@@ -1451,7 +1451,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -1516,7 +1516,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -1633,7 +1633,7 @@
         "as_of": null,
         "assumptions": [],
         "derivation_method": "declared",
-        "evidence_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
+        "evidence_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
         "kind": "derives_from",
         "mapping": null,
         "relation_version": "atlas_relation.v1",
@@ -4294,7 +4294,7 @@
         "target": "capability:atlas.architecture/compiler_ad_native_execution"
       }
     ],
-    "evidence_set_hash": "d997b4cd9d54f884fbaf972c6df76fcbc215955d52e19328bbc5c956ab7eb0f6",
+    "evidence_set_hash": "ba1f7363974aa00c52e5873e04c6d6adc2644d806c48164c5f2bd2877099d953",
     "exclusions": [
       {
         "reason": "evidence artefact identifier; its record is not an Atlas input",
@@ -4560,7 +4560,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
         "kind": "artefact",
@@ -4642,6 +4642,26 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
+        ],
+        "id": "artefact:sha256:27f3c39f15e6b151efaaaa583b334d3379be683b6667b2bba4ad95ae89008c9d",
+        "kind": "artefact",
+        "label": "diff-external-validation-artifact-bundle-20260616",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "27f3c39f15e6b151efaaaa583b334d3379be683b6667b2bba4ad95ae89008c9d",
+        "source_ref": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-external-validation-artifact-bundle-20260616",
+          "role": "evidence"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
           "34b63985c77941debdaf6862171af9ffb0f8724ef52a000862f929c0f660202c"
         ],
         "id": "artefact:sha256:2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517",
@@ -4681,7 +4701,7 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:38ec47fb0e8a85dfe1fbc4e179e051ce8236ca39b24098f9676d186f24c5926c",
         "kind": "artefact",
@@ -4721,7 +4741,7 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:442725a58a805e3ffdbaf584b0dae06f3587dd43c12bec031e6362332a82d0be",
         "kind": "artefact",
@@ -4742,47 +4762,8 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
-        ],
-        "id": "artefact:sha256:51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
-        "kind": "artefact",
-        "label": "Evidence lineage",
-        "null_reasons": {
-          "as_of": "committed declarations carry no observation time"
-        },
-        "source_digest": "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
-        "source_ref": "data/studio/evidence_lineage_20261123.json",
-        "status": "current",
-        "validity_domain": {
-          "schema": "scpn_qc_studio_evidence_lineage_v1"
-        }
-      },
-      {
-        "access": "public",
-        "as_of": null,
-        "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
-        ],
-        "id": "artefact:sha256:5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862",
-        "kind": "artefact",
-        "label": "diff-external-validation-artifact-bundle-20260616",
-        "null_reasons": {
-          "as_of": "committed declarations carry no observation time"
-        },
-        "source_digest": "5c78c092ad742d8afde6f3318125fa8ee5c72ec8fab01c3190d8c84a2c50a862",
-        "source_ref": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json",
-        "status": "current",
-        "validity_domain": {
-          "artifact_id": "diff-external-validation-artifact-bundle-20260616",
-          "role": "evidence"
-        }
-      },
-      {
-        "access": "public",
-        "as_of": null,
-        "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7",
-          "6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3"
+          "6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3",
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3",
         "kind": "artefact",
@@ -4865,7 +4846,7 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266",
         "kind": "artefact",
@@ -4885,7 +4866,7 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8",
         "kind": "artefact",
@@ -4898,26 +4879,6 @@
         "status": "current",
         "validity_domain": {
           "artifact_id": "diff-support-surface-alignment-audit-v1",
-          "role": "evidence"
-        }
-      },
-      {
-        "access": "public",
-        "as_of": null,
-        "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
-        ],
-        "id": "artefact:sha256:7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786",
-        "kind": "artefact",
-        "label": "diff-dependency-environment-map-20260627",
-        "null_reasons": {
-          "as_of": "committed declarations carry no observation time"
-        },
-        "source_digest": "7bc87c6a3d5e44e1d9171b7ad92c7d37985a1d8276c0765012cfa949e1aa0786",
-        "source_ref": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
-        "status": "current",
-        "validity_domain": {
-          "artifact_id": "diff-dependency-environment-map-20260627",
           "role": "evidence"
         }
       },
@@ -4945,7 +4906,7 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6",
         "kind": "artefact",
@@ -4999,6 +4960,26 @@
         "validity_domain": {
           "pack": "phase2_dla_parity_ag_ibm_kingston_2026_05_05",
           "role": "raw_counts"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
+        ],
+        "id": "artefact:sha256:a5575c87c3109c6cc648af888c76632696e99d1ba3c762c15f7087971752b958",
+        "kind": "artefact",
+        "label": "diff-dependency-environment-map-20260627",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "a5575c87c3109c6cc648af888c76632696e99d1ba3c762c15f7087971752b958",
+        "source_ref": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
+        "status": "current",
+        "validity_domain": {
+          "artifact_id": "diff-dependency-environment-map-20260627",
+          "role": "evidence"
         }
       },
       {
@@ -5174,7 +5155,26 @@
         "access": "public",
         "as_of": null,
         "evidence_refs": [
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
+        ],
+        "id": "artefact:sha256:e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
+        "kind": "artefact",
+        "label": "Evidence lineage",
+        "null_reasons": {
+          "as_of": "committed declarations carry no observation time"
+        },
+        "source_digest": "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd",
+        "source_ref": "data/studio/evidence_lineage_20261123.json",
+        "status": "current",
+        "validity_domain": {
+          "schema": "scpn_qc_studio_evidence_lineage_v1"
+        }
+      },
+      {
+        "access": "public",
+        "as_of": null,
+        "evidence_refs": [
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "artefact:sha256:fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b",
         "kind": "artefact",
@@ -5353,7 +5353,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/ci_benchmark_evidence",
         "kind": "claim",
@@ -5374,7 +5374,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_architecture_rustification_map",
         "kind": "claim",
@@ -5395,7 +5395,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_baseline_scorecard",
         "kind": "claim",
@@ -5416,7 +5416,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_dependency_environment_map",
         "kind": "claim",
@@ -5437,7 +5437,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_isolated_benchmark_plan",
         "kind": "claim",
@@ -5458,7 +5458,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/differentiable_rust_python_inventory",
         "kind": "claim",
@@ -5479,7 +5479,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/external_framework_comparison",
         "kind": "claim",
@@ -5500,7 +5500,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/external_validation_artifact_bundle",
         "kind": "claim",
@@ -5521,7 +5521,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/external_validation_environment_lock",
         "kind": "claim",
@@ -5542,7 +5542,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/external_validation_technical_report",
         "kind": "claim",
@@ -5563,7 +5563,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/framework_overlay_parity",
         "kind": "claim",
@@ -5584,7 +5584,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/hardening_slice_gate",
         "kind": "claim",
@@ -5605,7 +5605,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/module_hardening_audit",
         "kind": "claim",
@@ -5626,7 +5626,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/phase_qnode_claim_boundary",
         "kind": "claim",
@@ -5647,7 +5647,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/public_claim_table",
         "kind": "claim",
@@ -5668,7 +5668,7 @@
         "as_of": null,
         "evidence_refs": [
           "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
-          "51f9672eba31e05bea7644dca507c332aa28463887e6ce8e76b65d1dce21baf7"
+          "e589ca01a33f1b439b8f01661680488da8ce3734f04c8a41a9f8af2244c5d1cd"
         ],
         "id": "claim:differentiable.claim_ledger/support_surface_alignment",
         "kind": "claim",
@@ -6666,7 +6666,7 @@
           "as_of": "committed declarations carry no observation time",
           "validity_domain": "the input states no validity scope"
         },
-        "source_digest": "a7805c4c7b3b9b6ea8c2270ad9db8622a0560da4286739e88e660bbb36c08d54",
+        "source_digest": "55b8c093fc441dbdde939d19b9712f92c2aaa7609c4086d9fa73840d6e3f33fe",
         "source_ref": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
         "status": "current",
         "validity_domain": null
@@ -6777,7 +6777,7 @@
           "as_of": "committed declarations carry no observation time",
           "validity_domain": "the input states no validity scope"
         },
-        "source_digest": "2d5023aab6bbaa5852dc71a8e23336081a32e27117d2f025ae17185ac28bae6a",
+        "source_digest": "96e70ba24f6c97a4b6da021e2f6c70268d469b97910b2f70f420e2387d347706",
         "source_ref": "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md",
         "status": "current",
         "validity_domain": null
@@ -7579,8 +7579,8 @@
       }
     ],
     "schema": "quantum_atlas_snapshot.v1",
-    "source_commit": "4cf4422ca59b0279ecc917744b43f77841501b1b",
+    "source_commit": "ca7f84b2166d668cb714ee364f0fa815355bfe83",
     "tombstones": []
   },
-  "snapshot_digest": "5bf046d13e8c662db47cdf4c15448b968fb80989d67b332995b87579e1ce5a63"
+  "snapshot_digest": "ae120dd84967c0066837d54debc416f2a7c24858ff417708e40370b2633f8ced"
 }
