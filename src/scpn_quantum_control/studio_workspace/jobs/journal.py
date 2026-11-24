@@ -18,12 +18,18 @@ enforced by SQLite itself, not by the callers:
 
 Every write runs in an ``IMMEDIATE`` transaction, so two service threads never
 interleave a state change with its event.
+
+The service's request and pump threads share one connection. A SQLite
+connection must not be used by two threads at once (concurrent reads and
+writes fail with ``InterfaceError``), so every use of it, read or write,
+holds the journal's one reentrant lock.
 """
 
 from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -202,6 +208,7 @@ class JobJournal:
 
     def __init__(self, path: Path) -> None:
         self.path = path
+        self._lock = threading.RLock()
         self._connection = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA journal_mode=WAL")
@@ -211,18 +218,24 @@ class JobJournal:
 
     def close(self) -> None:
         """Close the connection."""
-        self._connection.close()
+        with self._lock:
+            self._connection.close()
 
     @contextmanager
     def _transaction(self) -> Iterator[sqlite3.Connection]:
-        """Run the body in one immediate transaction, rolled back on any error."""
-        self._connection.execute("BEGIN IMMEDIATE")
-        try:
-            yield self._connection
-        except BaseException:
-            self._connection.execute("ROLLBACK")
-            raise
-        self._connection.execute("COMMIT")
+        """Run the body in one immediate transaction, rolled back on any error.
+
+        The connection's lock is held from ``BEGIN`` to ``COMMIT``, so no other
+        thread reads or writes in the middle of the transaction.
+        """
+        with self._lock:
+            self._connection.execute("BEGIN IMMEDIATE")
+            try:
+                yield self._connection
+            except BaseException:
+                self._connection.execute("ROLLBACK")
+                raise
+            self._connection.execute("COMMIT")
 
     def _append(
         self,
@@ -334,9 +347,10 @@ class JobJournal:
             No such attempt.
 
         """
-        row = self._connection.execute(
-            "SELECT * FROM attempts WHERE attempt_id = ?", (attempt_id,)
-        ).fetchone()
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT * FROM attempts WHERE attempt_id = ?", (attempt_id,)
+            ).fetchone()
         if row is None:
             raise KeyError(attempt_id)
         return _attempt(row)
@@ -355,9 +369,10 @@ class JobJournal:
             Matching attempts in admission order.
 
         """
-        rows = self._connection.execute(
-            "SELECT * FROM attempts WHERE state = ? ORDER BY created, attempt_id", (state,)
-        ).fetchall()
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT * FROM attempts WHERE state = ? ORDER BY created, attempt_id", (state,)
+            ).fetchall()
         return [_attempt(row) for row in rows]
 
     def start(
@@ -478,10 +493,11 @@ class JobJournal:
             Events with ``seq > after``.
 
         """
-        rows = self._connection.execute(
-            "SELECT * FROM events WHERE attempt_id = ? AND seq > ? ORDER BY seq",
-            (attempt_id, after),
-        ).fetchall()
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT * FROM events WHERE attempt_id = ? AND seq > ? ORDER BY seq",
+                (attempt_id, after),
+            ).fetchall()
         return [
             Event(
                 row["attempt_id"],

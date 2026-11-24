@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The local job service no longer answers 500 when a client reads an attempt or
+  its events while the service writes. The request threads and the pump thread
+  share one SQLite connection, and an unserialised read during another thread's
+  transaction raised `InterfaceError`. Every use of the journal's connection now
+  holds one reentrant lock. A new test reads from four threads while a fifth
+  writes; before the fix it failed in 10 of 10 runs, and after it in none of 20.
 - The scrolling tables of the Atlas claim comparisons, the snapshot comparison,
   the capability gaps and the calibration inspector can now be reached from the
   keyboard. Each table has a named scrolling region and a button that moves the

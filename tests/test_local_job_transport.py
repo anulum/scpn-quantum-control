@@ -14,6 +14,7 @@ A three-node network finishes in about a second; an eight-node network on
 
 from __future__ import annotations
 
+import contextlib
 import http.client
 import json
 import os
@@ -1009,3 +1010,99 @@ def test_expiry_after_a_sealed_success_keeps_the_success(tmp_path: Path) -> None
         assert not _alive(worker)
     finally:
         service.close()
+
+
+def _write_attempts(
+    journal: JobJournal, identities: list[str], errors: list[Exception], written: threading.Event
+) -> None:
+    """Admit, start and finish every attempt, as the pump thread would.
+
+    Parameters
+    ----------
+    journal
+        The shared journal.
+    identities
+        Attempt identities, written in order.
+    errors
+        Receives any journal failure.
+    written
+        Set once every attempt is written or a write failed.
+
+    """
+    try:
+        for index, attempt_id in enumerate(identities):
+            at = float(index)
+            journal.admit(
+                attempt_id=attempt_id,
+                idempotency_key=f"key-{index}",
+                request_digest="digest",
+                request={},
+                plan={},
+                at=at,
+                max_queued=len(identities),
+            )
+            journal.start(attempt_id, owner="o", pid=1, pid_start="s", deadline=1e9, at=at)
+            journal.finish(attempt_id, "succeeded", at=at, result_digest="r")
+    except (sqlite3.Error, ValueError) as error:
+        errors.append(error)
+    finally:
+        written.set()
+
+
+def _read_attempts(
+    journal: JobJournal, identities: list[str], errors: list[Exception], written: threading.Event
+) -> None:
+    """Read attempts and events until the writer is done, as request threads would.
+
+    Parameters
+    ----------
+    journal
+        The shared journal.
+    identities
+        Attempt identities to read; an attempt not admitted yet is skipped.
+    errors
+        Receives any journal failure.
+    written
+        Ends the reading once set.
+
+    """
+    try:
+        while not written.is_set():
+            for attempt_id in identities:
+                with contextlib.suppress(KeyError):
+                    journal.attempt(attempt_id)
+                journal.events(attempt_id, 0)
+            journal.attempts("running")
+    except sqlite3.Error as error:
+        errors.append(error)
+
+
+def test_the_journal_serialises_concurrent_reads_and_writes(tmp_path: Path) -> None:
+    """Request threads read while another thread writes, and the one connection never fails.
+
+    The service's request and pump threads share one SQLite connection. Unserialised, a
+    read during another thread's transaction raised ``InterfaceError`` ("bad parameter or
+    other API misuse"), and the transport answered 500.
+    """
+    journal = JobJournal(tmp_path / "journal.sqlite3")
+    identities = [f"attempt-{index}" for index in range(60)]
+    errors: list[Exception] = []
+    written = threading.Event()
+    arguments = (journal, identities, errors, written)
+    threads = [
+        threading.Thread(target=_write_attempts, args=arguments),
+        *(threading.Thread(target=_read_attempts, args=arguments) for _ in range(4)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=120)
+    try:
+        assert errors == []
+        assert not any(thread.is_alive() for thread in threads)
+        for attempt_id in identities:
+            assert journal.attempt(attempt_id).state == "succeeded"
+            kinds = [event.kind for event in journal.events(attempt_id, 0)]
+            assert kinds == ["admitted", "started", "succeeded"]
+    finally:
+        journal.close()
