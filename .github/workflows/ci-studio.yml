@@ -463,7 +463,7 @@ jobs:
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_studio_lazy_import.py \
             tests/test_resolved_workspace_settings.py tests/test_workspace_settings_portability.py \
-            tests/test_studio_workspace_lazy.py tests/test_workspace_operator_policy.py tests/test_local_job_transport.py
+            tests/test_studio_workspace_lazy.py tests/test_workspace_operator_policy.py tests/test_local_job_transport.py tests/test_atlas_workspace_overlay.py tests/test_atlas_snapshot_diff.py tests/test_studio_atlas_snapshot_diff.py tests/test_atlas_capability_gaps.py tests/test_atlas_claim_comparability.py
           python -m coverage report --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/studio-workspace.coverage" \
             --include="*/scpn_quantum_control/atlas/*.py,*/scpn_quantum_control/atlas/extractors/*.py,*/scpn_quantum_control/canonical_encoding.py,*/scpn_quantum_control/studio_workspace/*.py,*/scpn_quantum_control/studio_workspace/jobs/*.py,*/scpn_quantum_control/studio/workspace.py" \
