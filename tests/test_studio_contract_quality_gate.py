@@ -19,7 +19,7 @@ from tools import studio_contract_quality_gates as quality
 
 
 def test_builder_binds_every_real_consumer() -> None:
-    """Return five executable consumers with actual native and WASM test owners."""
+    """Return seven executable consumers with actual native and WASM test owners."""
     gates = quality.build_contract_conformance_gates("locked-python")
     assert [name for name, _, _ in gates] == [
         "workspace/python",
@@ -27,6 +27,8 @@ def test_builder_binds_every_real_consumer() -> None:
         "program-source/python",
         "program-source/rust",
         "program-source/wasm",
+        "atlas/python",
+        "atlas/typescript",
     ]
     assert (
         quality.build_contract_conformance_gates(
@@ -44,12 +46,14 @@ def test_builder_binds_every_real_consumer() -> None:
         "shared_source_corpus",
     ]
     assert "programCompiler.test.ts" in " ".join(gates[4][2])
+    assert "tests/test_atlas_contracts.py" in gates[5][2]
+    assert "src/shared/contracts/atlas.test.ts" in gates[6][2]
 
 
 def test_default_cli_checks_actual_ownership(capsys: pytest.CaptureFixture[str]) -> None:
     """Readonly CLI checks actual registry and required aggregate with no child launch."""
     assert quality.main([]) == 0
-    assert "5 required real consumers" in capsys.readouterr().out
+    assert "7 required real consumers" in capsys.readouterr().out
 
 
 @pytest.mark.parametrize("error", [ValueError("drift"), KeyError("owner"), OSError("missing")])
