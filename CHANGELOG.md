@@ -4,6 +4,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Local jobs no longer fail on hosts with many cores.
+  - What failed: OpenBLAS (in NumPy and SciPy) and the Rust engine's Rayon pool start one thread per core, and each
+    thread reserves address space. On a 24-core host a worker needed more than its 4 GiB address-space limit; the
+    allocation failed and the attempt ended `failed`.
+  - The fix: `LocalJobPolicy.worker_threads` (default 1) is passed to each worker as `--threads`. Before the
+    numerical stack loads, the worker sets `OPENBLAS_NUM_THREADS`, `OMP_NUM_THREADS`, `MKL_NUM_THREADS` and
+    `RAYON_NUM_THREADS` to it, replacing any inherited value.
+  - Measured on a 12-core host: the worker peaked at 3.0 GiB of address space with 35 threads before the fix, and
+    at 1.5 GiB with 2 threads after it.
+  - New tests show that a worker inheriting 64-thread settings keeps at most three threads and succeeds under the
+    default 4 GiB limit, and that the service passes the policy's count.
 - The local job service no longer answers 500 when a client reads an attempt or
   its events while the service writes. The request threads and the pump thread
   share one SQLite connection, and an unserialised read during another thread's

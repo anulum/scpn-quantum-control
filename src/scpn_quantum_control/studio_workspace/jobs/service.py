@@ -108,6 +108,11 @@ class LocalJobPolicy:
         Wall-clock limit of one attempt; it expires after that.
     worker_memory_bytes
         Address-space limit of one worker process.
+    worker_threads
+        Threads each numerical library in a worker may start. Every thread
+        reserves address space, and the libraries start one per core by
+        default, so a fixed count keeps a worker within ``worker_memory_bytes``
+        on any host.
     max_request_bytes
         Largest encoded request.
     max_record_bytes
@@ -123,6 +128,7 @@ class LocalJobPolicy:
     max_queued: int = 16
     worker_seconds: float = 600.0
     worker_memory_bytes: int = 4 * 1024**3
+    worker_threads: int = 1
     max_request_bytes: int = 1024**2
     max_record_bytes: int = 16 * 1024**2
     max_journal_bytes: int = 256 * 1024**2
@@ -134,6 +140,7 @@ class LocalJobPolicy:
             "max_workers",
             "max_queued",
             "worker_memory_bytes",
+            "worker_threads",
             "max_request_bytes",
             "max_record_bytes",
             "max_journal_bytes",
@@ -155,6 +162,7 @@ class LocalJobPolicy:
             "max_queued": self.max_queued,
             "worker_seconds": self.worker_seconds,
             "worker_memory_bytes": self.worker_memory_bytes,
+            "worker_threads": self.worker_threads,
             "max_request_bytes": self.max_request_bytes,
             "max_record_bytes": self.max_record_bytes,
             "max_journal_bytes": self.max_journal_bytes,
@@ -566,6 +574,7 @@ class LocalJobService:
                     _WORKER_MODULE,
                     str(directory),
                     f"--memory-bytes={self.policy.worker_memory_bytes}",
+                    f"--threads={self.policy.worker_threads}",
                     f"--cpu-seconds={self._cpu_seconds()}",
                     f"--file-bytes={self.policy.max_record_bytes}",
                 ],

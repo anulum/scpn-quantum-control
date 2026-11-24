@@ -921,6 +921,11 @@ What the service guarantees:
 - **Owned processes.** Each attempt runs in its own process group with
   memory, CPU-time and file-size limits. Cancellation, expiry and shutdown end
   an attempt only after its processes are stopped and reaped.
+- **The same threads on every host.** A worker sets the thread counts of
+  OpenBLAS, OpenMP, MKL and the Rust engine to `worker_threads` (one by
+  default) before they load, replacing any inherited value. Each library
+  thread reserves address space, so with one thread per core a worker on a
+  large host would exceed its memory limit.
 - **Restart reconciliation.** After a crash, the next start stops any worker
   the old service left behind. A complete sealed record proves completion;
   otherwise the attempt is recorded as *interrupted* and is never run again.
@@ -928,8 +933,8 @@ What the service guarantees:
   `--root`; an attempt's terminal state and its event are written together, and
   neither changes afterwards.
 
-The bounds (workers, queue, time, memory, request, record and journal size)
-are explicit `LocalJobPolicy` values. The service is not exposed to other
+The bounds (workers, queue, time, memory, threads, request, record and journal
+size) are explicit `LocalJobPolicy` values. The service is not exposed to other
 hosts and does not authenticate users beyond the session token.
 
 ## Immutable revision and run comparison

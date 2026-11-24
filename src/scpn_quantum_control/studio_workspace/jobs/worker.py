@@ -9,7 +9,7 @@
 
 The service starts this module as ``python -m
 scpn_quantum_control.studio_workspace.jobs.worker <attempt-directory>`` with its
-memory, CPU-time and file-size limits, which the worker applies first. The
+memory, thread, CPU-time and file-size limits, which the worker applies first. The
 directory is created and owned by the service and holds ``request.json``. The
 worker runs the request through the executive spine with the local-only
 registry and writes ``record.json`` atomically: a reader sees either no record
@@ -25,11 +25,20 @@ import os
 import resource
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Final
 
 REQUEST_FILE = "request.json"
 """Request written by the service before the worker starts."""
 RECORD_FILE = "record.json"
 """Sealed executive record written by the worker."""
+THREAD_VARIABLES: Final[tuple[str, ...]] = (
+    "OPENBLAS_NUM_THREADS",
+    "OMP_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "RAYON_NUM_THREADS",
+)
+"""Thread counts read by the libraries a worker loads: OpenBLAS (NumPy and SciPy),
+OpenMP, MKL and the Rayon pool of the Rust engine."""
 
 
 def run_attempt(directory: Path) -> Path:
@@ -70,19 +79,33 @@ def run_attempt(directory: Path) -> Path:
     return target
 
 
-def limit_resources(*, memory_bytes: int, cpu_seconds: int, file_bytes: int) -> None:
+def limit_resources(*, memory_bytes: int, threads: int, cpu_seconds: int, file_bytes: int) -> None:
     """Apply the service's limits to this process and every child it starts.
 
     Parameters
     ----------
     memory_bytes
         Address-space limit.
+    threads
+        Threads each numerical library may start. It replaces any inherited
+        value, because each thread reserves address space and the libraries
+        otherwise start one per core.
     cpu_seconds
         CPU-time limit; the kernel stops the process beyond it.
     file_bytes
         Largest file the process may write.
 
+    Raises
+    ------
+    ValueError
+        ``threads`` is below one, which the libraries would read as "one per core".
+
     """
+    if threads < 1:
+        raise ValueError("threads must be at least 1")
+    # Set before the numerical stack loads: each library reads its count once, at start.
+    for name in THREAD_VARIABLES:
+        os.environ[name] = str(threads)
     resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
     resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
     resource.setrlimit(resource.RLIMIT_FSIZE, (file_bytes, file_bytes))
@@ -95,7 +118,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     Parameters
     ----------
     argv
-        Argument vector: the attempt directory and the three limits.
+        Argument vector: the attempt directory and the four limits.
 
     Returns
     -------
@@ -106,11 +129,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path)
     parser.add_argument("--memory-bytes", type=int, required=True)
+    parser.add_argument("--threads", type=int, required=True)
     parser.add_argument("--cpu-seconds", type=int, required=True)
     parser.add_argument("--file-bytes", type=int, required=True)
     args = parser.parse_args(list(argv) if argv is not None else None)
     limit_resources(
-        memory_bytes=args.memory_bytes, cpu_seconds=args.cpu_seconds, file_bytes=args.file_bytes
+        memory_bytes=args.memory_bytes,
+        threads=args.threads,
+        cpu_seconds=args.cpu_seconds,
+        file_bytes=args.file_bytes,
     )
     run_attempt(args.directory)
     return 0

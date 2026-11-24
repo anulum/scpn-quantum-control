@@ -428,6 +428,44 @@ def test_a_worker_killed_from_outside_is_reported_with_its_signal(
     )
 
 
+@pytest.mark.parametrize("threads", [1, 2])
+def test_the_service_gives_each_worker_the_policy_thread_count(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, threads: int
+) -> None:
+    """The real worker gets the policy's thread count, whatever the service process inherited.
+
+    Parameters
+    ----------
+    tmp_path
+        Service root.
+    monkeypatch
+        Gives the service process 64-thread settings and records each real worker command.
+    threads
+        Policy thread count.
+
+    """
+    for name in worker_module.THREAD_VARIABLES:
+        monkeypatch.setenv(name, "64")
+    commands: list[list[str]] = []
+    real = subprocess.Popen
+
+    def recorded(args: list[str], **options: Any) -> subprocess.Popen[bytes]:
+        commands.append(list(args))
+        return real(args, **options)
+
+    # The service module calls subprocess.Popen through this same module object.
+    monkeypatch.setattr(subprocess, "Popen", recorded)
+    service = LocalJobService(tmp_path / "jobs", LocalJobPolicy(worker_threads=threads))
+    try:
+        attempt_id = service.submit(_request(f"threads-{threads}"))["attempt_id"]
+        _until(lambda: service.retrieve(attempt_id)["terminal"])
+        assert service.retrieve(attempt_id)["state"] == "succeeded"
+    finally:
+        service.close()
+    assert [command for command in commands if f"--threads={threads}" in command] == commands
+    assert len(commands) == 1
+
+
 def test_the_memory_bound_stops_a_worker(tmp_path: Path) -> None:
     """A worker cannot load the numerical stack within a 64 MiB address space."""
     service = LocalJobService(tmp_path / "jobs", LocalJobPolicy(worker_memory_bytes=64 * 1024**2))
@@ -750,6 +788,8 @@ def test_origin_controls_are_refused_on_both_response_paths(
         ("max_workers", 0),
         ("max_queued", True),
         ("worker_memory_bytes", 1.5),
+        ("worker_threads", 0),
+        ("worker_threads", True),
         ("worker_seconds", "1"),
         ("worker_seconds", 0.0),
         ("cancel_grace_seconds", 1e6),
@@ -779,11 +819,13 @@ def test_policy_is_reported_as_given() -> None:
         "max_queued",
         "worker_seconds",
         "worker_memory_bytes",
+        "worker_threads",
         "max_request_bytes",
         "max_record_bytes",
         "max_journal_bytes",
         "cancel_grace_seconds",
     }
+    assert LocalJobPolicy().worker_threads == 1
 
 
 def test_journal_enforces_its_own_invariants(tmp_path: Path) -> None:
@@ -834,8 +876,21 @@ def test_process_identity_helpers() -> None:
     assert start and not service_module._wait_gone(os.getpid(), start, 0.0)
 
 
-def test_worker_runs_an_attempt_in_process(tmp_path: Path) -> None:
-    """The worker entry applies its limits and seals the record atomically."""
+def test_worker_runs_an_attempt_in_process(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The worker entry applies its limits, replaces inherited thread counts and seals the record.
+
+    Parameters
+    ----------
+    tmp_path
+        Attempt directory.
+    monkeypatch
+        Restores this process's thread variables afterwards.
+
+    """
+    for name in worker_module.THREAD_VARIABLES:
+        monkeypatch.setenv(name, "64")
     (tmp_path / worker_module.REQUEST_FILE).write_text(
         json.dumps({**_request("inline"), "backend": None}), encoding="utf-8"
     )
@@ -845,15 +900,110 @@ def test_worker_runs_an_attempt_in_process(tmp_path: Path) -> None:
             [
                 str(tmp_path),
                 f"--memory-bytes={unlimited}",
+                "--threads=1",
                 f"--cpu-seconds={unlimited}",
                 f"--file-bytes={unlimited}",
             ]
         )
         == 0
     )
+    assert {os.environ[name] for name in worker_module.THREAD_VARIABLES} == {"1"}
     record = json.loads((tmp_path / worker_module.RECORD_FILE).read_text(encoding="utf-8"))
     assert record["result"]["status"] == "succeeded"
     assert not (tmp_path / (worker_module.RECORD_FILE + ".partial")).exists()
+
+
+def test_the_worker_refuses_fewer_than_one_thread() -> None:
+    """Zero threads would mean "one per core" to the libraries, so it is refused before any limit."""
+    with pytest.raises(ValueError, match="threads must be at least 1"):
+        worker_module.limit_resources(memory_bytes=1, threads=0, cpu_seconds=1, file_bytes=1)
+
+
+_THREADS_AFTER_RUN = (
+    "import sys\n"
+    "from scpn_quantum_control.studio_workspace.jobs import worker\n"
+    "if sys.argv[1] == 'worker':\n"
+    "    worker.main(sys.argv[2:])\n"
+    "else:\n"
+    "    worker.run_attempt(__import__('pathlib').Path(sys.argv[2]))\n"
+    "print(next(line for line in open('/proc/self/status') if line.startswith('Threads')).split()[1])\n"
+)
+
+
+def _threads_after_run(directory: Path, mode: str, memory_bytes: int | None = None) -> int:
+    """Run one attempt in a fresh process that inherits 64-thread settings; return its thread count.
+
+    Parameters
+    ----------
+    directory
+        Attempt directory holding the request.
+    mode
+        ``worker`` runs the worker entry with ``--threads=1``; ``bare`` runs the attempt without
+        the worker's limits, as before the fix.
+    memory_bytes
+        Address-space limit of the worker entry; unlimited when omitted.
+
+    Returns
+    -------
+    int
+        Threads of the process after the attempt.
+
+    """
+    unlimited = str(resource.RLIM_INFINITY)
+    memory = unlimited if memory_bytes is None else str(memory_bytes)
+    inherited = {name: "64" for name in worker_module.THREAD_VARIABLES}
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            _THREADS_AFTER_RUN,
+            mode,
+            str(directory),
+            f"--memory-bytes={memory}",
+            "--threads=1",
+            f"--cpu-seconds={unlimited}",
+            f"--file-bytes={unlimited}",
+        ],
+        env={**os.environ, **inherited},
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=300,
+    )
+    return int(completed.stdout.split()[-1])
+
+
+def test_a_worker_starts_the_same_threads_on_any_host(tmp_path: Path) -> None:
+    """A worker's thread count does not follow the host's cores or an inherited setting.
+
+    Every library thread reserves address space. With one thread per core, a worker on a
+    24-core host needed more than the 4 GiB default address space and failed. The bare run
+    shows that the libraries do start many threads under these settings, so the comparison
+    is real.
+    """
+    for mode in ("worker", "bare"):
+        (tmp_path / mode).mkdir()
+        (tmp_path / mode / worker_module.REQUEST_FILE).write_text(
+            json.dumps({**_request(mode), "backend": None}), encoding="utf-8"
+        )
+    limited = _threads_after_run(tmp_path / "worker", "worker")
+    assert limited <= 3
+    if (os.cpu_count() or 1) > 2:
+        assert _threads_after_run(tmp_path / "bare", "bare") > limited
+
+
+def test_a_worker_fits_the_default_address_space_whatever_it_inherits(tmp_path: Path) -> None:
+    """Under the default 4 GiB address space, a worker that inherits 64-thread settings succeeds.
+
+    Before the fix, those settings (like a host with many cores) made the Rust engine's thread
+    pool or OpenBLAS fail to allocate under that limit, and the attempt ended failed.
+    """
+    (tmp_path / worker_module.REQUEST_FILE).write_text(
+        json.dumps({**_request("address-space"), "backend": None}), encoding="utf-8"
+    )
+    threads = _threads_after_run(tmp_path, "worker", LocalJobPolicy().worker_memory_bytes)
+    record = json.loads((tmp_path / worker_module.RECORD_FILE).read_text(encoding="utf-8"))
+    assert (record["result"]["status"], threads <= 3) == ("succeeded", True)
 
 
 def test_service_main_prints_the_token_and_stops(
@@ -901,6 +1051,8 @@ def test_modules_run_as_scripts(
         json.dumps({**_request("script"), "backend": None}), encoding="utf-8"
     )
     unlimited = str(resource.RLIM_INFINITY)
+    for name in worker_module.THREAD_VARIABLES:
+        monkeypatch.setenv(name, "1")
     monkeypatch.setattr(
         sys,
         "argv",
@@ -908,6 +1060,7 @@ def test_modules_run_as_scripts(
             "worker",
             str(attempt),
             f"--memory-bytes={unlimited}",
+            "--threads=1",
             f"--cpu-seconds={unlimited}",
             f"--file-bytes={unlimited}",
         ],
