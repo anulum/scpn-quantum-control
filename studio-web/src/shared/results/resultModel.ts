@@ -307,7 +307,7 @@ function bucketExtrema(values: readonly (number | null)[], from: number, to: num
  * @param length - Number of original samples.
  * @param selectedIndex - The selected sample, always kept, or null.
  * @param values - The samples' source values, `null` where a value is missing; same length.
- * @returns Sorted, distinct indices, at most {@link resultLimits.displayPoints}.
+ * @returns Sorted, distinct indices, at most `resultLimits.displayPoints` of them.
  */
 export function resultDisplayIndices(
   length: number,

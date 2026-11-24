@@ -60,7 +60,6 @@ export interface WorkbenchProps extends Pick<WorkspacePanelProps, "rawCodecs"> {
   readonly registry?: ModuleRegistry<WorkbenchServices, WorkspaceViewServices>;
 }
 
-/** Hash navigation and feature isolation around one continuously mounted original editor. */
 /**
  * Show the workbench's shared selection, read-only, with a way to it in the Atlas.
  *
@@ -86,6 +85,7 @@ function SelectedObject({
   );
 }
 
+/** Hash navigation and feature isolation around one continuously mounted original editor. */
 export function Workbench({
   children,
   rawCodecs,
