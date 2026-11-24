@@ -169,6 +169,22 @@ class _Fragment:
         self.exclusions: set[tuple[str, str]] = set()
 
     def node(self, node_id: str, kind: str, label: str, digest: str | None, why: str) -> None:
+        """Record one private workspace node with the reason for each null field.
+
+        Parameters
+        ----------
+        node_id
+            Node identifier.
+        kind
+            Node kind.
+        label
+            Human-readable label.
+        digest
+            Content digest of the object, or ``None``.
+        why
+            Why the digest is null, used only when it is.
+
+        """
         reasons = {"as_of": _NO_TIME, "validity_domain": _NO_DOMAIN}
         if digest is None:
             reasons["source_digest"] = why
@@ -187,6 +203,18 @@ class _Fragment:
         }
 
     def edge(self, source: str, kind: str, target: str) -> None:
+        """Record one private relation extracted from the workspace.
+
+        Parameters
+        ----------
+        source
+            Source node identifier.
+        kind
+            Relation kind.
+        target
+            Target node identifier.
+
+        """
         self.edges[(source, kind, target)] = {
             "source": source,
             "kind": kind,
@@ -202,6 +230,16 @@ class _Fragment:
         }
 
     def exclude(self, digest: str, reason: str) -> None:
+        """Record one workspace document left out of the overlay, with why.
+
+        Parameters
+        ----------
+        digest
+            The document's digest.
+        reason
+            Why it was left out.
+
+        """
         self.exclusions.add((f"{self.source}/{digest}", reason))
 
 

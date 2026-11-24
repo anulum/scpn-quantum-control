@@ -265,6 +265,24 @@ class _Builder:
         source_digest: str | None,
         domain: Mapping[str, str] | None,
     ) -> None:
+        """Record one node once, with the reason for every field the input leaves null.
+
+        Parameters
+        ----------
+        node_id
+            Stable node identifier; a repeated identifier keeps its first record.
+        kind
+            Node kind.
+        label
+            Human-readable label.
+        source_ref
+            Where the declaration comes from.
+        source_digest
+            Digest of the declared file, or ``None`` for a declaration inside the input.
+        domain
+            Validity scope the input states, or ``None``.
+
+        """
         reasons = {"as_of": "committed declarations carry no observation time"}
         if source_digest is None:
             reasons["source_digest"] = "a declaration inside its input, without its own content"
@@ -287,6 +305,18 @@ class _Builder:
         }
 
     def edge(self, source: str, kind: str, target: str) -> None:
+        """Record one declared relation of this input.
+
+        Parameters
+        ----------
+        source
+            Source node identifier.
+        kind
+            Relation kind.
+        target
+            Target node identifier.
+
+        """
         self.edges[(source, kind, target)] = {
             "source": source,
             "kind": kind,
@@ -302,6 +332,16 @@ class _Builder:
         }
 
     def exclude(self, source_ref: str, reason: str) -> None:
+        """Record one reference the input names but the snapshot leaves out, with why.
+
+        Parameters
+        ----------
+        source_ref
+            The excluded reference.
+        reason
+            Why it was left out.
+
+        """
         self.exclusions.add((source_ref, reason))
 
     def file_node(self, relative: str, role: str, declared_at: str) -> str | None:
@@ -333,6 +373,14 @@ class _Builder:
         return node_id
 
     def fragment(self) -> AtlasFragment:
+        """Return this input's fragment in canonical order.
+
+        Returns
+        -------
+        AtlasFragment
+            Nodes, relations and exclusions sorted by key, with every digest the input read.
+
+        """
         return AtlasFragment(
             input_digest=self.digest,
             read_digests=tuple(sorted(self.read_digests.items())),
